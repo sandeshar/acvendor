@@ -1,0 +1,49 @@
+interface TrustSectionData {
+    id: number;
+    heading: string;
+    is_active: number;
+    updatedAt: Date;
+}
+
+interface TrustLogoData {
+    id: number;
+    alt_text: string;
+    logo_url: string;
+    dark_invert: number;
+    display_order: number;
+    is_active: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface TrustProps {
+    section?: TrustSectionData | null;
+    logos?: TrustLogoData[];
+}
+
+const Trust = ({ section, logos = [] }: TrustProps) => {
+    if (!section || logos.length === 0) {
+        return null;
+    }
+
+    return (
+        <section className="py-20 sm:py-32">
+            <h4
+                className="text-subtext text-sm font-bold leading-normal tracking-[0.015em] text-center pb-8">
+                {section.heading}</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8 items-center">
+                {logos.map((logo) => (
+                    <img
+                        key={logo.id}
+                        alt={logo.alt_text}
+                        className={`h-60 w-auto mx-auto grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all ${logo.dark_invert ? 'dark:invert dark:opacity-40 dark:hover:opacity-100' : ''
+                            }`}
+                        src={logo.logo_url}
+                    />
+                ))}
+            </div>
+        </section>
+    );
+};
+
+export default Trust;

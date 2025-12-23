@@ -1,0 +1,63 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/db';
+import {
+    contactPageHero,
+    contactPageInfo,
+    contactPageFormConfig
+} from '@/db/contactPageSchema';
+
+export async function POST() {
+    try {
+        // Clear existing data
+        await db.delete(contactPageHero);
+        await db.delete(contactPageInfo);
+        await db.delete(contactPageFormConfig);
+
+        // Seed Hero Section
+        await db.insert(contactPageHero).values({
+            tagline: 'CONTACT US',
+            title: "Let's Start a Conversation",
+            description: "We're here to help you with your content needs. Reach out to us, and we'll get back to you as soon as possible.",
+            is_active: 1,
+        });
+
+        // Seed Contact Info
+        await db.insert(contactPageInfo).values({
+            office_location: 'Kathmandu, Nepal',
+            phone: '+977 9876543210',
+            email: 'hello@contentsolution.np',
+            map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.5769816700773!2d85.3206!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQzJzAyLjAiTiA4NcKwMTknMjIuMiJF!5e0!3m2!1sen!2snp!4v',
+            is_active: 1,
+        });
+
+        // Seed Form Configuration
+        await db.insert(contactPageFormConfig).values({
+            name_placeholder: 'Your Name',
+            email_placeholder: 'Your Email',
+            phone_placeholder: 'Phone (optional)',
+            subject_placeholder: 'Subject',
+            service_placeholder: 'Select a service',
+            message_placeholder: 'Your Message',
+            submit_button_text: 'Send Message',
+            success_message: 'Thank you for contacting us! We will get back to you soon.',
+            is_active: 1,
+        });
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: 'Contact page seeded successfully with default values',
+            },
+            { status: 201 }
+        );
+    } catch (error) {
+        console.error('Error seeding contact page:', error);
+        return NextResponse.json(
+            {
+                error: 'Failed to seed contact page',
+                details: error instanceof Error ? error.message : 'Unknown error',
+            },
+            { status: 500 }
+        );
+    }
+}

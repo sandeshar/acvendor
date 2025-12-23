@@ -1,0 +1,540 @@
+@import "tailwindcss";
+
+:root {
+    --color-primary: #2563eb;
+
+    --color-background: #f8fafc;
+    --color-card: #ffffff;
+
+    --color-text: #0f172a;
+    --color-subtext: #475569;
+
+    --color-border: #e2e8f0;
+
+    --font-family-display: Inter, sans-serif;
+}
+
+/* =========================================================
+   THEMES (BACKGROUND ≠ CARD IN ALL CASES)
+   ========================================================= */
+
+.theme-default {
+    --color-primary: #2563eb;
+    --color-background: #f1f5f9;
+    --color-card: #ffffff;
+    --color-text: #0f172a;
+    --color-subtext: #475569;
+    --color-border: #e2e8f0;
+}
+
+.theme-ocean {
+    --color-primary: #0ea5a4;
+    --color-background: #e6fffa;
+    --color-card: #ffffff;
+    --color-text: #083344;
+    --color-subtext: #0f766e;
+    --color-border: #bff3f1;
+}
+
+.theme-corporate {
+    --color-primary: #0f172a;
+    --color-background: #f1f5f9;
+    --color-card: #ffffff;
+    --color-text: #0b1220;
+    --color-subtext: #475569;
+    --color-border: #e2e8f0;
+}
+
+.theme-forest {
+    --color-primary: #16a34a;
+    --color-background: #ecfdf5;
+    --color-card: #ffffff;
+    --color-text: #052e13;
+    --color-subtext: #166534;
+    --color-border: #bbf7d0;
+}
+
+.theme-sunset {
+    --color-primary: #ff6b6b;
+    --color-background: #fff7f5;
+    --color-card: #fff1f0;
+    --color-text: #3b0a0a;
+    --color-subtext: #6b7280;
+    --color-border: #fecdd3;
+}
+
+.theme-lavender {
+    --color-primary: #7c3aed;
+    --color-background: #fbf5ff;
+    --color-card: #ffffff;
+    --color-text: #1f0b2e;
+    --color-subtext: #6b21a8;
+    --color-border: #ddd6fe;
+}
+
+.theme-minimal {
+    --color-primary: #2563eb;
+    --color-background: #fafafa;
+    --color-card: #ffffff;
+    --color-text: #0b1220;
+    --color-subtext: #6b7280;
+    --color-border: #e5e7eb;
+}
+
+/* Page background */
+.page-bg {
+    background-color: var(--color-background);
+}
+
+/* Semantic theme helpers (use CSS variables so themes adapt automatically) */
+.bg-card {
+    background-color: var(--color-card);
+}
+
+.bg-page {
+    background-color: var(--color-background);
+}
+
+.text-body {
+    color: var(--color-text);
+}
+
+.text-subtext {
+    color: var(--color-subtext);
+}
+
+.border-muted {
+    border-color: var(--color-border);
+}
+
+.text-primary-var {
+    color: var(--color-primary);
+}
+
+.ring-muted {
+    --tw-ring-color: var(--color-border);
+}
+
+.hover-bg-card:hover {
+    background-color: var(--color-card);
+}
+
+.hover-text-primary:hover {
+    color: var(--color-primary);
+}
+
+/* Accent helpers */
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+.bg-primary-20 {
+    background-color: var(--color-primary);
+    opacity: 0.2;
+}
+
+.border-primary {
+    border-color: var(--color-primary);
+}
+
+/* Contact page pattern background utility */
+.contact-pattern {
+    background-image: radial-gradient(circle at 20% 20%, rgba(19, 91, 236, 0.06), transparent 60%),
+        radial-gradient(circle at 80% 30%, rgba(19, 91, 236, 0.04), transparent 65%);
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'liga';
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+}
+
+/* Tiptap Editor Styles */
+.tiptap {
+    outline: none;
+    position: relative;
+}
+
+.tiptap:focus {
+    outline: none;
+}
+
+.tiptap p {
+    margin: 0.75rem 0;
+}
+
+.tiptap h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+}
+
+.tiptap h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem;
+}
+
+.tiptap h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+    padding-left: 1.5rem;
+    margin: 0.75rem 0;
+}
+
+.tiptap ul {
+    list-style-type: disc;
+}
+
+.tiptap ol {
+    list-style-type: decimal;
+}
+
+.tiptap li {
+    margin: 0.25rem 0;
+}
+
+.tiptap blockquote {
+    border-left: 4px solid #e5e7eb;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    color: #6b7280;
+}
+
+.tiptap code {
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.tiptap pre {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+.tiptap pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+.tiptap a {
+    color: #135bec;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.tiptap a:hover {
+    color: #0d47b8;
+}
+
+.tiptap hr {
+    border: none;
+    border-top: 2px solid #e5e7eb;
+    margin: 2rem 0;
+}
+
+.tiptap strong {
+    font-weight: 700;
+}
+
+.tiptap em {
+    font-style: italic;
+}
+
+.tiptap s {
+    text-decoration: line-through;
+}
+
+.tiptap u {
+    text-decoration: underline;
+}
+
+.tiptap mark {
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.tiptap mark.highlight {
+    background-color: #fef08a;
+}
+
+/* Keep highlight colors visible when text is selected */
+.tiptap mark::selection {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.tiptap mark::-moz-selection {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Placeholder styling */
+.tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: #9ca3af;
+    pointer-events: none;
+    height: 0;
+}
+
+.tiptap.is-editor-empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+}
+
+.tiptap img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.tiptap pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1rem;
+    background: #1f2937;
+    color: #f3f4f6;
+    border-radius: 0.5rem;
+}
+
+.tiptap [style*="text-align: left"] {
+    text-align: left;
+}
+
+.tiptap [style*="text-align: right"] {
+    text-align: right;
+}
+
+/* Selection and focus improvements */
+.tiptap ::selection {
+    background-color: #a5d8ff;
+}
+
+.tiptap p:first-child {
+    margin-top: 0;
+}
+
+.tiptap p:last-child {
+    margin-bottom: 0;
+}
+
+/* Better list styling */
+.tiptap ul li,
+.tiptap ol li {
+    line-height: 1.6;
+}
+
+.tiptap ul ul,
+.tiptap ol ol,
+.tiptap ul ol,
+.tiptap ol ul {
+    margin: 0.25rem 0;
+}
+
+/* Link hover improvements */
+.tiptap a {
+    transition: color 0.2s ease;
+}
+
+/* Code improvements */
+.tiptap code {
+    font-size: 0.9em;
+}
+
+/* Image improvements */
+.tiptap img {
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.tiptap img:hover {
+    transform: scale(1.02);
+}
+
+/* Horizontal rule improvements */
+.tiptap hr {
+    transition: border-color 0.2s ease;
+}
+
+.tiptap hr:hover {
+    border-color: #cbd5e1;
+}
+
+.tiptap [style*="text-align: center"] {
+    text-align: center;
+}
+
+/* Toast notifications */
+.toast-container {
+    pointer-events: none;
+    /* allow clicks through empty areas */
+}
+
+.toast {
+    pointer-events: auto;
+    background-color: var(--color-card);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.toast .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.toast-success {
+    border-left: 4px solid var(--color-primary);
+}
+
+.toast-error {
+    border-left: 4px solid #ef4444;
+    /* red-500 */
+}
+
+.tiptap [style*="text-align: right"] {
+    text-align: right;
+}
+
+html,
+body {
+    font-family: Inter, sans-serif;
+}
+
+/* Thin, subtle scrollbar for admin sidebar */
+.admin-sidebar {
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    /* Firefox thumb color and track */
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    /* creates padding effect */
+    background-clip: padding-box;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Thin scrollbar for admin main content (light background) */
+.admin-main {
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: rgba(2, 6, 23, 0.06) transparent;
+    /* thumb, track */
+}
+
+.admin-main::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+    background-color: rgba(2, 6, 23, 0.06);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(2, 6, 23, 0.12);
+}
+
+/* Mobile admin sidebar overlay behavior */
+@media (max-width: 767px) {
+    body.admin-sidebar-open .admin-sidebar {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 16rem;
+        /* matches w-64 */
+        z-index: 60;
+        transform: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    body.admin-sidebar-open .admin-main {
+        filter: blur(1px);
+        pointer-events: none;
+    }
+}
+
+/* Mobile: ensure consistent horizontal padding for main sections & containers */
+@media (max-width: 640px) {
+
+    /* Apply side padding to semantic sections, headers, footers and common max-width containers */
+    section,
+    header,
+    footer,
+    [class*="max-w-"],
+    .mx-auto {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Slightly larger padding for very small screens */
+    @media (max-width: 420px) {
+
+        section,
+        header,
+        footer,
+        [class*="max-w-"],
+        .mx-auto {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
+}
