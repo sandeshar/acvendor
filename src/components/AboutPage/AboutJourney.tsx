@@ -134,7 +134,7 @@ const AboutJourney = ({ section, stats = [], features = [] }: AboutJourneyProps)
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {features && features.length > 0 ? features.slice(0,3).map((feature) => (
+                            {features && features.length > 0 ? features.slice(0, 3).map((feature) => (
                                 <div key={feature.id} className="flex flex-1 gap-4 rounded-xl border border-[#dbe0e6] bg-white p-6 flex-col hover:border-primary/50 transition-colors shadow-sm hover:shadow-md">
                                     <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                         <span className="material-symbols-outlined">support_agent</span>

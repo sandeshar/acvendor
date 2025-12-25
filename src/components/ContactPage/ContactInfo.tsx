@@ -72,7 +72,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                             <h3 className="font-bold text-[#111418]">Opening Hours</h3>
                         </div>
                         <p className="text-sm text-[#617589] pl-9">
-                            Sun - Fri: 9:00 AM - 6:00 PM<br/>
+                            Sun - Fri: 9:00 AM - 6:00 PM<br />
                             Saturday: Closed
                         </p>
                     </div>

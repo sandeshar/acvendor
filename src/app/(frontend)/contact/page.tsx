@@ -92,7 +92,7 @@ export default async function ContactPage() {
                     </div>
                     <div className="w-full h-[400px] bg-gray-200 rounded-xl overflow-hidden shadow-sm relative">
                         {/* Placeholder for Map */}
-                        <img alt="Map showing location in Kathmandu, Nepal" className="w-full h-full object-cover" data-location="Kathmandu, Nepal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOUKMvaWzb3aH0Bz1dqGgfyrM6NcctxxrLWWWvq8EugMzewfkjhFt5lEpDL3yHM7W9NElPJaqB-I-9naFiIXySy73RPWIHBSN0VRmXzq9eZVzlKuMkke9UW2yDh3s1snPnCOS0Lw_QffdMcEKsxl1Ewspic6TSUqiTZLQULC0t6n7WJteGzEXBqZs7AnoVJ0FxrF448txa2rlfVDx0CDBRs8kITNZ25mHhzgvFmQuGy6Lggc1p2_RUS33UocLMH6EuahJk7nEHvT4"/>
+                        <img alt="Map showing location in Kathmandu, Nepal" className="w-full h-full object-cover" data-location="Kathmandu, Nepal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOUKMvaWzb3aH0Bz1dqGgfyrM6NcctxxrLWWWvq8EugMzewfkjhFt5lEpDL3yHM7W9NElPJaqB-I-9naFiIXySy73RPWIHBSN0VRmXzq9eZVzlKuMkke9UW2yDh3s1snPnCOS0Lw_QffdMcEKsxl1Ewspic6TSUqiTZLQULC0t6n7WJteGzEXBqZs7AnoVJ0FxrF448txa2rlfVDx0CDBRs8kITNZ25mHhzgvFmQuGy6Lggc1p2_RUS33UocLMH6EuahJk7nEHvT4" />
                         <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg max-w-xs">
                             <p className="font-bold text-sm text-[#111418]">Nepal AC Co. Headquarters</p>
                             <p className="text-xs text-gray-500 mt-1">Get directions to our main office for product demos and consultations.</p>
