@@ -6,6 +6,9 @@ import {
     servicesPageProcessSection,
     servicesPageProcessSteps,
     servicesPageCTA,
+    servicesPageBrands,
+    servicesPageTrust,
+    servicesPageFeatures,
 } from '@/db/servicesPageSchema';
 import { servicePosts } from '@/db/servicePostsSchema';
 import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
@@ -32,6 +35,10 @@ export async function POST() {
             await db.delete(servicesPageProcessSection);
             await db.delete(servicesPageProcessSteps);
             await db.delete(servicesPageCTA);
+            // New tables
+            try { await db.delete(servicesPageBrands); } catch(e) { }
+            try { await db.delete(servicesPageTrust); } catch(e) { }
+            try { await db.delete(servicesPageFeatures); } catch(e) { }
         } catch (e) {
             // ignore
         }
@@ -248,6 +255,39 @@ export async function POST() {
             button_link: '/contact',
             is_active: 1,
         });
+
+        // Seed brands
+        const brandSamples = [
+            { name: 'SAMSUNG', logo: '', link: '#' },
+            { name: 'DAIKIN', logo: '', link: '#' },
+            { name: 'LG', logo: '', link: '#' },
+            { name: 'MITSUBISHI', logo: '', link: '#' },
+            { name: 'GREE', logo: '', link: '#' },
+        ];
+        for (const [i, b] of brandSamples.entries()) {
+            await db.insert(servicesPageBrands).values({ name: b.name, logo: b.logo, link: b.link, display_order: i + 1, is_active: 1 });
+        }
+
+        // Seed trust section
+        await db.insert(servicesPageTrust).values({
+            title: 'Why Nepal trusts our service',
+            description: 'Professional installers, genuine parts, and prompt support across the valley.',
+            quote_text: 'The team was incredibly professional. They installed our office AC system in one day and left the place spotless. Highly recommended!',
+            quote_author: 'Rajesh Hamal',
+            quote_role: 'Business Owner, Thamel',
+            quote_image: '',
+            is_active: 1,
+        });
+
+        // Seed features
+        const featureSamples = [
+            { icon: 'verified_user', title: 'Certified Experts', description: 'Trained technicians for all major brands.' },
+            { icon: 'avg_pace', title: 'Fast Response', description: 'Same-day service available in Kathmandu.' },
+            { icon: 'handyman', title: 'Genuine Parts', description: '100% original spare parts warranty.' },
+        ];
+        for (const [i, f] of featureSamples.entries()) {
+            await db.insert(servicesPageFeatures).values({ icon: f.icon, title: f.title, description: f.description, display_order: i + 1, is_active: 1 });
+        }
 
         return NextResponse.json({ success: true, message: 'Services seeded successfully' }, { status: 201 });
     } catch (error) {

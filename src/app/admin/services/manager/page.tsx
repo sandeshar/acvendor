@@ -47,6 +47,11 @@ export default function ServicesManagerPage() {
     const [ctaData, setCtaData] = useState<any>({});
     const [deletedProcessSteps, setDeletedProcessSteps] = useState<number[]>([]);
 
+    // New sections: Brands, Trust, Features
+    const [brands, setBrands] = useState<any[]>([]);
+    const [trustData, setTrustData] = useState<any>({});
+    const [featuresList, setFeaturesList] = useState<any[]>([]);
+
     // Categories state
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
@@ -64,7 +69,7 @@ export default function ServicesManagerPage() {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [postsRes, heroRes, servicesRes, procSecRes, procStepsRes, ctaRes, categoriesRes, subcategoriesRes] = await Promise.all([
+            const [postsRes, heroRes, servicesRes, procSecRes, procStepsRes, ctaRes, categoriesRes, subcategoriesRes, brandsRes, trustRes, featuresRes] = await Promise.all([
                 fetch('/api/services'),
                 fetch('/api/pages/services/hero'),
                 fetch('/api/pages/services/details'),
@@ -73,12 +78,21 @@ export default function ServicesManagerPage() {
                 fetch('/api/pages/services/cta'),
                 fetch('/api/pages/services/categories'),
                 fetch('/api/pages/services/subcategories'),
+                fetch('/api/pages/services/brands'),
+                fetch('/api/pages/services/trust'),
+                fetch('/api/pages/services/features'),
             ]);
 
             const posts = postsRes.ok ? await postsRes.json() : [];
             const servicesDetails = servicesRes.ok ? await servicesRes.json() : [];
             const cats = categoriesRes.ok ? await categoriesRes.json() : [];
             const subs = subcategoriesRes.ok ? await subcategoriesRes.json() : [];
+            const loadedBrands = brandsRes.ok ? await brandsRes.json() : [];
+            const loadedTrust = trustRes.ok ? await trustRes.json() : null;
+            const loadedFeatures = featuresRes.ok ? await featuresRes.json() : [];
+            setBrands(loadedBrands);
+            if (loadedTrust) setTrustData(loadedTrust);
+            setFeaturesList(loadedFeatures);
             console.log('Categories loaded:', cats);
             console.log('Subcategories loaded:', subs);
             setCategories(cats);
@@ -448,6 +462,35 @@ export default function ServicesManagerPage() {
                 );
             }
 
+            // Brands
+            if (activeTab === "brands") {
+                for (const b of brands) {
+                    const payload = { name: b.name, logo: b.logo || '', link: b.link || '', display_order: b.display_order ?? 0, is_active: b.is_active ?? 1 };
+                    if (b.id) {
+                        promises.push(fetch('/api/pages/services/brands', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: b.id, ...payload }) }));
+                    } else {
+                        promises.push(fetch('/api/pages/services/brands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
+                    }
+                }
+            }
+
+            // Trust
+            if (activeTab === "trust") {
+                const payload = { id: trustData.id, title: trustData.title || '', description: trustData.description || '', quote_text: trustData.quote_text || '', quote_author: trustData.quote_author || '', quote_role: trustData.quote_role || '', quote_image: trustData.quote_image || '', is_active: trustData.is_active ?? 1 };
+                promises.push(fetch('/api/pages/services/trust', { method: trustData.id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
+            }
+
+            // Features
+            if (activeTab === "features") {
+                for (const f of featuresList) {
+                    const payload = { icon: f.icon || '', title: f.title || '', description: f.description || '', display_order: f.display_order ?? 0, is_active: f.is_active ?? 1 };
+                    if (f.id) {
+                        promises.push(fetch('/api/pages/services/features', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id, ...payload }) }));
+                    } else {
+                        promises.push(fetch('/api/pages/services/features', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
+                    }
+                }
+            }
             await Promise.all(promises);
             showToast('Changes saved successfully!', { type: 'success' });
             setDeletedProcessSteps([]);
@@ -535,6 +578,9 @@ export default function ServicesManagerPage() {
         { id: "hero", label: "Hero", icon: "web_asset" },
         { id: "process", label: "Process", icon: "settings_suggest" },
         { id: "cta", label: "CTA", icon: "campaign" },
+        { id: "brands", label: "Brands", icon: "support_agent" },
+        { id: "trust", label: "Trust", icon: "thumb_up" },
+        { id: "features", label: "Features", icon: "view_timeline" },
     ];
 
     if (loading) return <div className="p-10 text-center">Loading...</div>;
@@ -781,6 +827,95 @@ export default function ServicesManagerPage() {
                                     <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                     <Toggle checked={ctaData.is_active === 1} onChange={(c: boolean) => setCtaData({ ...ctaData, is_active: c ? 1 : 0 })} />
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* BRANDS SECTION */}
+                    {activeTab === "brands" && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">Trusted Brands</h3>
+                                <button
+                                    onClick={() => setBrands([...brands, { name: 'New Brand', logo: '', link: '', display_order: brands.length + 1, is_active: 1 }])}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                >
+                                    <span className="material-symbols-outlined">add</span> Add Brand
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {brands.map((b, idx) => (
+                                    <div key={b.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                        <InputGroup label="Name" value={b.name} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], name: v }; setBrands(copy); }} />
+                                        <InputGroup label="Link" value={b.link || ''} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], link: v }; setBrands(copy); }} />
+                                        <ImageUploader label="Logo" value={b.logo || ''} onChange={(url: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], logo: url }; setBrands(copy); }} folder="services/brands" />
+                                        <div className="flex gap-2 items-center">
+                                            <InputGroup label="Order" value={(b.display_order || 0).toString()} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setBrands(copy); }} />
+                                            <div className="pt-2">
+                                                <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
+                                                <Toggle checked={b.is_active === 1} onChange={(c: boolean) => { const copy = [...brands]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setBrands(copy); }} />
+                                            </div>
+                                            <button className="ml-auto text-red-600" onClick={() => { const copy = brands.filter((_, i) => i !== idx); setBrands(copy); }}>
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TRUST SECTION */}
+                    {activeTab === "trust" && (
+                        <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-6">
+                                <h3 className="text-lg font-semibold text-gray-900">Trust Section</h3>
+                                <InputGroup label="Title" value={trustData.title || ''} onChange={(v: string) => setTrustData({ ...trustData, title: v })} />
+                                <TextAreaGroup label="Description" value={trustData.description || ''} onChange={(v: string) => setTrustData({ ...trustData, description: v })} />
+                                <TextAreaGroup label="Quote Text" value={trustData.quote_text || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_text: v })} />
+                                <InputGroup label="Quote Author" value={trustData.quote_author || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_author: v })} />
+                                <InputGroup label="Quote Role" value={trustData.quote_role || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_role: v })} />
+                                <ImageUploader label="Quote Image" value={trustData.quote_image || ''} onChange={(url: string) => setTrustData({ ...trustData, quote_image: url })} folder="services/trust" />
+                                <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                    <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                    <Toggle checked={trustData.is_active === 1} onChange={(c: boolean) => setTrustData({ ...trustData, is_active: c ? 1 : 0 })} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FEATURES SECTION */}
+                    {activeTab === "features" && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">Feature Items</h3>
+                                <button
+                                    onClick={() => setFeaturesList([...featuresList, { icon: 'star', title: 'New Feature', description: '', display_order: featuresList.length + 1, is_active: 1 }])}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                >
+                                    <span className="material-symbols-outlined">add</span> Add Feature
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {featuresList.map((f, idx) => (
+                                    <div key={f.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                        <InputGroup label="Icon (material)" value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
+                                        <InputGroup label="Title" value={f.title} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], title: v }; setFeaturesList(copy); }} />
+                                        <TextAreaGroup label="Description" value={f.description || ''} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], description: v }; setFeaturesList(copy); }} />
+                                        <div className="flex gap-2 items-center">
+                                            <InputGroup label="Order" value={(f.display_order || 0).toString()} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setFeaturesList(copy); }} />
+                                            <div className="pt-2">
+                                                <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
+                                                <Toggle checked={f.is_active === 1} onChange={(c: boolean) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setFeaturesList(copy); }} />
+                                            </div>
+                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); setFeaturesList(copy); }}>
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

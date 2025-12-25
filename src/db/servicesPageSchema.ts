@@ -73,3 +73,40 @@ export const servicesPageCTA = mysqlTable("services_page_cta", {
     is_active: int("is_active").default(1).notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
+
+// Services Page - Brands (trusted brands logos)
+export const servicesPageBrands = mysqlTable("services_page_brands", {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 256 }).notNull(),
+    logo: varchar("logo", { length: 512 }).notNull().default(''),
+    link: varchar("link", { length: 512 }).notNull().default(''),
+    display_order: int("display_order").notNull().default(0),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Services Page - Trust Section (stats / testimonial)
+export const servicesPageTrust = mysqlTable("services_page_trust", {
+    id: int("id").primaryKey().autoincrement(),
+    title: varchar("title", { length: 256 }).notNull().default(''),
+    description: varchar("description", { length: 1024 }).notNull().default(''),
+    quote_text: varchar("quote_text", { length: 1024 }).notNull().default(''),
+    quote_author: varchar("quote_author", { length: 256 }).notNull().default(''),
+    quote_role: varchar("quote_role", { length: 256 }).notNull().default(''),
+    quote_image: varchar("quote_image", { length: 512 }).notNull().default(''),
+    is_active: int("is_active").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Services Page - Features (strip items)
+export const servicesPageFeatures = mysqlTable("services_page_features", {
+    id: int("id").primaryKey().autoincrement(),
+    icon: varchar("icon", { length: 128 }).notNull().default(''),
+    title: varchar("title", { length: 256 }).notNull(),
+    description: varchar("description", { length: 512 }).notNull().default(''),
+    display_order: int("display_order").notNull().default(0),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});

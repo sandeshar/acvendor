@@ -4,6 +4,7 @@ import ServicesOverview from "@/components/ServicesPage/ServicesOverview";
 import ServiceDetails from "@/components/ServicesPage/ServiceDetails";
 import ProcessSection from "@/components/ServicesPage/ProcessSection";
 import ServicesBrands from "@/components/ServicesPage/ServicesBrands";
+import TrustSection from "@/components/ServicesPage/TrustSection";
 import TestimonialSlider from "@/components/shared/TestimonialSlider";
 import CTASection from "@/components/ServicesPage/CTASection";
 
@@ -15,21 +16,25 @@ export const fetchCache = 'force-no-store';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 async function getServicesPageData() {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
     try {
         const [
             heroRes,
             detailsRes,
             processSectionRes,
             processStepsRes,
-            ctaRes
+            ctaRes,
+            brandsRes,
+            trustRes,
+            featuresRes,
         ] = await Promise.all([
             fetch(`${API_BASE}/api/pages/services/hero`, { next: { tags: ['services-hero'] } }),
             fetch(`${API_BASE}/api/pages/services/details`, { next: { tags: ['services-details'] } }),
             fetch(`${API_BASE}/api/pages/services/process-section`, { next: { tags: ['services-process-section'] } }),
             fetch(`${API_BASE}/api/pages/services/process-steps`, { next: { tags: ['services-process-steps'] } }),
             fetch(`${API_BASE}/api/pages/services/cta`, { next: { tags: ['services-cta'] } }),
+            fetch(`${API_BASE}/api/pages/services/brands`, { next: { tags: ['services-brands'] } }),
+            fetch(`${API_BASE}/api/pages/services/trust`, { next: { tags: ['services-trust'] } }),
+            fetch(`${API_BASE}/api/pages/services/features`, { next: { tags: ['services-features'] } }),
         ]);
 
         const hero = heroRes.ok ? await heroRes.json() : null;
@@ -37,6 +42,9 @@ async function getServicesPageData() {
         const processSection = processSectionRes.ok ? await processSectionRes.json() : null;
         const processSteps = processStepsRes.ok ? await processStepsRes.json() : [];
         const cta = ctaRes.ok ? await ctaRes.json() : null;
+        const brands = brandsRes.ok ? await brandsRes.json() : [];
+        const trust = trustRes.ok ? await trustRes.json() : null;
+        const features = featuresRes.ok ? await featuresRes.json() : [];
 
         return {
             hero,
@@ -44,11 +52,11 @@ async function getServicesPageData() {
             processSection,
             processSteps,
             cta,
+            brands,
+            trust,
+            features,
         };
     } catch (error) {
-        // Log only the error message to avoid printing full Error objects which can
-        // trigger source-map parsing in the server dev bundle and produce confusing
-        // "Invalid source map" messages.
         console.error('Error fetching services page data:', (error as Error)?.message || String(error));
         return {
             hero: null,
@@ -56,6 +64,9 @@ async function getServicesPageData() {
             processSection: null,
             processSteps: [],
             cta: null,
+            brands: [],
+            trust: null,
+            features: [],
         };
     }
 }
@@ -125,60 +136,21 @@ export default async function ServicesPage() {
     return (
         <main className="page-bg grow ">
             <HeroSection data={data.hero} />
-            <ServicesFeatureStrip />
-            <ServicesOverview services={services} />
-            <ServiceDetails services={services} />
+
+            {/* Reordered to match Admin UI: Process -> CTA -> Brands -> Trust -> Features -> Services Overview/Details */}
+
             <ProcessSection section={data.processSection} steps={data.processSteps} />
 
-            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <ServicesBrands />
-            </div>
-
-            <section className="bg-slate-50 py-16">
-                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div>
-                            <h2 className="text-3xl font-black text-slate-900 mb-6">Why Nepal trusts our service</h2>
-                            <div className="flex flex-col gap-6">
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">5k+</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Happy Customers</h4>
-                                        <p className="text-sm text-slate-500">Across Kathmandu, Lalitpur, and Bhaktapur.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">10+</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Years Experience</h4>
-                                        <p className="text-sm text-slate-500">Serving the industry with dedication.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">24/7</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Emergency Support</h4>
-                                        <p className="text-sm text-slate-500">Always available for urgent repairs.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative">
-                            <span className="material-symbols-outlined text-6xl text-primary/10 absolute top-4 right-4">format_quote</span>
-                            <p className="text-lg text-slate-600 italic mb-6 relative z-10">"The team was incredibly professional. They installed our office AC system in one day and left the place spotless. Highly recommended!"</p>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 bg-cover bg-center" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuABFDq2boqSreVjEIXWTgDLRMQ_RYSX41ayzLdnNYJMJbFtH4HzmhK3i3w8-QX85BECmTiey8ai1BxoROX4KD4Mn59_fOLLNJkVpQRE95w9N62vGtPM5JRVmmqG4cTP1OkiZaTQ-n77i5lJNDYyk869p308_2wrBUPfm3j9gJqYo-f89NoLkMTlb2GPv2Qvj-OGfU6OEhFuZebu3LWWpRx5tPOMC3cVtUQJedhHp5pU-0KGNf882TAwuj79STj2BHSRH7yAkvqQXoA')` }} />
-                                <div>
-                                    <h5 className="font-bold text-slate-900 text-sm">Rajesh Hamal</h5>
-                                    <p className="text-xs text-slate-500">Business Owner, Thamel</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <CTASection data={data.cta} />
+
+            <ServicesBrands brands={data.brands} />
+
+            <TrustSection data={data.trust} />
+
+            <ServicesFeatureStrip features={data.features} />
+
+            <ServicesOverview services={services} />
+            <ServiceDetails services={services} />
         </main>
     );
 }
