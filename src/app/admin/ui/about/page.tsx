@@ -18,6 +18,9 @@ export default function AboutPageUI() {
     const [principles, setPrinciples] = useState<any[]>([]);
     const [teamSectionData, setTeamSectionData] = useState<any>({});
     const [teamMembers, setTeamMembers] = useState<any[]>([]);
+    const [certifications, setCertifications] = useState<any[]>([]);
+    const [certificationsSectionData, setCertificationsSectionData] = useState<any>({});
+    const [badges, setBadges] = useState<any[]>([]);
     const [ctaData, setCtaData] = useState<any>({});
 
     // Track deleted items to remove from DB on save
@@ -25,6 +28,8 @@ export default function AboutPageUI() {
     const [deletedFeatures, setDeletedFeatures] = useState<number[]>([]);
     const [deletedPrinciples, setDeletedPrinciples] = useState<number[]>([]);
     const [deletedTeamMembers, setDeletedTeamMembers] = useState<number[]>([]);
+    const [deletedCertifications, setDeletedCertifications] = useState<number[]>([]);
+    const [deletedBadges, setDeletedBadges] = useState<number[]>([]);
 
     // --- Fetch Data ---
     useEffect(() => {
@@ -35,6 +40,9 @@ export default function AboutPageUI() {
                     journeyRes,
                     statsRes,
                     featuresRes,
+                    badgesRes,
+                    certSectionRes,
+                    certificationsRes,
                     philosophyRes,
                     principlesRes,
                     teamSectionRes,
@@ -45,6 +53,9 @@ export default function AboutPageUI() {
                     fetch('/api/pages/about/journey'),
                     fetch('/api/pages/about/stats'),
                     fetch('/api/pages/about/features'),
+                    fetch('/api/pages/about/badges'),
+                    fetch('/api/pages/about/certifications-section'),
+                    fetch('/api/pages/about/certifications'),
                     fetch('/api/pages/about/philosophy'),
                     fetch('/api/pages/about/principles'),
                     fetch('/api/pages/about/team-section'),
@@ -56,6 +67,9 @@ export default function AboutPageUI() {
                 if (journeyRes.ok) setJourneyData(await journeyRes.json());
                 if (statsRes.ok) setStats(await statsRes.json());
                 if (featuresRes.ok) setFeatures(await featuresRes.json());
+                if (badgesRes.ok) setBadges(await badgesRes.json());
+                if (certSectionRes.ok) setCertificationsSectionData(await certSectionRes.json());
+                if (certificationsRes.ok) setCertifications(await certificationsRes.json());
                 if (philosophyRes.ok) setPhilosophyData(await philosophyRes.json());
                 if (principlesRes.ok) setPrinciples(await principlesRes.json());
                 if (teamSectionRes.ok) setTeamSectionData(await teamSectionRes.json());
@@ -108,6 +122,24 @@ export default function AboutPageUI() {
                     });
                 }
 
+                // Certifications: require name at minimum
+                if (url.endsWith('/certifications')) {
+                    items.forEach((item, idx) => {
+                        if (!item.name || String(item.name).trim() === '') {
+                            throw new Error(`Certification at position ${idx + 1} is missing required field: name`);
+                        }
+                    });
+                }
+
+                // Badges: require name at minimum
+                if (url.endsWith('/badges')) {
+                    items.forEach((item, idx) => {
+                        if (!item.name || String(item.name).trim() === '') {
+                            throw new Error(`Badge at position ${idx + 1} is missing required field: name`);
+                        }
+                    });
+                }
+
                 // Save/Update current items
                 for (const item of items) {
                     await saveSection(url, item);
@@ -119,12 +151,19 @@ export default function AboutPageUI() {
                 saveSection('/api/pages/about/journey', journeyData),
                 saveList('/api/pages/about/stats', stats, deletedStats),
                 saveList('/api/pages/about/features', features, deletedFeatures),
+                saveList('/api/pages/about/badges', badges, deletedBadges),
+                saveSection('/api/pages/about/certifications-section', certificationsSectionData),
+                saveList('/api/pages/about/certifications', certifications, deletedCertifications),
                 saveSection('/api/pages/about/philosophy', philosophyData),
                 saveList('/api/pages/about/principles', principles, deletedPrinciples),
                 saveSection('/api/pages/about/team-section', teamSectionData),
                 saveList('/api/pages/about/team-members', teamMembers, deletedTeamMembers),
                 saveSection('/api/pages/about/cta', ctaData),
             ]);
+
+            // Clear deleted lists after successful save
+            setDeletedCertifications([]);
+            setDeletedBadges([]);
 
             // Clear deleted lists after successful save
             setDeletedStats([]);
@@ -174,6 +213,8 @@ export default function AboutPageUI() {
     const tabs = [
         { id: "hero", label: "Hero" },
         { id: "journey", label: "Journey" },
+        { id: "badges", label: "Badges" },
+        { id: "certifications", label: "Certifications" },
         { id: "philosophy", label: "Philosophy" },
         { id: "team", label: "Team" },
         { id: "cta", label: "CTA" },
@@ -304,6 +345,9 @@ export default function AboutPageUI() {
                                     <TextAreaGroup label="Paragraph 2" value={journeyData.paragraph2 || ''} onChange={(v) => setJourneyData({ ...journeyData, paragraph2: v })} />
                                     <InputGroup label="Thinking Box Title" value={journeyData.thinking_box_title || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_title: v })} />
                                     <TextAreaGroup label="Thinking Box Content" value={journeyData.thinking_box_content || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_content: v })} />
+
+                                    <ImageUploader label="Section Image" value={journeyData.hero_image || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image: v })} folder="about/journey" />
+                                    <InputGroup label="Section Image Alt Text" value={journeyData.hero_image_alt || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image_alt: v })} />
                                 </div>
 
                                 {/* Stats List */}
@@ -365,6 +409,7 @@ export default function AboutPageUI() {
                                                 </button>
                                             </div>
                                             <div className="space-y-4">
+                                                <InputGroup label="Icon (material)" value={feature.icon || ''} onChange={(v) => updateItem(idx, 'icon', v, features, setFeatures)} />
                                                 <InputGroup label="Title" value={feature.title || ''} onChange={(v) => updateItem(idx, 'title', v, features, setFeatures)} />
                                                 <TextAreaGroup label="Description" value={feature.description || ''} onChange={(v) => updateItem(idx, 'description', v, features, setFeatures)} />
                                                 <div className="grid grid-cols-2 gap-4">
@@ -482,6 +527,101 @@ export default function AboutPageUI() {
                                                         <Toggle checked={member.is_active === 1} onChange={(c) => updateItem(idx, 'is_active', c ? 1 : 0, teamMembers, setTeamMembers)} />
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Badges SECTION */}
+                    {activeTab === "badges" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-amber-500">military_tech</span>
+                                    Badges / Manufacturers
+                                </h2>
+
+                                <div className="flex items-center justify-between px-2 mb-4">
+                                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Badges</h3>
+                                    <button onClick={() => addItem(badges, setBadges, { name: '', logo: '', link: '' })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Badge
+                                    </button>
+                                </div>
+
+                                {badges.map((b, idx) => (
+                                    <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow group mb-4">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
+                                            <button
+                                                onClick={() => {
+                                                    if (badges[idx] && badges[idx].id) setDeletedBadges([...deletedBadges, badges[idx].id]);
+                                                    setBadges(badges.filter((_, i) => i !== idx));
+                                                }}
+                                                className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <InputGroup label="Name" value={b.name || ''} onChange={(v) => updateItem(idx, 'name', v, badges, setBadges)} />
+                                            <InputGroup label="Link" value={b.link || ''} onChange={(v) => updateItem(idx, 'link', v, badges, setBadges)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 mt-4">
+                                            <ImageUploader label="Logo" value={b.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, badges, setBadges)} folder="about/badges" />
+                                            <InputGroup label="Display Order" value={String(b.display_order || idx + 1)} onChange={(v) => updateItem(idx, 'display_order', Number(v), badges, setBadges)} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Certifications SECTION */}
+                    {activeTab === "certifications" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sky-500">verified</span>
+                                    Certifications / Clients
+                                </h2>
+
+                                {/* Section header (title/subtitle) */}
+                                <div className="space-y-4 mb-6">
+                                    <InputGroup label="Section Title" value={certificationsSectionData.title || ''} onChange={(v) => setCertificationsSectionData({ ...certificationsSectionData, title: v })} />
+                                    <TextAreaGroup label="Section Subtitle" value={certificationsSectionData.subtitle || ''} onChange={(v) => setCertificationsSectionData({ ...certificationsSectionData, subtitle: v })} />
+                                </div>
+
+                                <div className="mt-4">
+                                    <div className="flex items-center justify-between px-2 mb-4">
+                                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Certifications</h3>
+                                        <button onClick={() => addItem(certifications, setCertifications, { name: '', logo: '', link: '' })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Certification
+                                        </button>
+                                    </div>
+                                    {certifications.map((c, idx) => (
+                                        <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow group mb-4">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        if (certifications[idx] && certifications[idx].id) setDeletedCertifications([...deletedCertifications, certifications[idx].id]);
+                                                        setCertifications(certifications.filter((_, i) => i !== idx));
+                                                    }}
+                                                    className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <span className="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <InputGroup label="Name" value={c.name || ''} onChange={(v) => updateItem(idx, 'name', v, certifications, setCertifications)} />
+                                                <InputGroup label="Link" value={c.link || ''} onChange={(v) => updateItem(idx, 'link', v, certifications, setCertifications)} />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4 mt-4">
+                                                <ImageUploader label="Logo" value={c.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, certifications, setCertifications)} folder="about/certifications" />
+                                                <InputGroup label="Display Order" value={String(c.display_order || idx + 1)} onChange={(v) => updateItem(idx, 'display_order', Number(v), certifications, setCertifications)} />
                                             </div>
                                         </div>
                                     ))}

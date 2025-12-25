@@ -35,7 +35,7 @@ type ServicePost = {
 };
 
 export default function ServicesManagerPage() {
-    const [activeTab, setActiveTab] = useState("services");
+    const [activeTab, setActiveTab] = useState("hero");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -573,14 +573,16 @@ export default function ServicesManagerPage() {
         return matchesSearch && matchesStatus;
     });
 
+    // Arrange tabs to match frontend services page order:
+    // Hero -> Features -> Services -> Process -> Brands -> Trust -> CTA
     const tabs = [
-        { id: "services", label: "Services", icon: "design_services" },
         { id: "hero", label: "Hero", icon: "web_asset" },
+        { id: "features", label: "Features", icon: "view_timeline" },
+        { id: "services", label: "Services", icon: "design_services" },
         { id: "process", label: "Process", icon: "settings_suggest" },
-        { id: "cta", label: "CTA", icon: "campaign" },
         { id: "brands", label: "Brands", icon: "support_agent" },
         { id: "trust", label: "Trust", icon: "thumb_up" },
-        { id: "features", label: "Features", icon: "view_timeline" },
+        { id: "cta", label: "CTA", icon: "campaign" },
     ];
 
     if (loading) return <div className="p-10 text-center">Loading...</div>;
@@ -632,6 +634,88 @@ export default function ServicesManagerPage() {
 
                 {/* Content */}
                 <div className="max-w-7xl mx-auto">
+
+                    {/* HERO SECTION */}
+                    {activeTab === "hero" && (
+                        <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                            <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v: string) => setHeroData({ ...heroData, badge_text: v })} />
+                            <InputGroup label="Tagline" value={heroData.tagline || ''} onChange={(v: string) => setHeroData({ ...heroData, tagline: v })} />
+                            <InputGroup label="Title" value={heroData.title || ''} onChange={(v: string) => setHeroData({ ...heroData, title: v })} />
+                            <TextAreaGroup label="Description" value={heroData.description || ''} onChange={(v: string) => setHeroData({ ...heroData, description: v })} />
+                            <InputGroup label="Highlight Text (substring to emphasize)" value={heroData.highlight_text || ''} onChange={(v: string) => setHeroData({ ...heroData, highlight_text: v })} />
+
+                            <div className="grid grid-cols-2 gap-5">
+                                <InputGroup label="Primary CTA Text" value={heroData.primary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_text: v })} />
+                                <InputGroup label="Primary CTA Link" value={heroData.primary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_link: v })} />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-5">
+                                <InputGroup label="Secondary CTA Text" value={heroData.secondary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_text: v })} />
+                                <InputGroup label="Secondary CTA Link" value={heroData.secondary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_link: v })} />
+                            </div>
+
+                            <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" />
+                            <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v: string) => setHeroData({ ...heroData, hero_image_alt: v })} />
+
+                            <div className="grid gap-5">
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 1 Value" value={heroData.stat1_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_value: v })} />
+                                    <InputGroup label="Stat 1 Label" value={heroData.stat1_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_label: v })} />
+                                </div>
+
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 2 Value" value={heroData.stat2_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_value: v })} />
+                                    <InputGroup label="Stat 2 Label" value={heroData.stat2_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_label: v })} />
+                                </div>
+
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 3 Value" value={heroData.stat3_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_value: v })} />
+                                    <InputGroup label="Stat 3 Label" value={heroData.stat3_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_label: v })} />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                <Toggle checked={heroData.is_active === 1} onChange={(c: boolean) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FEATURES SECTION */}
+                    {activeTab === "features" && (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">Feature Items</h3>
+                                <button
+                                    onClick={() => setFeaturesList([...featuresList, { icon: 'star', title: 'New Feature', description: '', display_order: featuresList.length + 1, is_active: 1 }])}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                >
+                                    <span className="material-symbols-outlined">add</span> Add Feature
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {featuresList.map((f, idx) => (
+                                    <div key={f.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                        <InputGroup label="Icon (material)" value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
+                                        <InputGroup label="Title" value={f.title} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], title: v }; setFeaturesList(copy); }} />
+                                        <TextAreaGroup label="Description" value={f.description || ''} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], description: v }; setFeaturesList(copy); }} />
+                                        <div className="flex gap-2 items-center">
+                                            <InputGroup label="Order" value={(f.display_order || 0).toString()} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setFeaturesList(copy); }} />
+                                            <div className="pt-2">
+                                                <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
+                                                <Toggle checked={f.is_active === 1} onChange={(c: boolean) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setFeaturesList(copy); }} />
+                                            </div>
+                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); setFeaturesList(copy); }}>
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* SERVICES SECTION */}
                     {activeTab === "services" && (
                         <div className="space-y-6">
@@ -700,52 +784,6 @@ export default function ServicesManagerPage() {
                                     ))}
                                 </div>
                             )}
-                        </div>
-                    )}
-
-                    {/* HERO SECTION */}
-                    {activeTab === "hero" && (
-                        <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                            <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v: string) => setHeroData({ ...heroData, badge_text: v })} />
-                            <InputGroup label="Tagline" value={heroData.tagline || ''} onChange={(v: string) => setHeroData({ ...heroData, tagline: v })} />
-                            <InputGroup label="Title" value={heroData.title || ''} onChange={(v: string) => setHeroData({ ...heroData, title: v })} />
-                            <TextAreaGroup label="Description" value={heroData.description || ''} onChange={(v: string) => setHeroData({ ...heroData, description: v })} />
-                            <InputGroup label="Highlight Text (substring to emphasize)" value={heroData.highlight_text || ''} onChange={(v: string) => setHeroData({ ...heroData, highlight_text: v })} />
-
-                            <div className="grid grid-cols-2 gap-5">
-                                <InputGroup label="Primary CTA Text" value={heroData.primary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_text: v })} />
-                                <InputGroup label="Primary CTA Link" value={heroData.primary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_link: v })} />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-5">
-                                <InputGroup label="Secondary CTA Text" value={heroData.secondary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_text: v })} />
-                                <InputGroup label="Secondary CTA Link" value={heroData.secondary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_link: v })} />
-                            </div>
-
-                            <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" />
-                            <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v: string) => setHeroData({ ...heroData, hero_image_alt: v })} />
-
-                            <div className="grid gap-5">
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 1 Value" value={heroData.stat1_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_value: v })} />
-                                    <InputGroup label="Stat 1 Label" value={heroData.stat1_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_label: v })} />
-                                </div>
-
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 2 Value" value={heroData.stat2_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_value: v })} />
-                                    <InputGroup label="Stat 2 Label" value={heroData.stat2_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_label: v })} />
-                                </div>
-
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 3 Value" value={heroData.stat3_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_value: v })} />
-                                    <InputGroup label="Stat 3 Label" value={heroData.stat3_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_label: v })} />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
-                                <span className="text-sm font-medium text-gray-700">Enable Section</span>
-                                <Toggle checked={heroData.is_active === 1} onChange={(c: boolean) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
-                            </div>
                         </div>
                     )}
 
@@ -881,41 +919,6 @@ export default function ServicesManagerPage() {
                                     <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                     <Toggle checked={trustData.is_active === 1} onChange={(c: boolean) => setTrustData({ ...trustData, is_active: c ? 1 : 0 })} />
                                 </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* FEATURES SECTION */}
-                    {activeTab === "features" && (
-                        <div className="space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-gray-900">Feature Items</h3>
-                                <button
-                                    onClick={() => setFeaturesList([...featuresList, { icon: 'star', title: 'New Feature', description: '', display_order: featuresList.length + 1, is_active: 1 }])}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                >
-                                    <span className="material-symbols-outlined">add</span> Add Feature
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {featuresList.map((f, idx) => (
-                                    <div key={f.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
-                                        <InputGroup label="Icon (material)" value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
-                                        <InputGroup label="Title" value={f.title} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], title: v }; setFeaturesList(copy); }} />
-                                        <TextAreaGroup label="Description" value={f.description || ''} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], description: v }; setFeaturesList(copy); }} />
-                                        <div className="flex gap-2 items-center">
-                                            <InputGroup label="Order" value={(f.display_order || 0).toString()} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setFeaturesList(copy); }} />
-                                            <div className="pt-2">
-                                                <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
-                                                <Toggle checked={f.is_active === 1} onChange={(c: boolean) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setFeaturesList(copy); }} />
-                                            </div>
-                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); setFeaturesList(copy); }}>
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     )}

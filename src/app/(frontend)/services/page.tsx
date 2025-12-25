@@ -16,25 +16,21 @@ export const fetchCache = 'force-no-store';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 async function getServicesPageData() {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
     try {
         const [
             heroRes,
             detailsRes,
             processSectionRes,
             processStepsRes,
-            ctaRes,
-            brandsRes,
-            trustRes,
-            featuresRes,
+            ctaRes
         ] = await Promise.all([
             fetch(`${API_BASE}/api/pages/services/hero`, { next: { tags: ['services-hero'] } }),
             fetch(`${API_BASE}/api/pages/services/details`, { next: { tags: ['services-details'] } }),
             fetch(`${API_BASE}/api/pages/services/process-section`, { next: { tags: ['services-process-section'] } }),
             fetch(`${API_BASE}/api/pages/services/process-steps`, { next: { tags: ['services-process-steps'] } }),
             fetch(`${API_BASE}/api/pages/services/cta`, { next: { tags: ['services-cta'] } }),
-            fetch(`${API_BASE}/api/pages/services/brands`, { next: { tags: ['services-brands'] } }),
-            fetch(`${API_BASE}/api/pages/services/trust`, { next: { tags: ['services-trust'] } }),
-            fetch(`${API_BASE}/api/pages/services/features`, { next: { tags: ['services-features'] } }),
         ]);
 
         const hero = heroRes.ok ? await heroRes.json() : null;
@@ -42,9 +38,6 @@ async function getServicesPageData() {
         const processSection = processSectionRes.ok ? await processSectionRes.json() : null;
         const processSteps = processStepsRes.ok ? await processStepsRes.json() : [];
         const cta = ctaRes.ok ? await ctaRes.json() : null;
-        const brands = brandsRes.ok ? await brandsRes.json() : [];
-        const trust = trustRes.ok ? await trustRes.json() : null;
-        const features = featuresRes.ok ? await featuresRes.json() : [];
 
         return {
             hero,
@@ -52,11 +45,11 @@ async function getServicesPageData() {
             processSection,
             processSteps,
             cta,
-            brands,
-            trust,
-            features,
         };
     } catch (error) {
+        // Log only the error message to avoid printing full Error objects which can
+        // trigger source-map parsing in the server dev bundle and produce confusing
+        // "Invalid source map" messages.
         console.error('Error fetching services page data:', (error as Error)?.message || String(error));
         return {
             hero: null,
@@ -64,9 +57,6 @@ async function getServicesPageData() {
             processSection: null,
             processSteps: [],
             cta: null,
-            brands: [],
-            trust: null,
-            features: [],
         };
     }
 }
@@ -136,21 +126,18 @@ export default async function ServicesPage() {
     return (
         <main className="page-bg grow ">
             <HeroSection data={data.hero} />
-
-            {/* Reordered to match Admin UI: Process -> CTA -> Brands -> Trust -> Features -> Services Overview/Details */}
-
-            <ProcessSection section={data.processSection} steps={data.processSteps} />
-
-            <CTASection data={data.cta} />
-
-            <ServicesBrands brands={data.brands} />
-
-            <TrustSection data={data.trust} />
-
-            <ServicesFeatureStrip features={data.features} />
-
+            <ServicesFeatureStrip />
             <ServicesOverview services={services} />
             <ServiceDetails services={services} />
+            <ProcessSection section={data.processSection} steps={data.processSteps} />
+
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <ServicesBrands />
+            </div>
+
+            <TrustSection />
+
+            <CTASection data={data.cta} />
         </main>
     );
 }

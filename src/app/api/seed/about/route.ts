@@ -9,6 +9,9 @@ import {
     aboutPagePrinciples,
     aboutPageTeamSection,
     aboutPageTeamMembers,
+    aboutPageCertifications,
+    aboutPageCertificationsSection,
+    aboutPageBadges,
     aboutPageCTA
 } from '@/db/aboutPageSchema';
 
@@ -23,6 +26,9 @@ export async function POST() {
         await db.delete(aboutPagePrinciples);
         await db.delete(aboutPageTeamMembers);
         await db.delete(aboutPageTeamSection);
+        await db.delete(aboutPageCertifications);
+        await db.delete(aboutPageCertificationsSection);
+        await db.delete(aboutPageBadges);
         await db.delete(aboutPageCTA);
 
         // Seed Hero Section
@@ -61,6 +67,8 @@ export async function POST() {
             paragraph2: 'We envisioned something better—content that tells stories, sparks emotions, and builds genuine connections. Today, we work with businesses across industries to create content strategies that not only attract attention but also inspire action and loyalty.',
             thinking_box_title: 'Our Thinking',
             thinking_box_content: 'We believe in the power of authenticity. In an age of algorithms and automation, human connection is what truly matters. We write with empathy, strategy, and a relentless focus on delivering value to your audience.',
+            hero_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDda5biMwpMvtX_h7btShwaroEUJ1ijOwryycUDayNUEpgCs5Get0Ep6MoDB5u_3rw9c-R5gRyZWYnGqHuoiqBOTd3JUyVZuq0UUXI8R2BUjuY5HIq_-4V_ckfdOBetgRgNaf-rpTdE7AtC-rxH-KYR9y4D8oTpDqs_FSBTaaWChdJ0ilJKnKdEc2PzxxHoZixugfmxmKMdJ_Stnxg81KaJVzEjzoOwjuv-RFS4_nBIQkPZForGEXJHgs8q0H05VzwwvwgkkURRlMg',
+            hero_image_alt: 'Team of professional HVAC technicians in blue uniforms discussing a blueprint',
             is_active: 1,
         });
 
@@ -78,14 +86,39 @@ export async function POST() {
 
         // Seed Features
         const features = [
-            { title: 'Tailored Strategies', description: 'Every project is unique. We craft custom content strategies that align with your goals.', display_order: 1, is_active: 1 },
-            { title: 'Experienced Team', description: 'Our writers, strategists, and editors bring years of expertise across diverse industries.', display_order: 2, is_active: 1 },
-            { title: 'Results-Driven', description: 'We measure success through your growth—more traffic, engagement, and conversions.', display_order: 3, is_active: 1 },
-            { title: 'Full-Service', description: 'From strategy to execution, we handle every aspect of your content journey.', display_order: 4, is_active: 1 },
+            { title: 'Tailored Strategies', description: 'Every project is unique. We craft custom content strategies that align with your goals.', icon: 'support_agent', display_order: 1, is_active: 1 },
+            { title: 'Experienced Team', description: 'Our writers, strategists, and editors bring years of expertise across diverse industries.', icon: 'verified_user', display_order: 2, is_active: 1 },
+            { title: 'Results-Driven', description: 'We measure success through your growth—more traffic, engagement, and conversions.', icon: 'amp_stories', display_order: 3, is_active: 1 },
+            { title: 'Full-Service', description: 'From strategy to execution, we handle every aspect of your content journey.', icon: 'build_circle', display_order: 4, is_active: 1 },
         ];
 
         for (const feature of features) {
             await db.insert(aboutPageFeatures).values(feature);
+        }
+
+        // Seed Certifications (clients)
+        const certifications = [
+            { name: 'Hotel Himalaya', logo: '', link: '/', display_order: 1, is_active: 1 },
+            { name: 'Nepal Bank', logo: '', link: '/', display_order: 2, is_active: 1 },
+            { name: 'City Hospital', logo: '', link: '/', display_order: 3, is_active: 1 },
+            { name: 'Kathmandu Uni', logo: '', link: '/', display_order: 4, is_active: 1 },
+        ];
+
+        for (const c of certifications) {
+            await db.insert(aboutPageCertifications).values(c);
+        }
+
+        // Seed Certifications Section (title/subtitle)
+        await db.insert(aboutPageCertificationsSection).values({ title: 'Trusted by Industry Leaders', subtitle: 'Authorized Sales & Service Partners for Major Global Brands', is_active: 1 });
+
+        // Seed Badges (manufacturers)
+        const badges = [
+            { name: 'Brand A', logo: '', link: '/', display_order: 1, is_active: 1 },
+            { name: 'Brand B', logo: '', link: '/', display_order: 2, is_active: 1 },
+            { name: 'Brand C', logo: '', link: '/', display_order: 3, is_active: 1 },
+        ];
+        for (const b of badges) {
+            await db.insert(aboutPageBadges).values(b);
         }
 
         // Seed Philosophy Section

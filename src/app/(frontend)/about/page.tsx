@@ -19,6 +19,9 @@ async function getAboutPageData() {
             principlesRes,
             teamSectionRes,
             teamMembersRes,
+            certificationsRes,
+            certificationsSectionRes,
+            badgesRes,
             ctaRes
         ] = await Promise.all([
             fetch(`${baseUrl}/api/pages/about/hero`, { next: { tags: ['about-hero'] } }),
@@ -29,6 +32,9 @@ async function getAboutPageData() {
             fetch(`${baseUrl}/api/pages/about/principles`, { next: { tags: ['about-principles'] } }),
             fetch(`${baseUrl}/api/pages/about/team-section`, { next: { tags: ['about-team-section'] } }),
             fetch(`${baseUrl}/api/pages/about/team-members`, { next: { tags: ['about-team-members'] } }),
+            fetch(`${baseUrl}/api/pages/about/certifications`, { next: { tags: ['about-certifications'] } }),
+            fetch(`${baseUrl}/api/pages/about/certifications-section`, { next: { tags: ['about-certifications-section'] } }),
+            fetch(`${baseUrl}/api/pages/about/badges`, { next: { tags: ['about-badges'] } }),
             fetch(`${baseUrl}/api/pages/about/cta`, { next: { tags: ['about-cta'] } }),
         ]);
 
@@ -40,6 +46,9 @@ async function getAboutPageData() {
         const principles = principlesRes.ok ? await principlesRes.json() : [];
         const teamSection = teamSectionRes.ok ? await teamSectionRes.json() : null;
         const teamMembers = teamMembersRes.ok ? await teamMembersRes.json() : [];
+        const certifications = certificationsRes.ok ? await certificationsRes.json() : [];
+        const certificationsSection = certificationsSectionRes.ok ? await certificationsSectionRes.json() : null;
+        const badges = badgesRes.ok ? await badgesRes.json() : [];
         const cta = ctaRes.ok ? await ctaRes.json() : null;
 
         return {
@@ -51,6 +60,9 @@ async function getAboutPageData() {
             principles,
             teamSection,
             teamMembers,
+            certifications,
+            certificationsSection,
+            badges,
             cta,
         };
     } catch (error) {
@@ -76,13 +88,13 @@ export default async function AboutPage() {
         <main className="flex flex-col items-center page-bg">
             <div className="flex flex-col w-full">
                 <AboutHero data={data.hero} />
-                <AboutJourney section={data.journey} stats={data.stats} features={data.features} />
+                <AboutJourney section={data.journey} stats={data.stats} features={data.features} badges={data.badges} certifications={data.certifications} certificationsSection={data.certificationsSection} />
                 <AboutPhilosophy section={data.philosophy} principles={data.principles} />
                 <TeamSection section={data.teamSection} members={data.teamMembers} />
                 <TestimonialSlider
                     filter="about"
-                    title="Trusted by Industry Leaders"
-                    subtitle="See what our partners and clients have to say about working with us"
+                    title={data.certificationsSection?.title || ''}
+                    subtitle={data.certificationsSection?.subtitle || ''}
                 />
                 <AboutCTA data={data.cta} />
             </div>

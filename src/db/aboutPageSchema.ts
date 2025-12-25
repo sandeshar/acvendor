@@ -36,6 +36,9 @@ export const aboutPageJourney = mysqlTable("about_page_journey", {
     paragraph2: varchar("paragraph2", { length: 1024 }).notNull(),
     thinking_box_title: varchar("thinking_box_title", { length: 256 }).notNull(),
     thinking_box_content: varchar("thinking_box_content", { length: 1024 }).notNull(),
+    // Section image
+    hero_image: varchar("hero_image", { length: 512 }).notNull().default(''),
+    hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull().default(''),
     is_active: int("is_active").default(1).notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
@@ -52,9 +55,43 @@ export const aboutPageStats = mysqlTable("about_page_stats", {
 
 export const aboutPageFeatures = mysqlTable("about_page_features", {
     id: int("id").primaryKey().autoincrement(),
+    icon: varchar("icon", { length: 128 }).notNull().default(''),
     title: varchar("title", { length: 256 }).notNull(),
     description: varchar("description", { length: 512 }).notNull(),
     display_order: int("display_order").notNull(),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// About Page Certifications (clients / partners)
+export const aboutPageCertifications = mysqlTable("about_page_certifications", {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 256 }).notNull(),
+    logo: varchar("logo", { length: 512 }).notNull().default(''),
+    link: varchar("link", { length: 512 }).notNull().default(''),
+    display_order: int("display_order").notNull().default(0),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Certifications Section metadata (title/subtitle)
+export const aboutPageCertificationsSection = mysqlTable("about_page_certifications_section", {
+    id: int("id").primaryKey().autoincrement(),
+    title: varchar("title", { length: 256 }).notNull().default(''),
+    subtitle: varchar("subtitle", { length: 512 }).notNull().default(''),
+    is_active: int("is_active").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// About Page Badges (manufacturers/partner logos shown elsewhere)
+export const aboutPageBadges = mysqlTable("about_page_badges", {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 256 }).notNull(),
+    logo: varchar("logo", { length: 512 }).notNull().default(''),
+    link: varchar("link", { length: 512 }).notNull().default(''),
+    display_order: int("display_order").notNull().default(0),
     is_active: int("is_active").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),

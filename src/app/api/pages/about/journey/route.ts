@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, is_active = 1 } = body;
+        const { title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, hero_image = '', hero_image_alt = '', is_active = 1 } = body;
 
         if (!title || !paragraph1 || !paragraph2 || !thinking_box_title || !thinking_box_content) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
             paragraph2,
             thinking_box_title,
             thinking_box_content,
+            hero_image,
+            hero_image_alt,
             is_active,
         });
 
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, is_active } = body;
+        const { id, title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, hero_image, hero_image_alt, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -78,6 +80,8 @@ export async function PUT(request: NextRequest) {
         if (paragraph2 !== undefined) updateData.paragraph2 = paragraph2;
         if (thinking_box_title !== undefined) updateData.thinking_box_title = thinking_box_title;
         if (thinking_box_content !== undefined) updateData.thinking_box_content = thinking_box_content;
+        if (hero_image !== undefined) updateData.hero_image = hero_image;
+        if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await db.update(aboutPageJourney).set(updateData).where(eq(aboutPageJourney.id, id));

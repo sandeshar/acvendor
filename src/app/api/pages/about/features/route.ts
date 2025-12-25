@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { title, description, display_order, is_active = 1 } = body;
+        const { title, description, icon = '', display_order, is_active = 1 } = body;
 
         if (!title || !description || display_order === undefined) {
             return NextResponse.json({ error: 'Title, description, and display_order are required' }, { status: 400 });
         }
 
-        const result = await db.insert(aboutPageFeatures).values({ title, description, display_order, is_active });
+        const result = await db.insert(aboutPageFeatures).values({ title, description, icon, display_order, is_active });
         revalidateTag('about-features', 'max');
         return NextResponse.json(
             { success: true, message: 'Feature created successfully', id: result[0].insertId },
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, title, description, display_order, is_active } = body;
+        const { id, title, description, icon, display_order, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -66,6 +66,7 @@ export async function PUT(request: NextRequest) {
         const updateData: any = {};
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
+        if (icon !== undefined) updateData.icon = icon;
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
