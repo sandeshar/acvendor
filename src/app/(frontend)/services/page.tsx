@@ -97,7 +97,7 @@ async function getServicesPageData() {
             testimonial: null,
         };
     }
-} 
+}
 
 function mergeServiceDetailsWithPosts(details: any[], posts: any[]) {
     const normalizedDetails = (details || []).map((detail) => ({
