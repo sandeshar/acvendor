@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['name','logo','link','display_order','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['name', 'logo', 'link', 'display_order', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await db.update(aboutPageCertifications).set(update).where(eq(aboutPageCertifications.id, id));
         revalidateTag('about-certifications', 'max');
         return NextResponse.json({ success: true });
