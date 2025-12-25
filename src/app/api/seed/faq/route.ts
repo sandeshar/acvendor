@@ -18,7 +18,7 @@ export async function POST() {
         // Seed Header Section
         await db.insert(faqPageHeader).values({
             title: 'Frequently Asked Questions',
-            description: "Answers to common questions about our content marketing services. Find what you're looking for or get in touch with our team.",
+            description: "Answers to common questions about products, shipping, installation, and warranty. If you don't find your answer, contact our support team.",
             search_placeholder: 'Search for a question...',
             is_active: 1,
         });
@@ -26,9 +26,9 @@ export async function POST() {
         // Seed Categories
         const categories = [
             { name: 'General', display_order: 1, is_active: 1 },
-            { name: 'Services', display_order: 2, is_active: 1 },
-            { name: 'Pricing', display_order: 3, is_active: 1 },
-            { name: 'Process', display_order: 4, is_active: 1 },
+            { name: 'Orders & Shipping', display_order: 2, is_active: 1 },
+            { name: 'Installation', display_order: 3, is_active: 1 },
+            { name: 'Warranty', display_order: 4, is_active: 1 },
         ];
 
         const categoryIds: number[] = [];
@@ -41,44 +41,37 @@ export async function POST() {
         const faqItemsData = [
             {
                 category_id: categoryIds[0], // General
-                question: 'What is content marketing and why is it important?',
-                answer: 'Content marketing is a strategic marketing approach focused on creating and distributing valuable, relevant, and consistent content to attract and retain a clearly defined audience — and, ultimately, to drive profitable customer action. It helps build trust, generate leads, and establish your brand as an authority in your industry.',
+                question: 'Where are you located and what are your hours?',
+                answer: 'We are based in Kathmandu and operate Monday through Saturday. Contact us for support and sales inquiries.',
                 display_order: 1,
                 is_active: 1,
             },
             {
-                category_id: categoryIds[1], // Services
-                question: 'What types of content do you create?',
-                answer: 'We specialize in a wide range of content formats, including blog posts, articles, website copy, social media content, email newsletters, case studies, and white papers. We tailor the content type to your specific goals and target audience.',
+                category_id: categoryIds[1], // Orders & Shipping
+                question: 'How long does shipping take?',
+                answer: 'Standard shipping is 2-5 business days depending on the product and your location. Expedited options are available at checkout.',
                 display_order: 2,
                 is_active: 1,
             },
             {
-                category_id: categoryIds[2], // Pricing
-                question: 'How do you determine the pricing for your services?',
-                answer: 'Our pricing is based on the scope of the project, including the type and volume of content, the level of research required, and the overall strategy involved. We offer project-based pricing as well as monthly retainer packages. Contact us for a custom quote.',
+                category_id: categoryIds[2], // Installation
+                question: 'Do you provide installation services?',
+                answer: 'Yes. We offer professional installation by certified technicians; you can request an installation appointment during checkout or contact our support team.',
                 display_order: 3,
                 is_active: 1,
             },
             {
-                category_id: categoryIds[3], // Process
-                question: 'What is your content creation process like?',
-                answer: 'Our process begins with a discovery call to understand your business and goals. We then move to strategy and planning, followed by content creation, editing, and your review. Once approved, we help with publishing and promotion.',
+                category_id: categoryIds[3], // Warranty
+                question: 'What warranty do your products have?',
+                answer: 'Warranty varies by product and brand. Many AC units include a 1–5 year warranty on parts and compressor. Check the product page or contact support for details.',
                 display_order: 4,
                 is_active: 1,
             },
             {
-                category_id: categoryIds[1], // Services
-                question: 'Can I request revisions to the content you provide?',
-                answer: 'Absolutely. We value your feedback. All of our packages include a set number of revision rounds to ensure the final content aligns perfectly with your vision and brand voice.',
+                category_id: categoryIds[1], // Orders & Shipping
+                question: 'Can I return or exchange a product?',
+                answer: 'Returns and exchanges are handled according to our returns policy. Please contact support to start the process.',
                 display_order: 5,
-                is_active: 1,
-            },
-            {
-                category_id: categoryIds[1], // Services
-                question: 'Do you offer SEO services with your content?',
-                answer: 'Yes, all our content is created with SEO best practices in mind. This includes keyword research, on-page optimization, and creating content that is structured to rank well in search engines.',
-                display_order: 6,
                 is_active: 1,
             },
         ];

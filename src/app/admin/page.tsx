@@ -16,7 +16,7 @@ const Page = async () => {
             const payload = await res.json();
             if (payload?.success) {
                 stats = [
-                    { label: "Total Posts", value: String(payload?.stats?.totalPosts || 0), icon: "article", delta: "+12%", deltaType: "up" },
+                    { label: "Total Products", value: String(payload?.stats?.totalPosts || 0), icon: "inventory_2", delta: "+12%", deltaType: "up" },
                     { label: "Published", value: String(payload?.stats?.publishedPosts || 0), icon: "check_circle", delta: "0%", deltaType: "up" },
                     { label: "Draft", value: String(payload?.stats?.draftPosts || 0), icon: "edit_note", delta: "0%", deltaType: "down" },
                     { label: "Contact Messages", value: String(payload?.stats?.totalContact || 0), icon: "contact_mail", delta: "", deltaType: "up" },
@@ -93,9 +93,9 @@ const Page = async () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200">
                             <div className="p-6 flex items-center justify-between border-b border-slate-200">
-                                <h2 className="text-lg font-semibold text-slate-900">Recent Posts</h2>
+                                <h2 className="text-lg font-semibold text-slate-900">Recent Products</h2>
                                 <div className="flex items-center gap-2">
-                                    <Link href="/admin/blog" className="px-3 py-1 border border-slate-300 rounded-md hover:bg-slate-100">View All</Link>
+                                    <Link href="/admin/products" className="px-3 py-1 border border-slate-300 rounded-md hover:bg-slate-100">View All</Link>
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
@@ -113,7 +113,7 @@ const Page = async () => {
                                         {recent.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
-                                                    No posts found. <Link href="/admin/blog/add" className="text-primary hover:underline">Create your first post</Link>
+                                                    No products found. <Link href="/admin/products/add" className="text-primary hover:underline">Create your first product</Link>
                                                 </td>
                                             </tr>
                                         ) : recent.map((r) => {
@@ -126,7 +126,7 @@ const Page = async () => {
                                                     </td>
                                                     <td className="px-6 py-4">{r.date}</td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <Link href={`/admin/blog/edit/${r.slug}`} className="p-1 text-slate-500 hover:text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary inline-block">
+                                                        <Link href={`/admin/products/edit/${r.slug}`} className="p-1 text-slate-500 hover:text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary inline-block">
                                                             <span className="material-symbols-outlined text-lg">edit</span>
                                                         </Link>
                                                     </td>
@@ -147,7 +147,7 @@ const Page = async () => {
                                 <p className="text-slate-500 text-sm mt-1">Common tasks and shortcuts.</p>
                             </div>
                             <div className="p-4 grid grid-cols-1 gap-3">
-                                <Link href="/admin/blog/add" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 hover:bg-slate-50">
+                                <Link href="/admin/products/add" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 hover:bg-slate-50">
                                     <span className="flex items-center gap-2 text-slate-700">
                                         <span className="material-symbols-outlined">add</span>
                                         New Post

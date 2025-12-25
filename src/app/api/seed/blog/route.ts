@@ -123,7 +123,13 @@ export async function POST() {
                 }
             }
 
+            const replaceBlogs = (s: string) => (typeof s === 'string' ? s.replace(/\/blogs/g, '/products') : s);
+
             for (const p of posts) {
+                // ensure any references to '/blogs' in content or meta fields are rewritten to '/products'
+                p.content = replaceBlogs(p.content);
+                p.metaDescription = replaceBlogs(p.metaDescription);
+                p.metaTitle = replaceBlogs(p.metaTitle);
                 await db.insert(blogPosts).values(p as any);
             }
         }

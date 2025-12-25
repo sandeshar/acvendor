@@ -350,8 +350,8 @@ export default function HomePageUI() {
                                                     <InputGroup label="Display Order" value={String(logo.display_order || '')} onChange={(v) => updateItem(idx, 'display_order', Number(v), trustLogos, setTrustLogos)} />
                                                     <div className="flex items-end justify-between">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-sm text-gray-600">Dark Invert</span>
-                                                            <Toggle checked={logo.dark_invert === 1} onChange={(c) => updateItem(idx, 'dark_invert', c ? 1 : 0, trustLogos, setTrustLogos)} />
+                                                            <span className="text-sm text-gray-600">Invert</span>
+                                                            <Toggle checked={logo.invert === 1} onChange={(c) => updateItem(idx, 'invert', c ? 1 : 0, trustLogos, setTrustLogos)} />
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <span className="text-sm text-gray-600">Active</span>

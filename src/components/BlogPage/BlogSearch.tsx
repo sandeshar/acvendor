@@ -25,7 +25,7 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         params.delete('page'); // Reset to page 1 on search
 
         startTransition(() => {
-            router.push(`/blog?${params.toString()}`);
+            router.push(`/products?${params.toString()}`);
         });
     };
 
@@ -39,7 +39,7 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         params.delete('page'); // Reset to page 1 on category change
 
         startTransition(() => {
-            router.push(`/blog?${params.toString()}`);
+            router.push(`/products?${params.toString()}`);
         });
     };
 
@@ -79,8 +79,8 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
                             onClick={() => handleCategoryClick(category)}
                             disabled={isPending}
                             className={`flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full pl-4 pr-4 transition-colors ${category === currentCategory
-                                    ? 'bg-primary/20 text-primary'
-                                    : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                                ? 'bg-primary/20 text-primary'
+                                : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
                                 } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                         >
                             <p className="text-sm font-medium leading-normal">

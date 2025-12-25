@@ -97,191 +97,238 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
 
     if (!post) notFound();
 
+    const images = (post.images && post.images.length) ? post.images : (post.thumbnail ? [post.thumbnail] : []);
+
     return (
-        <main className="flex flex-col items-center page-bg">
-            <div className="flex flex-col w-full max-w-7xl py-5">
-                {/* Hero Section */}
-                <section className="relative py-20 sm:py-32">
-                    <div className="absolute inset-0 -z-10 bg-linear-to-br from-slate-50 to-slate-100" />
-                    <div className="mx-auto w-full max-w-6xl">
-                        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                            {/* Left Content */}
-                            <div className="flex-1">
-                                {post.icon && (
-                                    <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-2xl mb-6">
-                                        <span className="material-symbols-outlined text-4xl md:text-5xl text-primary">{post.icon}</span>
-                                    </div>
-                                )}
-                                <h1 className="text-4xl md:text-5xl font-bold text-[#0f172a] mb-4 leading-tight">
-                                    {post.title}
-                                </h1>
-                                <p className="text-lg text-[#4b5563] leading-relaxed mb-8">
-                                    {post.excerpt}
-                                </p>
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <a
-                                        href={`/contact?service=${encodeURIComponent(post.slug)}`}
-                                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition"
-                                    >
-                                        <span className="material-symbols-outlined">arrow_forward</span>
-                                        Get Started
-                                    </a>
-                                    <a
-                                        href="#details"
-                                        className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-300 text-[#0f172a] font-semibold rounded-lg hover:bg-slate-50 transition"
-                                    >
-                                        Learn More
-                                    </a>
-                                </div>
-                            </div>
-                            {/* Right Image */}
-                            {post.thumbnail && (
-                                <div className="flex-1">
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-3xl -z-10" />
-                                        <img
-                                            src={post.thumbnail}
-                                            alt={post.title}
-                                            className="w-full rounded-2xl shadow-2xl"
-                                        />
-                                    </div>
-                                </div>
-                            )}
+        <main className="flex flex-1 flex-col items-center py-5 md:py-10">
+            <div className="layout-content-container flex flex-col w-full max-w-[1280px] px-4 md:px-10 flex-1 gap-8">
+                {/* Breadcrumbs */}
+                <div className="flex flex-wrap gap-2 px-0 text-sm md:text-base">
+                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="/">Home</a>
+                    <span className="text-[#617589] font-medium leading-normal">/</span>
+                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="/products">{post.category || 'Residential'}</a>
+                    <span className="text-[#617589] font-medium leading-normal">/</span>
+                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="#">{post.subcategory || 'Inverter Series'}</a>
+                    <span className="text-[#617589] font-medium leading-normal">/</span>
+                    <span className="text-[#111418] font-medium leading-normal">{post.title}</span>
+                </div>
+
+                {/* Product Hero Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-4">
+                    {/* Left: Gallery */}
+                    <div className="flex flex-col gap-4">
+                        <div className="w-full aspect-[4/3] rounded-xl bg-white border border-gray-100 flex items-center justify-center p-8 relative overflow-hidden group">
+                            <div className="w-full h-full bg-contain bg-center bg-no-repeat" data-alt={post.title} style={{ backgroundImage: `url("${images[0] || '/placeholder-product.png'}")` }} />
+                            {post.inventory_status === 'in_stock' && <div className="absolute top-4 left-4 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">In Stock</div>}
+                        </div>
+
+                        {/* Thumbnails (Carousel Strip) */}
+                        <div className="flex overflow-x-auto gap-3 pb-2 no-scrollbar">
+                            {images.map((img: string, i: number) => (
+                                <button key={i} className={`min-w-24 h-24 rounded-lg border ${i === 0 ? 'border-2 border-primary' : 'border-gray-200'} bg-white p-2 cursor-pointer`}>
+                                    <div className="w-full h-full bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${img}")` }} />
+                                </button>
+                            ))}
                         </div>
                     </div>
-                </section>
 
-                {/* Details Section */}
-                <section id="details" className="py-20 sm:py-32">
-                    <div className="mx-auto w-full max-w-6xl">
-                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
-                            {/* Main Content */}
-                            <div className="space-y-12">
-                                {/* About Section */}
-                                <div>
-                                    <h2 className="text-3xl font-bold text-[#0f172a] mb-6">How It Works</h2>
-                                    <div
-                                        className="prose prose-lg max-w-none 
-                                            prose-headings:font-bold prose-headings:text-[#0f172a] prose-headings:mt-6 prose-headings:mb-3
-                                            prose-p:text-[#475569] prose-p:mb-4
-                                            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                                            prose-strong:text-[#0f172a] prose-strong:font-semibold
-                                            prose-li:text-[#475569] prose-li:marker:text-primary"
-                                        dangerouslySetInnerHTML={{ __html: post.content }}
-                                    />
-                                </div>
+                    {/* Right: Product Details */}
+                    <div className="flex flex-col gap-6">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
+                                <span className="text-sm font-bold text-[#111418]">{post.rating || '4.8'}</span>
+                                <span className="text-sm text-[#617589]">({post.reviews_count || '124'} Reviews)</span>
                             </div>
-                            {/* Sidebar */}
-                            <aside className="space-y-6 sticky top-20 self-start">
-                                {/* Pricing Card */}
-                                {/* Combined Pricing + CTA Card (or Ready CTA when no pricing) */}
-                                {post.price ? (
-                                    <div className="bg-primary rounded-xl p-6 text-white shadow-lg ring-1 ring-muted">
-                                        <div className="flex items-center justify-between gap-4 mb-4">
-                                            <div>
-                                                <div className="text-sm font-semibold uppercase tracking-wide mb-1 text-white/90">{post.price_label || 'Pricing'}</div>
-                                                {post.price ? (
-                                                    <div className="text-3xl font-extrabold text-white">
-                                                        {getCurrencySymbol(post.currency)}{post.price}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-lg font-semibold text-white">Pricing on request</div>
-                                                )}
-                                                {post.price_description && (
-                                                    <p className="text-sm text-white/90 mt-2">{post.price_description}</p>
-                                                )}
-                                            </div>
-                                            <div className="hidden sm:block text-sm text-white/90">{/* reserved for future summary */}</div>
-                                        </div>
-                                        <div className="mt-4">
-                                            <a
-                                                href={`/contact?service=${encodeURIComponent(post.slug)}`}
-                                                aria-label={`Contact us about ${post.title}`}
-                                                className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 bg-card text-primary-var font-semibold rounded-lg hover:shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-muted"
-                                            >
-                                                <span className="material-symbols-outlined">call</span>
-                                                Contact Us
-                                            </a>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="bg-primary rounded-xl p-6 text-white shadow-lg ring-1 ring-muted">
-                                        <h3 className="text-xl font-bold mb-2">Ready?</h3>
-                                        <p className="text-white/90 text-sm mb-6">Let's discuss your project needs.</p>
-                                        <a
-                                            href={`/contact?service=${encodeURIComponent(post.slug)}`}
-                                            aria-label="Contact us"
-                                            className="inline-flex w-full items-center justify-center gap-2 px-4 py-3 bg-card text-primary-var font-semibold rounded-lg hover:shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-muted"
-                                        >
-                                            <span className="material-symbols-outlined text-[20px]">call</span>
-                                            Contact Us
-                                        </a>
-                                    </div>
-                                )}
-                                {/* Quick Action Card */}
-                                {/* Removed duplicated "Ready?" card as combined card covers CTA */}
-                                {/* Service Benefits */}
-                                {serviceDetail && (() => {
-                                    let bullets: string[] = [];
-                                    try {
-                                        bullets = JSON.parse(serviceDetail.bullets);
-                                    } catch (e) {
-                                        console.error('Error parsing bullets:', e);
-                                    }
-                                    if (bullets.length > 0) {
-                                        return (
-                                            <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                                                <h4 className="text-sm font-bold text-[#0f172a] mb-4 flex items-center gap-2">
-                                                    <span className="material-symbols-outlined text-primary">star</span>
-                                                    Key Benefits
-                                                </h4>
-                                                <ul className="space-y-3 text-sm text-[#475569]">
-                                                    {bullets.map((bullet, idx) => (
-                                                        <li key={idx} className="flex gap-3">
-                                                            <span className="material-symbols-outlined text-primary text-base shrink-0">check_circle</span>
-                                                            <span>{bullet}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })()}
-                            </aside>
+                            <h1 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">{post.title}</h1>
+                            <p className="text-[#617589] text-base md:text-lg">{post.model || post.subtitle || ''}</p>
+                            {post.locations && <p className="text-primary text-sm font-medium mt-1">Available for installation in {post.locations.join(', ')}</p>}
+                        </div>
+
+                        {/* Price & Tags */}
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{post.price || 'NPR 85,000'}</span>
+                                {post.compare_at_price && <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{post.compare_at_price}</span>}
+                            </div>
+                            <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p>
+                        </div>
+
+                        {/* Feature Badges */}
+                        <div className="flex flex-wrap gap-2">
+                            {post.energy_saving && <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">eco</span>{post.energy_saving}</div>}
+                            {post.smart && <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-primary border border-blue-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">wifi</span>Smart Control</div>}
+                            {post.filtration && <div className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">air</span>Dual Filtration</div>}
+                            {post.warranty && <div className="inline-flex items-center px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">bolt</span>{post.warranty}</div>}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-6 border-t border-gray-100">
+                            <a className="flex-1 h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20" href={`/contact?service=${encodeURIComponent(post.slug)}`}>
+                                <span className="material-symbols-outlined">request_quote</span> Request Quote
+                            </a>
+                            <a className="flex-1 h-12 bg-white border border-gray-200 hover:bg-gray-50 text-[#111418] font-bold rounded-lg transition-colors flex items-center justify-center gap-2" href={post.brochure_url || '#'}>
+                                <span className="material-symbols-outlined">download</span> Download Brochure
+                            </a>
                         </div>
                     </div>
-                </section>
+                </div>
 
-                {/* Testimonials */}
-                {post.id && (
-                    <section className="py-20 sm:py-32">
-                        <TestimonialSlider
-                            filter={String(post.id)}
-                            title={`Success Stories for ${post.title}`}
-                            subtitle="See how we've helped clients succeed with this service"
-                        />
+                {/* Info Tabs Navigation */}
+                <div className="flex w-full border-b border-[#f0f2f4] mt-8">
+                    <div className="flex gap-8">
+                        <button className="border-b-2 border-primary pb-3 text-primary font-bold text-base px-2">Overview</button>
+                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Specifications</button>
+                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Documents</button>
+                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Reviews</button>
+                    </div>
+                </div>
+
+                {/* Tab Content: Overview & Application Areas */}
+                <div className="flex flex-col gap-10 animate-fade-in">
+                    {/* Description */}
+                    <section className="max-w-[800px]">
+                        <h3 className="text-2xl font-bold text-[#111418] mb-4">Ultimate Cooling Comfort</h3>
+                        <p className="text-[#111418] leading-relaxed mb-6">{post.summary || 'The Midea Xtreme Save series is engineered for the extreme weather of Nepal.'}</p>
+
+                        {/* Application Areas Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">chair</span></div>
+                                <span className="font-semibold text-sm">Living Room</span>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">bed</span></div>
+                                <span className="font-semibold text-sm">Bedroom</span>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">desk</span></div>
+                                <span className="font-semibold text-sm">Small Office</span>
+                            </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">meeting_room</span></div>
+                                <span className="font-semibold text-sm">Meeting Room</span>
+                            </div>
+                        </div>
                     </section>
-                )}
 
-                {/* CTA Section */}
-                <section className="py-16 sm:py-24 bg-linear-to-r from-primary/5 to-indigo-500/5 border-y border-slate-200">
-                    <div className="mx-auto w-full max-w-3xl text-center">
-                        <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">
-                            Let's Bring Your Vision to Life
-                        </h2>
-                        <p className="text-lg text-[#4b5563] mb-8">
-                            Schedule a free consultation to explore how {post.title} can benefit your business.
-                        </p>
-                        <a
-                            href="/contact"
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition shadow-lg"
-                        >
-                            <span className="material-symbols-outlined">calendar_month</span>
-                            Schedule Consultation
-                        </a>
+                    {/* Technical Specifications */}
+                    <section>
+                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Technical Specifications</h3>
+                        <div className="overflow-hidden rounded-xl border border-[#dbe0e6]">
+                            <table className="w-full text-left text-sm">
+                                <tbody className="divide-y divide-[#dbe0e6]">
+                                    <tr className="bg-white">
+                                        <td className="px-6 py-4 font-medium text-[#617589] w-1/3">Model</td>
+                                        <td className="px-6 py-4 text-[#111418] font-semibold">{post.model || 'MSAG-18HRFN1'}</td>
+                                    </tr>
+                                    <tr className="bg-[#f6f7f8]">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Cooling Capacity</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.capacity || '18,000 BTU/h (1.5 Ton)'}</td>
+                                    </tr>
+                                    <tr className="bg-white">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Power Input</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.power || '1550 Watts'}</td>
+                                    </tr>
+                                    <tr className="bg-[#f6f7f8]">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">ISEER Rating</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.iseer || '4.5 (5 Star Equivalent)'}</td>
+                                    </tr>
+                                    <tr className="bg-white">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Refrigerant</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.refrigerant || 'R32 (Eco-Friendly)'}</td>
+                                    </tr>
+                                    <tr className="bg-[#f6f7f8]">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Indoor Noise Level (H/M/L)</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.noise || '42 / 36 / 28 dB(A)'}</td>
+                                    </tr>
+                                    <tr className="bg-white">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Dimensions (WxDxH)</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.dimensions || '965 x 215 x 319 mm'}</td>
+                                    </tr>
+                                    <tr className="bg-[#f6f7f8]">
+                                        <td className="px-6 py-4 font-medium text-[#617589]">Voltage</td>
+                                        <td className="px-6 py-4 text-[#111418]">{post.voltage || '220-240V, 50Hz, 1Ph'}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    {/* Downloads Section */}
+                    <section>
+                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Downloads &amp; Support</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Download Card 1 */}
+                            <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow cursor-pointer group">
+                                <div className="size-12 rounded-lg bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-100 transition-colors">
+                                    <span className="material-symbols-outlined">picture_as_pdf</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-bold text-[#111418]">Product Brochure</p>
+                                    <p className="text-sm text-[#617589]">PDF • 2.4 MB</p>
+                                </div>
+                                <span className="material-symbols-outlined text-[#617589]">download</span>
+                            </div>
+                            {/* Download Card 2 */}
+                            <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow cursor-pointer group">
+                                <div className="size-12 rounded-lg bg-blue-50 flex items-center justify-center text-primary group-hover:bg-blue-100 transition-colors">
+                                    <span className="material-symbols-outlined">menu_book</span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="font-bold text-[#111418]">User Manual</p>
+                                    <p className="text-sm text-[#617589]">PDF • 1.1 MB</p>
+                                </div>
+                                <span className="material-symbols-outlined text-[#617589]">download</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                {/* Reviews Section (RatingSummary) */}
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                    <h3 className="text-2xl font-bold text-[#111418] mb-6">Customer Reviews</h3>
+                    <div className="flex flex-wrap gap-x-12 gap-y-8">
+                        <div className="flex flex-col gap-2 min-w-[150px]">
+                            <p className="text-[#111418] text-5xl font-black leading-tight tracking-[-0.033em]">{post.rating || '4.8'}</p>
+                            <div className="flex gap-1 text-yellow-500">
+                                <span className="material-symbols-outlined fill-current">star</span>
+                                <span className="material-symbols-outlined fill-current">star</span>
+                                <span className="material-symbols-outlined fill-current">star</span>
+                                <span className="material-symbols-outlined fill-current">star</span>
+                                <span className="material-symbols-outlined fill-current">star_half</span>
+                            </div>
+                            <p className="text-[#617589] text-base font-medium">Based on {post.reviews_count || '124'} reviews</p>
+                        </div>
+                        <div className="grid min-w-[280px] max-w-[500px] flex-1 grid-cols-[20px_1fr_40px] items-center gap-y-3">
+                            <p className="text-[#111418] text-sm font-bold">5</p>
+                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
+                                <div className="rounded-full bg-primary" style={{ width: '78%' }}></div>
+                            </div>
+                            <p className="text-[#617589] text-sm font-medium text-right">78%</p>
+                            <p className="text-[#111418] text-sm font-bold">4</p>
+                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
+                                <div className="rounded-full bg-primary" style={{ width: '15%' }}></div>
+                            </div>
+                            <p className="text-[#617589] text-sm font-medium text-right">15%</p>
+                            <p className="text-[#111418] text-sm font-bold">3</p>
+                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
+                                <div className="rounded-full bg-primary" style={{ width: '4%' }}></div>
+                            </div>
+                            <p className="text-[#617589] text-sm font-medium text-right">4%</p>
+                            <p className="text-[#111418] text-sm font-bold">2</p>
+                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
+                                <div className="rounded-full bg-primary" style={{ width: '1%' }}></div>
+                            </div>
+                            <p className="text-[#617589] text-sm font-medium text-right">1%</p>
+                            <p className="text-[#111418] text-sm font-bold">1</p>
+                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
+                                <div className="rounded-full bg-primary" style={{ width: '2%' }}></div>
+                            </div>
+                            <p className="text-[#617589] text-sm font-medium text-right">2%</p>
+                        </div>
                     </div>
-                </section>
+                </div>
             </div>
         </main>
     );

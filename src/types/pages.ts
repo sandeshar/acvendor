@@ -99,14 +99,39 @@ export type ServiceRecord = {
     excerpt: string;
     content: string;
     thumbnail?: string | null;
+    images?: string[] | null;
     icon?: string | null;
     meta_title?: string | null;
     meta_description?: string | null;
-    price?: string | null;
+    price?: string | number | null;
     currency?: string | null;
     price_type?: string | null;
     price_label?: string | null;
     price_description?: string | null;
+
+    // Additional product/service-specific fields
+    category?: string | null;
+    subcategory?: string | null;
+    inventory_status?: string | null;
+    rating?: number | null;
+    reviews_count?: number | null;
+    model?: string | null;
+    subtitle?: string | null;
+    locations?: string[] | null;
+    compare_at_price?: number | string | null;
+    energy_saving?: string | null;
+    smart?: boolean | null;
+    filtration?: boolean | null;
+    warranty?: string | null;
+    brochure_url?: string | null;
+    summary?: string | null;
+    capacity?: string | null;
+    power?: string | null;
+    iseer?: string | number | null;
+    refrigerant?: string | null;
+    noise?: string | null;
+    dimensions?: string | null;
+    voltage?: string | null;
 };
 
 export type ServiceDetail = {

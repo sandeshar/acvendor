@@ -1,8 +1,11 @@
 import HeroSection from "@/components/ServicesPage/HeroSection";
+import ServicesFeatureStrip from "@/components/ServicesPage/ServicesFeatureStrip";
+import ServicesOverview from "@/components/ServicesPage/ServicesOverview";
 import ServiceDetails from "@/components/ServicesPage/ServiceDetails";
 import ProcessSection from "@/components/ServicesPage/ProcessSection";
-import CTASection from "@/components/ServicesPage/CTASection";
+import ServicesBrands from "@/components/ServicesPage/ServicesBrands";
 import TestimonialSlider from "@/components/shared/TestimonialSlider";
+import CTASection from "@/components/ServicesPage/CTASection";
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -122,13 +125,59 @@ export default async function ServicesPage() {
     return (
         <main className="page-bg grow ">
             <HeroSection data={data.hero} />
+            <ServicesFeatureStrip />
+            <ServicesOverview services={services} />
             <ServiceDetails services={services} />
             <ProcessSection section={data.processSection} steps={data.processSteps} />
-            <TestimonialSlider
-                filter="services"
-                title="Client Success Stories"
-                subtitle="Discover how we've helped businesses achieve their goals"
-            />
+
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <ServicesBrands />
+            </div>
+
+            <section className="bg-slate-50 py-16">
+                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <h2 className="text-3xl font-black text-slate-900 mb-6">Why Nepal trusts our service</h2>
+                            <div className="flex flex-col gap-6">
+                                <div className="flex gap-4 items-start">
+                                    <span className="text-4xl text-primary font-black">5k+</span>
+                                    <div>
+                                        <h4 className="font-bold text-slate-900">Happy Customers</h4>
+                                        <p className="text-sm text-slate-500">Across Kathmandu, Lalitpur, and Bhaktapur.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 items-start">
+                                    <span className="text-4xl text-primary font-black">10+</span>
+                                    <div>
+                                        <h4 className="font-bold text-slate-900">Years Experience</h4>
+                                        <p className="text-sm text-slate-500">Serving the industry with dedication.</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 items-start">
+                                    <span className="text-4xl text-primary font-black">24/7</span>
+                                    <div>
+                                        <h4 className="font-bold text-slate-900">Emergency Support</h4>
+                                        <p className="text-sm text-slate-500">Always available for urgent repairs.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative">
+                            <span className="material-symbols-outlined text-6xl text-primary/10 absolute top-4 right-4">format_quote</span>
+                            <p className="text-lg text-slate-600 italic mb-6 relative z-10">"The team was incredibly professional. They installed our office AC system in one day and left the place spotless. Highly recommended!"</p>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 bg-cover bg-center" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuABFDq2boqSreVjEIXWTgDLRMQ_RYSX41ayzLdnNYJMJbFtH4HzmhK3i3w8-QX85BECmTiey8ai1BxoROX4KD4Mn59_fOLLNJkVpQRE95w9N62vGtPM5JRVmmqG4cTP1OkiZaTQ-n77i5lJNDYyk869p308_2wrBUPfm3j9gJqYo-f89NoLkMTlb2GPv2Qvj-OGfU6OEhFuZebu3LWWpRx5tPOMC3cVtUQJedhHp5pU-0KGNf882TAwuj79STj2BHSRH7yAkvqQXoA')` }} />
+                                <div>
+                                    <h5 className="font-bold text-slate-900 text-sm">Rajesh Hamal</h5>
+                                    <p className="text-xs text-slate-500">Business Owner, Thamel</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <CTASection data={data.cta} />
         </main>
     );

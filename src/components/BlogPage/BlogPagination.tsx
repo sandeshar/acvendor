@@ -17,7 +17,7 @@ const BlogPagination = ({ currentPage, totalPages, searchQuery, category }: Blog
         params.set('page', page.toString());
         if (searchQuery) params.set('search', searchQuery);
         if (category && category !== 'All') params.set('category', category);
-        return `/blog?${params.toString()}`;
+        return `/products?${params.toString()}`;
     };
 
     // Generate array of page numbers to display
@@ -82,8 +82,8 @@ const BlogPagination = ({ currentPage, totalPages, searchQuery, category }: Blog
                         key={pageNum}
                         href={buildUrl(pageNum)}
                         className={`flex items-center justify-center h-10 w-10 rounded-lg text-sm font-bold transition-colors ${pageNum === currentPage
-                                ? 'bg-primary text-white'
-                                : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                            ? 'bg-primary text-white'
+                            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                             }`}
                     >
                         {pageNum}

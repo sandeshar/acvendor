@@ -163,8 +163,8 @@ export async function POST() {
             description: "Let's create content that makes an impact. Get in touch with us today.",
             primary_button_text: 'Get Started',
             primary_button_link: '/contact',
-            secondary_button_text: 'View Our Work',
-            secondary_button_link: '/blog',
+            secondary_button_text: 'Browse Products',
+            secondary_button_link: '/products',
             is_active: 1,
         });
 

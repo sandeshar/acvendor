@@ -63,7 +63,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
 
     if (loading) {
         return (
-            <section className="py-16 sm:py-24">
+            <section className="px-4 md:px-10 py-16 sm:py-24">
                 <div className="container mx-auto px-4">
                     <div className="text-center">
                         <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
@@ -87,7 +87,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
     ];
 
     return (
-        <section className="py-20 sm:py-32 overflow-hidden">
+        <section className="px-4 md:px-10 py-20 sm:py-32 overflow-hidden">
             <div className="flex flex-col gap-12">
                 <div className="flex flex-col gap-4 text-center items-center">
                     <h2 className="text-slate-900 text-3xl font-bold tracking-tight md:text-4xl md:font-black max-w-2xl">

@@ -94,6 +94,34 @@ export async function POST(request: Request) {
             results.users.message = error instanceof Error ? error.message : 'Failed to seed users';
         }
 
+        // Ensure Store Settings exist
+        try {
+            const existing = await db.select().from(storeSettings).limit(1);
+            if (!existing || existing.length === 0) {
+                await db.insert(storeSettings).values({
+                    store_name: 'AC Vendor',
+                    store_description: 'Your trusted source for air conditioners, parts, and installation services.',
+                    store_logo: '/logo.png',
+                    favicon: '/favicon.ico',
+                    contact_email: 'support@acvendor.com',
+                    contact_phone: '+977 9800000000',
+                    address: 'Kathmandu, Nepal',
+                    facebook: '',
+                    twitter: '',
+                    instagram: '',
+                    linkedin: '',
+                    meta_title: 'AC Vendor - Air Conditioners and Installation',
+                    meta_description: 'Shop the best air conditioners, parts, and professional installation services.',
+                    meta_keywords: 'AC, air conditioner, installation, compressor, split AC',
+                    footer_text: `© ${new Date().getFullYear()} AC Vendor. All rights reserved.`,
+                });
+            }
+            results.store = { success: true, message: 'Store settings present' };
+        } catch (e) {
+            // non-fatal
+            console.warn('Failed to ensure store settings', e);
+        }
+
         // 3. Seed Homepage
         try {
             await db.delete(homepageHero);
@@ -104,26 +132,26 @@ export async function POST(request: Request) {
             await db.delete(homepageContactSection);
 
             await db.insert(homepageHero).values({
-                title: 'Drive Real Business Growth Through Powerful Content',
-                subtitle: 'We craft content strategies that captivate your audience, boost your rankings, and convert readers into loyal customers.',
-                cta_text: 'Schedule a Free Consultation',
-                cta_link: '/contact',
-                background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB_ntBsh0ac8NNu4CDZ0OwptNX4TckC0Vk370Stu-5ncnvdbLPszfUWx1G4Vbyynsp7G1IukNqM2ARj6R242IPtABbGqsoHea3IRXWJjfZy8v0YwvghTSdy3UYS0ViJGsCxmB3Jua3jm3Nmz5ZA2yh5p70-qFmtfPdmvtc7WyY0gauc1eQ0Hc20w96-OEQp1WkX_IMlpkYEhv___4podpWVNeJtiFPjhpMwNu1nIMzW0bcH_-R-luLL4KVRpHNF93ktX31uFGTKMXk',
-                hero_image_alt: 'Hero background showing team collaboration',
-                badge_text: 'Accepting new projects',
-                highlight_text: 'Powerful Content',
-                colored_word: '',
+                title: 'AC Vendor — Trusted Air Conditioners & Parts',
+                subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
+                cta_text: 'Shop Now',
+                cta_link: '/products',
+                background_image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80',
+                hero_image_alt: 'Modern air conditioning units in a showroom',
+                badge_text: 'Free installation on select models',
+                highlight_text: 'Reliable Cooling',
+                colored_word: 'Cooling',
                 float_top_enabled: 1,
-                float_top_icon: 'trending_up',
-                float_top_title: 'Growth',
-                float_top_value: '+240% ROI',
+                float_top_icon: 'local_shipping',
+                float_top_title: 'Fast Delivery',
+                float_top_value: 'Ships in 2-3 days',
                 float_bottom_enabled: 1,
-                float_bottom_icon: 'check_circle',
-                float_bottom_title: 'Ranking',
-                float_bottom_value: '#1 Result',
-                secondary_cta_text: 'View Our Work',
-                secondary_cta_link: '/work',
-                rating_text: 'Trusted by modern teams',
+                float_bottom_icon: 'verified',
+                float_bottom_title: 'Warranty',
+                float_bottom_value: 'Up to 5 years',
+                secondary_cta_text: 'Browse Brands',
+                secondary_cta_link: '/brands',
+                rating_text: 'Top rated by homeowners',
                 is_active: 1,
             });
 
@@ -136,42 +164,42 @@ export async function POST(request: Request) {
                 {
                     alt_text: 'Company logo 1',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBdE09VxvThX9dMNU-y7liJUYJQgy2M5kHpRY3-KBAi3T15rFrOZlsQl9AuunBzn1Aq6C31_7zK1sJ1mAbEl5KpzCMhGYsp4jkN8mieRiPdmg5nH_jDImPk68z5HRT6Os3gAMfMfMrtjQMryIqSDjRmFZJn9wE3gKgrYuTpfKQvd0b88HdscP3HxgbCc2iriByk-7lfePm1azfmpfR9qhb9r71__imvkKhnrgKAb8kV8wAA8RrLtRLCzIArOEr0GdFaTXKQDrmUG94',
-                    dark_invert: 0,
+                    invert: 0,
                     display_order: 1,
                     is_active: 1,
                 },
                 {
                     alt_text: 'Company logo 2',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAiuaY0NEU5wLpIqRHE4OZ5puZNZoTQMtWdW1UkBjgSLQDo3b8Ih6zxn7rFnEvsQGGV9aOfACRC2c8LyBcfr31GFosqo9VIjHKW9DzxsOQQ4MOJw4uScNYYo57AITdg3-b-Lkl-JNRgFAx_tPKqjPd3f1YvnxrpIZ9kQWpCEcEsrz3vGsMFh9GyIMZ2Rj9HGTIX7HpKz0dXUBK7N93uFL-tmT1b0I_gy8n_U0GfL_AK_tjcR1fj6FqIi77-FNl9ALBkqSEySdytLYk',
-                    dark_invert: 1,
+                    invert: 1,
                     display_order: 2,
                     is_active: 1,
                 },
                 {
                     alt_text: 'Company logo 3',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAwfDCwC7gEV6oG6iFk56oYq6vfS2XEaJi0jDS9H77m7JcCvi9MRO_6VYnFcndlIjLv79dJDRA4BRY0z5ZDg9gaI8zgSa5-08-kU9uuJOAzJGRWhGMIM-22RhM7fyARxN_d85K01aKNMWrHvwFhQVZ-PQGInoNJ_ywq14zAE1rdxlUxppldx0UF9B-94CN69tcMUx2o_iLrv7PsPH2UcH-XtGvGb3b6Mny0ODMhO_GHsjd9KKcWR3dgOuD8XObd-wMrohWQQjSWZ84',
-                    dark_invert: 1,
+                    invert: 1,
                     display_order: 3,
                     is_active: 1,
                 },
                 {
                     alt_text: 'Company logo 4',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBROPSD5QVXLyvnJXrkV33ahL2cpAo6arKuy59mo5nBmgJaLONI-m2XZ9n8PbkvLoDPTOwAmyMgFvmlXS35o9EYiDyisdt7tmG39FlKPKu84ZPHQ5OQMMIYcMK3WKDav-FZiv9Wig0XkT5zLecd7nCWmYYJvUK8YRJ-ylWhAjgPo1tElJJLgLqhdcEpPCQc6jZn5SFOteE4MmTC9o_jwYhFRq13Yj3ko76EBPa2sYpyZFqjpkazjW0mAg-MPOOzFnl0i94K8kgiBf4',
-                    dark_invert: 1,
+                    invert: 1,
                     display_order: 4,
                     is_active: 1,
                 },
                 {
                     alt_text: 'Company logo 5',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAbCrAkF3_ZYrgIMN96U-oWHbnq8iE__GncAFNokxSq0dPVR6XaqsOQvWaiRxy62Pxt83dC3Vp2wErYBuLpvpWV_cdaygkliysA6ilXZX2BAv1M6HCcZ_50BkEhVadLWOy0-tajzgz8xS4t3EdWtqSx7qYe-Zexm5W3AbbD0BeF3iMCx6BuDoe7RFqlg8T8auS4E7u4iPEuuzbmZ8-avIx66uTyVZ0DXRXCK9wdrFW8KNlWJKTujcomnB5nNN91c1PYLt4qoUTCF1c',
-                    dark_invert: 1,
+                    invert: 1,
                     display_order: 5,
                     is_active: 1,
                 },
                 {
                     alt_text: 'Company logo 6',
                     logo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDU_UaDS2_SBIBZRcjgqlJM-IduY8WarSSAB_GhjJa2pCIjPgesG0X3akXa8tAVJxrZYBdPHGjw4EMqVDg3YIncnbIcVGpvx1C-mGWzJ9_M1Vv_0oi3c5NrK90gb85aQVFkzuXYCLDt6RDC8p3ZWW1TcwTCNslbCUgQ8fG7sGXieMY3i0Xz_v--PHarp8MuGmKb6vySnIg_edXfT8KHnBY8V34chuZAzQpNcs-HSeEnu6zVC0QUnM_hvWV-2fCpSXzHXkHlt9BCNeA',
-                    dark_invert: 1,
+                    invert: 1,
                     display_order: 6,
                     is_active: 1,
                 },
@@ -182,37 +210,37 @@ export async function POST(request: Request) {
             }
 
             await db.insert(homepageExpertiseSection).values({
-                title: 'Our Expertise',
-                description: 'From strategy to execution, we provide end-to-end content solutions designed to meet your business objectives.',
+                title: 'Why Shop With Us',
+                description: 'Quality AC units, professional installation, and trusted after-sales service tailored for homes and businesses.',
                 is_active: 1,
             });
 
             const expertiseItems = [
                 {
-                    icon: 'explore',
-                    title: 'Content Strategy',
-                    description: 'Developing a roadmap to create, publish, and govern your content.',
+                    icon: 'inventory_2',
+                    title: 'Wide Selection',
+                    description: 'Split, window, inverter, and commercial ACs from leading brands.',
                     display_order: 1,
                     is_active: 1,
                 },
                 {
-                    icon: 'search',
-                    title: 'SEO Writing',
-                    description: 'Crafting high-quality content that ranks on search engines and drives organic traffic.',
+                    icon: 'home_repair_service',
+                    title: 'Professional Installation',
+                    description: 'Certified technicians for safe and efficient setup.',
                     display_order: 2,
                     is_active: 1,
                 },
                 {
-                    icon: 'edit',
-                    title: 'Copywriting',
-                    description: 'Writing persuasive copy that converts for your website, ads, and emails.',
+                    icon: 'verified',
+                    title: 'Extended Warranty',
+                    description: 'Warranty plans up to 5 years for peace of mind.',
                     display_order: 3,
                     is_active: 1,
                 },
                 {
-                    icon: 'group',
-                    title: 'Social Media Marketing',
-                    description: 'Engaging your community with compelling content across all social platforms.',
+                    icon: 'local_shipping',
+                    title: 'Fast Shipping & Support',
+                    description: 'Quick delivery and responsive customer service.',
                     display_order: 4,
                     is_active: 1,
                 },
@@ -223,14 +251,14 @@ export async function POST(request: Request) {
             }
 
             await db.insert(homepageContactSection).values({
-                title: 'Ready to Grow Your Business?',
-                description: "Let's talk about how our content solutions can help you achieve your goals. Fill out the form, and we'll get back to you within 24 hours.",
+                title: 'Need Help Choosing?',
+                description: "Our support team can help you pick the right AC and schedule installation. Fill out the form and we'll respond within 24 hours.",
                 name_placeholder: 'Your Name',
                 email_placeholder: 'Your Email',
                 phone_placeholder: 'Phone Number',
-                service_placeholder: 'Select a service',
-                message_placeholder: 'Your Message',
-                submit_button_text: 'Get Started',
+                service_placeholder: 'Choose a service (e.g., installation, warranty)',
+                message_placeholder: 'How can we help?',
+                submit_button_text: 'Contact Support',
                 is_active: 1,
             });
 
@@ -252,23 +280,23 @@ export async function POST(request: Request) {
             await db.delete(aboutPageCTA);
 
             await db.insert(aboutPageHero).values({
-                title: "We Don't Just Write. We Build Worlds with Words.",
-                description: "Welcome to Content Solution Nepal. We're a team of storytellers, strategists, and digital artisans dedicated to crafting narratives that resonate, engage, and drive growth. Your brand has a story. Let's tell it together.",
-                button1_text: 'Meet the Team',
-                button1_link: '#team',
-                button2_text: 'Our Story',
-                button2_link: '#story',
-                hero_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo',
-                hero_image_alt: 'Creative team collaborating in a modern office space',
+                title: 'Who We Are',
+                description: "AC Vendor is a trusted retailer of air conditioning solutions — from efficient home units to commercial systems. We provide quality products, certified installation, and dependable after-sales support.",
+                button1_text: 'Our Products',
+                button1_link: '/products',
+                button2_text: 'Contact Support',
+                button2_link: '/contact',
+                hero_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
+                hero_image_alt: 'AC units displayed in a bright showroom',
                 is_active: 1,
             });
 
             await db.insert(aboutPageJourney).values({
-                title: 'Our Story',
-                paragraph1: 'Content Solution Nepal was born from a simple belief: that every business, big or small, deserves a voice that truly represents who they are and what they stand for.',
-                paragraph2: 'We envisioned something better—content that tells stories, sparks emotions, and builds genuine connections. Today, we work with businesses across industries to create content strategies that attract attention and inspire action.',
-                thinking_box_title: 'Our Thinking',
-                thinking_box_content: 'We believe in the power of authenticity. In an age of algorithms and automation, human connection is what truly matters.',
+                title: 'Our Journey',
+                paragraph1: 'Founded by HVAC specialists, AC Vendor began with a simple goal: make reliable cooling accessible to homes and businesses. Over the years we have partnered with top manufacturers and built a network of certified installers.',
+                paragraph2: 'We focus on product quality, transparent pricing, and exceptional service so customers can trust their purchase and enjoy long-term performance.',
+                thinking_box_title: 'Our Promise',
+                thinking_box_content: 'Quality products, professional installation, and responsive support — every time.',
                 is_active: 1,
             });
 
@@ -281,10 +309,10 @@ export async function POST(request: Request) {
             for (const stat of stats) await db.insert(aboutPageStats).values(stat);
 
             const features = [
-                { title: 'Tailored Strategies', description: 'Custom content strategies aligned to your goals.', display_order: 1, is_active: 1 },
-                { title: 'Experienced Team', description: 'Writers, strategists, and editors across industries.', display_order: 2, is_active: 1 },
-                { title: 'Results-Driven', description: 'We measure success through your growth.', display_order: 3, is_active: 1 },
-                { title: 'Full-Service', description: 'From strategy to execution, end-to-end content.', display_order: 4, is_active: 1 },
+                { title: 'Wide Selection', description: 'A curated range of ACs and spare parts across price points.', display_order: 1, is_active: 1 },
+                { title: 'Certified Installers', description: 'Trained technicians ensuring proper, safe installations.', display_order: 2, is_active: 1 },
+                { title: 'Transparent Pricing', description: 'Clear pricing on products and services with no hidden fees.', display_order: 3, is_active: 1 },
+                { title: 'After-Sales Support', description: 'Ongoing maintenance and warranty servicing to keep your AC running smoothly.', display_order: 4, is_active: 1 },
             ];
             for (const feature of features) await db.insert(aboutPageFeatures).values(feature);
 
@@ -295,33 +323,32 @@ export async function POST(request: Request) {
             });
 
             const principles = [
-                { title: 'Authenticity First', description: 'Real stories that resonate.', display_order: 1, is_active: 1 },
-                { title: 'Data-Informed Creativity', description: 'Insight-led ideas that perform.', display_order: 2, is_active: 1 },
-                { title: 'Continuous Improvement', description: 'We evolve with your audience.', display_order: 3, is_active: 1 },
+                { title: 'Quality First', description: "We prioritize reliable products and workmanship.", display_order: 1, is_active: 1 },
+                { title: 'Customer Focus', description: 'We put customers at the heart of every decision.', display_order: 2, is_active: 1 },
+                { title: 'Integrity', description: 'Transparent pricing and honest recommendations.', display_order: 3, is_active: 1 },
             ];
             for (const principle of principles) await db.insert(aboutPagePrinciples).values(principle);
 
             await db.insert(aboutPageTeamSection).values({
-                title: 'Meet Our Team',
-                description: 'Strategists, writers, designers, and marketers working as one.',
+                title: 'Our Team',
+                description: 'Certified HVAC technicians and support staff dedicated to quality service.',
                 is_active: 1,
             });
 
             const teamMembers = [
-                { name: 'Sarah Johnson', role: 'Content Strategist', description: 'Leads strategy with 10+ years of experience.', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo', image_alt: 'Sarah Johnson headshot', display_order: 1, is_active: 1 },
-                { name: 'Michael Chen', role: 'Senior Writer', description: 'Long-form and SEO specialist.', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo', image_alt: 'Michael Chen headshot', display_order: 2, is_active: 1 },
-                { name: 'Emily Rodriguez', role: 'Social Media Manager', description: 'Builds communities and brand presence.', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo', image_alt: 'Emily Rodriguez headshot', display_order: 3, is_active: 1 },
-                { name: 'David Kim', role: 'Creative Director', description: 'Ensures quality across all creative.', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo', image_alt: 'David Kim headshot', display_order: 4, is_active: 1 },
+                { name: 'Amit Thapa', role: 'Head Technician', description: '20+ years in HVAC installation and maintenance.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Amit Thapa headshot', display_order: 1, is_active: 1 },
+                { name: 'Sita Gurung', role: 'Service Manager', description: 'Oversees installation scheduling and warranty service.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Sita Gurung headshot', display_order: 2, is_active: 1 },
+                { name: 'Ramesh Koirala', role: 'Customer Support Lead', description: 'Handles pre-sales and after-sales inquiries.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Ramesh Koirala headshot', display_order: 3, is_active: 1 },
             ];
             for (const member of teamMembers) await db.insert(aboutPageTeamMembers).values(member);
 
             await db.insert(aboutPageCTA).values({
-                title: 'Ready to Work Together?',
-                description: "Let's create content that makes an impact. Get in touch with us today.",
-                primary_button_text: 'Get Started',
-                primary_button_link: '/contact',
-                secondary_button_text: 'View Our Work',
-                secondary_button_link: '/blog',
+                title: 'Ready to Upgrade Your Cooling?',
+                description: "Browse our top-rated ACs or talk to an expert to find the right model for your space.",
+                primary_button_text: 'Shop Now',
+                primary_button_link: '/products',
+                secondary_button_text: 'Request a Quote',
+                secondary_button_link: '/contact',
                 is_active: 1,
             });
 
@@ -353,36 +380,36 @@ export async function POST(request: Request) {
             // Only seed if we have a user and status
             if (firstUser && publishedStatus) {
                 await db.insert(servicesPageHero).values({
-                    tagline: 'Strategic Content That Converts',
-                    title: 'Strategic Content That Converts',
-                    description: "We don't just write words; we craft experiences. Elevate your brand with data-driven content strategies designed to captivate your audience and drive meaningful growth.",
-                    badge_text: 'Premier Content Agency',
-                    highlight_text: 'That Converts',
-                    primary_cta_text: 'Get Started Now',
-                    primary_cta_link: '/contact',
-                    secondary_cta_text: 'View Our Work',
-                    secondary_cta_link: '/work',
-                    background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCFR7tIGeKNlooQKoKzI99ZmhdAiYEeN7-W0VuqKkzn5_LkeWBmDZuWq2D1sKPTZW8vgWE1MvRe4iQHi9_Cley5gsMoFI7WJk7Oot3IO0kSVaiD0P5Gc0exZJ4CefO_K6hXJHRaHpWDvobpNb7rOeFCulKjyIwwaecQGDoo9nq5Aulw1jqloMBd1rvSNYcd0KVkIvmBdnXtBXr7_zQgUXnqHwROX0L36QjKYpwBnJflSI6CLCBY_AcCn8G29HBQPOlh3GMuTSz5KKw',
-                    hero_image_alt: 'Team collaborating on content strategy',
-                    stat1_value: '500+',
-                    stat1_label: 'Clients Served',
-                    stat2_value: '98%',
-                    stat2_label: 'Satisfaction Rate',
+                    tagline: 'Our Products',
+                    title: 'Quality Air Conditioners & Parts',
+                    description: 'Explore a wide range of AC units, parts, and installation services from trusted brands.',
+                    badge_text: 'Free Installation Offer',
+                    highlight_text: 'Air Conditioners',
+                    primary_cta_text: 'Shop Products',
+                    primary_cta_link: '/products',
+                    secondary_cta_text: 'Request Installation',
+                    secondary_cta_link: '/contact',
+                    background_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
+                    hero_image_alt: 'Assortment of air conditioners in a store',
+                    stat1_value: '20+',
+                    stat1_label: 'Brands',
+                    stat2_value: '8k+',
+                    stat2_label: 'Installations',
                     stat3_value: '10k+',
-                    stat3_label: 'Articles Written',
+                    stat3_label: 'Satisfied Customers',
                 });
 
-                const categorySlug = 'content-services';
+                const categorySlug = 'ac-products';
                 await db.insert(serviceCategories).values({
-                    name: 'Content Services',
+                    name: 'AC Products',
                     slug: categorySlug,
-                    description: 'Strategic writing, SEO, and social storytelling crafted for measurable growth.',
-                    icon: 'category',
-                    thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=80',
+                    description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
+                    icon: 'ac_unit',
+                    thumbnail: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
                     display_order: 1,
                     is_active: 1,
-                    meta_title: 'Content Services',
-                    meta_description: 'Explore SEO content, social media, website copy, and blog writing services.',
+                    meta_title: 'AC Products',
+                    meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
                 });
 
                 const [category] = await db
@@ -393,40 +420,44 @@ export async function POST(request: Request) {
 
                 const serviceData = [
                     {
-                        key: 'seo',
-                        icon: 'search',
-                        title: 'SEO Content',
-                        description: 'Search-optimized articles and landing pages that pair audience intent with brand authority to rank and convert.',
-                        bullets: ['Search intent research and briefs', 'On-page structure, schema, and internal links', 'Long-form pages that convert and rank'],
-                        image: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1400&q=80',
-                        image_alt: 'Content strategist reviewing SEO metrics on a laptop',
+                        key: 'mitsubishi-split-1-5-ton',
+                        icon: 'ac_unit',
+                        title: 'Mitsubishi Split 1.5 Ton (Inverter)',
+                        description: 'Energy-efficient inverter split AC with low-noise operation and fast cooling.',
+                        bullets: ['1.5 Ton capacity', 'Inverter technology', '5 year warranty on compressor'],
+                        image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=800&q=80',
+                        image_alt: 'Mitsubishi Split AC unit',
+                        price: '749.00',
                     },
                     {
-                        key: 'social',
-                        icon: 'thumb_up',
-                        title: 'Social Media Content',
-                        description: 'Channel-ready posts, short-form video hooks, and visuals that earn saves, shares, and clicks.',
-                        bullets: ['Monthly content calendars with hooks and CTAs', 'Platform-native short video scripts and captions', 'Design kits for carousels, stories, and ads'],
-                        image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1400&q=80',
-                        image_alt: 'Team planning social content with phones and laptops',
+                        key: 'lg-inverter-1-5-ton',
+                        icon: 'ac_unit',
+                        title: 'LG Inverter 1.5 Ton',
+                        description: 'Smart inverter AC with multi-stage filtration and energy saver mode.',
+                        bullets: ['1.5 Ton capacity', 'Multi-filter system', 'Smart remote & app control'],
+                        image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=800&q=80',
+                        image_alt: 'LG Inverter AC unit',
+                        price: '699.00',
                     },
                     {
-                        key: 'copy',
-                        icon: 'language',
-                        title: 'Website Copywriting',
-                        description: 'Conversion-focused messaging that clarifies your offer and guides visitors to act on key pages.',
-                        bullets: ['Value-prop and messaging frameworks', 'Landing and product pages with A/B testable sections', 'Microcopy for forms, nav, and CTAs'],
-                        image: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1400&q=80',
-                        image_alt: 'Copywriter drafting website copy next to design mockups',
+                        key: 'window-ac-1-ton',
+                        icon: 'window',
+                        title: 'Standard Window AC 1 Ton',
+                        description: 'Compact and affordable window AC suitable for small rooms.',
+                        bullets: ['1 Ton capacity', 'Easy installation', 'Affordable cooling solution'],
+                        image: 'https://images.unsplash.com/photo-1560448079-3f5d1f4f1b4b?auto=format&fit=crop&w=800&q=80',
+                        image_alt: 'Window AC in a bedroom',
+                        price: '349.00',
                     },
                     {
-                        key: 'blog',
-                        icon: 'article',
-                        title: 'Blog Writing',
-                        description: 'Research-backed articles that build trust, answer intent, and drive subscribers and leads.',
-                        bullets: ['Audience and keyword-led topic ideation', 'SME interviews and sourced insights', 'Editorial polish: structure, voice, and SEO basics'],
-                        image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1400&q=80',
-                        image_alt: 'Writer working on a long-form article with notes and laptop',
+                        key: 'ac-compressor-spare',
+                        icon: 'build',
+                        title: 'AC Compressor (Spare Part)',
+                        description: 'Quality compressor replacement for major brands.',
+                        bullets: ['High-durability', 'Fits multiple models', 'Manufacturer-tested'],
+                        image: 'https://images.unsplash.com/photo-1581091012184-7d9e3b3e3b20?auto=format&fit=crop&w=800&q=80',
+                        image_alt: 'AC compressor spare part',
+                        price: '199.00',
                     },
                 ];
 
@@ -523,15 +554,15 @@ export async function POST(request: Request) {
                             featured: index === 0 && vIndex === 0 ? 1 : 0,
                             category_id: category?.id,
                             subcategory_id: subcategoryMap[s.key],
-                            price: '499.00',
+                            price: s.price || '499.00',
                             price_type: 'fixed',
-                            price_label: 'Starting at',
-                            price_description: (s as any).price_description || 'Pricing varies by scope and deliverables.',
+                            price_label: 'Price',
+                            price_description: (s as any).price_description || s.description || 'See product details.',
                             currency: 'USD',
                             authorId: firstUser.id,
                             statusId: publishedStatus.id,
                             meta_title: `${s.title} — ${variant.suffix.replace(/-/g, ' ')}`,
-                            meta_description: `Professional ${s.title.toLowerCase()} services`,
+                            meta_description: `High-quality ${s.title.toLowerCase()}`,
                         });
                     }
 
@@ -549,28 +580,29 @@ export async function POST(request: Request) {
                         featured: index === 0 ? 1 : 0,
                         category_id: category?.id,
                         subcategory_id: subcategoryMap[s.key],
-                        price: '499.00',
+                        price: s.price || '499.00',
                         price_type: 'fixed',
-                        price_label: 'Starting at',
-                        price_description: (s as any).price_description || 'Pricing varies by scope and deliverables.',
+                        price_label: 'Price',
+                        price_description: (s as any).price_description || s.description || 'See product details.',
                         currency: 'USD',
                         authorId: firstUser.id,
                         statusId: publishedStatus.id,
                         meta_title: s.title,
-                        meta_description: `Professional ${s.title.toLowerCase()} services`,
+                        meta_description: `High-quality ${s.title.toLowerCase()}`,
                     });
                 }
 
                 await db.insert(servicesPageProcessSection).values({
-                    title: 'Our Process',
-                    description: 'We follow a proven, collaborative process to deliver high-quality content.',
+                    title: 'Installation Process',
+                    description: 'Professional installation with transparent pricing and safety checks.',
                     is_active: 1,
                 });
 
                 const processSteps = [
-                    { step_number: 1, title: 'Discovery', description: 'Understanding your needs', display_order: 1 },
-                    { step_number: 2, title: 'Strategy', description: 'Developing a tailored strategy', display_order: 2 },
-                    { step_number: 3, title: 'Creation', description: 'Creating compelling content', display_order: 3 },
+                    { step_number: 1, title: 'Consultation', description: 'Assess your needs and recommend models', display_order: 1 },
+                    { step_number: 2, title: 'Measurement & Quote', description: 'Precise measurements and clear pricing', display_order: 2 },
+                    { step_number: 3, title: 'Installation', description: 'Certified technicians install and test the unit', display_order: 3 },
+                    { step_number: 4, title: 'Handover & Support', description: 'Final inspection, demo, and support guidance', display_order: 4 },
                 ];
 
                 for (const step of processSteps) {
@@ -581,9 +613,9 @@ export async function POST(request: Request) {
                 }
 
                 await db.insert(servicesPageCTA).values({
-                    title: 'Ready to Elevate Your Content?',
-                    description: "Let's discuss how we can help you achieve your goals.",
-                    button_text: 'Get a Quote',
+                    title: 'Ready to Install?',
+                    description: "Request an installation visit or a quote for your preferred unit.",
+                    button_text: 'Request Installation',
                     button_link: '/contact',
                     is_active: 1,
                 });
@@ -602,15 +634,15 @@ export async function POST(request: Request) {
 
             await db.insert(contactPageHero).values({
                 tagline: 'CONTACT US',
-                title: "Let's Start a Conversation",
-                description: "We're here to help you with your content needs. Reach out to us, and we'll get back to you as soon as possible.",
+                title: "Get In Touch with AC Vendor",
+                description: "Sales, installation, and support — reach out and our team will respond promptly.",
                 is_active: 1,
             });
 
             await db.insert(contactPageInfo).values({
                 office_location: 'Kathmandu, Nepal',
-                phone: '+977 9876543210',
-                email: 'hello@contentsolution.np',
+                phone: '+977 9800000000',
+                email: 'support@acvendor.com',
                 map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.5769816700773!2d85.3206!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQzJzAyLjAiTiA4NcKwMTknMjIuMiJF!5e0!3m2!1sen!2snp!4v',
                 is_active: 1,
             });
@@ -926,9 +958,9 @@ export async function POST(request: Request) {
             const [firstService] = await db.select().from(servicePosts).limit(1);
             if (firstService) {
                 await db.insert(reviewTestimonials).values({
-                    name: 'John Doe',
-                    role: 'CEO, Sample Company',
-                    content: 'Excellent content solution! Highly recommended.',
+                    name: 'Ram Shrestha',
+                    role: 'Homeowner',
+                    content: 'Great AC and quick installation — technicians were professional and helpful!',
                     url: 'https://via.placeholder.com/150',
                     rating: 5,
                     service: firstService.id,
@@ -973,10 +1005,10 @@ export async function POST(request: Request) {
 
                 // Other main nav items
                 await db.insert(navbarItems).values({ label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Blog', href: '/blog', order: 3, is_button: 0, is_active: 1 });
+                await db.insert(navbarItems).values({ label: 'Products', href: '/products', order: 3, is_button: 0, is_active: 1 });
                 await db.insert(navbarItems).values({ label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Get a Quote', href: '/contact', order: 6, is_button: 1, is_active: 1 });
+                await db.insert(navbarItems).values({ label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 });
+                await db.insert(navbarItems).values({ label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 });
             }
             results.navbar = { success: true, message: 'Navbar seeded successfully' };
         } catch (error) {

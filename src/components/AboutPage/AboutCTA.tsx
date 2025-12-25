@@ -22,24 +22,21 @@ const AboutCTA = ({ data }: AboutCTAProps) => {
     }
 
     return (
-        <section className="w-full py-20 sm:py-32">
-            <div className="mx-auto max-w-6xl">
-                <div className="relative overflow-hidden rounded-2xl bg-card px-8 py-16 shadow-lg lg:px-16 lg:py-20">
-                    {/* accent stripe to ensure contrast with page background */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-primary-20" aria-hidden></div>
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.05),transparent_50%)]" />
-                    <div className="relative z-10 mx-auto max-w-3xl text-center">
-                        <h2 className="text-3xl font-black leading-tight tracking-[-0.02em] text-body md:text-5xl">
-                            {data.title}
-                        </h2>
-                        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-subtext">
-                            {data.description}
-                        </p>
-                        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-                            <CTAButton text={data.primary_button_text} href={data.primary_button_link} variant="primary" className="bg-primary text-white shadow-xl" />
-                            <CTAButton text={data.secondary_button_text} href={data.secondary_button_link} variant="outline" className="border border-primary text-primary hover:bg-primary/10" />
-                        </div>
-                    </div>
+        <section className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-20 bg-primary">
+            <div className="layout-content-container flex flex-col max-w-[960px] flex-1 text-center items-center gap-6">
+                <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight max-w-2xl">
+                    {data.title}
+                </h2>
+                <p className="text-blue-100 text-lg max-w-xl">
+                    {data.description}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                    <a href={data.primary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-white text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 transition-colors shadow-lg">
+                        {data.primary_button_text}
+                    </a>
+                    <a href={data.secondary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary border border-white/30 text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-colors">
+                        {data.secondary_button_text}
+                    </a>
                 </div>
             </div>
         </section>

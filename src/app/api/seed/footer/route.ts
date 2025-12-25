@@ -18,12 +18,12 @@ export async function POST() {
         // Insert default footer sections and links (no 'Connect' — social links are in store settings)
         const defaultSections = [
             {
-                title: 'Solutions',
+                title: 'Products',
                 links: [
-                    { label: 'Content Strategy', href: '/services' },
-                    { label: 'SEO Writing', href: '/services' },
-                    { label: 'Copywriting', href: '/services' },
-                    { label: 'Social Media', href: '/services' },
+                    { label: 'All Products', href: '/products' },
+                    { label: 'Brands', href: '/brands' },
+                    { label: 'Installation', href: '/services' },
+                    { label: 'Support', href: '/support' },
                 ],
             },
             {

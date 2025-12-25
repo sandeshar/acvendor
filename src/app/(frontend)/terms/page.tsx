@@ -92,7 +92,7 @@ export default async function TermsPage() {
                 <div className="prose prose-slate mx-auto mt-8 md:mt-12 max-w-3xl prose-headings:font-semibold prose-headings:text-slate-800 prose-p:text-slate-700 prose-a:text-primary hover:prose-a:underline space-y-8">
                     {sections && sections.length > 0 ? (
                         sections.map((section: TermsSectionData) => (
-                            <section key={section.id} className="py-6 md:py-8">
+                            <section key={section.id} className="px-4 md:px-10 py-6 md:py-8">
                                 <h2 className="text-2xl font-bold mb-3">{section.title}</h2>
                                 <p className="text-base md:text-lg leading-relaxed">
                                     {renderSectionContent(section)}

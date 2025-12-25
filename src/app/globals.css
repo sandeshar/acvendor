@@ -513,28 +513,4 @@ body {
 }
 
 /* Mobile: ensure consistent horizontal padding for main sections & containers */
-@media (max-width: 640px) {
-
-    /* Apply side padding to semantic sections, headers, footers and common max-width containers */
-    section,
-    header,
-    footer,
-    [class*="max-w-"],
-    .mx-auto {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    /* Slightly larger padding for very small screens */
-    @media (max-width: 420px) {
-
-        section,
-        header,
-        footer,
-        [class*="max-w-"],
-        .mx-auto {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
-        }
-    }
-}
+/* Note: section-level horizontal padding is now managed per-component. Global mobile padding removed to allow per-section control. */

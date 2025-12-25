@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { alt_text, logo_url, dark_invert = 0, display_order, is_active = 1 } = body;
+        const { alt_text, logo_url, invert = 0, display_order, is_active = 1 } = body;
 
         if (!alt_text || !logo_url || display_order === undefined) {
             return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         const result = await db.insert(homepageTrustLogos).values({
             alt_text,
             logo_url,
-            dark_invert,
+            invert,
             display_order,
             is_active,
         });
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, alt_text, logo_url, dark_invert, display_order, is_active } = body;
+        const { id, alt_text, logo_url, invert, display_order, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
         const updateData: any = {};
         if (alt_text !== undefined) updateData.alt_text = alt_text;
         if (logo_url !== undefined) updateData.logo_url = logo_url;
-        if (dark_invert !== undefined) updateData.dark_invert = dark_invert;
+        if (invert !== undefined) updateData.invert = invert;
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 

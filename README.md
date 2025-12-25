@@ -165,9 +165,9 @@ Note: This project uses the App Router (`src/app`) rather than `pages/`. Below i
 ### Public UI
 - `/` (`src/app/page.tsx`): Main landing; SSG/ISR
 - `/admin` (`src/app/admin/page.tsx`): Admin dashboard; SSR/protected
-- `/admin/blog` (`src/app/admin/blog/page.tsx`): Manage blogs; SSR/protected
-- `/admin/blog/add` (`src/app/admin/blog/add/page.tsx`): Add blog; SSR/protected
-- `/admin/blog/edit/[id]` (`src/app/admin/blog/edit/[id]/page.tsx`): Edit blog; SSR/protected
+- `/admin/products` (`src/app/admin/products/page.tsx`): Manage products; SSR/protected
+- `/admin/products/add` (`src/app/admin/products/add/page.tsx`): Add product; SSR/protected
+- `/admin/products/edit/[id]` (`src/app/admin/products/edit/[id]/page.tsx`): Edit product; SSR/protected
 - `/admin/store-setting` (`src/app/admin/store-setting/page.tsx`): Store settings; SSR/protected
 - `/ui/home` (`src/app/admin/ui/home/page.tsx`): Home template; SSR/SSG depending on content
 - `/ui/about` (`src/app/admin/ui/about/page.tsx`): About us; SSG

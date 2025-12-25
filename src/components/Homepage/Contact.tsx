@@ -24,7 +24,7 @@ const Contact = ({ data }: ContactProps) => {
     }
 
     return (
-        <section className="py-20 sm:py-32">
+        <section className="px-4 md:px-10 py-20 sm:py-32">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-card border border-muted rounded-xl p-8 sm:p-12">
                 <div className="flex flex-col gap-4">
                     <h2 className="text-3xl md:text-4xl font-black text-body">{data.title}</h2>

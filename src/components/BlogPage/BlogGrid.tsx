@@ -62,7 +62,7 @@ const BlogGrid = ({ posts }: BlogGridProps) => {
     return (
         <div className="grid grid-cols-1 gap-8 p-4 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-                <Link key={post.id} href={`/blog/${post.slug}`}>
+                <Link key={post.id} href={`/products/${post.slug}`}>
                     <ArticleCard
                         category={getCategory(post.tags)}
                         title={post.title}

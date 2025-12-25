@@ -144,7 +144,7 @@ export default function EditBlogPage() {
                 showToast(`Failed to load post: ${error.message}`, { type: 'error' });
                 // Redirect back to blog list after error
                 setTimeout(() => {
-                    window.location.href = '/admin/blog';
+                    window.location.href = '/admin/products';
                 }, 2000);
             } finally {
                 setIsLoading(false);
@@ -168,7 +168,9 @@ export default function EditBlogPage() {
         if (!editor) return;
         const handler = (e: KeyboardEvent) => {
             // Ensure editor is focused and mounted before running shortcuts
-            if (!editor.isFocused || !editor.isFocused()) return;
+            const ed: any = editor;
+            const isFocused = typeof ed?.isFocused === 'function' ? ed.isFocused() : Boolean(ed?.isFocused);
+            if (!isFocused) return;
             const mod = e.ctrlKey || e.metaKey;
             if (!mod) return;
             const key = e.key.toLowerCase();
@@ -253,7 +255,7 @@ export default function EditBlogPage() {
                 // Upload the image
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('folder', 'blog/content');
+                formData.append('folder', 'products/content');
 
                 const response = await fetch('/api/upload', {
                     method: 'POST',
@@ -333,7 +335,7 @@ export default function EditBlogPage() {
                                         URL Slug
                                     </label>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-sm text-slate-500">/blog/</span>
+                                        <span className="text-sm text-slate-500">/products/</span>
                                         <input
                                             type="text"
                                             id="slug"

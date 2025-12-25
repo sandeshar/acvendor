@@ -63,8 +63,9 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     // Logo load state: if the image fails to load, we show a fallback icon
     const [logoError, setLogoError] = useState(false);
 
-    // Normalize relative logo URLs to absolute so <img> can load them reliably
-    const logoSrc = storeLogo && typeof window !== 'undefined' && storeLogo.startsWith('/') ? `${window.location.origin}${storeLogo}` : storeLogo;
+    // Use provided logo path as-is (avoid client-only transforms which cause hydration mismatches)
+    // If the value is relative (starts with '/'), it's fine — the browser will resolve it consistently on server and client.
+    const logoSrc = storeLogo || undefined;
 
     // Optional: allow hiding the site name on mobile via a store flag (truthy values supported)
     const hideSiteNameOnMobile = Boolean(
@@ -95,11 +96,11 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                 if (isMounted) {
                     setNavLinks([
                         { id: 1, label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-                        { id: 2, label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1 },
+                        { id: 2, label: 'Products', href: '/products', order: 1, is_button: 0, is_active: 1 },
                         { id: 3, label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 },
-                        { id: 4, label: 'Blog', href: '/blog', order: 3, is_button: 0, is_active: 1 },
+                        { id: 4, label: 'Brands', href: '/brands', order: 3, is_button: 0, is_active: 1 },
                         { id: 5, label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-                        { id: 6, label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
+                        { id: 6, label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 },
                     ]);
                 }
             } finally {

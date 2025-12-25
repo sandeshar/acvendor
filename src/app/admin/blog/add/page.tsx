@@ -110,7 +110,9 @@ function AddBlogPage() {
         if (!editor) return;
         const handler = (e: KeyboardEvent) => {
             // Ensure editor is focused and mounted before running shortcuts
-            if (!editor.isFocused || !editor.isFocused()) return;
+            const ed: any = editor;
+            const isFocused = typeof ed?.isFocused === 'function' ? ed.isFocused() : Boolean(ed?.isFocused);
+            if (!isFocused) return;
             const mod = e.ctrlKey || e.metaKey;
             if (!mod) return;
             const key = e.key.toLowerCase();
@@ -158,7 +160,7 @@ function AddBlogPage() {
             }
 
             showToast(isDraft ? 'Draft saved successfully!' : 'Post published successfully!', { type: 'success' });
-            window.location.href = '/admin/blog';
+            window.location.href = '/admin/products';
         } catch (error: any) {
             console.error('Error creating post:', error);
             showToast(error.message || 'Failed to create post. Please try again.', { type: 'error' });
@@ -194,7 +196,7 @@ function AddBlogPage() {
                 // Upload the image
                 const formData = new FormData();
                 formData.append('file', file);
-                formData.append('folder', 'blog/content');
+                formData.append('folder', 'products/content');
 
                 const response = await fetch('/api/upload', {
                     method: 'POST',
@@ -260,7 +262,7 @@ function AddBlogPage() {
                                         URL Slug
                                     </label>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-sm text-slate-500">/blog/</span>
+                                        <span className="text-sm text-slate-500">/products/</span>
                                         <input
                                             type="text"
                                             id="slug"

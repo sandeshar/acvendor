@@ -13,24 +13,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     try {
-        // Use the blog API; if it fails, return static pages only (no DB access here)
+        // Use the services API as products for sitemap; if it fails, return static pages only
         const base = process.env.NEXT_PUBLIC_BASE_URL || baseUrl;
         try {
-            const res = await fetch(`${base}/api/blog`);
+            const res = await fetch(`${base}/api/services`);
             if (res.ok) {
                 const posts = await res.json();
                 if (Array.isArray(posts)) {
-                    const blogPages: MetadataRoute.Sitemap = posts.map((post: any) => ({
-                        url: `${baseUrl}/blog/${post.slug}`,
-                        lastModified: new Date(post.updatedAt),
+                    const productPages: MetadataRoute.Sitemap = posts.map((post: any) => ({
+                        url: `${baseUrl}/products/${post.slug}`,
+                        lastModified: new Date(post.updatedAt || post.createdAt),
                         changeFrequency: 'weekly',
-                        priority: 0.7,
+                        priority: 0.8,
                     }));
-                    return [...staticPages, ...blogPages];
+                    return [...staticPages, ...productPages];
                 }
             }
         } catch (e) {
-            console.error('Error fetching /api/blog for sitemap:', e);
+            console.error('Error fetching /api/services for sitemap:', e);
             return staticPages;
         }
 

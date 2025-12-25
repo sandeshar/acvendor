@@ -34,7 +34,7 @@ export const homepageTrustLogos = mysqlTable("homepage_trust_logos", {
     id: int("id").primaryKey().autoincrement(),
     alt_text: varchar("alt_text", { length: 256 }).notNull(),
     logo_url: varchar("logo_url", { length: 512 }).notNull(),
-    dark_invert: int("dark_invert").default(0).notNull(),
+    invert: int("invert").default(0).notNull(),
     display_order: int("display_order").notNull(),
     is_active: int("is_active").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

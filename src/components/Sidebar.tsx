@@ -32,7 +32,7 @@ const SideBar = () => {
         { name: 'Users', icon: 'group', href: '/admin/users' },
         { name: 'Services Manager', icon: 'service_toolbox', href: '/admin/services/manager' },
         { name: 'Category Manager', icon: 'category', href: '/admin/categories' },
-        { name: 'Blog', icon: 'article', href: '/admin/blog' },
+        { name: 'Products', icon: 'inventory_2', href: '/admin/products' },
         { name: 'Testimonials', icon: 'reviews', href: '/admin/testimonials' },
         { name: 'Contact', icon: 'contact_mail', href: '/admin/contact' },
     ];

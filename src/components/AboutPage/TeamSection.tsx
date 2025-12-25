@@ -32,7 +32,7 @@ const TeamSection = ({ section, members = [] }: TeamSectionProps) => {
     }
 
     return (
-        <section className="w-full py-20 sm:py-32">
+        <section className="w-full px-4 md:px-10 py-20 sm:py-32">
             <div className="mx-auto max-w-6xl">
                 <div className="mb-12 text-center">
                     <h2 className="text-3xl font-black leading-tight tracking-[-0.02em] text-slate-900 md:text-5xl">

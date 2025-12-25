@@ -12,12 +12,12 @@ export async function POST(request: Request) {
         // Seed default navbar items
         const defaultItems = [
             { label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-            { label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
-            { label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 },
-            { label: 'Blog', href: '/blog', order: 3, is_button: 0, is_active: 1 },
+            { label: 'Products', href: '/products', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
+            { label: 'Brands', href: '/brands', order: 2, is_button: 0, is_active: 1 },
+            { label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
             { label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-            { label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
-            { label: 'Get a Quote', href: '/contact', order: 6, is_button: 1, is_active: 1 },
+            { label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 },
+            { label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 },
         ];
 
         // Insert defaults
@@ -29,35 +29,35 @@ export async function POST(request: Request) {
         // Attach service categories as dropdown children under Services.
         const categories = await db.select().from(serviceCategories);
         if (!categories || categories.length === 0) {
-            return NextResponse.json({ message: 'No service categories found. Run /api/seed/services first' }, { status: 200 });
+            return NextResponse.json({ message: 'No product categories found. Run /api/seed/services first' }, { status: 200 });
         }
 
-        // Get the Services main nav ID
-        const serviceNavRow = await db.select().from(navbarItems).where(eq(navbarItems.href, '/services')).limit(1);
-        const servicesId = serviceNavRow[0]?.id;
-        if (!servicesId) {
-            return NextResponse.json({ error: 'Services nav item not found' }, { status: 500 });
+        // Get the Products main nav ID
+        const productNavRow = await db.select().from(navbarItems).where(eq(navbarItems.href, '/products')).limit(1);
+        const productsId = productNavRow[0]?.id;
+        if (!productsId) {
+            return NextResponse.json({ error: 'Products nav item not found' }, { status: 500 });
         }
 
-        // Insert each category under Services
+        // Insert each category under Products
         for (let i = 0; i < categories.length; i++) {
             const cat = categories[i];
             const subs = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.category_id, cat.id));
             const catHasSub = Array.isArray(subs) && subs.length > 0;
 
-            const [existingChild] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, servicesId))).limit(1);
+            const [existingChild] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
             let catNavId = undefined as number | undefined;
             if (!existingChild) {
                 await db.insert(navbarItems).values({
                     label: cat.name,
                     href: `/services?category=${cat.slug}`,
                     order: i,
-                    parent_id: servicesId,
+                    parent_id: productsId,
                     is_button: 0,
                     is_active: 1,
                     is_dropdown: catHasSub ? 1 : 0,
                 });
-                const created = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, servicesId))).limit(1);
+                const created = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
                 catNavId = created[0]?.id;
             } else {
                 catNavId = existingChild.id;
