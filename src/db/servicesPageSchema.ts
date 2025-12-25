@@ -73,3 +73,56 @@ export const servicesPageCTA = mysqlTable("services_page_cta", {
     is_active: int("is_active").default(1).notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });
+
+// Additional editable sections for Services page
+// Feature Strip (three or more items shown as highlights)
+export const servicesFeatureStrip = mysqlTable("services_feature_strip", {
+    id: int("id").primaryKey().autoincrement(),
+    icon: varchar("icon", { length: 100 }).notNull(),
+    title: varchar("title", { length: 256 }).notNull(),
+    description: varchar("description", { length: 512 }).notNull(),
+    display_order: int("display_order").default(0).notNull(),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Overview (heading + intro paragraph for services overview)
+export const servicesOverview = mysqlTable("services_overview", {
+    id: int("id").primaryKey().autoincrement(),
+    title: varchar("title", { length: 256 }).notNull(),
+    description: varchar("description", { length: 1024 }).notNull(),
+    is_active: int("is_active").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Brands (trusted brands listed on the page)
+export const servicesBrands = mysqlTable("services_brands", {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 128 }).notNull(),
+    logo_url: varchar("logo_url", { length: 512 }),
+    display_order: int("display_order").default(0).notNull(),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+// Trust stats and testimonial association for the services page
+export const servicesTrustStats = mysqlTable("services_trust_stats", {
+    id: int("id").primaryKey().autoincrement(),
+    label: varchar("label", { length: 128 }).notNull(),
+    value: varchar("value", { length: 64 }).notNull(),
+    description: varchar("description", { length: 512 }).notNull().default(''),
+    display_order: int("display_order").default(0).notNull(),
+    is_active: int("is_active").default(1).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const servicesTrustSection = mysqlTable("services_trust_section", {
+    id: int("id").primaryKey().autoincrement(),
+    heading: varchar("heading", { length: 256 }).notNull(),
+    testimonial_id: int("testimonial_id"), // optional link to review/testimonial
+    is_active: int("is_active").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});

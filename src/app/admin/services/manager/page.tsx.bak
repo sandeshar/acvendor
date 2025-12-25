@@ -1,0 +1,1372 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import NextLink from "next/link";
+import { showToast } from '@/components/Toast';
+import ImageUploader from '@/components/shared/ImageUploader';
+import { getBlogStatusLabel, getBlogStatusClasses } from "@/utils/statusHelpers";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import LinkExtension from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+
+type ServicePost = {
+    id: number;
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    thumbnail?: string | null;
+    icon?: string | null;
+    featured: number;
+    authorId: number;
+    statusId: number;
+    meta_title?: string | null;
+    meta_description?: string | null;
+    category_id?: number | null;
+    subcategory_id?: number | null;
+    price?: string | null;
+    price_type?: string | null;
+    price_label?: string | null;
+    price_description?: string | null;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export default function ServicesManagerPage() {
+    const [activeTab, setActiveTab] = useState("services");
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    // Page Builder state
+    const [heroData, setHeroData] = useState<any>({});
+    const [servicesList, setServicesList] = useState<any[]>([]);
+    const [processSection, setProcessSection] = useState<any>({});
+    const [processSteps, setProcessSteps] = useState<any[]>([]);
+    const [ctaData, setCtaData] = useState<any>({});
+    const [deletedProcessSteps, setDeletedProcessSteps] = useState<number[]>([]);
+
+    // Content state (Feature strip, Overview, Brands, Trust)
+    const [featureItems, setFeatureItems] = useState<any[]>([]);
+    const [deletedFeatureIds, setDeletedFeatureIds] = useState<number[]>([]);
+    const [overviewData, setOverviewData] = useState<any>({});
+    const [brands, setBrands] = useState<any[]>([]);
+    const [deletedBrandIds, setDeletedBrandIds] = useState<number[]>([]);
+    const [trustStats, setTrustStats] = useState<any[]>([]);
+    const [deletedTrustStatIds, setDeletedTrustStatIds] = useState<number[]>([]);
+    const [trustSectionData, setTrustSectionData] = useState<any>({});
+    const [testimonials, setTestimonials] = useState<any[]>([]);
+
+    // Categories state
+    const [categories, setCategories] = useState<any[]>([]);
+    const [subcategories, setSubcategories] = useState<any[]>([]);
+
+    // Modal state
+    const [selectedService, setSelectedService] = useState<any | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<number | null>(null);
+
+    useEffect(() => {
+        fetchAllData();
+    }, []);
+
+    const fetchAllData = async () => {
+        setLoading(true);
+        try {
+            const [postsRes, heroRes, servicesRes, procSecRes, procStepsRes, ctaRes, categoriesRes, subcategoriesRes] = await Promise.all([
+                fetch('/api/services'),
+                fetch('/api/pages/services/hero'),
+                fetch('/api/pages/services/details'),
+                fetch('/api/pages/services/process-section'),
+                fetch('/api/pages/services/process-steps'),
+                fetch('/api/pages/services/cta'),
+                fetch('/api/pages/services/categories'),
+                fetch('/api/pages/services/subcategories'),
+                // Content endpoints
+                fetch('/api/pages/services/feature-strip'),
+                fetch('/api/pages/services/overview'),
+                fetch('/api/pages/services/brands'),
+                fetch('/api/pages/services/trust-stats'),
+                fetch('/api/pages/services/trust-section'),
+                fetch('/api/testimonial'),
+            ]);
+
+            const posts = postsRes.ok ? await postsRes.json() : [];
+            const servicesDetails = servicesRes.ok ? await servicesRes.json() : [];
+            const cats = categoriesRes.ok ? await categoriesRes.json() : [];
+            const subs = subcategoriesRes.ok ? await subcategoriesRes.json() : [];
+            console.log('Categories loaded:', cats);
+            console.log('Subcategories loaded:', subs);
+            setCategories(cats);
+            setSubcategories(subs);
+
+            // Content responses
+
+            // Read content responses by fetching again (safer approach)
+            const [featureRes2, overviewRes, brandsRes, trustStatsRes, trustSectionRes, testimonialsRes] = await Promise.all([
+                fetch('/api/pages/services/feature-strip'),
+                fetch('/api/pages/services/overview'),
+                fetch('/api/pages/services/brands'),
+                fetch('/api/pages/services/trust-stats'),
+                fetch('/api/pages/services/trust-section'),
+                fetch('/api/testimonial'),
+            ]);
+
+            const featureItemsJson = featureRes2.ok ? await featureRes2.json() : [];
+            const overviewJson = overviewRes.ok ? await overviewRes.json() : {};
+            const brandsJson = brandsRes.ok ? await brandsRes.json() : [];
+            const trustStatsJson = trustStatsRes.ok ? await trustStatsRes.json() : [];
+            const trustSectionJson = trustSectionRes.ok ? await trustSectionRes.json() : {};
+            const testimonialsJson = testimonialsRes.ok ? await testimonialsRes.json() : [];
+
+            setFeatureItems(featureItemsJson);
+            setOverviewData(overviewJson);
+            setBrands(brandsJson);
+            setTrustStats(trustStatsJson);
+            setTrustSectionData(trustSectionJson);
+            setTestimonials(testimonialsJson);
+
+            const postsMap = new Map(posts.map((p: ServicePost) => [p.slug, p]));
+
+            const mergedServices = servicesDetails.map((s: any) => {
+                const post = (postsMap.get(s.key) || postsMap.get(s.slug)) as ServicePost | undefined;
+                return {
+                    ...s,
+                    bullets: typeof s.bullets === 'string' ? JSON.parse(s.bullets) : s.bullets,
+                    postId: post?.id,
+                    slug: s.slug || post?.slug || s.key,
+                    excerpt: post?.excerpt || s.description,
+                    content: post?.content || `<p>${s.description}</p>`,
+                    thumbnail: post?.thumbnail || s.image,
+                    statusId: post?.statusId || 1,
+                    metaTitle: post?.meta_title || s.title,
+                    metaDescription: post?.meta_description || s.description,
+                    createdAt: post?.createdAt || null,
+                    category_id: post?.category_id,
+                    subcategory_id: post?.subcategory_id,
+                    price: post?.price,
+                    price_type: post?.price_type,
+                    price_label: post?.price_label,
+                    price_description: post?.price_description,
+                };
+            });
+
+            posts.forEach((post: ServicePost) => {
+                const hasDetail = mergedServices.some((s: any) => s.postId === post.id);
+                if (!hasDetail) {
+                    mergedServices.push({
+                        postId: post.id,
+                        key: post.slug,
+                        icon: post.icon || "design_services",
+                        title: post.title,
+                        description: post.excerpt,
+                        bullets: [],
+                        image: post.thumbnail,
+                        image_alt: post.title,
+                        slug: post.slug,
+                        excerpt: post.excerpt,
+                        content: post.content,
+                        thumbnail: post.thumbnail,
+                        statusId: post.statusId,
+                        metaTitle: post.meta_title || post.title,
+                        metaDescription: post.meta_description || post.excerpt,
+                    });
+                }
+            });
+
+            // De-duplicate services by slug (or key) — merge entries and prefer linked posts and detailed records.
+            const dedupedMap = new Map<string, any>();
+            const titleMap = new Map<string, string>(); // maps normalized title to slug in dedupedMap
+            const canonicalSlug = (svc: any) => ((svc.slug || svc.key || '') as string).toLowerCase();
+            const normalizeTitle = (t?: string) => (t || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+            for (const svc of mergedServices) {
+                const slug = canonicalSlug(svc);
+                if (!slug) {
+                    // try to dedupe by normalized title if slug missing
+                    const normTitle = normalizeTitle(svc.title);
+                    if (normTitle && titleMap.has(normTitle)) {
+                        const existingSlug = titleMap.get(normTitle)!;
+                        const existing = dedupedMap.get(existingSlug);
+                        // merge into existing
+                        const merged = { ...existing };
+                        if (!merged.postId && svc.postId) merged.postId = svc.postId;
+                        merged.title = merged.title || svc.title;
+                        merged.description = merged.description || svc.description || svc.excerpt;
+                        merged.excerpt = merged.excerpt || svc.excerpt;
+                        merged.content = merged.content || svc.content;
+                        merged.thumbnail = merged.thumbnail || svc.thumbnail || svc.image;
+                        merged.statusId = merged.statusId || svc.statusId || 1;
+                        merged.metaTitle = merged.metaTitle || svc.metaTitle;
+                        merged.metaDescription = merged.metaDescription || svc.metaDescription;
+                        merged.category_id = merged.category_id || svc.category_id;
+                        merged.subcategory_id = merged.subcategory_id || svc.subcategory_id;
+                        merged.key = merged.key || svc.key;
+                        merged.slug = merged.slug || svc.slug || svc.key;
+                        dedupedMap.set(existingSlug, merged);
+                    } else {
+                        // create a temporary key for entries without slug
+                        const tmpKey = `__no_slug__${Math.random()}`;
+                        dedupedMap.set(tmpKey, svc);
+                        if (svc.title) titleMap.set(normalizeTitle(svc.title), tmpKey);
+                    }
+                    continue;
+                }
+
+                const existing = dedupedMap.get(slug);
+                if (!existing) {
+                    dedupedMap.set(slug, { ...svc });
+                    continue;
+                }
+
+                // Merge fields: prefer existing's detailed data, fall back to svc; prefer postId when present
+                const merged = { ...existing };
+                if (!merged.postId && svc.postId) merged.postId = svc.postId;
+                merged.title = merged.title || svc.title;
+                merged.description = merged.description || svc.description || svc.excerpt;
+                merged.excerpt = merged.excerpt || svc.excerpt;
+                merged.content = merged.content || svc.content;
+                merged.thumbnail = merged.thumbnail || svc.thumbnail || svc.image;
+                merged.statusId = merged.statusId || svc.statusId || 1;
+                merged.metaTitle = merged.metaTitle || svc.metaTitle;
+                merged.metaDescription = merged.metaDescription || svc.metaDescription;
+                merged.category_id = merged.category_id || svc.category_id;
+                merged.subcategory_id = merged.subcategory_id || svc.subcategory_id;
+                merged.key = merged.key || svc.key;
+                merged.slug = merged.slug || svc.slug || svc.key;
+
+                dedupedMap.set(slug, merged);
+                if (merged.title) titleMap.set(normalizeTitle(merged.title), slug);
+            }
+            // Convert deduped map to array and sort by createdAt desc (recent first)
+            const servicesArray = Array.from(dedupedMap.values());
+            servicesArray.sort((a: any, b: any) => {
+                const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return bDate - aDate;
+            });
+            setServicesList(servicesArray);
+            setHeroData(heroRes.ok ? await heroRes.json() : {});
+            setProcessSection(procSecRes.ok ? await procSecRes.json() : {});
+            setProcessSteps(procStepsRes.ok ? await procStepsRes.json() : []);
+            setCtaData(ctaRes.ok ? await ctaRes.json() : {});
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addServiceWithPost = () => {
+        const newService = {
+            key: `service-${Date.now()}`,
+            icon: "design_services",
+            title: "New Service",
+            description: "Service description",
+            bullets: [],
+            image: "",
+            image_alt: "Service image",
+            slug: `service-${Date.now()}`,
+            excerpt: "Service description",
+            content: "<p>Service description</p>",
+            thumbnail: "",
+            statusId: 1,
+            metaTitle: "New Service",
+            metaDescription: "Service description",
+            category_id: null,
+            subcategory_id: null,
+            price: null,
+            price_type: 'fixed',
+            price_label: null,
+            price_description: null,
+            isNew: true
+        };
+        setSelectedService(newService);
+        setIsModalOpen(true);
+    };
+
+    const saveServiceWithPost = async () => {
+        if (!selectedService) return;
+
+        // Validate slug
+        if (!selectedService.slug && !selectedService.key) {
+            showToast('Please enter a slug for the service', { type: 'error' });
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const finalSlug = (selectedService.slug || selectedService.key).trim();
+
+            if (!finalSlug) {
+                showToast('Slug cannot be empty', { type: 'error' });
+                setSaving(false);
+                return;
+            }
+
+            console.log('Saving service with slug:', finalSlug);
+
+            const postPayload = {
+                title: selectedService.title,
+                slug: finalSlug,
+                excerpt: selectedService.excerpt || selectedService.description,
+                content: selectedService.content || `<p>${selectedService.description}</p>`,
+                thumbnail: selectedService.thumbnail || selectedService.image || null,
+                icon: selectedService.icon,
+                statusId: selectedService.statusId || 1,
+                metaTitle: selectedService.metaTitle || selectedService.title,
+                metaDescription: selectedService.metaDescription || selectedService.description,
+                category_id: selectedService.category_id || null,
+                subcategory_id: selectedService.subcategory_id || null,
+                price: selectedService.price || null,
+                price_type: selectedService.price_type || 'fixed',
+                price_label: selectedService.price_label || null,
+                price_description: selectedService.price_description || null,
+            };
+
+            let postResponse;
+            if (selectedService.postId) {
+                postResponse = await fetch('/api/services', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: selectedService.postId, ...postPayload }),
+                });
+            } else {
+                postResponse = await fetch('/api/services', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postPayload),
+                });
+            }
+
+            if (!postResponse.ok) {
+                const errorData = await postResponse.json();
+                throw new Error(errorData.error || 'Failed to save service post');
+            }
+            const postData = await postResponse.json();
+
+            const detailPayload: any = {
+                key: finalSlug,
+                slug: finalSlug,
+                icon: selectedService.icon || 'design_services',
+                title: selectedService.title || 'New Service',
+                description: selectedService.description || selectedService.excerpt || 'Service description',
+                bullets: JSON.stringify(selectedService.bullets || []),
+                image: selectedService.image || selectedService.thumbnail || '/placeholder-service.jpg',
+                image_alt: selectedService.image_alt || selectedService.title || 'Service image',
+                display_order: selectedService.display_order ?? 0,
+                is_active: 1,
+                postId: postData.id || selectedService.postId,
+            };
+
+            // Add ID for updates
+            if (selectedService.id) {
+                detailPayload.id = selectedService.id;
+            }
+
+            const detailMethod = selectedService.id ? 'PUT' : 'POST';
+            const detailResponse = await fetch('/api/pages/services/details', {
+                method: detailMethod,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(detailPayload),
+            });
+
+            if (!detailResponse.ok) {
+                const errorData = await detailResponse.json();
+                console.error('Detail save error:', errorData);
+                throw new Error(`Failed to save service detail: ${errorData.error || 'Unknown error'}`);
+            }
+
+            showToast('Service saved successfully!', { type: 'success' });
+            setIsModalOpen(false);
+            setSelectedService(null);
+            fetchAllData();
+        } catch (error) {
+            console.error('Error saving service:', error);
+            showToast('Failed to save service. Please try again.', { type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteService = async () => {
+        if (!selectedService) return;
+        if (!confirm(`Are you sure you want to delete "${selectedService.title}"?`)) return;
+
+        setSaving(true);
+        try {
+            // Delete service detail first (if any), then delete the post to avoid FK conflicts
+            if (selectedService.id) {
+                const detailRes = await fetch(`/api/pages/services/details?id=${selectedService.id}`, {
+                    method: 'DELETE',
+                });
+                if (!detailRes.ok) throw new Error('Failed to delete service detail');
+            }
+
+            if (selectedService.postId) {
+                const postRes = await fetch(`/api/services?id=${selectedService.postId}`, {
+                    method: 'DELETE',
+                });
+                if (!postRes.ok) throw new Error('Failed to delete service post');
+            }
+
+            showToast('Service deleted successfully!', { type: 'success' });
+            setIsModalOpen(false);
+            setSelectedService(null);
+            fetchAllData();
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            showToast('Failed to delete service. Please try again.', { type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSavePageBuilder = async () => {
+        setSaving(true);
+        try {
+            const promises = [];
+
+            if (activeTab === "hero") {
+                promises.push(
+                    fetch('/api/pages/services/hero', {
+                        method: heroData.id ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(heroData),
+                    })
+                );
+            }
+
+            if (activeTab === "process") {
+                promises.push(
+                    fetch('/api/pages/services/process-section', {
+                        method: processSection.id ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(processSection),
+                    })
+                );
+
+                processSteps.forEach((step, idx) => {
+                    // Normalize payload to API expectations: step_number, title, description, display_order, is_active
+                    const stepNumber = step.step_number ?? step.order_index ?? (idx + 1);
+                    const displayOrder = step.display_order ?? step.order_index ?? (idx + 1);
+                    const payload: any = {
+                        title: step.title,
+                        description: step.description,
+                        step_number: stepNumber,
+                        display_order: displayOrder,
+                        is_active: step.is_active !== undefined ? step.is_active : 1,
+                    };
+                    // Include id when updating
+                    if (step.id) payload.id = step.id;
+
+                    promises.push(
+                        fetch('/api/pages/services/process-steps', {
+                            method: step.id ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        })
+                    );
+                });
+
+                deletedProcessSteps.forEach(id => {
+                    promises.push(
+                        fetch('/api/pages/services/process-steps', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id }),
+                        })
+                    );
+                });
+            }
+
+            if (activeTab === "cta") {
+                promises.push(
+                    fetch('/api/pages/services/cta', {
+                        method: ctaData.id ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ctaData),
+                    })
+                );
+            }
+
+            if (activeTab === "content") {
+                // Overview
+                promises.push(
+                    fetch('/api/pages/services/overview', {
+                        method: overviewData.id ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(overviewData),
+                    })
+                );
+
+                // Feature items
+                featureItems.forEach((item, idx) => {
+                    const payload: any = {
+                        icon: item.icon,
+                        title: item.title,
+                        description: item.description,
+                        display_order: item.display_order ?? (idx + 1),
+                        is_active: item.is_active !== undefined ? item.is_active : 1,
+                    };
+                    if (item.id) payload.id = item.id;
+                    promises.push(
+                        fetch('/api/pages/services/feature-strip', {
+                            method: item.id ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        })
+                    );
+                });
+
+                deletedFeatureIds.forEach(id => {
+                    promises.push(fetch('/api/pages/services/feature-strip?id=' + id, { method: 'DELETE' }));
+                });
+
+                // Brands
+                brands.forEach((b, idx) => {
+                    const payload: any = {
+                        name: b.name,
+                        logo_url: b.logo_url,
+                        display_order: b.display_order ?? (idx + 1),
+                        is_active: b.is_active !== undefined ? b.is_active : 1,
+                    };
+                    if (b.id) payload.id = b.id;
+                    promises.push(
+                        fetch('/api/pages/services/brands', {
+                            method: b.id ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        })
+                    );
+                });
+
+                deletedBrandIds.forEach(id => {
+                    promises.push(fetch('/api/pages/services/brands?id=' + id, { method: 'DELETE' }));
+                });
+
+                // Trust stats
+                trustStats.forEach((s, idx) => {
+                    const payload: any = {
+                        label: s.label,
+                        value: s.value,
+                        description: s.description,
+                        display_order: s.display_order ?? (idx + 1),
+                        is_active: s.is_active !== undefined ? s.is_active : 1,
+                    };
+                    if (s.id) payload.id = s.id;
+                    promises.push(
+                        fetch('/api/pages/services/trust-stats', {
+                            method: s.id ? 'PUT' : 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                        })
+                    );
+                });
+
+                deletedTrustStatIds.forEach(id => {
+                    promises.push(fetch('/api/pages/services/trust-stats?id=' + id, { method: 'DELETE' }));
+                });
+
+                // Trust section
+                promises.push(
+                    fetch('/api/pages/services/trust-section', {
+                        method: trustSectionData.id ? 'PUT' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(trustSectionData),
+                    })
+                );
+            }
+
+            await Promise.all(promises);
+            showToast('Changes saved successfully!', { type: 'success' });
+            setDeletedProcessSteps([]);
+            fetchAllData();
+        } catch (error) {
+            console.error('Error saving:', error);
+            showToast('Failed to save changes. Please try again.', { type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const updateItem = (field: string, value: any) => {
+        if (!selectedService) return;
+        setSelectedService({ ...selectedService, [field]: value });
+    };
+
+    const addBullet = () => {
+        if (!selectedService) return;
+        const bullets = [...(selectedService.bullets || []), ""];
+        setSelectedService({ ...selectedService, bullets });
+    };
+
+    const updateBullet = (bulletIdx: number, value: string) => {
+        if (!selectedService) return;
+        const bullets = [...(selectedService.bullets || [])];
+        bullets[bulletIdx] = value;
+        setSelectedService({ ...selectedService, bullets });
+    };
+
+    const removeBullet = (bulletIdx: number) => {
+        if (!selectedService) return;
+        const bullets = [...(selectedService.bullets || [])];
+        bullets.splice(bulletIdx, 1);
+        setSelectedService({ ...selectedService, bullets });
+    };
+
+    const updateProcessStep = (index: number, field: string, value: any) => {
+        const newSteps = [...processSteps];
+        newSteps[index] = { ...newSteps[index], [field]: value };
+        setProcessSteps(newSteps);
+    };
+
+    const addProcessStep = () => {
+        setProcessSteps([...processSteps, {
+            icon: "fact_check",
+            title: "New Step",
+            description: "Step description",
+            order_index: processSteps.length + 1,
+        }]);
+    };
+
+    const deleteProcessStep = (index: number) => {
+        const step = processSteps[index];
+        if (step.id) {
+            setDeletedProcessSteps([...deletedProcessSteps, step.id]);
+        }
+        setProcessSteps(processSteps.filter((_, i) => i !== index));
+    };
+
+    const moveProcessStep = (index: number, direction: "up" | "down") => {
+        if ((direction === "up" && index === 0) || (direction === "down" && index === processSteps.length - 1)) return;
+
+        const newSteps = [...processSteps];
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+        [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]];
+        newSteps.forEach((step, i) => { step.order_index = i + 1; });
+        setProcessSteps(newSteps);
+    };
+
+    // Feature Strip helpers
+    const addFeatureItem = () => {
+        setFeatureItems([...featureItems, {
+            icon: 'check_circle',
+            title: 'New Feature',
+            description: 'Feature description',
+            display_order: featureItems.length + 1,
+            is_active: 1,
+        }]);
+    };
+
+    const updateFeatureItem = (index: number, field: string, value: any) => {
+        const newItems = [...featureItems];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setFeatureItems(newItems);
+    };
+
+    const deleteFeatureItem = (index: number) => {
+        const item = featureItems[index];
+        if (item && item.id) setDeletedFeatureIds([...deletedFeatureIds, item.id]);
+        setFeatureItems(featureItems.filter((_, i) => i !== index));
+    };
+
+    const moveFeatureItem = (index: number, direction: 'up' | 'down') => {
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === featureItems.length - 1)) return;
+        const newItems = [...featureItems];
+        const target = direction === 'up' ? index - 1 : index + 1;
+        [newItems[index], newItems[target]] = [newItems[target], newItems[index]];
+        newItems.forEach((it, i) => { it.display_order = i + 1; });
+        setFeatureItems(newItems);
+    };
+
+    // Brands helpers
+    const addBrand = () => {
+        setBrands([...brands, { name: 'New Brand', logo_url: '', display_order: brands.length + 1, is_active: 1 }]);
+    };
+
+    const updateBrand = (index: number, field: string, value: any) => {
+        const newBrands = [...brands];
+        newBrands[index] = { ...newBrands[index], [field]: value };
+        setBrands(newBrands);
+    };
+
+    const deleteBrand = (index: number) => {
+        const b = brands[index];
+        if (b && b.id) setDeletedBrandIds([...deletedBrandIds, b.id]);
+        setBrands(brands.filter((_, i) => i !== index));
+    };
+
+    const moveBrand = (index: number, direction: 'up' | 'down') => {
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === brands.length - 1)) return;
+        const newBrands = [...brands];
+        const target = direction === 'up' ? index - 1 : index + 1;
+        [newBrands[index], newBrands[target]] = [newBrands[target], newBrands[index]];
+        newBrands.forEach((b, i) => { b.display_order = i + 1; });
+        setBrands(newBrands);
+    };
+
+    // Trust stats helpers
+    const addTrustStat = () => {
+        setTrustStats([...trustStats, { label: 'New Stat', value: '', description: '', display_order: trustStats.length + 1, is_active: 1 }]);
+    };
+
+    const updateTrustStat = (index: number, field: string, value: any) => {
+        const newStats = [...trustStats];
+        newStats[index] = { ...newStats[index], [field]: value };
+        setTrustStats(newStats);
+    };
+
+    const deleteTrustStat = (index: number) => {
+        const s = trustStats[index];
+        if (s && s.id) setDeletedTrustStatIds([...deletedTrustStatIds, s.id]);
+        setTrustStats(trustStats.filter((_, i) => i !== index));
+    };
+
+    const moveTrustStat = (index: number, direction: 'up' | 'down') => {
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === trustStats.length - 1)) return;
+        const newStats = [...trustStats];
+        const target = direction === 'up' ? index - 1 : index + 1;
+        [newStats[index], newStats[target]] = [newStats[target], newStats[index]];
+        newStats.forEach((s, i) => { s.display_order = i + 1; });
+        setTrustStats(newStats);
+    };
+
+    const filteredServices = servicesList.filter(service => {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = (
+            service.title?.toLowerCase().includes(query) ||
+            service.slug?.toLowerCase().includes(query) ||
+            service.description?.toLowerCase().includes(query) ||
+            service.key?.toLowerCase().includes(query)
+        );
+        const matchesStatus = statusFilter === null || service.statusId === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    const tabs = [
+        { id: "services", label: "Services", icon: "design_services" },
+        { id: "hero", label: "Hero", icon: "web_asset" },
+        { id: "process", label: "Process", icon: "settings_suggest" },
+        { id: "content", label: "Content", icon: "view_list" },
+        { id: "cta", label: "CTA", icon: "campaign" },
+    ];
+
+    if (loading) return <div className="p-10 text-center">Loading...</div>;
+
+    return (
+        <div className="w-full min-h-screen bg-white pb-20">
+            {/* Top Bar */}
+            <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                <div className="w-full mx-auto px-6 h-16 flex items-center justify-between">
+                    <h1 className="text-xl font-bold text-gray-900">Services Manager</h1>
+                    <div className="flex gap-2">
+                        {activeTab !== "services" && (
+                            <button
+                                onClick={handleSavePageBuilder}
+                                disabled={saving}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                            >
+                                {saving ? (
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-[18px]">save</span>
+                                )}
+                                {saving ? "Saving..." : "Save Changes"}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className="w-full mx-auto px-6 py-8">
+                {/* Tabs */}
+                <div className="flex justify-center mb-10">
+                    <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 inline-flex gap-1 flex-wrap">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${activeTab === tab.id
+                                    ? "bg-gray-900 text-white shadow-md"
+                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="max-w-7xl mx-auto">
+                    {/* SERVICES SECTION */}
+                    {activeTab === "services" && (
+                        <div className="space-y-6">
+                            {/* Search and Add */}
+                            <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-slate-200">
+                                <div className="flex-1">
+                                    <div className="relative">
+                                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
+                                            search
+                                        </span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search services..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        />
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={addServiceWithPost}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                    Add Service
+                                </button>
+                            </div>
+
+                            {/* Services Grid */}
+                            {filteredServices.length === 0 ? (
+                                <div className="text-center py-16 bg-white rounded-lg border border-dashed border-slate-300">
+                                    <span className="material-symbols-outlined text-5xl text-slate-300 mb-3">design_services</span>
+                                    <p className="text-slate-500 text-sm">No services found</p>
+                                    <button
+                                        onClick={addServiceWithPost}
+                                        className="mt-4 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                                    >
+                                        Create your first service
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {filteredServices.map((service) => (
+                                        <div
+                                            key={service.id || service.key}
+                                            onClick={() => {
+                                                setSelectedService(service);
+                                                setIsModalOpen(true);
+                                            }}
+                                            className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-indigo-300"
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className="shrink-0">
+                                                    <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center">
+                                                        <span className="material-symbols-outlined text-indigo-600 text-2xl">
+                                                            {service.icon || "design_services"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-base font-semibold text-slate-900 truncate">{service.title}</h3>
+                                                    <p className="text-sm text-slate-500 line-clamp-2 mt-1">{service.description}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* HERO SECTION */}
+                    {activeTab === "hero" && (
+                        <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                            <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v: string) => setHeroData({ ...heroData, badge_text: v })} />
+                            <InputGroup label="Tagline" value={heroData.tagline || ''} onChange={(v: string) => setHeroData({ ...heroData, tagline: v })} />
+                            <InputGroup label="Title" value={heroData.title || ''} onChange={(v: string) => setHeroData({ ...heroData, title: v })} />
+                            <TextAreaGroup label="Description" value={heroData.description || ''} onChange={(v: string) => setHeroData({ ...heroData, description: v })} />
+                            <InputGroup label="Highlight Text (substring to emphasize)" value={heroData.highlight_text || ''} onChange={(v: string) => setHeroData({ ...heroData, highlight_text: v })} />
+
+                            <div className="grid grid-cols-2 gap-5">
+                                <InputGroup label="Primary CTA Text" value={heroData.primary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_text: v })} />
+                                <InputGroup label="Primary CTA Link" value={heroData.primary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, primary_cta_link: v })} />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-5">
+                                <InputGroup label="Secondary CTA Text" value={heroData.secondary_cta_text || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_text: v })} />
+                                <InputGroup label="Secondary CTA Link" value={heroData.secondary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_link: v })} />
+                            </div>
+
+                            <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" />
+                            <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v: string) => setHeroData({ ...heroData, hero_image_alt: v })} />
+
+                            <div className="grid gap-5">
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 1 Value" value={heroData.stat1_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_value: v })} />
+                                    <InputGroup label="Stat 1 Label" value={heroData.stat1_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_label: v })} />
+                                </div>
+
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 2 Value" value={heroData.stat2_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_value: v })} />
+                                    <InputGroup label="Stat 2 Label" value={heroData.stat2_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_label: v })} />
+                                </div>
+
+                                <div className="space-y-3 flex space-x-5">
+                                    <InputGroup label="Stat 3 Value" value={heroData.stat3_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_value: v })} />
+                                    <InputGroup label="Stat 3 Label" value={heroData.stat3_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_label: v })} />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                <Toggle checked={heroData.is_active === 1} onChange={(c: boolean) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PROCESS SECTION */}
+                    {activeTab === "process" && (
+                        <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-lg">Process placeholder</div>
+                        </div>
+                    )}
+
+                    {/* CONTENT SECTION */}
+                    {activeTab === "content" && (
+                        <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">Content tab placeholder</div>
+                        </div>
+                    )}
+
+                    {/* CTA SECTION */}
+``` Great. The content block has been added correctly between process and cta. Now ensure handleSavePageBuilder was modified earlier; we added content logic before await Promise.all. Need to run build to see if TypeScript or lint errors exist. But also recall earlier we introduced some odd placeholders in fetchAllData because of attempt to use arguments.callee hack; we used safe approach to call fetch again; we left some placeholder code earlier with weird lines like 
+                        <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-6">
+                                <h3 className="text-lg font-semibold text-gray-900">Call to Action</h3>
+                                <InputGroup label="Title" value={ctaData.title || ''} onChange={(v: string) => setCtaData({ ...ctaData, title: v })} />
+                                <TextAreaGroup label="Description" value={ctaData.description || ''} onChange={(v: string) => setCtaData({ ...ctaData, description: v })} />
+                                <div className="grid grid-cols-2 gap-5">
+                                    <InputGroup label="Button Text" value={ctaData.button_text || ''} onChange={(v: string) => setCtaData({ ...ctaData, button_text: v })} />
+                                    <InputGroup label="Button Link" value={ctaData.button_link || ''} onChange={(v: string) => setCtaData({ ...ctaData, button_link: v })} />
+                                </div>
+
+                                <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                    <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                    <Toggle checked={ctaData.is_active === 1} onChange={(c: boolean) => setCtaData({ ...ctaData, is_active: c ? 1 : 0 })} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SERVICE EDITOR MODAL */}
+                    {isModalOpen && selectedService && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                                {/* Modal Header */}
+                                <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-indigo-600 text-xl">
+                                                {selectedService.icon || "design_services"}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900">
+                                                {selectedService.isNew ? "New Service" : "Edit Service"}
+                                            </h2>
+                                            <p className="text-sm text-slate-500">{selectedService.slug || selectedService.key}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setIsModalOpen(false);
+                                            setSelectedService(null);
+                                        }}
+                                        className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-slate-600">close</span>
+                                    </button>
+                                </div>
+
+                                {/* Modal Content */}
+                                <div className="flex-1 overflow-y-auto p-6">
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* Left Column (Service Details + Pricing as separate cards) */}
+                                            <div className="space-y-4">
+                                                <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                                    <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Service Details</h4>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedService.title}
+                                                            onChange={(e) => updateItem('title', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Slug</label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedService.slug ?? selectedService.key ?? ''}
+                                                            onChange={(e) => {
+                                                                const newSlug = e.target.value;
+                                                                setSelectedService({ ...selectedService, slug: newSlug, key: newSlug });
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Icon (Material Symbol)</label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedService.icon}
+                                                            onChange={(e) => updateItem('icon', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Short Description</label>
+                                                        <textarea
+                                                            value={selectedService.description}
+                                                            onChange={(e) => updateItem('description', e.target.value)}
+                                                            rows={3}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                                                        <select
+                                                            value={selectedService.statusId}
+                                                            onChange={(e) => updateItem('statusId', Number(e.target.value))}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            <option value={1}>Published</option>
+                                                            <option value={3}>Hidden</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div>
+                                                        <ImageUploader
+                                                            label="Service Image"
+                                                            value={selectedService.image || selectedService.thumbnail || ''}
+                                                            onChange={(url: string) => {
+                                                                updateItem('image', url);
+                                                                updateItem('thumbnail', url);
+                                                            }}
+                                                            folder="services"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Image Alt Text</label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedService.image_alt}
+                                                            onChange={(e) => updateItem('image_alt', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    {/* Category & Subcategory */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                                                        <select
+                                                            value={selectedService.category_id?.toString() || ''}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value ? Number(e.target.value) : null;
+                                                                console.log('Category changed to:', val);
+                                                                setSelectedService({ ...selectedService, category_id: val, subcategory_id: null });
+                                                            }}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            <option value="">No Category</option>
+                                                            {categories.map((cat: any) => (
+                                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <p className="text-xs text-slate-500 mt-1">Categories available: {categories.length}</p>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Subcategory</label>
+                                                        <select
+                                                            value={selectedService.subcategory_id?.toString() || ''}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value ? Number(e.target.value) : null;
+                                                                setSelectedService({ ...selectedService, subcategory_id: val });
+                                                            }}
+                                                            disabled={!selectedService.category_id}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                                                        >
+                                                            <option value="">No Subcategory</option>
+                                                            {subcategories.filter((sub: any) => sub.category_id === selectedService.category_id).map((sub: any) => (
+                                                                <option key={sub.id} value={sub.id}>{sub.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                                    <h5 className="text-sm font-semibold text-slate-700 mb-3">Pricing</h5>
+
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-slate-700 mb-1">Price</label>
+                                                            <input
+                                                                type="text"
+                                                                value={selectedService.price || ''}
+                                                                onChange={(e) => updateItem('price', e.target.value)}
+                                                                placeholder="499.00"
+                                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-slate-700 mb-1">Currency</label>
+                                                            <select
+                                                                value={selectedService.currency || 'USD'}
+                                                                onChange={(e) => updateItem('currency', e.target.value)}
+                                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            >
+                                                                <option value="USD">USD ($)</option>
+                                                                <option value="EUR">EUR (€)</option>
+                                                                <option value="GBP">GBP (£)</option>
+                                                                <option value="CAD">CAD (C$)</option>
+                                                                <option value="AUD">AUD (A$)</option>
+                                                                <option value="JPY">JPY (¥)</option>
+                                                                <option value="INR">INR (₹)</option>
+                                                                <option value="NRS">NRS (रु)</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-slate-700 mb-1">Price Type</label>
+                                                            <select
+                                                                value={selectedService.price_type || 'fixed'}
+                                                                onChange={(e) => updateItem('price_type', e.target.value)}
+                                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            >
+                                                                <option value="fixed">Fixed</option>
+                                                                <option value="starting">Starting At</option>
+                                                                <option value="hourly">Hourly</option>
+                                                                <option value="custom">Custom</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div className="mb-3">
+                                                            <label className="block text-sm font-medium text-slate-700 mb-1">Price Label</label>
+                                                            <input
+                                                                type="text"
+                                                                value={selectedService.price_label || ''}
+                                                                onChange={(e) => updateItem('price_label', e.target.value)}
+                                                                placeholder="Starting at"
+                                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-slate-700 mb-1">Price Description</label>
+                                                            <textarea
+                                                                value={selectedService.price_description || ''}
+                                                                onChange={(e) => updateItem('price_description', e.target.value)}
+                                                                rows={2}
+                                                                placeholder="e.g. Pricing varies by scope and deliverables."
+                                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                                    <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Post Content</h4>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Excerpt</label>
+                                                        <textarea
+                                                            value={selectedService.excerpt}
+                                                            onChange={(e) => updateItem('excerpt', e.target.value)}
+                                                            rows={3}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Content</label>
+                                                        <RichTextEditor
+                                                            value={selectedService.content}
+                                                            onChange={(v: string) => updateItem('content', v)}
+                                                        />
+                                                    </div>
+
+                                                </div>
+
+                                                <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
+                                                    <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">SEO</h4>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
+                                                        <input
+                                                            type="text"
+                                                            value={selectedService.metaTitle}
+                                                            onChange={(e) => updateItem('metaTitle', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
+                                                        <textarea
+                                                            value={selectedService.metaDescription}
+                                                            onChange={(e) => updateItem('metaDescription', e.target.value)}
+                                                            rows={3}
+                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {/* Bullets Section */}
+                                        <div className="border-t border-slate-300 pt-6">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Bullet Points</h4>
+                                                <button
+                                                    onClick={addBullet}
+                                                    className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                                    Add Bullet
+                                                </button>
+                                            </div>
+                                            <div className="space-y-2">
+                                                {(selectedService.bullets || []).map((bullet: string, bulletIdx: number) => (
+                                                    <div key={bulletIdx} className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={bullet}
+                                                            onChange={(e) => updateBullet(bulletIdx, e.target.value)}
+                                                            placeholder={`Bullet point ${bulletIdx + 1}`}
+                                                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                        <button
+                                                            onClick={() => removeBullet(bulletIdx)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                {(!selectedService.bullets || selectedService.bullets.length === 0) && (
+                                                    <p className="text-sm text-slate-500 italic">No bullet points yet</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Modal Footer */}
+                                    <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex gap-3">
+                                        <button
+                                            onClick={saveServiceWithPost}
+                                            disabled={saving}
+                                            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                        >
+                                            {saving ? (
+                                                <>
+                                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    Saving...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="material-symbols-outlined text-[18px]">save</span>
+                                                    Save Service
+                                                </>
+                                            )}
+                                        </button>
+                                        {!selectedService.isNew && (
+                                            <button
+                                                onClick={handleDeleteService}
+                                                disabled={saving}
+                                                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                Delete
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setIsModalOpen(false);
+                                                setSelectedService(null);
+                                            }}
+                                            disabled={saving}
+                                            className="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Rich Text Editor Component (simple textarea used in admin to avoid heavy runtime parsing)
+function RichTextEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    return (
+        <div>
+            <textarea value={value} onChange={(e) => onChange(e.target.value)} className="w-full p-2 border rounded" rows={8} />
+        </div>
+    );
+}
+
+// Helper Components
+function InputGroup({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+        </div>
+    );
+}
+
+function TextAreaGroup({ label, value, onChange, placeholder, rows = 4 }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) {
+    return (
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+            <textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                rows={rows}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+        </div>
+    );
+}
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (c: boolean) => void }) {
+    return (
+        <button
+            onClick={() => onChange(!checked)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-indigo-600' : 'bg-gray-300'}`}
+        >
+            <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}
+            />
+        </button>
+    );
+}

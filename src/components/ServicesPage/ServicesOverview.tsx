@@ -20,13 +20,16 @@ interface ServicesOverviewProps {
     services?: any[];
 }
 
-const ServicesOverview = ({ services = [] }: ServicesOverviewProps) => {
+const ServicesOverview = ({ services = [], section }: ServicesOverviewProps & { section?: { title?: string; description?: string } }) => {
     const items = services.slice(0, 8);
+    const title = section?.title || 'Our Core Services';
+    const desc = section?.description || 'Comprehensive HVAC solutions tailored for homes, offices, and industrial complexes. We ensure your environment is comfortable year-round.';
+
     return (
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
             <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">Our Core Services</h2>
-                <p className="text-lg text-slate-600">Comprehensive HVAC solutions tailored for homes, offices, and industrial complexes. We ensure your environment is comfortable year-round.</p>
+                <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">{title}</h2>
+                <p className="text-lg text-slate-600">{desc}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">

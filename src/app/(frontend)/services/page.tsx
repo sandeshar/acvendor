@@ -6,6 +6,7 @@ import ProcessSection from "@/components/ServicesPage/ProcessSection";
 import ServicesBrands from "@/components/ServicesPage/ServicesBrands";
 import TestimonialSlider from "@/components/shared/TestimonialSlider";
 import CTASection from "@/components/ServicesPage/CTASection";
+import ServicesTrust from "@/components/ServicesPage/ServicesTrust";
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -23,13 +24,23 @@ async function getServicesPageData() {
             detailsRes,
             processSectionRes,
             processStepsRes,
-            ctaRes
+            ctaRes,
+            featureRes,
+            overviewRes,
+            brandsRes,
+            trustStatsRes,
+            trustSectionRes,
         ] = await Promise.all([
             fetch(`${API_BASE}/api/pages/services/hero`, { next: { tags: ['services-hero'] } }),
             fetch(`${API_BASE}/api/pages/services/details`, { next: { tags: ['services-details'] } }),
             fetch(`${API_BASE}/api/pages/services/process-section`, { next: { tags: ['services-process-section'] } }),
             fetch(`${API_BASE}/api/pages/services/process-steps`, { next: { tags: ['services-process-steps'] } }),
             fetch(`${API_BASE}/api/pages/services/cta`, { next: { tags: ['services-cta'] } }),
+            fetch(`${API_BASE}/api/pages/services/feature-strip`, { next: { tags: ['services-feature-strip'] } }),
+            fetch(`${API_BASE}/api/pages/services/overview`, { next: { tags: ['services-overview'] } }),
+            fetch(`${API_BASE}/api/pages/services/brands`, { next: { tags: ['services-brands'] } }),
+            fetch(`${API_BASE}/api/pages/services/trust-stats`, { next: { tags: ['services-trust-stats'] } }),
+            fetch(`${API_BASE}/api/pages/services/trust-section`, { next: { tags: ['services-trust-section'] } }),
         ]);
 
         const hero = heroRes.ok ? await heroRes.json() : null;
@@ -38,17 +49,39 @@ async function getServicesPageData() {
         const processSteps = processStepsRes.ok ? await processStepsRes.json() : [];
         const cta = ctaRes.ok ? await ctaRes.json() : null;
 
+        const featureStrip = featureRes.ok ? await featureRes.json() : [];
+        const overview = overviewRes.ok ? await overviewRes.json() : null;
+        const brands = brandsRes.ok ? await brandsRes.json() : [];
+        const trustStats = trustStatsRes.ok ? await trustStatsRes.json() : [];
+        const trustSection = trustSectionRes.ok ? await trustSectionRes.json() : null;
+
+        // If trust section points to a testimonial, fetch it
+        let testimonial = null;
+        try {
+            const testimonialId = trustSection?.testimonial_id;
+            if (testimonialId) {
+                const r = await fetch(`${API_BASE}/api/testimonial?id=${testimonialId}`);
+                if (r.ok) testimonial = await r.json();
+            }
+        } catch (e) {
+            // ignore testimonial fetch errors
+            console.warn('Failed to fetch linked testimonial:', e);
+        }
+
         return {
             hero,
             details,
             processSection,
             processSteps,
             cta,
+            featureStrip,
+            overview,
+            brands,
+            trustStats,
+            trustSection,
+            testimonial,
         };
     } catch (error) {
-        // Log only the error message to avoid printing full Error objects which can
-        // trigger source-map parsing in the server dev bundle and produce confusing
-        // "Invalid source map" messages.
         console.error('Error fetching services page data:', (error as Error)?.message || String(error));
         return {
             hero: null,
@@ -56,9 +89,15 @@ async function getServicesPageData() {
             processSection: null,
             processSteps: [],
             cta: null,
+            featureStrip: [],
+            overview: null,
+            brands: [],
+            trustStats: [],
+            trustSection: null,
+            testimonial: null,
         };
     }
-}
+} 
 
 function mergeServiceDetailsWithPosts(details: any[], posts: any[]) {
     const normalizedDetails = (details || []).map((detail) => ({
@@ -134,49 +173,7 @@ export default async function ServicesPage() {
                 <ServicesBrands />
             </div>
 
-            <section className="bg-slate-50 py-16">
-                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                        <div>
-                            <h2 className="text-3xl font-black text-slate-900 mb-6">Why Nepal trusts our service</h2>
-                            <div className="flex flex-col gap-6">
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">5k+</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Happy Customers</h4>
-                                        <p className="text-sm text-slate-500">Across Kathmandu, Lalitpur, and Bhaktapur.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">10+</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Years Experience</h4>
-                                        <p className="text-sm text-slate-500">Serving the industry with dedication.</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 items-start">
-                                    <span className="text-4xl text-primary font-black">24/7</span>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900">Emergency Support</h4>
-                                        <p className="text-sm text-slate-500">Always available for urgent repairs.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 relative">
-                            <span className="material-symbols-outlined text-6xl text-primary/10 absolute top-4 right-4">format_quote</span>
-                            <p className="text-lg text-slate-600 italic mb-6 relative z-10">"The team was incredibly professional. They installed our office AC system in one day and left the place spotless. Highly recommended!"</p>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 bg-cover bg-center" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuABFDq2boqSreVjEIXWTgDLRMQ_RYSX41ayzLdnNYJMJbFtH4HzmhK3i3w8-QX85BECmTiey8ai1BxoROX4KD4Mn59_fOLLNJkVpQRE95w9N62vGtPM5JRVmmqG4cTP1OkiZaTQ-n77i5lJNDYyk869p308_2wrBUPfm3j9gJqYo-f89NoLkMTlb2GPv2Qvj-OGfU6OEhFuZebu3LWWpRx5tPOMC3cVtUQJedhHp5pU-0KGNf882TAwuj79STj2BHSRH7yAkvqQXoA')` }} />
-                                <div>
-                                    <h5 className="font-bold text-slate-900 text-sm">Rajesh Hamal</h5>
-                                    <p className="text-xs text-slate-500">Business Owner, Thamel</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <ServicesTrust section={data.trustSection} stats={data.trustStats} testimonial={data.testimonial} />
 
             <CTASection data={data.cta} />
         </main>

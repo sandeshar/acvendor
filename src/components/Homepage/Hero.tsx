@@ -30,7 +30,7 @@ const Hero = ({ data }: HeroProps) => {
         <div className="relative flex min-h-[calc(100vh-60px)] flex-col justify-center overflow-hidden">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0" data-alt={data.hero_image_alt || 'Modern living room with air conditioner'} style={{ backgroundImage: `url("${bgUrl}")` }}>
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-black/80 to-black/30"></div>
             </div>
 
             <div className="layout-container relative z-10 flex justify-center px-4 md:px-10 py-0">
@@ -51,10 +51,10 @@ const Hero = ({ data }: HeroProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-4">
-                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-[160px] items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-blue-600 transition-all hover:scale-105">
+                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-blue-600 transition-all hover:scale-105">
                             {data.cta_text || 'Get a Free Quote'}
                         </a>
-                        <a href={data.secondary_cta_link || '#'} aria-label={data.secondary_cta_text || 'WhatsApp Us'} className="flex h-12 min-w-[160px] items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-white text-base font-bold hover:bg-white/20 transition-all">
+                        <a href={data.secondary_cta_link || '#'} aria-label={data.secondary_cta_text || 'WhatsApp Us'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-white text-base font-bold hover:bg-white/20 transition-all">
                             <span className="material-symbols-outlined mr-2">chat</span>
                             {data.secondary_cta_text || 'WhatsApp Us'}
                         </a>
