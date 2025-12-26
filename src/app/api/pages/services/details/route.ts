@@ -66,6 +66,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // optional extended fields
+        const {
+            postId,
+            locations,
+            inventory_status,
+            images: imagesField,
+            price,
+            compare_at_price,
+            currency,
+            model,
+            capacity,
+            warranty,
+            technical,
+            energy_saving,
+            smart,
+            filtration,
+            brochure_url,
+            meta_title,
+            meta_description,
+            content,
+        } = body;
+
         const result = await db.insert(servicesPageDetails).values({
             key,
             slug: slug || null,
@@ -75,6 +97,24 @@ export async function POST(request: NextRequest) {
             bullets,
             image,
             image_alt,
+            postId: postId || null,
+            locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
+            inventory_status: inventory_status || 'in_stock',
+            images: imagesField ? (typeof imagesField === 'string' ? imagesField : JSON.stringify(imagesField)) : null,
+            price: price ?? null,
+            compare_at_price: compare_at_price ?? null,
+            currency: currency || 'NRS',
+            model: model || null,
+            capacity: capacity || null,
+            warranty: warranty || null,
+            technical: technical ? (typeof technical === 'string' ? technical : JSON.stringify(technical)) : null,
+            energy_saving: energy_saving || null,
+            smart: smart ? Number(!!smart) : 0,
+            filtration: filtration ? Number(!!filtration) : 0,
+            brochure_url: brochure_url || null,
+            meta_title: meta_title || null,
+            meta_description: meta_description || null,
+            content: content || null,
             display_order,
             is_active,
         });
@@ -117,6 +157,47 @@ export async function PUT(request: NextRequest) {
         if (image_alt !== undefined) updateData.image_alt = image_alt;
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
+
+        // extended optional fields
+        const {
+            postId,
+            locations,
+            inventory_status,
+            images: imagesField,
+            price,
+            compare_at_price,
+            currency,
+            model,
+            capacity,
+            warranty,
+            technical,
+            energy_saving,
+            smart,
+            filtration,
+            brochure_url,
+            meta_title,
+            meta_description,
+            content,
+        } = body;
+
+        if (postId !== undefined) updateData.postId = postId;
+        if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
+        if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
+        if (imagesField !== undefined) updateData.images = typeof imagesField === 'string' ? imagesField : JSON.stringify(imagesField);
+        if (price !== undefined) updateData.price = price;
+        if (compare_at_price !== undefined) updateData.compare_at_price = compare_at_price;
+        if (currency !== undefined) updateData.currency = currency;
+        if (model !== undefined) updateData.model = model;
+        if (capacity !== undefined) updateData.capacity = capacity;
+        if (warranty !== undefined) updateData.warranty = warranty;
+        if (technical !== undefined) updateData.technical = typeof technical === 'string' ? technical : JSON.stringify(technical);
+        if (energy_saving !== undefined) updateData.energy_saving = energy_saving;
+        if (smart !== undefined) updateData.smart = Number(!!smart);
+        if (filtration !== undefined) updateData.filtration = Number(!!filtration);
+        if (brochure_url !== undefined) updateData.brochure_url = brochure_url;
+        if (meta_title !== undefined) updateData.meta_title = meta_title;
+        if (meta_description !== undefined) updateData.meta_description = meta_description;
+        if (content !== undefined) updateData.content = content;
 
         await db.update(servicesPageDetails).set(updateData).where(eq(servicesPageDetails.id, id));
 

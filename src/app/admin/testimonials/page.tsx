@@ -23,7 +23,7 @@ interface Service {
     slug: string;
 }
 
-function ViewModal({ testimonial, onClose, serviceMap }: { testimonial: Testimonial | null; onClose: () => void; serviceMap: Record<number, Service>; }) {
+function ViewModal({ testimonial, onClose, serviceMap, productMap }: { testimonial: Testimonial | null; onClose: () => void; serviceMap: Record<number, Service>; productMap: Record<number, Service>; }) {
     if (!testimonial) return null;
 
     const placements = (testimonial.link || '')
@@ -138,6 +138,17 @@ function ViewModal({ testimonial, onClose, serviceMap }: { testimonial: Testimon
                                         </span>
                                     );
                                 })}
+                                {testimonial.productIds?.map((pid) => {
+                                    const prod = productMap[pid];
+                                    return (
+                                        <span
+                                            key={`prod-${pid}`}
+                                            className="inline-block rounded-full bg-indigo-500 px-3 py-1 text-xs font-medium text-white shadow-md"
+                                        >
+                                            {prod?.title || `Product #${pid}`}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </div>
                         <div className="rounded-xl border border-gray-200 bg-white p-4">
@@ -165,6 +176,7 @@ export default function TestimonialPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
     const [services, setServices] = useState<Service[]>([]);
+    const [products, setProducts] = useState<Service[]>([]);
 
     useEffect(() => {
         fetchTestimonials();
@@ -177,6 +189,9 @@ export default function TestimonialPage() {
             setTestimonials(data);
             if (data.some((t: Testimonial) => t.serviceIds?.length)) {
                 fetchServices();
+            }
+            if (data.some((t: Testimonial) => t.productIds?.length)) {
+                fetchProducts();
             }
         } catch (error) {
             console.error('Error fetching testimonials:', error);
@@ -192,6 +207,16 @@ export default function TestimonialPage() {
             setServices(data);
         } catch (error) {
             console.error('Error fetching services:', error);
+        }
+    };
+
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch('/api/products');
+            const data = await response.json();
+            setProducts(data);
+        } catch (error) {
+            console.error('Error fetching products:', error);
         }
     };
 
@@ -230,6 +255,13 @@ export default function TestimonialPage() {
             return acc;
         }, {});
     }, [services]);
+
+    const productMap = useMemo(() => {
+        return products.reduce<Record<number, Service>>((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+        }, {});
+    }, [products]);
 
     if (loading) {
         return (
@@ -373,6 +405,17 @@ export default function TestimonialPage() {
                                                     </span>
                                                 );
                                             })}
+                                            {testimonial.productIds?.map((pid) => {
+                                                const prod = productMap[pid];
+                                                return (
+                                                    <span
+                                                        key={`prod-${pid}`}
+                                                        className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-800"
+                                                    >
+                                                        {prod?.title || `Product #${pid}`}
+                                                    </span>
+                                                );
+                                            })}
                                         </div>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
@@ -419,6 +462,7 @@ export default function TestimonialPage() {
                 testimonial={selectedTestimonial}
                 onClose={() => setSelectedTestimonial(null)}
                 serviceMap={serviceMap}
+                productMap={productMap}
             />
         </div>
     );

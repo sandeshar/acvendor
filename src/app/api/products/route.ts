@@ -144,6 +144,18 @@ export async function POST(request: NextRequest) {
             metaTitle,
             metaDescription,
             images,
+            // new/extended fields
+            energy_saving,
+            smart,
+            filtration,
+            brochure_url,
+            power,
+            iseer,
+            refrigerant,
+            noise,
+            dimensions,
+            voltage,
+            locations,
         } = body;
 
         if (!slug || !title || typeof statusId === 'undefined') {
@@ -165,6 +177,17 @@ export async function POST(request: NextRequest) {
             model: model || null,
             capacity: capacity || null,
             warranty: warranty || null,
+            energy_saving: energy_saving || null,
+            smart: smart ? 1 : 0,
+            filtration: filtration ? 1 : 0,
+            brochure_url: brochure_url || null,
+            power: power || null,
+            iseer: iseer || null,
+            refrigerant: refrigerant || null,
+            noise: noise || null,
+            dimensions: dimensions || null,
+            voltage: voltage || null,
+            locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
             inventory_status: inventory_status || 'in_stock',
             rating: (typeof rating !== 'undefined' && rating !== null) ? rating : '0',
             meta_title: metaTitle || null,
@@ -234,6 +257,18 @@ export async function PUT(request: NextRequest) {
             metaTitle,
             metaDescription,
             images,
+            // new fields
+            energy_saving,
+            smart,
+            filtration,
+            brochure_url,
+            power,
+            iseer,
+            refrigerant,
+            noise,
+            dimensions,
+            voltage,
+            locations,
         } = body;
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -253,6 +288,17 @@ export async function PUT(request: NextRequest) {
         if (model !== undefined) updateData.model = model;
         if (capacity !== undefined) updateData.capacity = capacity;
         if (warranty !== undefined) updateData.warranty = warranty;
+        if (energy_saving !== undefined) updateData.energy_saving = energy_saving;
+        if (smart !== undefined) updateData.smart = smart ? 1 : 0;
+        if (filtration !== undefined) updateData.filtration = filtration ? 1 : 0;
+        if (brochure_url !== undefined) updateData.brochure_url = brochure_url;
+        if (power !== undefined) updateData.power = power;
+        if (iseer !== undefined) updateData.iseer = iseer;
+        if (refrigerant !== undefined) updateData.refrigerant = refrigerant;
+        if (noise !== undefined) updateData.noise = noise;
+        if (dimensions !== undefined) updateData.dimensions = dimensions;
+        if (voltage !== undefined) updateData.voltage = voltage;
+        if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
         if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
         if (rating !== undefined) updateData.rating = rating;
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;

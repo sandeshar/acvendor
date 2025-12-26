@@ -1,175 +1,79 @@
-import { notFound } from "next/navigation";
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import type { ProductWithRelations } from '@/types/product';
+import ProductTabs from '@/components/products/ProductTabs';
 
-// Use an absolute base URL for server-side fetches.
-// Relative URLs like `/api/...` can fail when executed on the server runtime.
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-function normalizeDetail(detail: any, fallbackSlug: string) {
-    return {
-        slug: detail?.slug || detail?.key || fallbackSlug,
-        title: detail?.title || 'Product',
-        excerpt: detail?.description || '',
-        content: detail?.content || detail?.description || `<p>${detail?.description || ''}</p>`,
-        thumbnail: detail?.image || null,
-        meta_title: detail?.meta_title || detail?.title || null,
-        meta_description: detail?.meta_description || detail?.description || null,
-    };
-}
-
-import { db } from '@/db';
-import { products as dbProducts, productImages as dbProductImages } from '@/db/productsSchema';
-import { eq as dbEq, desc as dbDesc } from 'drizzle-orm';
-
-async function getProductPost(slug: string) {
-    if (!slug) {
-        console.debug('getProductPost: called with empty slug');
-        return null;
-    }
-
+async function getProductPost(slug: string): Promise<ProductWithRelations | null> {
     try {
-        // First, try direct DB lookup to avoid internal HTTP fetch issues
-        try {
-            const rows = await db.select().from(dbProducts).where(dbEq(dbProducts.slug, slug)).limit(1);
-            if (rows && rows.length) {
-                const product = rows[0];
-                const images = await db.select().from(dbProductImages).where(dbEq(dbProductImages.product_id, product.id)).orderBy(dbDesc(dbProductImages.display_order));
-                console.debug('getProductPost: found product via DB lookup', slug);
-                return { ...product, images };
-            }
-        } catch (e) {
-            console.debug('getProductPost: DB lookup failed', e);
-        }
-
-        // Primary source: products API
-        const res = await fetch(`${API_BASE}/api/products?slug=${encodeURIComponent(slug)}`, { next: { tags: ['products'] } });
+        const res = await fetch(`${API_BASE}/api/products?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
         if (res.ok) {
             const post = await res.json();
-            if (post && post.slug) {
-                console.debug('getProductPost: found product via /api/products', slug);
-                return post;
-            }
-        } else {
-            console.debug(`/api/products?slug returned ${res.status} for ${slug}`);
+            if (post && (post.id || post.slug)) return post as ProductWithRelations;
         }
 
-        // Secondary: legacy services API
+        // fallback: try pages/details if present
         try {
-            const srvRes = await fetch(`${API_BASE}/api/services?slug=${encodeURIComponent(slug)}`, { next: { tags: ['services'] } });
-            if (srvRes.ok) {
-                const srv = await srvRes.json();
-                if (srv && srv.slug) {
-                    console.debug('getProductPost: found product via /api/services', slug);
-                    return srv;
-                }
-            } else {
-                console.debug(`/api/services?slug returned ${srvRes.status} for ${slug}`);
-            }
-        } catch (e) {
-            console.debug('getProductPost: /api/services fetch failed', e);
-        }
-
-        // Fallback: page detail by slug or key
-        try {
-            const detailRes = await fetch(`${API_BASE}/api/pages/services/details?slug=${encodeURIComponent(slug)}`, { next: { tags: ['services-details'] } });
+            const detailRes = await fetch(`${API_BASE}/api/pages/products/details?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
             if (detailRes.ok) {
                 const detail = await detailRes.json();
-                if (detail && detail.title) {
-                    console.debug('getProductPost: found product via details slug', slug);
-                    return normalizeDetail(detail, slug);
-                }
-            }
-
-            const detailKeyRes = await fetch(`${API_BASE}/api/pages/services/details?key=${encodeURIComponent(slug)}`, { next: { tags: ['services-details'] } });
-            if (detailKeyRes.ok) {
-                const detail = await detailKeyRes.json();
-                if (detail && detail.title) {
-                    console.debug('getProductPost: found product via details key', slug);
-                    return normalizeDetail(detail, slug);
+                if (detail && detail.id) {
+                    return {
+                        slug: detail.slug || slug,
+                        title: detail.title || 'Product',
+                        excerpt: detail.description || '',
+                        content: detail.content || `<p>${detail.description || ''}</p>`,
+                        thumbnail: detail.image || null,
+                    } as ProductWithRelations;
                 }
             }
         } catch (e) {
-            console.debug('getProductPost: details fetch failed', e);
-        }
-
-        console.debug('getProductPost: no source found for', slug);
-        return null;
-    } catch (error) {
-        console.error('Error fetching product post via API/DB:', error);
-        return null;
-    }
-}
-
-async function getProductDetailBySlug(slug: string) {
-    try {
-        const detailRes = await fetch(`${API_BASE}/api/pages/services/details?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-        if (detailRes.ok) {
-            const detail = await detailRes.json();
-            if (detail && detail.title !== undefined) return detail;
-        }
-
-        const detailKeyRes = await fetch(`${API_BASE}/api/pages/services/details?key=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-        if (detailKeyRes.ok) {
-            const detail = await detailKeyRes.json();
-            if (detail && detail.title !== undefined) return detail;
+            // ignore fallback errors
         }
 
         return null;
     } catch (error) {
-        console.error('Error fetching product detail:', error);
+        console.error('Error fetching product via API:', (error as Error)?.message || String(error));
         return null;
     }
 }
 
-export default async function ProductDetailPage({ params }: any) {
-    // Normalize slug param (handle arrays for catch-all or accidental array values)
-    const slugRaw = params?.slug;
-    const slug = Array.isArray(slugRaw) ? slugRaw.join('/') : slugRaw;
-    if (!slug) {
-        // defensive: if params missing, treat as not found
-        console.debug('ProductDetailPage: missing slug param, params=', params);
-        notFound();
-    }
-
-    // Debugging: log incoming params for server-side tracing
-    console.debug('ProductDetailPage: params=', params, 'slugNormalized=', slug);
-
-    // Helper function to get currency symbol
-    const getCurrencySymbol = (currency?: string | null) => {
-        const symbols: Record<string, string> = {
-            'USD': '$',
-            'EUR': '€',
-            'GBP': '£',
-            'CAD': 'C$',
-            'AUD': 'A$',
-            'JPY': '¥',
-            'INR': '₹',
-            'NRS': 'रु'
-        };
-        return symbols[currency || 'USD'] || '$';
+const getCurrencySymbol = (currency?: string | null) => {
+    const symbols: Record<string, string> = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'JPY': '¥',
+        'INR': '₹',
+        'NRS': 'रु'
     };
+    return symbols[currency || 'USD'] || '$';
+};
 
-    const [post, detail] = await Promise.all([
-        getProductPost(slug),
-        getProductDetailBySlug(slug)
-    ]);
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+    const { slug } = await params;
+    const post = await getProductPost(slug);
 
-    if (!post) {
-        console.warn('ProductDetailPage: product not found for slug', slug);
-        notFound();
-    }
+    if (!post) notFound();
 
-    const images = (post.images && post.images.length) ? post.images : (post.thumbnail ? [post.thumbnail] : []);
+    const images = (post.images && post.images.length) ? post.images.map(i => i.url) : (post.thumbnail ? [post.thumbnail] : ['/placeholder-product.png']);
 
     return (
         <main className="flex flex-1 flex-col items-center py-5 md:py-10">
             <div className="layout-content-container flex flex-col w-full max-w-[1280px] px-4 md:px-10 flex-1 gap-8">
                 {/* Breadcrumbs */}
                 <div className="flex flex-wrap gap-2 px-0 text-sm md:text-base">
-                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="/">Home</a>
+                    <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary">Home</Link>
                     <span className="text-[#617589] font-medium leading-normal">/</span>
-                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="/products">{post.category || 'Residential'}</a>
+                    <Link href="/products" className="text-[#617589] font-medium leading-normal hover:text-primary">{post.category?.name || 'Residential'}</Link>
                     <span className="text-[#617589] font-medium leading-normal">/</span>
-                    <a className="text-[#617589] font-medium leading-normal hover:text-primary" href="#">{post.subcategory || 'Inverter Series'}</a>
+                    <span className="text-[#617589] font-medium leading-normal">{post.subcategory?.name || 'Inverter Series'}</span>
                     <span className="text-[#617589] font-medium leading-normal">/</span>
                     <span className="text-[#111418] font-medium leading-normal">{post.title}</span>
                 </div>
@@ -179,7 +83,7 @@ export default async function ProductDetailPage({ params }: any) {
                     {/* Left: Gallery */}
                     <div className="flex flex-col gap-4">
                         <div className="w-full aspect-[4/3] rounded-xl bg-white border border-gray-100 flex items-center justify-center p-8 relative overflow-hidden group">
-                            <div className="w-full h-full bg-contain bg-center bg-no-repeat" data-alt={post.title} style={{ backgroundImage: `url("${images[0] || '/placeholder-product.png'}")` }} />
+                            <div className="w-full h-full bg-contain bg-center bg-no-repeat" data-alt={post.title} style={{ backgroundImage: `url("${images[0]}")` }} />
                             {post.inventory_status === 'in_stock' && <div className="absolute top-4 left-4 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">In Stock</div>}
                         </div>
 
@@ -198,18 +102,22 @@ export default async function ProductDetailPage({ params }: any) {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>
-                                <span className="text-sm font-bold text-[#111418]">{post.rating || '4.8'}</span>
-                                <span className="text-sm text-[#617589]">({post.reviews_count || '124'} Reviews)</span>
+                                {post.rating !== undefined && post.rating !== null ? <span className="text-sm font-bold text-[#111418]">{post.rating}</span> : null}
+                                {post.reviews_count ? <span className="text-sm text-[#617589]">({post.reviews_count} Reviews)</span> : null}
                             </div>
                             <h1 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">{post.title}</h1>
-                            <p className="text-[#617589] text-base md:text-lg">{post.model || post.subtitle || ''}</p>
-                            {post.locations && <p className="text-primary text-sm font-medium mt-1">Available for installation in {post.locations.join(', ')}</p>}
+                            <p className="text-[#617589] text-base md:text-lg">{post.model || post.excerpt || ''}</p>
+                            {post.locations && <p className="text-primary text-sm font-medium mt-1">Available for installation in {Array.isArray(post.locations) ? post.locations.join(', ') : post.locations}</p>}
                         </div>
 
                         {/* Price & Tags */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{post.price || 'NPR 85,000'}</span>
+                                {post.price ? (
+                                    <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{post.price}</span>
+                                ) : (
+                                    <span className="text-3xl font-bold text-[#111418]">Contact for price</span>
+                                )}
                                 {post.compare_at_price && <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{post.compare_at_price}</span>}
                             </div>
                             <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p>
@@ -225,200 +133,22 @@ export default async function ProductDetailPage({ params }: any) {
 
                         {/* Actions */}
                         <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-6 border-t border-gray-100">
-                            <a className="flex-1 h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20" href={`/contact?service=${encodeURIComponent(post.slug)}`}>
+                            <Link className="flex-1 h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20" href={`/contact?product=${encodeURIComponent(post.slug)}`}>
                                 <span className="material-symbols-outlined">request_quote</span> Request Quote
-                            </a>
-                            <a className="flex-1 h-12 bg-white border border-gray-200 hover:bg-gray-50 text-[#111418] font-bold rounded-lg transition-colors flex items-center justify-center gap-2" href={post.brochure_url || '#'}>
-                                <span className="material-symbols-outlined">download</span> Download Brochure
-                            </a>
+                            </Link>
+                            {post.brochure_url ? (
+                                <a className="flex-1 h-12 bg-white border border-gray-200 hover:bg-gray-50 text-[#111418] font-bold rounded-lg transition-colors flex items-center justify-center gap-2" href={post.brochure_url}>
+                                    <span className="material-symbols-outlined">download</span> Download Brochure
+                                </a>
+                            ) : null}
                         </div>
                     </div>
                 </div>
 
                 {/* Info Tabs Navigation */}
-                <div className="flex w-full border-b border-[#f0f2f4] mt-8">
-                    <div className="flex gap-8">
-                        <button className="border-b-2 border-primary pb-3 text-primary font-bold text-base px-2">Overview</button>
-                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Specifications</button>
-                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Documents</button>
-                        <button className="border-b-2 border-transparent pb-3 text-[#617589] font-medium text-base px-2 hover:text-[#111418] transition-colors">Reviews</button>
-                    </div>
-                </div>
-
-                {/* Tab Content: Overview & Application Areas */}
-                <div className="flex flex-col gap-10 animate-fade-in">
-                    {/* Description */}
-                    <section className="max-w-[800px]">
-                        <h3 className="text-2xl font-bold text-[#111418] mb-4">Overview</h3>
-
-                        {/* Render product content (post.content) or page detail content if available */}
-                        <div className="text-[#111418] leading-relaxed mb-6">
-                            {post.content ? (
-                                <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                            ) : (detail && (detail.content || detail.description) ? (
-                                <div dangerouslySetInnerHTML={{ __html: detail.content || detail.description }} />
-                            ) : (
-                                <p>The Midea Xtreme Save series is engineered for the extreme weather of Nepal.</p>
-                            ))}
-                        </div>
-
-                        {/* Application Areas Grid */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">chair</span></div>
-                                <span className="font-semibold text-sm">Living Room</span>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">bed</span></div>
-                                <span className="font-semibold text-sm">Bedroom</span>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">desk</span></div>
-                                <span className="font-semibold text-sm">Small Office</span>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">meeting_room</span></div>
-                                <span className="font-semibold text-sm">Meeting Room</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Technical Specifications */}
-                    <section>
-                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Technical Specifications</h3>
-                        <div className="overflow-hidden rounded-xl border border-[#dbe0e6]">
-                            <table className="w-full text-left text-sm">
-                                <tbody className="divide-y divide-[#dbe0e6]">
-                                    <tr className="bg-white">
-                                        <td className="px-6 py-4 font-medium text-[#617589] w-1/3">Model</td>
-                                        <td className="px-6 py-4 text-[#111418] font-semibold">{post.model || 'MSAG-18HRFN1'}</td>
-                                    </tr>
-                                    <tr className="bg-[#f6f7f8]">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Cooling Capacity</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.capacity || '18,000 BTU/h (1.5 Ton)'}</td>
-                                    </tr>
-                                    <tr className="bg-white">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Power Input</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.power || '1550 Watts'}</td>
-                                    </tr>
-                                    <tr className="bg-[#f6f7f8]">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">ISEER Rating</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.iseer || '4.5 (5 Star Equivalent)'}</td>
-                                    </tr>
-                                    <tr className="bg-white">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Refrigerant</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.refrigerant || 'R32 (Eco-Friendly)'}</td>
-                                    </tr>
-                                    <tr className="bg-[#f6f7f8]">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Indoor Noise Level (H/M/L)</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.noise || '42 / 36 / 28 dB(A)'}</td>
-                                    </tr>
-                                    <tr className="bg-white">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Dimensions (WxDxH)</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.dimensions || '965 x 215 x 319 mm'}</td>
-                                    </tr>
-                                    <tr className="bg-[#f6f7f8]">
-                                        <td className="px-6 py-4 font-medium text-[#617589]">Voltage</td>
-                                        <td className="px-6 py-4 text-[#111418]">{post.voltage || '220-240V, 50Hz, 1Ph'}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-
-                    {/* Downloads Section */}
-                    <section>
-                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Downloads &amp; Support</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Download Card 1 */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow cursor-pointer group">
-                                <div className="size-12 rounded-lg bg-red-50 flex items-center justify-center text-red-600 group-hover:bg-red-100 transition-colors">
-                                    <span className="material-symbols-outlined">picture_as_pdf</span>
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-bold text-[#111418]">Product Brochure</p>
-                                    <p className="text-sm text-[#617589]">PDF • 2.4 MB</p>
-                                </div>
-                                <span className="material-symbols-outlined text-[#617589]">download</span>
-                            </div>
-                            {/* Download Card 2 */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-white hover:shadow-md transition-shadow cursor-pointer group">
-                                <div className="size-12 rounded-lg bg-blue-50 flex items-center justify-center text-primary group-hover:bg-blue-100 transition-colors">
-                                    <span className="material-symbols-outlined">menu_book</span>
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-bold text-[#111418]">User Manual</p>
-                                    <p className="text-sm text-[#617589]">PDF • 1.1 MB</p>
-                                </div>
-                                <span className="material-symbols-outlined text-[#617589]">download</span>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                {/* Reviews Section (RatingSummary) */}
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                    <h3 className="text-2xl font-bold text-[#111418] mb-6">Customer Reviews</h3>
-                    <div className="flex flex-wrap gap-x-12 gap-y-8">
-                        <div className="flex flex-col gap-2 min-w-[150px]">
-                            <p className="text-[#111418] text-5xl font-black leading-tight tracking-[-0.033em]">{post.rating || '4.8'}</p>
-                            <div className="flex gap-1 text-yellow-500">
-                                <span className="material-symbols-outlined fill-current">star</span>
-                                <span className="material-symbols-outlined fill-current">star</span>
-                                <span className="material-symbols-outlined fill-current">star</span>
-                                <span className="material-symbols-outlined fill-current">star</span>
-                                <span className="material-symbols-outlined fill-current">star_half</span>
-                            </div>
-                            <p className="text-[#617589] text-base font-medium">Based on {post.reviews_count || '124'} reviews</p>
-                        </div>
-                        <div className="grid min-w-[280px] max-w-[500px] flex-1 grid-cols-[20px_1fr_40px] items-center gap-y-3">
-                            <p className="text-[#111418] text-sm font-bold">5</p>
-                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
-                                <div className="rounded-full bg-primary" style={{ width: '78%' }}></div>
-                            </div>
-                            <p className="text-[#617589] text-sm font-medium text-right">78%</p>
-                            <p className="text-[#111418] text-sm font-bold">4</p>
-                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
-                                <div className="rounded-full bg-primary" style={{ width: '15%' }}></div>
-                            </div>
-                            <p className="text-[#617589] text-sm font-medium text-right">15%</p>
-                            <p className="text-[#111418] text-sm font-bold">3</p>
-                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
-                                <div className="rounded-full bg-primary" style={{ width: '4%' }}></div>
-                            </div>
-                            <p className="text-[#617589] text-sm font-medium text-right">4%</p>
-                            <p className="text-[#111418] text-sm font-bold">2</p>
-                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
-                                <div className="rounded-full bg-primary" style={{ width: '1%' }}></div>
-                            </div>
-                            <p className="text-[#617589] text-sm font-medium text-right">1%</p>
-                            <p className="text-[#111418] text-sm font-bold">1</p>
-                            <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-[#dbe0e6]">
-                                <div className="rounded-full bg-primary" style={{ width: '2%' }}></div>
-                            </div>
-                            <p className="text-[#617589] text-sm font-medium text-right">2%</p>
-                        </div>
-                    </div>
-                </div>
+                {/* Tabs component (Overview, Specs, Docs, Reviews) */}
+                <ProductTabs post={post} />
             </div>
         </main>
     );
-}
-
-export async function generateMetadata({ params }: any) {
-    console.debug('generateMetadata: params=', params);
-    const slugRaw = params?.slug;
-    const slug = Array.isArray(slugRaw) ? slugRaw.join('/') : slugRaw;
-    if (!slug) return { title: 'Product Not Found' };
-
-    const post = await getProductPost(slug);
-
-    if (!post) {
-        return { title: "Product Not Found" };
-    }
-
-    return {
-        title: post.meta_title || post.title,
-        description: post.meta_description || post.excerpt,
-    };
 }

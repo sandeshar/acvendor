@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -16,7 +16,9 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 
 export default function EditProductPage({ params }: any) {
-    const { id } = params;
+    // In client components, route params may be a Promise — use `useParams()` from next/navigation.
+    const routeParams = useParams();
+    const id = routeParams?.id ?? params?.id;
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -97,13 +99,24 @@ export default function EditProductPage({ params }: any) {
                 const detailRes = await fetch(`/api/pages/services/details?slug=${encodeURIComponent(slug)}`);
                 const detail = detailRes.ok ? await detailRes.json() : null;
 
-                // Merge into editable structure
+                // Merge into editable structure (safely parse fields that may be JSON strings or already objects)
+                const safeParse = (v: any, fallback: any) => {
+                    try {
+                        if (!v && v !== 0) return fallback;
+                        if (typeof v === 'string') return JSON.parse(v);
+                        return v;
+                    } catch (e) {
+                        console.warn('Failed to parse detail field, falling back', e);
+                        return fallback;
+                    }
+                };
+
                 const merged = {
                     ...post,
                     ...detail,
-                    images: (detail && detail.images) ? JSON.parse(detail.images) : [],
-                    locations: (detail && detail.locations) ? JSON.parse(detail.locations) : [],
-                    technical: (detail && detail.technical) ? JSON.parse(detail.technical) : {},
+                    images: safeParse(detail?.images, []),
+                    locations: safeParse(detail?.locations, []),
+                    technical: safeParse(detail?.technical, {}),
                 };
 
                 setProduct(merged);
@@ -137,6 +150,22 @@ export default function EditProductPage({ params }: any) {
                 images: imagesPayload,
                 statusId: product.statusId || 1,
                 price: product.price || null,
+                compare_at_price: product.compare_at_price || null,
+                currency: product.currency || 'NRS',
+                model: product.model || null,
+                capacity: product.capacity || null,
+                warranty: product.warranty || null,
+                energy_saving: product.energy_saving || null,
+                smart: product.smart ? 1 : 0,
+                filtration: product.filtration ? 1 : 0,
+                brochure_url: product.brochure_url || null,
+                power: product.technical?.power || null,
+                iseer: product.technical?.iseer || null,
+                refrigerant: product.technical?.refrigerant || null,
+                noise: product.technical?.noise || null,
+                dimensions: product.technical?.dimensions || null,
+                voltage: product.technical?.voltage || null,
+                locations: JSON.stringify(product.locations || []),
                 meta_title: product.meta_title || product.title,
                 meta_description: product.meta_description || product.excerpt,
                 category_id: product.category_id || null,
@@ -178,6 +207,10 @@ export default function EditProductPage({ params }: any) {
                 model: product.model || null,
                 capacity: product.capacity || null,
                 warranty: product.warranty || null,
+                energy_saving: product.energy_saving || null,
+                smart: product.smart ? 1 : 0,
+                filtration: product.filtration ? 1 : 0,
+                brochure_url: product.brochure_url || null,
                 technical: JSON.stringify(product.technical || {}),
                 meta_title: product.meta_title || product.title,
                 meta_description: product.meta_description || product.excerpt,
@@ -279,6 +312,47 @@ export default function EditProductPage({ params }: any) {
                                 </div>
                             ))}
                         </div>
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="block text-sm font-medium mb-1">Price</label>
+                        <input value={product.price ?? ''} onChange={(e) => setProduct({ ...product, price: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                        <label className="block text-sm font-medium mb-1">Compare At Price</label>
+                        <input value={product.compare_at_price ?? ''} onChange={(e) => setProduct({ ...product, compare_at_price: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                        <label className="block text-sm font-medium mb-1">Currency</label>
+                        <input value={product.currency ?? 'NRS'} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                        <label className="block text-sm font-medium mb-1">Brochure URL</label>
+                        <input value={product.brochure_url || ''} onChange={(e) => setProduct({ ...product, brochure_url: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                        <label className="block text-sm font-medium mb-1">Inventory Status</label>
+                        <select value={product.inventory_status || 'in_stock'} onChange={(e) => setProduct({ ...product, inventory_status: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3">
+                            <option value="in_stock">In Stock</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                            <option value="preorder">Pre-order</option>
+                        </select>
+
+                        <label className="block text-sm font-medium mb-1 mt-3">Feature: Energy Saving</label>
+                        <input value={product.energy_saving || ''} onChange={(e) => setProduct({ ...product, energy_saving: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <div className="flex gap-3 items-center mb-3">
+                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.smart} onChange={(e) => setProduct({ ...product, smart: e.target.checked })} /> <span className="text-sm">Smart Control</span></label>
+                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.filtration} onChange={(e) => setProduct({ ...product, filtration: e.target.checked })} /> <span className="text-sm">Filtration</span></label>
+                        </div>
+
+                        <label className="block text-sm font-medium mb-1 mt-2">Technical: Power</label>
+                        <input value={product.technical?.power || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: ISEER</label>
+                        <input value={product.technical?.iseer || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Refrigerant</label>
+                        <input value={product.technical?.refrigerant || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, refrigerant: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Noise Level</label>
+                        <input value={product.technical?.noise || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, noise: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Dimensions</label>
+                        <input value={product.technical?.dimensions || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Voltage</label>
+                        <input value={product.technical?.voltage || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
                     </div>
                 </div>
             </div>

@@ -283,6 +283,9 @@ export default function NewProductPage() {
                         <label className="block text-sm font-medium mb-1">Currency</label>
                         <input value={product.currency} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
+                        <label className="block text-sm font-medium mb-1">Brochure URL</label>
+                        <input value={product.brochure_url || ''} onChange={(e) => setProduct({ ...product, brochure_url: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
                         <label className="block text-sm font-medium mb-1">Inventory Status</label>
                         <select value={product.inventory_status} onChange={(e) => setProduct({ ...product, inventory_status: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2">
                             <option value="in_stock">In Stock</option>
@@ -290,10 +293,25 @@ export default function NewProductPage() {
                             <option value="preorder">Pre-order</option>
                         </select>
 
-                        <label className="block text-sm font-medium mb-1 mt-3">Technical: Power</label>
-                        <input value={product.technical.power} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1 mt-3">Feature: Energy Saving</label>
+                        <input value={product.energy_saving || ''} onChange={(e) => setProduct({ ...product, energy_saving: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <div className="flex gap-3 items-center mb-3">
+                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.smart} onChange={(e) => setProduct({ ...product, smart: e.target.checked })} /> <span className="text-sm">Smart Control</span></label>
+                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.filtration} onChange={(e) => setProduct({ ...product, filtration: e.target.checked })} /> <span className="text-sm">Filtration</span></label>
+                        </div>
+
+                        <label className="block text-sm font-medium mb-1 mt-2">Technical: Power</label>
+                        <input value={product.technical.power || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
                         <label className="block text-sm font-medium mb-1">Technical: ISEER</label>
-                        <input value={product.technical.iseer} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <input value={product.technical.iseer || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Refrigerant</label>
+                        <input value={product.technical.refrigerant || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, refrigerant: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Noise Level</label>
+                        <input value={product.technical.noise || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, noise: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Dimensions</label>
+                        <input value={product.technical.dimensions || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <label className="block text-sm font-medium mb-1">Technical: Voltage</label>
+                        <input value={product.technical.voltage || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
                     </div>
                 </div>

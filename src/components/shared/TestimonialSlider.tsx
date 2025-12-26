@@ -10,6 +10,7 @@ interface Testimonial {
     url: string;
     rating: number;
     date: string;
+    productIds?: number[];
 }
 
 interface TestimonialSliderProps {

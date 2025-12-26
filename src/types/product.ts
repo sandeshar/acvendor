@@ -53,11 +53,23 @@ export interface ProductPost {
     model?: string | null;
     capacity?: string | null;
     warranty?: string | null;
+    energy_saving?: string | null;
+    smart?: number | boolean | null;
+    filtration?: number | boolean | null;
+    brochure_url?: string | null;
+    power?: string | null;
+    iseer?: string | null;
+    refrigerant?: string | null;
+    noise?: string | null;
+    dimensions?: string | null;
+    voltage?: string | null;
+    locations?: string[] | string | null;
     inventory_status?: string | null;
     rating?: number | null;
     reviews_count?: number | null;
     meta_title?: string | null;
     meta_description?: string | null;
+    technical?: Record<string, any> | null;
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -1,12 +1,14 @@
 import { db } from "@/db";
 import { reviewTestimonials } from "@/db/reviewSchema";
 import { reviewTestimonialServices } from "@/db/reviewTestimonialServicesSchema";
+import { reviewTestimonialProducts } from "@/db/reviewTestimonialProductsSchema";
 import { desc, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const service = parseInt(searchParams.get('service') || '0');
+    const product = parseInt(searchParams.get('product') || '0');
     const id = parseInt(searchParams.get('id') || '0');
     const homepage = searchParams.get('homepage');
     const limit = parseInt(searchParams.get('limit') || '0');
@@ -18,8 +20,8 @@ export async function GET(request: NextRequest) {
 
     if (id) {
         const one = await db.select().from(reviewTestimonials).where(eq(reviewTestimonials.id, id)).limit(1);
-        const withServiceIds = await attachServiceIds(one);
-        return NextResponse.json(withServiceIds);
+        const withIds = await attachRelationIds(one);
+        return NextResponse.json(withIds);
     }
 
     if (service) {
@@ -35,18 +37,35 @@ export async function GET(request: NextRequest) {
             .limit(limit || 10);
 
         const testimonials = rows.map((r) => r.testimonial);
-        const withServiceIds = await attachServiceIds(testimonials);
-        return NextResponse.json(withServiceIds);
+        const withIds = await attachRelationIds(testimonials);
+        return NextResponse.json(withIds);
+    }
+
+    if (product) {
+        const rows = await db
+            .select({ testimonial: reviewTestimonials })
+            .from(reviewTestimonials)
+            .leftJoin(
+                reviewTestimonialProducts,
+                eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id)
+            )
+            .where(eq(reviewTestimonialProducts.productId, product))
+            .orderBy(desc(reviewTestimonials.date))
+            .limit(limit || 10);
+
+        const testimonials = rows.map((r) => r.testimonial);
+        const withIds = await attachRelationIds(testimonials);
+        return NextResponse.json(withIds);
     }
 
     // Return all testimonials if no specific filter
     const all = await db.select().from(reviewTestimonials).orderBy(desc(reviewTestimonials.date));
-    const withServiceIds = await attachServiceIds(all);
-    return NextResponse.json(withServiceIds);
+    const withIds = await attachRelationIds(all);
+    return NextResponse.json(withIds);
 }
 export async function POST(request: NextRequest) {
     try {
-        const { name, url, role, content, rating, serviceIds, link } = await request.json();
+        const { name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
             ? serviceIds.map((id: any) => parseInt(id)).filter((id) => !Number.isNaN(id))
@@ -75,6 +94,16 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const productIdArray = Array.isArray(productIds)
+            ? productIds.map((id: any) => parseInt(id)).filter((id) => !Number.isNaN(id))
+            : [];
+
+        if (productIdArray.length) {
+            await db.insert(reviewTestimonialProducts).values(
+                productIdArray.map((productId: number) => ({ testimonialId, productId }))
+            );
+        }
+
         return NextResponse.json({ success: true, id: testimonialId });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to create testimonial' }, { status: 500 });
@@ -82,7 +111,7 @@ export async function POST(request: NextRequest) {
 }
 export async function PUT(request: NextRequest) {
     try {
-        const { id, name, url, role, content, rating, serviceIds, link } = await request.json();
+        const { id, name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
             ? serviceIds.map((sid: any) => parseInt(sid)).filter((sid) => !Number.isNaN(sid))
@@ -112,6 +141,17 @@ export async function PUT(request: NextRequest) {
             );
         }
 
+        // Replace product mappings
+        await db.delete(reviewTestimonialProducts).where(eq(reviewTestimonialProducts.testimonialId, id));
+        const productIdArray = Array.isArray(productIds)
+            ? productIds.map((pid: any) => parseInt(pid)).filter((pid) => !Number.isNaN(pid))
+            : [];
+        if (productIdArray.length) {
+            await db.insert(reviewTestimonialProducts).values(
+                productIdArray.map((productId: number) => ({ testimonialId: id, productId }))
+            );
+        }
+
         return NextResponse.json({ success: true, id: result[0].insertId });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to create testimonial' }, { status: 500 });
@@ -134,20 +174,33 @@ export async function DELETE(request: NextRequest) {
     }
 }
 
-async function attachServiceIds(testimonials: any[]) {
+async function attachRelationIds(testimonials: any[]) {
     if (!testimonials.length) return testimonials;
     const ids = testimonials.map((t) => t.id);
-    const mappings = await db
+
+    const serviceMappings = await db
         .select({ testimonialId: reviewTestimonialServices.testimonialId, serviceId: reviewTestimonialServices.serviceId })
         .from(reviewTestimonialServices)
         .where(inArray(reviewTestimonialServices.testimonialId, ids));
 
-    const map = new Map<number, number[]>();
-    mappings.forEach((m) => {
-        const arr = map.get(m.testimonialId) ?? [];
+    const productMappings = await db
+        .select({ testimonialId: reviewTestimonialProducts.testimonialId, productId: reviewTestimonialProducts.productId })
+        .from(reviewTestimonialProducts)
+        .where(inArray(reviewTestimonialProducts.testimonialId, ids));
+
+    const serviceMap = new Map<number, number[]>();
+    serviceMappings.forEach((m) => {
+        const arr = serviceMap.get(m.testimonialId) ?? [];
         arr.push(m.serviceId);
-        map.set(m.testimonialId, arr);
+        serviceMap.set(m.testimonialId, arr);
     });
 
-    return testimonials.map((t) => ({ ...t, serviceIds: map.get(t.id) ?? [] }));
+    const productMap = new Map<number, number[]>();
+    productMappings.forEach((m) => {
+        const arr = productMap.get(m.testimonialId) ?? [];
+        arr.push(m.productId);
+        productMap.set(m.testimonialId, arr);
+    });
+
+    return testimonials.map((t) => ({ ...t, serviceIds: serviceMap.get(t.id) ?? [], productIds: productMap.get(t.id) ?? [] }));
 }
