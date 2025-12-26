@@ -37,10 +37,26 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { office_location, phone, email, map_url, is_active = 1 } = body;
+        const {
+            office_location,
+            phone,
+            email,
+            map_url,
+            map_description,
+            info_title,
+            info_description,
+            phone_item_1_subtext,
+            phone_item_2_subtext,
+            whatsapp_title,
+            whatsapp_subtext,
+            location_title,
+            opening_hours_title,
+            opening_hours_text,
+            is_active = 1,
+        } = body;
 
         if (!office_location || !phone || !email || !map_url) {
-            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+            return NextResponse.json({ error: 'office_location, phone, email and map_url are required' }, { status: 400 });
         }
 
         const result = await db.insert(contactPageInfo).values({
@@ -48,6 +64,16 @@ export async function POST(request: NextRequest) {
             phone,
             email,
             map_url,
+            map_description: map_description || undefined,
+            info_title: info_title || undefined,
+            info_description: info_description || undefined,
+            phone_item_1_subtext: phone_item_1_subtext || undefined,
+            phone_item_2_subtext: phone_item_2_subtext || undefined,
+            whatsapp_title: whatsapp_title || undefined,
+            whatsapp_subtext: whatsapp_subtext || undefined,
+            location_title: location_title || undefined,
+            opening_hours_title: opening_hours_title || undefined,
+            opening_hours_text: opening_hours_text || undefined,
             is_active,
         });
 
@@ -67,7 +93,24 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, office_location, phone, email, map_url, is_active } = body;
+        const {
+            id,
+            office_location,
+            phone,
+            email,
+            map_url,
+            map_description,
+            info_title,
+            info_description,
+            phone_item_1_subtext,
+            phone_item_2_subtext,
+            whatsapp_title,
+            whatsapp_subtext,
+            location_title,
+            opening_hours_title,
+            opening_hours_text,
+            is_active,
+        } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -78,6 +121,16 @@ export async function PUT(request: NextRequest) {
         if (phone !== undefined) updateData.phone = phone;
         if (email !== undefined) updateData.email = email;
         if (map_url !== undefined) updateData.map_url = map_url;
+        if (info_title !== undefined) updateData.info_title = info_title;
+        if (info_description !== undefined) updateData.info_description = info_description;
+        if (map_description !== undefined) updateData.map_description = map_description;
+        if (phone_item_1_subtext !== undefined) updateData.phone_item_1_subtext = phone_item_1_subtext;
+        if (phone_item_2_subtext !== undefined) updateData.phone_item_2_subtext = phone_item_2_subtext;
+        if (whatsapp_title !== undefined) updateData.whatsapp_title = whatsapp_title;
+        if (whatsapp_subtext !== undefined) updateData.whatsapp_subtext = whatsapp_subtext;
+        if (location_title !== undefined) updateData.location_title = location_title;
+        if (opening_hours_title !== undefined) updateData.opening_hours_title = opening_hours_title;
+        if (opening_hours_text !== undefined) updateData.opening_hours_text = opening_hours_text;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await db.update(contactPageInfo).set(updateData).where(eq(contactPageInfo.id, id));

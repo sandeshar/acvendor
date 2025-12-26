@@ -13,8 +13,8 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
     return (
         <div className="flex flex-col flex-1 gap-8">
             <div>
-                <h2 className="text-[#111418] text-[28px] font-bold leading-tight mb-2">Contact Information</h2>
-                <p className="text-[#617589] text-base">Reaching out for a repair, new installation, or general inquiry? We're just a call away.</p>
+                <h2 className="text-[#111418] text-[28px] font-bold leading-tight mb-2">{data.info_title || 'Contact Information'}</h2>
+                <p className="text-[#617589] text-base">{data.info_description || "Reaching out for a repair, new installation, or general inquiry? We're just a call away."}</p>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -25,7 +25,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                     </div>
                     <div className="flex flex-col justify-center flex-1">
                         <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone || '+977-9801XXXXXX'}</p>
-                        <p className="text-[#617589] text-sm font-normal">Sales Hotline (24/7)</p>
+                        <p className="text-[#617589] text-sm font-normal">{data.phone_item_1_subtext || 'Sales Hotline (24/7)'}</p>
                     </div>
                     <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone || '+9779801XXXXXX'}`}>Call</a>
                 </div>
@@ -37,7 +37,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                     </div>
                     <div className="flex flex-col justify-center flex-1">
                         <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone || '+977-01-4XXXXXX'}</p>
-                        <p className="text-[#617589] text-sm font-normal">Service Support &amp; Repairs</p>
+                        <p className="text-[#617589] text-sm font-normal">{data.phone_item_2_subtext || 'Service Support & Repairs'}</p>
                     </div>
                     <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone || '+977014XXXXXX'}`}>Call</a>
                 </div>
@@ -48,8 +48,8 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                         <span className="material-symbols-outlined">chat</span>
                     </div>
                     <div className="flex flex-col justify-center flex-1">
-                        <p className="text-[#111418] text-lg font-bold leading-normal group-hover:text-[#25D366] transition-colors">Chat on WhatsApp</p>
-                        <p className="text-[#617589] text-sm font-normal">Get instant quotes &amp; support</p>
+                        <p className="text-[#111418] text-lg font-bold leading-normal group-hover:text-[#25D366] transition-colors">{data.whatsapp_title || 'Chat on WhatsApp'}</p>
+                        <p className="text-[#617589] text-sm font-normal">{data.whatsapp_subtext || 'Get instant quotes & support'}</p>
                     </div>
                     <span className="material-symbols-outlined text-[#25D366]">arrow_forward</span>
                 </div>
@@ -59,7 +59,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                     <div className="bg-white p-4 rounded-xl border border-[#f0f2f4]">
                         <div className="flex items-center gap-3 mb-2">
                             <span className="material-symbols-outlined text-primary">location_on</span>
-                            <h3 className="font-bold text-[#111418]">Head Office</h3>
+                            <h3 className="font-bold text-[#111418]">{data.location_title || 'Head Office'}</h3>
                         </div>
                         <p className="text-sm text-[#617589] pl-9">
                             {data.office_location || 'New Baneshwor, Kathmandu\nNepal (Opposite to Eyeplex Mall)'}
@@ -69,11 +69,10 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                     <div className="bg-white p-4 rounded-xl border border-[#f0f2f4]">
                         <div className="flex items-center gap-3 mb-2">
                             <span className="material-symbols-outlined text-primary">schedule</span>
-                            <h3 className="font-bold text-[#111418]">Opening Hours</h3>
+                            <h3 className="font-bold text-[#111418]">{data.opening_hours_title || 'Opening Hours'}</h3>
                         </div>
                         <p className="text-sm text-[#617589] pl-9">
-                            Sun - Fri: 9:00 AM - 6:00 PM<br/>
-                            Saturday: Closed
+                            {(data.opening_hours_text || 'Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed').split('\n').map((line, i) => (<span key={i}>{line}<br /></span>))}
                         </p>
                     </div>
                 </div>

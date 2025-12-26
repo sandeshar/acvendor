@@ -644,6 +644,16 @@ export async function POST(request: Request) {
                 phone: '+977 9800000000',
                 email: 'support@acvendor.com',
                 map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.5769816700773!2d85.3206!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQzJzAyLjAiTiA4NcKwMTknMjIuMiJF!5e0!3m2!1sen!2snp!4v',
+                info_title: 'Contact Information',
+                info_description: 'Reaching out for a repair, new installation, or general inquiry? We\'re just a call away.',
+                map_description: 'Get directions to our main office for product demos and consultations.',
+                phone_item_1_subtext: 'Sales Hotline (24/7)',
+                phone_item_2_subtext: 'Service Support & Repairs',
+                whatsapp_title: 'Chat on WhatsApp',
+                whatsapp_subtext: 'Get instant quotes & support',
+                location_title: 'Head Office',
+                opening_hours_title: 'Opening Hours',
+                opening_hours_text: 'Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed',
                 is_active: 1,
             });
 

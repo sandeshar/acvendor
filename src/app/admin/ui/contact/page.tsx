@@ -151,9 +151,24 @@ export default function ContactPageUI() {
                                     Contact Information
                                 </h2>
                                 <div className="space-y-5">
+                                    <InputGroup label="Section Title" value={contactInfo.info_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, info_title: v })} />
+                                    <TextAreaGroup label="Section Description" value={contactInfo.info_description || ''} onChange={(v) => setContactInfo({ ...contactInfo, info_description: v })} />
+
                                     <InputGroup label="Office Location" value={contactInfo.office_location || ''} onChange={(v) => setContactInfo({ ...contactInfo, office_location: v })} />
                                     <InputGroup label="Phone Number" value={contactInfo.phone || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone: v })} />
+                                    <InputGroup label="Phone Item 1 Subtext" value={contactInfo.phone_item_1_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_1_subtext: v })} />
+                                    <InputGroup label="Phone Item 2 Subtext" value={contactInfo.phone_item_2_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_2_subtext: v })} />
+
+                                    <InputGroup label="WhatsApp Title" value={contactInfo.whatsapp_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, whatsapp_title: v })} />
+                                    <InputGroup label="WhatsApp Subtext" value={contactInfo.whatsapp_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, whatsapp_subtext: v })} />
+
+                                    <InputGroup label="Location Title" value={contactInfo.location_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, location_title: v })} />
+                                    <InputGroup label="Opening Hours Title" value={contactInfo.opening_hours_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, opening_hours_title: v })} />
+                                    <TextAreaGroup label="Opening Hours Text (use newline for line breaks)" value={contactInfo.opening_hours_text || ''} onChange={(v) => setContactInfo({ ...contactInfo, opening_hours_text: v })} />
+
                                     <InputGroup label="Email Address" value={contactInfo.email || ''} onChange={(v) => setContactInfo({ ...contactInfo, email: v })} />
+
+                                    <TextAreaGroup label="Map Description (short blurb shown over the map)" value={contactInfo.map_description || ''} onChange={(v) => setContactInfo({ ...contactInfo, map_description: v })} />
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Google Maps Embed URL</label>

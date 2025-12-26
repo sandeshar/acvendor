@@ -17,6 +17,20 @@ export const contactPageInfo = mysqlTable("contact_page_info", {
     phone: varchar("phone", { length: 50 }).notNull(),
     email: varchar("email", { length: 256 }).notNull(),
     map_url: varchar("map_url", { length: 1024 }).notNull(), // Google Maps embed URL
+
+    // Text fields (editable copy for contact page UI)
+    info_title: varchar("info_title", { length: 128 }).notNull().default('Contact Information'),
+    info_description: varchar("info_description", { length: 512 }).notNull().default("Reaching out for a repair, new installation, or general inquiry? We're just a call away."),
+    // Map overlay description (short blurb shown over map)
+    map_description: varchar("map_description", { length: 256 }).notNull().default('Get directions to our main office for product demos and consultations.'),
+    phone_item_1_subtext: varchar("phone_item_1_subtext", { length: 128 }).notNull().default('Sales Hotline (24/7)'),
+    phone_item_2_subtext: varchar("phone_item_2_subtext", { length: 128 }).notNull().default('Service Support & Repairs'),
+    whatsapp_title: varchar("whatsapp_title", { length: 128 }).notNull().default('Chat on WhatsApp'),
+    whatsapp_subtext: varchar("whatsapp_subtext", { length: 128 }).notNull().default('Get instant quotes & support'),
+    location_title: varchar("location_title", { length: 128 }).notNull().default('Head Office'),
+    opening_hours_title: varchar("opening_hours_title", { length: 128 }).notNull().default('Opening Hours'),
+    opening_hours_text: varchar("opening_hours_text", { length: 512 }).notNull().default("Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed"),
+
     is_active: int("is_active").default(1).notNull(),
     updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
 });

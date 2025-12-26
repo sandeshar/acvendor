@@ -39,6 +39,18 @@ export interface ContactInfoData {
     phone: string;
     email: string;
     map_url: string;
+
+    // Optional editable copy
+    info_title?: string;
+    info_description?: string;
+    phone_item_1_subtext?: string;
+    phone_item_2_subtext?: string;
+    whatsapp_title?: string;
+    whatsapp_subtext?: string;
+    location_title?: string;
+    opening_hours_title?: string;
+    opening_hours_text?: string;
+    map_description?: string;
 }
 
 export interface ContactFormConfigData {

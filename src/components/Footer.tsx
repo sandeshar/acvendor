@@ -20,9 +20,9 @@ const footerLinks = [
             { label: 'About Us', href: '/about' },
             { label: 'FAQ', href: '/faq' },
             { label: 'Terms', href: '/terms' },
-            { label: 'Contact', href: '/contact' },
         ],
     },
+
 ];
 
 const Footer = ({ storeName, storeLogo, store }: FooterProps) => {
