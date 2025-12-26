@@ -25,12 +25,7 @@ const SeedRunner = () => {
         { key: "homepage", label: "Homepage" },
         { key: "about", label: "About" },
         { key: "services", label: "Services" },
-        { key: "contact", label: "Contact" },
-        { key: "faq", label: "FAQ" },
-        { key: "terms", label: "Terms" },
-        { key: "blog", label: "Blog" },
-        { key: "navbar", label: "Navbar" },
-        { key: "footer", label: "Footer" },
+        { key: "products", label: "Products (Sample)" },
     ];
 
     const runSeed = async () => {
@@ -55,7 +50,8 @@ const SeedRunner = () => {
         setIndividualLoading(key);
         setError(null);
         try {
-            const url = `/api/seed/${key}`;
+            const opts = individualOptions[key] || {};
+            const url = `/api/seed/${key}${opts.clean ? '?clean=1' : ''}`;
             const res = await fetch(url, { method: "POST" });
             const data: SeedResponse = await res.json();
             const success = res.ok;
@@ -144,7 +140,13 @@ const SeedRunner = () => {
                                     {itemState ? itemState.message : "Not run yet."}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {/* Navbar is cleaned by default; no UI option required */}
+                                    {/* Show clean toggle only for products seeder */}
+                                    {key === 'products' && (
+                                        <label className="inline-flex items-center gap-2 text-xs text-slate-600">
+                                            <input type="checkbox" checked={!!individualOptions[key]?.clean} onChange={(e) => setIndividualOptions((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), clean: e.target.checked } }))} />
+                                            <span>Clean before seed</span>
+                                        </label>
+                                    )}
                                     <button
                                         type="button"
                                         onClick={() => runIndividualSeed(key)}

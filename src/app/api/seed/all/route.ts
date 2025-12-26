@@ -53,6 +53,7 @@ export async function POST(request: Request) {
             homepage: { success: false, message: '' },
             about: { success: false, message: '' },
             services: { success: false, message: '' },
+            products: { success: false, message: '' },
             contact: { success: false, message: '' },
             faq: { success: false, message: '' },
             terms: { success: false, message: '' },
@@ -441,7 +442,7 @@ export async function POST(request: Request) {
                     },
                     {
                         key: 'window-ac-1-ton',
-                        icon: 'window',
+                        icon: 'ac_unit',
                         title: 'Standard Window AC 1 Ton',
                         description: 'Compact and affordable window AC suitable for small rooms.',
                         bullets: ['1 Ton capacity', 'Easy installation', 'Affordable cooling solution'],
@@ -449,6 +450,7 @@ export async function POST(request: Request) {
                         image_alt: 'Window AC in a bedroom',
                         price: '349.00',
                     },
+
                     {
                         key: 'ac-compressor-spare',
                         icon: 'build',
@@ -622,6 +624,18 @@ export async function POST(request: Request) {
             }
 
             results.services = { success: true, message: 'Services seeded successfully' };
+
+            // Seed products that reference the same category manager (if a products seeder exists)
+            try {
+                const prodModule = await import('@/app/api/seed/products/route');
+                const prodRes: any = await prodModule.POST(new Request('http://localhost/api/seed/products'));
+                let prodJson: any = null;
+                try { prodJson = await prodRes.json(); } catch (e) { prodJson = null; }
+                const ok = prodRes && (prodRes.status === 200 || prodRes.status === 201);
+                results.products = { success: ok, message: prodJson?.message || (ok ? 'Products seeded' : 'Products seeding failed') };
+            } catch (err) {
+                results.products = { success: false, message: err instanceof Error ? err.message : String(err) };
+            }
         } catch (error) {
             results.services.message = error instanceof Error ? error.message : 'Failed to seed services';
         }

@@ -10,6 +10,7 @@ import {
     servicesPageBrands,
     servicesPageTrust,
 } from '@/db/servicesPageSchema';
+import { products, productImages } from '@/db/productsSchema';
 import { servicePosts } from '@/db/servicePostsSchema';
 import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
 import { reviewTestimonials } from '@/db/reviewSchema';
@@ -295,6 +296,84 @@ export async function POST() {
                 is_active: 1,
             });
         }
+
+        // Seed a few sample products that reference the same service categories/subcategories
+        try {
+            const productSamples = [
+                {
+                    slug: 'xtreme-save-18k',
+                    title: 'Xtreme Save 1.5 Ton — Energy Efficient Inverter',
+                    excerpt: 'High efficiency inverter AC with advanced filtration and smart features.',
+                    content: '<p>High efficiency inverter AC with exceptional cooling and energy savings.</p>',
+                    thumbnail: 'https://images.unsplash.com/photo-1582719478250-7e5b49b8d6c3?auto=format&fit=crop&w=1400&q=80',
+                    image_urls: ['https://images.unsplash.com/photo-1582719478250-7e5b49b8d6c3?auto=format&fit=crop&w=1200&q=80'],
+                    price: '85000.00',
+                    compare_at_price: null,
+                    currency: 'NRS',
+                    inventory_status: 'in_stock',
+                    model: 'MSAG-18HRFN1',
+                    capacity: '18,000 BTU/h',
+                    warranty: '2 years',
+                    category_id: category?.id || null,
+                    subcategory_id: subcategoryMap['seo'] || null,
+                    statusId: publishedStatus.id,
+                    featured: 1,
+                    meta_title: 'Xtreme Save 1.5 Ton Inverter AC',
+                    meta_description: 'Efficient inverter AC ideal for Nepali homes and small offices.',
+                },
+                {
+                    slug: 'xtreme-save-24k',
+                    title: 'Xtreme Save 2.0 Ton — Powerful Cooling',
+                    excerpt: 'Robust performance for larger rooms and halls.',
+                    content: '<p>Robust performance for larger rooms and halls.</p>',
+                    thumbnail: 'https://images.unsplash.com/photo-1549399546-9d4d5f5d93d0?auto=format&fit=crop&w=1400&q=80',
+                    image_urls: ['https://images.unsplash.com/photo-1549399546-9d4d5f5d93d0?auto=format&fit=crop&w=1200&q=80'],
+                    price: '115000.00',
+                    compare_at_price: null,
+                    currency: 'NRS',
+                    inventory_status: 'in_stock',
+                    model: 'MSAG-24HRFN1',
+                    capacity: '24,000 BTU/h',
+                    warranty: '2 years',
+                    category_id: category?.id || null,
+                    subcategory_id: subcategoryMap['social'] || null,
+                    statusId: publishedStatus.id,
+                    featured: 0,
+                    meta_title: 'Xtreme Save 2.0 Ton',
+                    meta_description: 'Powerful cooling for larger rooms and small halls.',
+                },
+
+            ];
+
+            for (const p of productSamples) {
+                // Prevent accidental insertion of helper fields into products table
+                const payload: any = { ...p };
+                delete payload.image_urls;
+
+                const [existing] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
+                if (!existing) {
+                    const result = await db.insert(products).values(payload as any);
+                    const insertId = result?.[0]?.insertId;
+                    if (insertId && Array.isArray(p.image_urls) && p.image_urls.length) {
+                        const imageInserts = p.image_urls.map((url: string, idx: number) => ({
+                            product_id: insertId,
+                            url,
+                            alt: p.title || '',
+                            is_primary: idx === 0 ? 1 : 0,
+                            display_order: idx,
+                        }));
+                        try {
+                            await db.insert(productImages).values(imageInserts);
+                        } catch (e) {
+                            console.warn('Failed to insert product images for', p.slug, e);
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to seed products:', e);
+        }
+
         return NextResponse.json({ success: true, message: 'Services seeded successfully' }, { status: 201 });
     } catch (error) {
         console.error('Error seeding services:', error);

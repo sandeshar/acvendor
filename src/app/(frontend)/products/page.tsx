@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ProductsListClient from '@/components/products/ProductsListClientWrapper';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -7,7 +8,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 async function getProducts(limit = 12) {
     try {
-        const res = await fetch(`${API_BASE}/api/services?limit=${limit}`, { next: { tags: ['services'] } });
+        const res = await fetch(`${API_BASE}/api/products?limit=${limit}`, { next: { tags: ['products'] } });
         if (!res.ok) return [];
         return await res.json();
     } catch (e) {
@@ -127,41 +128,8 @@ export default async function ProductsPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {products.map((p: any) => (
-                        <div key={p.id} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
-                            <div className="relative h-48 w-full bg-[#f3f6f9] flex items-center justify-center p-4">
-                                {p.inventory_status === 'in_stock' && <div className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded">IN STOCK</div>}
-                                <img alt={p.title || p.slug} className="h-full w-auto object-contain mix-blend-multiply" src={p.thumbnail || '/placeholder-product.png'} />
-                                <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm">
-                                    <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                </button>
-                            </div>
-                            <div className="p-4 flex flex-col flex-1 gap-2">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category || 'Wall Mounted'}</span>
-                                    <span className="text-xs font-medium text-gray-500">{p.subcategory || ''}</span>
-                                </div>
-                                <Link href={`/products/${p.slug}`} className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</Link>
-                                <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>
-                                <div className="flex gap-2 flex-wrap my-2">
-                                    <div className="flex items-center gap-1 bg-[#f0f2f4] px-2 py-1 rounded text-xs font-medium text-gray-700">
-                                        <span className="material-symbols-outlined text-[14px]">ac_unit</span> {p.capacity || '1.0 Ton'}
-                                    </div>
-                                    {p.efficiency && <div className="flex items-center gap-1 bg-[#f0f2f4] px-2 py-1 rounded text-xs font-medium text-gray-700">
-                                        <span className="material-symbols-outlined text-[14px]">bolt</span> {p.efficiency}
-                                    </div>}
-                                </div>
-                                <div className="mt-auto pt-3 border-t border-[#f0f2f4] flex gap-2">
-                                    <Link href={`/products/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
-                                    <button className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#111418] hover:bg-gray-50 transition-colors">
-                                        <span className="material-symbols-outlined text-[20px]">compare_arrows</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {/* Interactive client-side list with cleaner UI */}
+                <ProductsListClient products={products} />
 
                 <div className="flex justify-center mt-8">
                     <nav aria-label="Pagination" className="flex items-center gap-2">
