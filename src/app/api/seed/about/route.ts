@@ -67,6 +67,7 @@ export async function POST() {
             paragraph2: 'We envisioned something better—content that tells stories, sparks emotions, and builds genuine connections. Today, we work with businesses across industries to create content strategies that not only attract attention but also inspire action and loyalty.',
             thinking_box_title: 'Our Thinking',
             thinking_box_content: 'We believe in the power of authenticity. In an age of algorithms and automation, human connection is what truly matters. We write with empathy, strategy, and a relentless focus on delivering value to your audience.',
+            highlights: JSON.stringify(['ISO 9001:2015 Certified', 'Authorized Distributor']),
             hero_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDda5biMwpMvtX_h7btShwaroEUJ1ijOwryycUDayNUEpgCs5Get0Ep6MoDB5u_3rw9c-R5gRyZWYnGqHuoiqBOTd3JUyVZuq0UUXI8R2BUjuY5HIq_-4V_ckfdOBetgRgNaf-rpTdE7AtC-rxH-KYR9y4D8oTpDqs_FSBTaaWChdJ0ilJKnKdEc2PzxxHoZixugfmxmKMdJ_Stnxg81KaJVzEjzoOwjuv-RFS4_nBIQkPZForGEXJHgs8q0H05VzwwvwgkkURRlMg',
             hero_image_alt: 'Team of professional HVAC technicians in blue uniforms discussing a blueprint',
             is_active: 1,

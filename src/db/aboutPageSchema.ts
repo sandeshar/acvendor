@@ -36,6 +36,7 @@ export const aboutPageJourney = mysqlTable("about_page_journey", {
     paragraph2: varchar("paragraph2", { length: 1024 }).notNull(),
     thinking_box_title: varchar("thinking_box_title", { length: 256 }).notNull(),
     thinking_box_content: varchar("thinking_box_content", { length: 1024 }).notNull(),
+    highlights: varchar("highlights", { length: 1024 }).notNull().default('[]'),
     // Section image
     hero_image: varchar("hero_image", { length: 512 }).notNull().default(''),
     hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull().default(''),

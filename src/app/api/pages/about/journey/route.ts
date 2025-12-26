@@ -17,7 +17,18 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Journey section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(journey[0]);
+            const j = { ...journey[0] } as any;
+            if (j.highlights && typeof j.highlights === 'string') {
+                try {
+                    j.highlights = JSON.parse(j.highlights);
+                } catch (e) {
+                    j.highlights = [];
+                }
+            } else {
+                j.highlights = j.highlights || [];
+            }
+
+            return NextResponse.json(j);
         }
 
         const journey = await db.select().from(aboutPageJourney).where(eq(aboutPageJourney.is_active, 1)).limit(1);
@@ -26,7 +37,18 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No active journey section found' }, { status: 404 });
         }
 
-        return NextResponse.json(journey[0]);
+        const j = { ...journey[0] } as any;
+        if (j.highlights && typeof j.highlights === 'string') {
+            try {
+                j.highlights = JSON.parse(j.highlights);
+            } catch (e) {
+                j.highlights = [];
+            }
+        } else {
+            j.highlights = j.highlights || [];
+        }
+
+        return NextResponse.json(j);
     } catch (error) {
         console.error('Error fetching journey section:', error);
         return NextResponse.json({ error: 'Failed to fetch journey section' }, { status: 500 });
@@ -37,11 +59,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, hero_image = '', hero_image_alt = '', is_active = 1 } = body;
+        const { title, paragraph1, paragraph2, thinking_box_title = '', thinking_box_content = '', highlights = [], hero_image = '', hero_image_alt = '', is_active = 1 } = body;
 
-        if (!title || !paragraph1 || !paragraph2 || !thinking_box_title || !thinking_box_content) {
-            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+        if (!title || !paragraph1 || !paragraph2) {
+            return NextResponse.json({ error: 'Title and paragraphs are required' }, { status: 400 });
         }
+
+        const highlightsStr = Array.isArray(highlights) ? JSON.stringify(highlights) : (typeof highlights === 'string' ? highlights : JSON.stringify([]));
 
         const result = await db.insert(aboutPageJourney).values({
             title,
@@ -49,6 +73,7 @@ export async function POST(request: NextRequest) {
             paragraph2,
             thinking_box_title,
             thinking_box_content,
+            highlights: highlightsStr,
             hero_image,
             hero_image_alt,
             is_active,
@@ -80,6 +105,7 @@ export async function PUT(request: NextRequest) {
         if (paragraph2 !== undefined) updateData.paragraph2 = paragraph2;
         if (thinking_box_title !== undefined) updateData.thinking_box_title = thinking_box_title;
         if (thinking_box_content !== undefined) updateData.thinking_box_content = thinking_box_content;
+        if (highlights !== undefined) updateData.highlights = Array.isArray(highlights) ? JSON.stringify(highlights) : (typeof highlights === 'string' ? highlights : JSON.stringify(highlights));
         if (hero_image !== undefined) updateData.hero_image = hero_image;
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;

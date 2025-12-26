@@ -346,6 +346,32 @@ export default function AboutPageUI() {
                                     <InputGroup label="Thinking Box Title" value={journeyData.thinking_box_title || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_title: v })} />
                                     <TextAreaGroup label="Thinking Box Content" value={journeyData.thinking_box_content || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_content: v })} />
 
+                                    <div className="mt-4 space-y-3">
+                                        <div className="flex items-center justify-between px-2">
+                                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Highlights</h3>
+                                            <button onClick={() => setJourneyData({ ...journeyData, highlights: [...(Array.isArray(journeyData.highlights) ? journeyData.highlights : []), ''] })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Highlight
+                                            </button>
+                                        </div>
+
+                                        {(Array.isArray(journeyData.highlights) ? journeyData.highlights : []).map((h, idx) => (
+                                            <div key={idx} className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-center">
+                                                <input type="text" className="col-span-5 block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 px-4" value={h || ''} onChange={(e) => {
+                                                    const arr = Array.isArray(journeyData.highlights) ? [...journeyData.highlights] : [];
+                                                    arr[idx] = e.target.value;
+                                                    setJourneyData({ ...journeyData, highlights: arr });
+                                                }} />
+                                                <button onClick={() => {
+                                                    const arr = Array.isArray(journeyData.highlights) ? [...journeyData.highlights] : [];
+                                                    arr.splice(idx, 1);
+                                                    setJourneyData({ ...journeyData, highlights: arr });
+                                                }} className="text-red-500 hover:text-red-600">
+                                                    <span className="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     <ImageUploader label="Section Image" value={journeyData.hero_image || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image: v })} folder="about/journey" />
                                     <InputGroup label="Section Image Alt Text" value={journeyData.hero_image_alt || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image_alt: v })} />
                                 </div>
