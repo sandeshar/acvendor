@@ -100,7 +100,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                         { id: 3, label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 },
                         { id: 4, label: 'Brands', href: '/brands', order: 3, is_button: 0, is_active: 1 },
                         { id: 5, label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-                        { id: 6, label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 },
+                        { id: 6, label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
                     ]);
                 }
             } finally {

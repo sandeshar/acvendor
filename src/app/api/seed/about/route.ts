@@ -15,6 +15,20 @@ import {
     aboutPageCTA
 } from '@/db/aboutPageSchema';
 
+// Use centralized defaults
+import {
+    DEFAULT_FEATURES,
+    DEFAULT_STATS,
+    DEFAULT_HERO_IMAGE,
+    DEFAULT_HERO_IMAGE_ALT,
+    DEFAULT_HIGHLIGHTS,
+    DEFAULT_JOURNEY_TITLE,
+    DEFAULT_THINKING_BOX_TITLE,
+    DEFAULT_THINKING_BOX_CONTENT,
+    DEFAULT_CERTIFICATIONS,
+    DEFAULT_CERTIFICATIONS_SECTION,
+} from '@/db/aboutPageDefaults';
+
 export async function POST() {
     try {
         // Clear existing data
@@ -62,55 +76,37 @@ export async function POST() {
 
         // Seed Journey Section
         await db.insert(aboutPageJourney).values({
-            title: 'Our Story',
+            title: DEFAULT_JOURNEY_TITLE,
             paragraph1: 'Content Solution Nepal was born from a simple belief: that every business, big or small, deserves a voice that truly represents who they are and what they stand for. We started as a small team of writers who were tired of seeing generic, cookie-cutter content flooding the digital world.',
             paragraph2: 'We envisioned something better—content that tells stories, sparks emotions, and builds genuine connections. Today, we work with businesses across industries to create content strategies that not only attract attention but also inspire action and loyalty.',
-            thinking_box_title: 'Our Thinking',
-            thinking_box_content: 'We believe in the power of authenticity. In an age of algorithms and automation, human connection is what truly matters. We write with empathy, strategy, and a relentless focus on delivering value to your audience.',
-            highlights: JSON.stringify(['ISO 9001:2015 Certified', 'Authorized Distributor']),
-            hero_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDda5biMwpMvtX_h7btShwaroEUJ1ijOwryycUDayNUEpgCs5Get0Ep6MoDB5u_3rw9c-R5gRyZWYnGqHuoiqBOTd3JUyVZuq0UUXI8R2BUjuY5HIq_-4V_ckfdOBetgRgNaf-rpTdE7AtC-rxH-KYR9y4D8oTpDqs_FSBTaaWChdJ0ilJKnKdEc2PzxxHoZixugfmxmKMdJ_Stnxg81KaJVzEjzoOwjuv-RFS4_nBIQkPZForGEXJHgs8q0H05VzwwvwgkkURRlMg',
-            hero_image_alt: 'Team of professional HVAC technicians in blue uniforms discussing a blueprint',
+            thinking_box_title: DEFAULT_THINKING_BOX_TITLE,
+            thinking_box_content: DEFAULT_THINKING_BOX_CONTENT,
+            highlights: JSON.stringify(DEFAULT_HIGHLIGHTS),
+            hero_image: DEFAULT_HERO_IMAGE,
+            hero_image_alt: DEFAULT_HERO_IMAGE_ALT,
             is_active: 1,
         });
 
         // Seed Stats
-        const stats = [
-            { label: 'Happy Clients', value: '150+', display_order: 1, is_active: 1 },
-            { label: 'Projects Delivered', value: '500+', display_order: 2, is_active: 1 },
-            { label: 'Team Members', value: '25', display_order: 3, is_active: 1 },
-            { label: 'Years of Experience', value: '8', display_order: 4, is_active: 1 },
-        ];
-
-        for (const stat of stats) {
-            await db.insert(aboutPageStats).values(stat);
+        // Use centralized DEFAULT_STATS
+        for (const s of DEFAULT_STATS) {
+            await db.insert(aboutPageStats).values({ label: s.label, value: s.value, display_order: s.display_order, is_active: s.is_active });
         }
 
         // Seed Features
-        const features = [
-            { title: 'Tailored Strategies', description: 'Every project is unique. We craft custom content strategies that align with your goals.', icon: 'support_agent', display_order: 1, is_active: 1 },
-            { title: 'Experienced Team', description: 'Our writers, strategists, and editors bring years of expertise across diverse industries.', icon: 'verified_user', display_order: 2, is_active: 1 },
-            { title: 'Results-Driven', description: 'We measure success through your growth—more traffic, engagement, and conversions.', icon: 'amp_stories', display_order: 3, is_active: 1 },
-            { title: 'Full-Service', description: 'From strategy to execution, we handle every aspect of your content journey.', icon: 'build_circle', display_order: 4, is_active: 1 },
-        ];
-
-        for (const feature of features) {
-            await db.insert(aboutPageFeatures).values(feature);
+        // Seed features from centralized DEFAULT_FEATURES
+        for (const [i, f] of DEFAULT_FEATURES.entries()) {
+            await db.insert(aboutPageFeatures).values({ title: f.title, description: f.description, icon: f.icon || '', display_order: i + 1, is_active: 1 });
         }
 
         // Seed Certifications (clients)
-        const certifications = [
-            { name: 'Hotel Himalaya', logo: '', link: '/', display_order: 1, is_active: 1 },
-            { name: 'Nepal Bank', logo: '', link: '/', display_order: 2, is_active: 1 },
-            { name: 'City Hospital', logo: '', link: '/', display_order: 3, is_active: 1 },
-            { name: 'Kathmandu Uni', logo: '', link: '/', display_order: 4, is_active: 1 },
-        ];
-
-        for (const c of certifications) {
-            await db.insert(aboutPageCertifications).values(c);
+        // Seed Certifications (clients) from centralized defaults
+        for (const [i, c] of DEFAULT_CERTIFICATIONS.entries()) {
+            await db.insert(aboutPageCertifications).values({ name: c.name, logo: c.logo || '', link: c.link || '#', display_order: i + 1, is_active: 1 });
         }
 
-        // Seed Certifications Section (title/subtitle)
-        await db.insert(aboutPageCertificationsSection).values({ title: 'Trusted by Industry Leaders', subtitle: 'Authorized Sales & Service Partners for Major Global Brands', is_active: 1 });
+        // Seed Certifications Section (title/subtitle) from defaults
+        await db.insert(aboutPageCertificationsSection).values({ title: DEFAULT_CERTIFICATIONS_SECTION.title, subtitle: DEFAULT_CERTIFICATIONS_SECTION.subtitle, is_active: 1 });
 
         // Seed Badges (manufacturers)
         const badges = [

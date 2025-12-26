@@ -23,7 +23,7 @@ export async function POST() {
                     { label: 'All Products', href: '/products' },
                     { label: 'Brands', href: '/brands' },
                     { label: 'Installation', href: '/services' },
-                    { label: 'Support', href: '/support' },
+                    { label: 'Contact', href: '/contact' },
                 ],
             },
             {

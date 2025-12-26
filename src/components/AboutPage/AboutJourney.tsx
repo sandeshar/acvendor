@@ -3,6 +3,7 @@ import StatCard from './StatCard';
 import FeatureCard from './FeatureCard';
 import AboutFeatures from './AboutFeatures';
 import AboutCertifications from './AboutCertifications';
+import { DEFAULT_HERO_IMAGE, DEFAULT_HIGHLIGHTS, DEFAULT_STATS, DEFAULT_JOURNEY_TITLE, DEFAULT_THINKING_BOX_TITLE, DEFAULT_THINKING_BOX_CONTENT, DEFAULT_HERO_IMAGE_ALT } from '@/db/aboutPageDefaults';
 
 interface AboutJourneySectionData {
     id: number;
@@ -48,14 +49,7 @@ interface AboutJourneyProps {
     certificationsSection?: { title?: string; subtitle?: string } | null;
 }
 
-const DEFAULT_HERO_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDda5biMwpMvtX_h7btShwaroEUJ1ijOwryycUDayNUEpgCs5Get0Ep6MoDB5u_3rw9c-R5gRyZWYnGqHuoiqBOTd3JUyVZuq0UUXI8R2BUjuY5HIq_-4V_ckfdOBetgRgNaf-rpTdE7AtC-rxH-KYR9y4D8oTpDqs_FSBTaaWChdJ0ilJKnKdEc2PzxxHoZixugfmxmKMdJ_Stnxg81KaJVzEjzoOwjuv-RFS4_nBIQkPZForGEXJHgs8q0H05VzwwvwgkkURRlMg';
-const DEFAULT_HIGHLIGHTS = ['ISO 9001:2015 Certified', 'Authorized Distributor'];
-const DEFAULT_STATS: AboutStatData[] = [
-    { id: -1, label: 'Installations', value: '5000+', display_order: 1, is_active: 1, createdAt: new Date(), updatedAt: new Date() },
-    { id: -2, label: 'Years Experience', value: '15+', display_order: 2, is_active: 1, createdAt: new Date(), updatedAt: new Date() },
-    { id: -3, label: 'Certified Techs', value: '50+', display_order: 3, is_active: 1, createdAt: new Date(), updatedAt: new Date() },
-    { id: -4, label: 'Client Satisfaction', value: '100%', display_order: 4, is_active: 1, createdAt: new Date(), updatedAt: new Date() },
-];
+// defaults moved to '@/db/aboutPageDefaults' (DEFAULT_HERO_IMAGE, DEFAULT_HIGHLIGHTS, DEFAULT_STATS, etc.)
 
 const AboutJourney = ({ section, stats = [], features = [], badges = [], certifications = [], certificationsSection = null }: AboutJourneyProps) => {
     if (!section) {
@@ -72,7 +66,7 @@ const AboutJourney = ({ section, stats = [], features = [], badges = [], certifi
                             <div className="flex flex-col gap-2">
                                 <span className="text-primary font-bold tracking-wider uppercase text-sm">Our Story</span>
                                 <h2 className="text-[#111418] text-3xl md:text-4xl font-bold leading-tight">
-                                    {section.title || 'Bringing Comfort to Every Nepali Home & Business'}
+                                    {section.title || DEFAULT_JOURNEY_TITLE}
                                 </h2>
                             </div>
 
@@ -95,7 +89,7 @@ const AboutJourney = ({ section, stats = [], features = [], badges = [], certifi
 
                         <div className="relative h-full min-h-[300px] w-full rounded-xl overflow-hidden shadow-xl group">
                             <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors z-10"></div>
-                            <div className="h-full w-full bg-cover bg-center" data-alt={section?.hero_image_alt || 'Team of professionals'} style={{ backgroundImage: section?.hero_image ? `url("${section.hero_image}")` : `url("${DEFAULT_HERO_IMAGE}")` }} />
+                            <div className="h-full w-full bg-cover bg-center" data-alt={section?.hero_image_alt || DEFAULT_HERO_IMAGE_ALT} style={{ backgroundImage: section?.hero_image ? `url("${section.hero_image}")` : `url("${DEFAULT_HERO_IMAGE}")` }} />
                         </div>
                     </div>
                 </div>
@@ -117,8 +111,8 @@ const AboutJourney = ({ section, stats = [], features = [], badges = [], certifi
                 <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
                     <div className="flex flex-col gap-10 px-4 py-4">
                         <div className="flex flex-col gap-4 text-center items-center">
-                            <h2 className="text-[#111418] tracking-tight text-[32px] font-bold leading-tight md:text-4xl">{section.thinking_box_title || 'Why Choose Nepal AC Solutions?'}</h2>
-                            <p className="text-[#617589] text-base font-normal leading-normal max-w-[720px]">{section.thinking_box_content || 'We combine international quality standards with deep local knowledge to deliver superior cooling solutions.'}</p>
+                            <h2 className="text-[#111418] tracking-tight text-[32px] font-bold leading-tight md:text-4xl">{section.thinking_box_title || DEFAULT_THINKING_BOX_TITLE}</h2>
+                            <p className="text-[#617589] text-base font-normal leading-normal max-w-[720px]">{section.thinking_box_content || DEFAULT_THINKING_BOX_CONTENT}</p>
                         </div>
 
                         <AboutFeatures features={features} />

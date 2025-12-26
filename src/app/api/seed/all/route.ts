@@ -1007,7 +1007,7 @@ export async function POST(request: Request) {
                 await db.insert(navbarItems).values({ label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 });
                 await db.insert(navbarItems).values({ label: 'Products', href: '/products', order: 3, is_button: 0, is_active: 1 });
                 await db.insert(navbarItems).values({ label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 });
+                await db.insert(navbarItems).values({ label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 });
                 await db.insert(navbarItems).values({ label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 });
             }
             results.navbar = { success: true, message: 'Navbar seeded successfully' };

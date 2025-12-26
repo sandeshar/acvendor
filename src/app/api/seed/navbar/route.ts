@@ -16,7 +16,7 @@ export async function POST(request: Request) {
             { label: 'Brands', href: '/brands', order: 2, is_button: 0, is_active: 1 },
             { label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
             { label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-            { label: 'Support', href: '/support', order: 5, is_button: 0, is_active: 1 },
+            { label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
             { label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 },
         ];
 
