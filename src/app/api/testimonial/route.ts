@@ -4,6 +4,7 @@ import { reviewTestimonialServices } from "@/db/reviewTestimonialServicesSchema"
 import { reviewTestimonialProducts } from "@/db/reviewTestimonialProductsSchema";
 import { desc, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from 'next/cache';
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -89,6 +90,15 @@ export async function POST(request: NextRequest) {
         const testimonialId = result[0].insertId;
 
         if (serviceIdArray.length) {
+            // Validate services exist
+            const { servicePosts } = await import('@/db/servicePostsSchema');
+            const existingServices = await db.select().from(servicePosts).where(inArray(servicePosts.id, serviceIdArray));
+            const existingIds = new Set(existingServices.map((s: any) => s.id));
+            const invalidServices = serviceIdArray.filter((id: number) => !existingIds.has(id));
+            if (invalidServices.length) {
+                return NextResponse.json({ error: `Invalid service IDs: ${invalidServices.join(', ')}` }, { status: 400 });
+            }
+
             await db.insert(reviewTestimonialServices).values(
                 serviceIdArray.map((serviceId: number) => ({ testimonialId, serviceId }))
             );
@@ -99,14 +109,28 @@ export async function POST(request: NextRequest) {
             : [];
 
         if (productIdArray.length) {
+            // Validate products exist
+            const { products } = await import('@/db/productsSchema');
+            const existingProducts = await db.select().from(products).where(inArray(products.id, productIdArray));
+            const existingProductIds = new Set(existingProducts.map((p: any) => p.id));
+            const invalidProducts = productIdArray.filter((id: number) => !existingProductIds.has(id));
+            if (invalidProducts.length) {
+                return NextResponse.json({ error: `Invalid product IDs: ${invalidProducts.join(', ')}` }, { status: 400 });
+            }
+
             await db.insert(reviewTestimonialProducts).values(
                 productIdArray.map((productId: number) => ({ testimonialId, productId }))
             );
+
+            // trigger revalidation for product pages so aggregated ratings/counts update
+            try { productIdArray.forEach(pid => { try { revalidateTag(`product-${pid}`, 'max'); } catch (e) { /* ignore */ } }); revalidateTag('products', 'max'); } catch (e) { /* ignore */ }
         }
 
         return NextResponse.json({ success: true, id: testimonialId });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to create testimonial' }, { status: 500 });
+    } catch (error: any) {
+        try { const payload = await request.json(); console.error('Create testimonial payload:', payload); } catch (e) { /* ignore */ }
+        console.error('Error creating testimonial:', error);
+        return NextResponse.json({ error: error?.message || 'Failed to create testimonial' }, { status: 500 });
     }
 }
 export async function PUT(request: NextRequest) {
@@ -153,8 +177,10 @@ export async function PUT(request: NextRequest) {
         }
 
         return NextResponse.json({ success: true, id: result[0].insertId });
-    } catch (error) {
-        return NextResponse.json({ error: 'Failed to create testimonial' }, { status: 500 });
+    } catch (error: any) {
+        try { const payload = await request.json(); console.error('Update testimonial payload:', payload); } catch (e) { /* ignore */ }
+        console.error('Error updating testimonial:', error);
+        return NextResponse.json({ error: error?.message || 'Failed to update testimonial' }, { status: 500 });
     }
 }
 export async function DELETE(request: NextRequest) {

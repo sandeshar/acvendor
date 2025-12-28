@@ -1,4 +1,4 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlTable, timestamp, varchar, text } from "drizzle-orm/mysql-core";
 
 // Services Page Hero Section
 export const servicesPageHero = mysqlTable("services_page_hero", {
@@ -34,27 +34,29 @@ export const servicesPageDetails = mysqlTable("services_page_details", {
     icon: varchar("icon", { length: 100 }).notNull(),
     title: varchar("title", { length: 256 }).notNull(),
     description: varchar("description", { length: 1024 }).notNull(),
-    bullets: varchar("bullets", { length: 1024 }).notNull(), // JSON array stored as string
+    bullets: text("bullets").notNull(), // JSON array stored as string
     image: varchar("image", { length: 512 }).notNull(),
     image_alt: varchar("image_alt", { length: 256 }).notNull(),
     postId: int("post_id"),
-    locations: varchar("locations", { length: 1024 }), // JSON array stored as string
+    locations: text("locations"), // JSON array stored as string
     inventory_status: varchar("inventory_status", { length: 64 }).default('in_stock'),
-    images: varchar("images", { length: 2048 }), // JSON array stored as string
+    images: text("images"), // JSON array stored as string
     price: varchar("price", { length: 64 }),
     compare_at_price: varchar("compare_at_price", { length: 64 }),
     currency: varchar("currency", { length: 10 }).default('NRS'),
     model: varchar("model", { length: 256 }),
     capacity: varchar("capacity", { length: 128 }),
     warranty: varchar("warranty", { length: 128 }),
-    technical: varchar("technical", { length: 2048 }),
+    technical: text("technical"),
     energy_saving: varchar("energy_saving", { length: 128 }),
     smart: int("smart").default(0).notNull(),
     filtration: int("filtration").default(0).notNull(),
     brochure_url: varchar("brochure_url", { length: 512 }),
+    application_areas: text("application_areas"),
+    features: text("features"),
     meta_title: varchar("meta_title", { length: 256 }),
     meta_description: varchar("meta_description", { length: 512 }),
-    content: varchar("content", { length: 4096 }),
+    content: text("content"),
     display_order: int("display_order").notNull(),
     is_active: int("is_active").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

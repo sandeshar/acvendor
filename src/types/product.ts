@@ -70,6 +70,8 @@ export interface ProductPost {
     meta_title?: string | null;
     meta_description?: string | null;
     technical?: Record<string, any> | null;
+    application_areas?: string[] | string | null;
+    features?: Array<{ icon?: string; label: string }> | string | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -78,4 +80,6 @@ export interface ProductWithRelations extends ProductPost {
     category?: ProductCategory | null;
     subcategory?: ProductSubcategory | null;
     images?: ProductImage[];
+    reviews?: Array<any>;
+    reviews_breakdown?: Record<number, number>;
 }

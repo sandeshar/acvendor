@@ -1,14 +1,23 @@
 import Link from 'next/link';
 import ProductsListClient from '@/components/products/ProductsListClientWrapper';
+import CategoriesList from '@/components/products/CategoriesList';
+import CategoriesPills from '@/components/products/CategoriesPills';
+import ProductsPagination from '@/components/products/ProductsPagination';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-async function getProducts(limit = 12) {
+async function getProducts(limit = 12, category?: string, subcategory?: string, page: number = 1) {
     try {
-        const res = await fetch(`${API_BASE}/api/products?limit=${limit}`, { next: { tags: ['products'] } });
+        const q = new URLSearchParams();
+        if (limit) q.set('limit', String(limit));
+        if (category) q.set('category', category);
+        if (subcategory) q.set('subcategory', subcategory);
+        const offset = (Math.max(1, page) - 1) * (limit || 12);
+        if (offset) q.set('offset', String(offset));
+        const res = await fetch(`${API_BASE}/api/products?${q.toString()}`, { cache: 'no-store', next: { tags: ['products'] } });
         if (!res.ok) return [];
         return await res.json();
     } catch (e) {
@@ -17,8 +26,23 @@ async function getProducts(limit = 12) {
     }
 }
 
-export default async function ProductsPage() {
-    const products = await getProducts(12);
+export default async function ProductsPage({ searchParams }: { searchParams?: { category?: string, subcategory?: string } }) {
+    const category = searchParams?.category;
+    const subcategory = searchParams?.subcategory;
+    const page = searchParams?.page ? parseInt(String(searchParams.page)) || 1 : 1;
+    console.log('ProductsPage: searchParams', { category, subcategory, page });
+    const products = await getProducts(12, category, subcategory, page);
+
+    const hasMore = (products || []).length === 12;
+
+    const buildHref = (newPage: number) => {
+        const params = new URLSearchParams();
+        if (category) params.set('category', category);
+        if (subcategory) params.set('subcategory', subcategory);
+        if (newPage && newPage > 1) params.set('page', String(newPage));
+        const qs = params.toString();
+        return `/products${qs ? `?${qs}` : ''}`;
+    };
 
     return (
         <div className="layout-container flex flex-col md:flex-row grow max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 gap-6">
@@ -29,44 +53,7 @@ export default async function ProductsPage() {
                             <h1 className="text-[#111418] text-lg font-bold leading-normal">Categories</h1>
                             <p className="text-[#617589] text-xs font-normal leading-normal">Browse by AC Type</p>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary" href="#">
-                                <span className="material-symbols-outlined">ac_unit</span>
-                                <p className="text-sm font-bold leading-normal">All Products</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">mode_off_on</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Wall Mounted (Inverter)</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">mode_fan</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Wall Mounted (Non-Inv)</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">grid_view</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Ceiling Cassette AC</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">vertical_split</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Floor Standing AC</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">luggage</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Portable AC</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">water_drop</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">De-Humidifier</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">swap_vert</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Ceiling Floor Conv.</p>
-                            </a>
-                            <a className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-[#f0f2f4] group transition-colors" href="#">
-                                <span className="material-symbols-outlined text-[#617589] group-hover:text-[#111418]">air</span>
-                                <p className="text-[#111418] text-sm font-medium leading-normal">Ductable AC</p>
-                            </a>
-                        </div>
+                        <CategoriesList selectedCategory={category ?? ''} selectedSubcategory={subcategory ?? ''} />
                     </div>
                     <div className="mt-6 pt-6 border-t border-[#f0f2f4]">
                         <button className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#111418] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity">
@@ -84,7 +71,7 @@ export default async function ProductsPage() {
                 </div>
 
                 <div className="relative w-full overflow-hidden rounded-xl">
-                    <div className="flex min-h-[280px] sm:min-h-[320px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k")' }}>
+                    <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k")' }}>
                         <div className="flex flex-col gap-2 text-left max-w-lg">
                             <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">New Arrival</span>
                             <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">Xtreme Save Series</h1>
@@ -97,23 +84,7 @@ export default async function ProductsPage() {
                 </div>
 
                 <div className="md:hidden overflow-x-auto pb-2 scrollbar-hide">
-                    <div className="flex gap-3 w-max">
-                        <button className="flex h-9 items-center justify-center gap-x-2 rounded-full bg-[#111418] px-4 transition-colors">
-                            <span className="text-white text-sm font-medium whitespace-nowrap">All</span>
-                        </button>
-                        <button className="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-4 whitespace-nowrap">
-                            <span className="text-[#111418] text-sm font-medium">Wall Inverter</span>
-                        </button>
-                        <button className="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-4 whitespace-nowrap">
-                            <span className="text-[#111418] text-sm font-medium">Non-Inverter</span>
-                        </button>
-                        <button className="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-4 whitespace-nowrap">
-                            <span className="text-[#111418] text-sm font-medium">Cassette</span>
-                        </button>
-                        <button className="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-4 whitespace-nowrap">
-                            <span className="text-[#111418] text-sm font-medium">Floor Standing</span>
-                        </button>
-                    </div>
+                    <CategoriesPills selectedCategory={category ?? ''} selectedSubcategory={subcategory ?? ''} />
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
@@ -131,19 +102,8 @@ export default async function ProductsPage() {
                 {/* Interactive client-side list with cleaner UI */}
                 <ProductsListClient products={products} />
 
-                <div className="flex justify-center mt-8">
-                    <nav aria-label="Pagination" className="flex items-center gap-2">
-                        <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-[#111418]">
-                            <span className="material-symbols-outlined">chevron_left</span>
-                        </button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-[#111418]">2</button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-[#111418]">3</button>
-                        <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#e5e7eb] hover:bg-gray-50 text-[#111418]">
-                            <span className="material-symbols-outlined">chevron_right</span>
-                        </button>
-                    </nav>
-                </div>
+                {/* Client-driven pagination component ensures category/subcategory are preserved during navigation */}
+                <ProductsPagination currentPage={page} hasMore={hasMore} />
 
                 <div className="bg-primary/5 rounded-xl p-8 mt-4 flex flex-col md:flex-row items-center justify-between gap-6 border border-primary/20">
                     <div className="flex flex-col gap-2">

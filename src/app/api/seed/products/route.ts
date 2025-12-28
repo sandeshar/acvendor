@@ -29,8 +29,8 @@ export async function POST(request: Request) {
 
         const results: any[] = [];
 
-        // Sample products
-        const samples = [
+        // Sample products (base) and generated products per subcategory
+        const baseSamples = [
             {
                 slug: 'sample-mini-1',
                 title: 'Sample Mini Product — Compact & Efficient',
@@ -72,6 +72,37 @@ export async function POST(request: Request) {
                 meta_description: 'Demo product used by the seed script',
             },
         ];
+
+        // Generate additional sample products across all subcategories (3 per subcategory)
+        const subcatRows = await db.select().from(serviceSubcategories);
+        const generated: any[] = [];
+        for (const sc of subcatRows) {
+            for (let i = 1; i <= 3; i++) {
+                const slug = `${sc.slug}-prod-${i}`;
+                generated.push({
+                    slug,
+                    title: `${sc.name} Product ${i}`,
+                    excerpt: `A ${sc.name.toLowerCase()} product example #${i}.`,
+                    content: `<p>Example product in ${sc.name} category, variation ${i}.</p>`,
+                    thumbnail: `https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80&ixid=${i}`,
+                    image_urls: [`https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80&ixid=${i}`],
+                    price: (99 + i * 50).toFixed(2),
+                    currency: 'USD',
+                    inventory_status: 'in_stock',
+                    model: `${sc.slug.toUpperCase()}-${i}`,
+                    capacity: 'N/A',
+                    warranty: `${i} year${i > 1 ? 's' : ''}`,
+                    category_id: sc.category_id,
+                    subcategory_id: sc.id,
+                    statusId: publishedStatus.id,
+                    featured: i === 1 ? 1 : 0,
+                    meta_title: `${sc.name} Product ${i}`,
+                    meta_description: `Seed product in ${sc.name}`,
+                });
+            }
+        }
+
+        const samples = [...baseSamples, ...generated];
 
         for (const p of samples) {
             try {

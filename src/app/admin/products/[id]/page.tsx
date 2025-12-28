@@ -1,12 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 import { useEditor, EditorContent } from '@tiptap/react';
+
+// Helper: safe JSON parse for fetch error responses
+async function safeParseJson(res: Response) {
+    try {
+        return await res.json();
+    } catch (err) {
+        try {
+            const text = await res.text();
+            return { error: text || 'Invalid response body' };
+        } catch (e) {
+            return { error: 'Failed to parse error response' };
+        }
+    }
+}
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import IconSelector from '@/components/admin/IconSelector';
 import Image from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
@@ -15,21 +30,55 @@ import Highlight from '@tiptap/extension-highlight';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 
-export default function EditProductPage({ params }: any) {
-    // In client components, route params may be a Promise — use `useParams()` from next/navigation.
-    const routeParams = useParams();
-    const id = routeParams?.id ?? params?.id;
+export default function EditProductPage() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const params = useParams();
+    const productId = params?.id;
+    const idStr = Array.isArray(productId) ? productId[0] : (productId || '');
     const [saving, setSaving] = useState(false);
-    const [product, setProduct] = useState<any>(null);
-
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
+    const [newArea, setNewArea] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const availableSubcategories = (product && product.category_id && subcategories.length) ? subcategories.filter((s: any) => s.category_id === product.category_id) : subcategories;
+    const [product, setProduct] = useState<any>({
+        title: '',
+        slug: '',
+        excerpt: '',
+        content: '',
+        thumbnail: '',
+        images: [],
+        inventory_status: 'in_stock',
+        locations: [],
+        price: '',
+        compare_at_price: '',
+        currency: 'NRS',
+        model: '',
+        capacity: '',
+        warranty: '',
+        rating: 0,
+        reviews_count: 0,
+        energy_saving: '',
+        smart: false,
+        filtration: false,
+        technical: {
+            power: '',
+            iseer: '',
+            refrigerant: '',
+            noise: '',
+            dimensions: '',
+            voltage: '',
+        },
+        application_areas: [],
+        features: [],
+        meta_title: '',
+        meta_description: '',
+        category_id: null,
+        subcategory_id: null,
+        statusId: 1,
+    });
 
-    // Tiptap editor helpers
+    // Tiptap editor
     const [, setEditorTick] = useState(0);
     const exec = (fn: () => void) => { fn(); setEditorTick((t) => t + 1); };
 
@@ -45,12 +94,13 @@ export default function EditProductPage({ params }: any) {
             Color,
             Placeholder.configure({ placeholder: 'Start writing description...' }),
         ],
-        content: '<p></p>',
+        content: product.content || '<p></p>',
         editorProps: { attributes: { class: 'tiptap min-h-[300px] p-4 focus:outline-none', spellcheck: 'true' } },
         onUpdate: ({ editor }) => setProduct((p: any) => ({ ...p, content: editor.getHTML() })),
         immediatelyRender: false,
     });
 
+    // Simple toolbar as inline component
     function Toolbar({ editor }: any) {
         if (!editor) return null;
         return (
@@ -70,214 +120,327 @@ export default function EditProductPage({ params }: any) {
         );
     }
 
-    // When product loads, set editor content
     useEffect(() => {
-        if (!product || !editor) return;
-        const html = product.content || product.description || '';
-        try { editor.commands.setContent(html); } catch (e) { console.warn('Failed to set editor content', e); }
-    }, [product, editor]);
+        fetch('/api/pages/services/categories')
+            .then(r => r.ok ? r.json() : [])
+            .then(setCategories)
+            .catch(() => setCategories([]));
+        fetch('/api/pages/services/subcategories')
+            .then(r => r.ok ? r.json() : [])
+            .then(setSubcategories)
+            .catch(() => setSubcategories([]));
+    }, []);
 
+    // Load existing product & its details when editing
     useEffect(() => {
-        if (!id) return;
+        if (!idStr) return;
+        setLoading(true);
         (async () => {
-            setLoading(true);
             try {
-                const [catsRes, subsRes] = await Promise.all([
-                    fetch('/api/pages/services/categories'),
-                    fetch('/api/pages/services/subcategories')
-                ]);
-                setCategories(catsRes.ok ? await catsRes.json() : []);
-                setSubcategories(subsRes.ok ? await subsRes.json() : []);
+                const res = await fetch(`/api/products?id=${encodeURIComponent(idStr)}`);
+                if (!res.ok) throw new Error('Failed to load product');
+                const data = await res.json();
+                console.debug('Loaded product for edit:', data);
 
-                const postRes = await fetch(`/api/products?id=${id}`);
-                const posts = postRes.ok ? await postRes.json() : [];
-                const post = Array.isArray(posts) ? posts[0] : posts;
-                if (!post) throw new Error('Product not found');
+                // normalize arrays and set initial editor content
+                const populated = {
+                    ...data,
+                    images: data.images || [],
+                    locations: data.locations ? (Array.isArray(data.locations) ? data.locations : JSON.parse(data.locations)) : [],
+                    technical: data.technical ? (typeof data.technical === 'string' ? JSON.parse(data.technical) : data.technical) : (data.technical || {}),
+                    application_areas: [],
+                    features: [],
+                    _newFeatureIcon: '',
+                    _newFeatureLabel: '',
+                };
 
-                // Try to load detail by slug or key
-                const slug = post.slug;
-                const detailRes = await fetch(`/api/pages/services/details?slug=${encodeURIComponent(slug)}`);
-                const detail = detailRes.ok ? await detailRes.json() : null;
-
-                // Merge into editable structure (safely parse fields that may be JSON strings or already objects)
-                const safeParse = (v: any, fallback: any) => {
+                // fetch matching service detail by slug (if exists)
+                let detailObj: any = null;
+                if (populated.slug) {
                     try {
-                        if (!v && v !== 0) return fallback;
-                        if (typeof v === 'string') return JSON.parse(v);
-                        return v;
+                        const dres = await fetch(`/api/pages/services/details?slug=${encodeURIComponent(populated.slug)}`);
+                        if (dres.ok) {
+                            const detail = await dres.json();
+                            console.debug('Loaded service detail (by slug):', detail);
+                            if (!detail?.error) {
+                                detailObj = detail;
+                                populated.application_areas = detail.application_areas ? (typeof detail.application_areas === 'string' ? JSON.parse(detail.application_areas) : detail.application_areas) : (populated.application_areas || []);
+                                populated.features = detail.features ? (typeof detail.features === 'string' ? JSON.parse(detail.features) : detail.features) : (populated.features || []);
+                                populated.images = detail.images ? (typeof detail.images === 'string' ? JSON.parse(detail.images) : detail.images) : populated.images;
+                                populated.brochure_url = detail.brochure_url || populated.brochure_url;
+                                populated.bullets = detail.bullets || populated.bullets;
+                            }
+                        }
                     } catch (e) {
-                        console.warn('Failed to parse detail field, falling back', e);
-                        return fallback;
+                        // ignore detail fetch errors
                     }
-                };
+                }
 
-                const merged = {
-                    ...post,
-                    ...detail,
-                    images: safeParse(detail?.images, []),
-                    locations: safeParse(detail?.locations, []),
-                    technical: safeParse(detail?.technical, {}),
-                };
+                // Merge technical info: prefer detail.technical, then data.technical, then per-column product fields
+                let technicalObj: any = {};
+                if (detailObj && detailObj.technical) {
+                    technicalObj = typeof detailObj.technical === 'string' ? JSON.parse(detailObj.technical) : detailObj.technical;
+                } else if (data.technical) {
+                    technicalObj = typeof data.technical === 'string' ? JSON.parse(data.technical) : data.technical;
+                } else {
+                    technicalObj = {
+                        power: data.power ?? '',
+                        iseer: data.iseer ?? '',
+                        refrigerant: data.refrigerant ?? '',
+                        noise: data.noise ?? '',
+                        dimensions: data.dimensions ?? '',
+                        voltage: data.voltage ?? '',
+                    };
+                }
+                populated.technical = technicalObj;
 
-                setProduct(merged);
+                console.debug('Populated product state to set:', populated);
+                setProduct(populated as any);
+
+                // update editor content if editor exists
+                try { if (editor && populated.content) editor.commands.setContent(populated.content || '<p></p>'); } catch (e) { /* ignore */ }
+
             } catch (e) {
-                console.error(e);
+                console.error('Failed to load product for editing:', e);
                 showToast('Failed to load product', { type: 'error' });
             } finally {
                 setLoading(false);
             }
         })();
-    }, [id]);
+    }, [productId]);
+
+    // Derived subcategories for selected category
+    const availableSubcategories = (product.category_id && subcategories.length) ? subcategories.filter((s: any) => s.category_id === product.category_id) : subcategories;
+
+    // Normalize '0'/'00' string values to null for cleaner DB storage
+    const normalizeZeroToNull = (v: any) => {
+        if (v === undefined || v === null) return null;
+        const s = String(v).trim();
+        if (s === '' || s === '0' || s === '00' || s === '0.00' || s === '00.00') return null;
+        return v;
+    };
 
     const save = async () => {
-        if (!product) return;
         if (!product.title || !product.slug) {
             showToast('Title and slug required', { type: 'error' });
             return;
         }
+        // allow slug-based routes as long as product has an id after load
+        if (!productId && !product?.id) {
+            showToast('Missing product id for edit', { type: 'error' });
+            return;
+        }
+
         setSaving(true);
         try {
-            // Update post
+            const contentHtml = editor?.getHTML ? editor.getHTML() : product.content;
+
+            // Prepare images payload for product update
             const imagesPayload = (product.images || []).map((url: string, idx: number) => ({ url, alt: product.title || '', is_primary: idx === 0 ? 1 : 0, display_order: idx }));
 
-            const postPayload: any = {
-                id: product.id,
+            // Determine numeric ID to send to API: prefer loaded product.id, fallback to route param
+            const numericFromParam = Number(idStr);
+            const idForPayload = (Number.isFinite(numericFromParam) && numericFromParam > 0) ? numericFromParam : (product?.id ? Number(product.id) : null);
+            if (!idForPayload) {
+                console.error('No numeric product ID available for update', { idStr, productId, product });
+                showToast('Product numeric ID not found; could not save. Please reopen this product.', { type: 'error' });
+                setSaving(false);
+                return;
+            }
+
+            const updatePayload: any = {
+                id: idForPayload,
                 title: product.title,
                 slug: product.slug,
                 excerpt: product.excerpt,
-                content: product.content,
+                content: contentHtml,
                 thumbnail: product.thumbnail || null,
                 images: imagesPayload,
                 statusId: product.statusId || 1,
-                price: product.price || null,
-                compare_at_price: product.compare_at_price || null,
+                price: normalizeZeroToNull(product.price),
+                compare_at_price: normalizeZeroToNull(product.compare_at_price),
                 currency: product.currency || 'NRS',
+                metaTitle: product.meta_title || product.title,
+                metaDescription: product.meta_description || product.excerpt,
+                category_id: product.category_id || null,
+                subcategory_id: product.subcategory_id || null,
                 model: product.model || null,
                 capacity: product.capacity || null,
-                warranty: product.warranty || null,
-                energy_saving: product.energy_saving || null,
-                smart: product.smart ? 1 : 0,
-                filtration: product.filtration ? 1 : 0,
+                warranty: normalizeZeroToNull(product.warranty),
                 brochure_url: product.brochure_url || null,
+                // technical fields also stored on products table
                 power: product.technical?.power || null,
                 iseer: product.technical?.iseer || null,
                 refrigerant: product.technical?.refrigerant || null,
                 noise: product.technical?.noise || null,
                 dimensions: product.technical?.dimensions || null,
                 voltage: product.technical?.voltage || null,
-                locations: JSON.stringify(product.locations || []),
-                meta_title: product.meta_title || product.title,
-                meta_description: product.meta_description || product.excerpt,
-                category_id: product.category_id || null,
-                subcategory_id: product.subcategory_id || null,
+                locations: product.locations ? (typeof product.locations === 'string' ? product.locations : JSON.stringify(product.locations)) : null,
+                inventory_status: product.inventory_status || 'in_stock',
+                energy_saving: normalizeZeroToNull(product.energy_saving),
             };
 
-            const postRes = await fetch('/api/products', {
+            const putRes = await fetch('/api/products', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(postPayload),
+                body: JSON.stringify(updatePayload),
             });
-            if (!postRes.ok) throw new Error('Failed to update post');
+            if (!putRes.ok) {
+                // parse body as JSON if possible, otherwise text
+                let errBody: any = null;
+                try {
+                    errBody = await putRes.json();
+                } catch (e) {
+                    try { errBody = await putRes.text(); } catch { errBody = null; }
+                }
+                console.error('Product update failed:', putRes.status, putRes.statusText, errBody, {payload: updatePayload});
 
-            // ensure category/subcategory saved on the detail as well when available
-            if (product.category_id || product.subcategory_id) {
-                // attach to detailPayload later (already added content) - no-op here
+                if (putRes.status === 401 || putRes.status === 403) {
+                    showToast('Unauthorized. Please sign in as an admin and try again.', { type: 'error' });
+                    throw new Error('Unauthorized');
+                }
+
+                const msg = errBody && (errBody.error || errBody.message || String(errBody)) ? (errBody.error || errBody.message || String(errBody)) : `Failed to update product (${putRes.status})`;
+                throw new Error(msg);
             }
 
-            // Update or create detail
-            const contentHtml = editor?.getHTML ? editor.getHTML() : (product.content || product.description || '');
+            // Upsert detail record (find by slug)
+            // Try to find existing detail: by slug first, then fallback to lookup by postId
+            let detailExists = false;
+            let detailData: any = null;
+            try {
+                const detailSearch = await fetch(`/api/pages/services/details?slug=${encodeURIComponent(product.slug || '')}`);
+                if (detailSearch.ok) {
+                    const maybeDetail = await detailSearch.json();
+                    if (!maybeDetail?.error && maybeDetail.id) {
+                        detailExists = true;
+                        detailData = maybeDetail;
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            if (!detailExists) {
+                // fallback: fetch all details and match by postId using loaded product id
+                try {
+                    const allRes = await fetch('/api/pages/services/details');
+                    if (allRes.ok) {
+                        const arr = await allRes.json();
+                        const match = Array.isArray(arr) ? arr.find((x: any) => Number(x.postId) === Number(product?.id || idStr)) : null;
+                        if (match) {
+                            detailExists = true;
+                            detailData = match;
+                        }
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            }
 
             const detailPayload: any = {
                 key: product.slug,
                 slug: product.slug,
+                icon: product.icon || 'inventory_2',
                 title: product.title,
                 description: product.excerpt,
                 bullets: JSON.stringify([]),
-                image: product.thumbnail || product.image || '/placeholder-product.png',
+                image: product.thumbnail || '/placeholder-product.png',
                 image_alt: product.title,
-                display_order: product.display_order ?? 0,
-                is_active: product.is_active ?? 1,
-                postId: product.id,
+                display_order: detailData?.display_order ?? 0,
+                is_active: detailData?.is_active ?? 1,
+                postId: idForPayload,
                 locations: JSON.stringify(product.locations || []),
                 inventory_status: product.inventory_status,
                 images: JSON.stringify(product.images || []),
-                price: product.price || null,
-                compare_at_price: product.compare_at_price || null,
-                currency: product.currency || 'NRS',
-                model: product.model || null,
-                capacity: product.capacity || null,
-                warranty: product.warranty || null,
-                energy_saving: product.energy_saving || null,
-                smart: product.smart ? 1 : 0,
-                filtration: product.filtration ? 1 : 0,
-                brochure_url: product.brochure_url || null,
-                technical: JSON.stringify(product.technical || {}),
-                meta_title: product.meta_title || product.title,
-                meta_description: product.meta_description || product.excerpt,
-                content: contentHtml,
-            };
+                application_areas: JSON.stringify(product.application_areas || []),
+                features: JSON.stringify(product.features || []),
+                technical: product.technical ? (typeof product.technical === 'string' ? product.technical : JSON.stringify(product.technical)) : null,
+            }; 
 
-            if (product.id) {
-                // Try to find detail id by existing product detail id
-                // If detail id available on product (from earlier merge) then include for PUT
-                if (product.id && (product.id !== undefined) && (product.id !== null)) {
-                    // We don't have a reliable detail id in all cases; send a POST and server side will upsert if key exists
-                }
+            let detailRes;
+            if (detailExists && detailData?.id) {
+                detailPayload.id = detailData.id;
+                detailRes = await fetch('/api/pages/services/details', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(detailPayload),
+                });
+            } else {
+                detailRes = await fetch('/api/pages/services/details', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(detailPayload),
+                });
             }
 
-            const detailRes = await fetch('/api/pages/services/details', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(detailPayload),
-            });
+            if (!detailRes.ok) {
+                // parse body as JSON/text for better diagnostics
+                let errBody: any = null;
+                try { errBody = await detailRes.json(); } catch (e) { try { errBody = await detailRes.text(); } catch { errBody = null; } }
+                console.error('Detail upsert failed:', detailRes.status, detailRes.statusText, errBody, { payload: detailPayload });
 
-            if (!detailRes.ok) throw new Error('Failed to save product detail');
+                if (detailRes.status === 401 || detailRes.status === 403) {
+                    showToast('Unauthorized. Please sign in again to save details.', { type: 'error' });
+                    throw new Error('Unauthorized');
+                }
 
-            showToast('Product updated', { type: 'success' });
-            router.push('/admin/products');
-        } catch (e) {
-            console.error(e);
-            showToast('Save failed', { type: 'error' });
+                const msg = errBody && (errBody.error || errBody.message || String(errBody)) ? (errBody.error || errBody.message || String(errBody)) : `Failed to upsert product detail (${detailRes.status})`;
+                showToast(msg, { type: 'error' });
+                throw new Error(msg);
+            }
+
+            showToast('Product saved', { type: 'success' });
+
+        } catch (e: any) {
+            console.error('Error saving product:', e);
+            const message = e?.message || 'Failed to save product';
+            showToast(message, { type: 'error' });
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) return <div className="p-6">Loading...</div>;
+    const addImage = (url: string) => {
+        setProduct((p: any) => ({ ...p, images: [...(p.images || []), url] }));
+    };
 
-    if (!product) return <div className="p-6">Product not found.</div>;
+    if (loading) return (<div className="p-6">Loading product...</div>);
 
     return (
         <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">Edit Product — {product.title}</h1>
+                <h1 className="text-2xl font-bold">Edit Product</h1>
                 <div className="flex gap-2">
-                    <button onClick={() => router.back()} className="px-3 py-2 rounded border">Cancel</button>
-                    <button onClick={save} className="px-4 py-2 bg-primary text-white rounded" disabled={saving}>Save</button>
+                    <button onClick={() => window.history.back()} className="px-3 py-2 rounded border">Cancel</button>
+                    <button onClick={save} className="px-4 py-2 bg-primary text-white rounded" disabled={saving || loading}>Save Product</button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-xl p-4 border">
                     <label className="block text-sm font-medium mb-1">Title</label>
-                    <input value={product.title} onChange={(e) => setProduct({ ...product, title: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                    <input value={product.title ?? ''} onChange={(e) => setProduct({ ...product, title: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
                     <label className="block text-sm font-medium mb-1">Slug</label>
-                    <input value={product.slug} onChange={(e) => setProduct({ ...product, slug: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                    <input value={product.slug ?? ''} onChange={(e) => setProduct({ ...product, slug: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
+                    <h2 className="text-xl font-bold mb-3">Overview</h2>
                     <label className="block text-sm font-medium mb-1">Excerpt</label>
-                    <textarea value={product.excerpt || ''} onChange={(e) => setProduct({ ...product, excerpt: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" rows={3} />
+                    <textarea value={product.excerpt ?? ''} onChange={(e) => setProduct({ ...product, excerpt: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" rows={3} />
 
                     <label className="block text-sm font-medium mb-1">Content</label>
+                    {/* Editor toolbar */}
                     <div className="mb-2 flex gap-2">
                         <Toolbar editor={editor} />
                     </div>
-                    <div className="rounded-lg border border-gray-200 p-0">
+                    <div className="rounded-lg border border-gray-200 p-0 mb-4">
                         <EditorContent editor={editor} />
                     </div>
 
+                    <h2 className="text-xl font-bold mb-3">Specifications</h2>
                     <label className="block text-sm font-medium mb-1">Model</label>
-                    <input value={product.model || ''} onChange={(e) => setProduct({ ...product, model: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                    <input value={product.model ?? ''} onChange={(e) => setProduct({ ...product, model: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
                     <label className="block text-sm font-medium mb-1">Category</label>
                     <select value={product.category_id ?? ''} onChange={(e) => setProduct({ ...product, category_id: e.target.value ? Number(e.target.value) : null, subcategory_id: null })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3">
@@ -295,6 +458,69 @@ export default function EditProductPage({ params }: any) {
                         ))}
                     </select>
 
+                    <label className="block text-sm font-medium mb-1">Application Areas</label>
+                    <div className="flex gap-2 flex-wrap mb-3">
+                        {(product.application_areas || []).map((a: string, idx: number) => (
+                            <span key={idx} className="inline-flex items-center gap-2 bg-gray-100 px-2 py-1 rounded text-sm">
+                                <span>{a}</span>
+                                <button onClick={() => setProduct({ ...product, application_areas: (product.application_areas || []).filter((_: any, i: number) => i !== idx) })} className="text-xs text-red-500">×</button>
+                            </span>
+                        ))}
+                    </div>
+                    <div className="flex gap-2 mb-3">
+                        <input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Add area, e.g., Living Room" className="w-full rounded-lg border border-gray-200 px-3 py-2" />
+                        <button onClick={() => { if (newArea.trim()) { setProduct({ ...product, application_areas: [...(product.application_areas || []), newArea.trim()] }); setNewArea(''); } }} className="px-3 py-2 bg-primary text-white rounded">Add</button>
+                    </div>
+
+                    <label className="block text-sm font-medium mb-1 mt-2">Features</label>
+                    <div className="flex flex-col gap-2 mb-3">
+                        {(product.features || []).map((f: any, idx: number) => (
+                            <div key={idx} className="flex gap-2 items-center">
+                                <IconSelector value={f.icon || ''} onChange={(v) => setProduct({ ...product, features: product.features.map((x: any, i: number) => i === idx ? { ...x, icon: v } : x) })} />
+                                <input value={f.label || ''} onChange={(e) => setProduct({ ...product, features: product.features.map((x: any, i: number) => i === idx ? { ...x, label: e.target.value } : x) })} placeholder="Label (e.g., Smart Control)" className="flex-1 rounded-lg border border-gray-200 px-3 py-1" />
+                                <button onClick={() => setProduct({ ...product, features: (product.features || []).filter((_: any, i: number) => i !== idx) })} className="text-red-500">Remove</button>
+                            </div>
+                        ))}
+                        <div className="flex gap-2">
+                            <IconSelector value={product._newFeatureIcon || ''} onChange={(v) => setProduct({ ...product, _newFeatureIcon: v })} />
+                            <input id="newFeatureLabel" placeholder="label" value={product._newFeatureLabel || ''} onChange={(e) => setProduct({ ...product, _newFeatureLabel: e.target.value })} className="flex-1 rounded-lg border border-gray-200 px-3 py-1" />
+                            <button onClick={() => {
+                                const icon = product._newFeatureIcon || '';
+                                const label = product._newFeatureLabel || '';
+                                if (!label.trim()) return;
+                                setProduct({ ...product, features: [...(product.features || []), { icon: icon.trim(), label: label.trim() }], _newFeatureIcon: '', _newFeatureLabel: '' });
+                            }} className="px-3 py-1 bg-primary text-white rounded">Add</button>
+                        </div>
+                    </div>
+
+                    <label className="block text-sm font-medium mb-1">Capacity</label>
+                    <input value={product.capacity ?? ''} onChange={(e) => setProduct({ ...product, capacity: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Warranty</label>
+                    <input value={product.warranty ?? ''} onChange={(e) => setProduct({ ...product, warranty: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Locations (comma separated)</label>
+                    <input value={(product.locations || []).join(', ')} onChange={(e) => setProduct({ ...product, locations: e.target.value.split(',').map((s: string) => s.trim()) })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <h3 className="text-lg font-bold mt-4 mb-2">Technical</h3>
+                    <label className="block text-sm font-medium mb-1">Power</label>
+                    <input value={product.technical?.power || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">ISEER</label>
+                    <input value={product.technical?.iseer || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Refrigerant</label>
+                    <input value={product.technical?.refrigerant || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, refrigerant: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Noise</label>
+                    <input value={product.technical?.noise || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, noise: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Dimensions</label>
+                    <input value={product.technical?.dimensions || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+                    <label className="block text-sm font-medium mb-1">Voltage</label>
+                    <input value={product.technical?.voltage || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
                 </div>
 
                 <div className="bg-white rounded-xl p-4 border">
@@ -303,7 +529,7 @@ export default function EditProductPage({ params }: any) {
 
                     <div className="mt-4">
                         <label className="block text-sm font-medium mb-1">Gallery Images</label>
-                        <ImageUploader label="Gallery Image" folder="products" value={''} onChange={(v) => setProduct({ ...product, images: [...(product.images || []), v] })} />
+                        <ImageUploader label="Gallery Image" folder="products" value={''} onChange={(v) => addImage(v)} />
                         <div className="flex gap-2 flex-wrap mt-3">
                             {(product.images || []).map((img: string, idx: number) => (
                                 <div key={idx} className="w-24 h-24 rounded overflow-hidden border">
@@ -322,37 +548,22 @@ export default function EditProductPage({ params }: any) {
                         <input value={product.compare_at_price ?? ''} onChange={(e) => setProduct({ ...product, compare_at_price: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
                         <label className="block text-sm font-medium mb-1">Currency</label>
-                        <input value={product.currency ?? 'NRS'} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <input value={product.currency ?? ''} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
-                        <label className="block text-sm font-medium mb-1">Brochure URL</label>
-                        <input value={product.brochure_url || ''} onChange={(e) => setProduct({ ...product, brochure_url: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
 
                         <label className="block text-sm font-medium mb-1">Inventory Status</label>
-                        <select value={product.inventory_status || 'in_stock'} onChange={(e) => setProduct({ ...product, inventory_status: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3">
+                        <select value={product.inventory_status ?? 'in_stock'} onChange={(e) => setProduct({ ...product, inventory_status: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2">
                             <option value="in_stock">In Stock</option>
                             <option value="out_of_stock">Out of Stock</option>
                             <option value="preorder">Pre-order</option>
                         </select>
 
-                        <label className="block text-sm font-medium mb-1 mt-3">Feature: Energy Saving</label>
-                        <input value={product.energy_saving || ''} onChange={(e) => setProduct({ ...product, energy_saving: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <div className="flex gap-3 items-center mb-3">
-                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.smart} onChange={(e) => setProduct({ ...product, smart: e.target.checked })} /> <span className="text-sm">Smart Control</span></label>
-                            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={!!product.filtration} onChange={(e) => setProduct({ ...product, filtration: e.target.checked })} /> <span className="text-sm">Filtration</span></label>
-                        </div>
 
-                        <label className="block text-sm font-medium mb-1 mt-2">Technical: Power</label>
-                        <input value={product.technical?.power || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <label className="block text-sm font-medium mb-1">Technical: ISEER</label>
-                        <input value={product.technical?.iseer || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <label className="block text-sm font-medium mb-1">Technical: Refrigerant</label>
-                        <input value={product.technical?.refrigerant || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, refrigerant: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <label className="block text-sm font-medium mb-1">Technical: Noise Level</label>
-                        <input value={product.technical?.noise || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, noise: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <label className="block text-sm font-medium mb-1">Technical: Dimensions</label>
-                        <input value={product.technical?.dimensions || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
-                        <label className="block text-sm font-medium mb-1">Technical: Voltage</label>
-                        <input value={product.technical?.voltage || ''} onChange={(e) => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+
+
+
+
                     </div>
                 </div>
             </div>
@@ -360,9 +571,9 @@ export default function EditProductPage({ params }: any) {
             <div className="mt-6 bg-white rounded-xl p-4 border">
                 <h3 className="font-bold mb-3">SEO & Metadata</h3>
                 <label className="block text-sm font-medium mb-1">Meta Title</label>
-                <input value={product.meta_title || ''} onChange={(e) => setProduct({ ...product, meta_title: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                <input value={product.meta_title ?? ''} onChange={(e) => setProduct({ ...product, meta_title: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
                 <label className="block text-sm font-medium mb-1">Meta Description</label>
-                <textarea value={product.meta_description || ''} onChange={(e) => setProduct({ ...product, meta_description: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" rows={3} />
+                <textarea value={product.meta_description ?? ''} onChange={(e) => setProduct({ ...product, meta_description: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" rows={3} />
             </div>
         </div>
     );

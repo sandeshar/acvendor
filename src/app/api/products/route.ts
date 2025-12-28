@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, inArray } from 'drizzle-orm';
 import { products, productImages } from '@/db/productsSchema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { revalidateTag } from 'next/cache';
+import { reviewTestimonials } from '@/db/reviewSchema';
+import { reviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema';
 
 // GET - Fetch products
 export async function GET(request: NextRequest) {
@@ -24,7 +26,43 @@ export async function GET(request: NextRequest) {
                 if (rows && rows.length) {
                     const product = rows[0];
                     const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
-                    return NextResponse.json({ ...product, images });
+
+                    // attach category/subcategory objects when available
+                    try {
+                        const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                        if (product.category_id) {
+                            const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
+                            if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                        }
+                        if (product.subcategory_id) {
+                            const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
+                            if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                        }
+                    } catch (e) {
+                        // ignore if category schema missing
+                    }
+
+                    // compute reviews and rating from testimonials if available
+                    try {
+                        const reviewRows = await db.select({ testimonial: reviewTestimonials })
+                            .from(reviewTestimonials)
+                            .leftJoin(reviewTestimonialProducts, eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id))
+                            .where(eq(reviewTestimonialProducts.productId, product.id));
+                        const testimonials = reviewRows.map(r => (r && (r as any).testimonial) ? (r as any).testimonial : r);
+                        const reviews_count = testimonials.length;
+                        const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
+
+                        // compute star breakdown counts
+                        const breakdown: Record<number, number> = {5:0,4:0,3:0,2:0,1:0};
+                        testimonials.forEach((t: any) => {
+                            const r = Number(t.rating || 0);
+                            if (r >=1 && r <=5) breakdown[r] = (breakdown[r] || 0) + 1;
+                        });
+
+                        return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
+                    } catch (e) {
+                        return NextResponse.json({ ...product, images });
+                    }
                 }
             } else {
                 // treat `id` as a slug
@@ -32,7 +70,23 @@ export async function GET(request: NextRequest) {
                 if (rows && rows.length) {
                     const product = rows[0];
                     const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
-                    return NextResponse.json({ ...product, images });
+
+                // attach category/subcategory objects when available
+                try {
+                    const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                    if (product.category_id) {
+                        const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
+                        if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                    }
+                    if (product.subcategory_id) {
+                        const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
+                        if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                    }
+                } catch (e) {
+                    // ignore if category schema missing
+                }
+
+                return NextResponse.json({ ...product, images });
                 }
 
                 // Fallback: check servicePosts by slug
@@ -62,7 +116,43 @@ export async function GET(request: NextRequest) {
             if (rows && rows.length) {
                 const product = rows[0];
                 const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
-                return NextResponse.json({ ...product, images });
+
+                // attach category/subcategory objects when available
+                try {
+                    const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                    if (product.category_id) {
+                        const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
+                        if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                    }
+                    if (product.subcategory_id) {
+                        const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
+                        if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                    }
+                } catch (e) {
+                    // ignore if category schema missing
+                }
+
+                // compute reviews and rating from testimonials if available
+                try {
+                    const reviewRows = await db.select({ testimonial: reviewTestimonials })
+                        .from(reviewTestimonials)
+                        .leftJoin(reviewTestimonialProducts, eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id))
+                        .where(eq(reviewTestimonialProducts.productId, product.id));
+                    const testimonials = reviewRows.map(r => (r && (r as any).testimonial) ? (r as any).testimonial : r);
+                    const reviews_count = testimonials.length;
+                    const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
+
+                    // compute star breakdown counts
+                    const breakdown: Record<number, number> = {5:0,4:0,3:0,2:0,1:0};
+                    testimonials.forEach((t: any) => {
+                        const r = Number(t.rating || 0);
+                        if (r >=1 && r <=5) breakdown[r] = (breakdown[r] || 0) + 1;
+                    });
+
+                    return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
+                } catch (e) {
+                    return NextResponse.json({ ...product, images });
+                }
             }
 
             // Fallback to service posts (legacy services table)
@@ -106,8 +196,70 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        const offset = searchParams.get('offset');
+        const offsetNum = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
+
         const ordered = query.orderBy(desc(products.createdAt));
-        const rows = limit && !isNaN(parseInt(limit)) ? await ordered.limit(parseInt(limit)) : await ordered;
+        const rows = (limit && !isNaN(parseInt(limit))) ? await ordered.limit(parseInt(limit)).offset(offsetNum) : await ordered.offset(offsetNum);
+
+        // attach category / subcategory objects for list responses
+        try {
+            const catIds = Array.from(new Set(rows.map((r: any) => r.category_id).filter(Boolean)));
+            const subIds = Array.from(new Set(rows.map((r: any) => r.subcategory_id).filter(Boolean)));
+            if (catIds.length || subIds.length) {
+                const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                const cats = catIds.length ? await db.select().from(serviceCategories).where(inArray(serviceCategories.id, catIds)) : [];
+                const subs = subIds.length ? await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.id, subIds)) : [];
+                const catMap: Record<number, any> = {};
+                const subMap: Record<number, any> = {};
+                cats.forEach((c: any) => { catMap[c.id] = { id: c.id, name: c.name, slug: c.slug }; });
+                subs.forEach((s: any) => { subMap[s.id] = { id: s.id, name: s.name, slug: s.slug }; });
+                rows.forEach((r: any) => {
+                    if (r.category_id && catMap[r.category_id]) r.category = catMap[r.category_id];
+                    if (r.subcategory_id && subMap[r.subcategory_id]) r.subcategory = subMap[r.subcategory_id];
+                });
+            }
+        } catch (e) {
+            // ignore if categories schema missing
+        }
+
+        // attach aggregated reviews info for listed products
+        try {
+            const ids = rows.map((r: any) => r.id).filter((id: any) => !!id);
+            if (ids.length) {
+                const revRows = await db.select({ testimonial: reviewTestimonials, mapping: reviewTestimonialProducts })
+                    .from(reviewTestimonialProducts)
+                    .leftJoin(reviewTestimonials, eq(reviewTestimonials.id, reviewTestimonialProducts.testimonialId))
+                    .where(inArray(reviewTestimonialProducts.productId, ids));
+
+                const agg: Record<number, {count:number,sum:number,breakdown:Record<number,number>}> = {};
+                revRows.forEach((row: any) => {
+                    const pid = row.mapping?.productId ?? row.productId ?? null;
+                    const t = row.testimonial ?? row;
+                    if (!pid) return;
+                    if (!agg[pid]) agg[pid] = { count: 0, sum: 0, breakdown: {5:0,4:0,3:0,2:0,1:0} };
+                    const r = Number(t?.rating || 0);
+                    if (r >= 1 && r <= 5) {
+                        agg[pid].count += 1;
+                        agg[pid].sum += r;
+                        agg[pid].breakdown[r] = (agg[pid].breakdown[r] || 0) + 1;
+                    }
+                });
+
+                // attach aggregates to rows
+                rows.forEach((r: any) => {
+                    const a = agg[r.id];
+                    if (a) {
+                        r.reviews_count = a.count;
+                        r.rating = a.count ? Number((a.sum / a.count).toFixed(1)) : 0;
+                        r.reviews_breakdown = a.breakdown;
+                    }
+                });
+            }
+        } catch (e) {
+            // ignore aggregation errors
+        }
+
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Error fetching products:', error);

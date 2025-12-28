@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Star from '@/components/icons/Star';
 
 export default function ProductsListClient({ products }: { products: any[] }) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -32,26 +33,33 @@ export default function ProductsListClient({ products }: { products: any[] }) {
             ) : view === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filtered.map((p: any) => (
-                        <article key={p.id || p.slug} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                            <div className="h-56 bg-gray-50 flex items-center justify-center overflow-hidden">
-                                <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="w-full h-full object-contain" />
-                                {/* Badge */}
-                                {p.inventory_status === 'in_stock' && <div className="absolute mt-3 ml-3 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">In Stock</div>}
-                            </div>
-                            <div className="p-4 flex flex-col gap-2">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-semibold text-lg truncate">{p.title}</h3>
-                                    <div className="text-sm font-bold">{p.price}</div>
-                                </div>
-                                <p className="text-sm text-gray-500 line-clamp-2">{p.excerpt || p.description || ''}</p>
+                        <article key={p.id || p.slug} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
+                            <div className="relative h-48 w-full bg-[#f3f6f9] flex items-center justify-center p-4">
+                                {p.inventory_status === 'in_stock' && (
+                                    <div className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded">IN STOCK</div>
+                                )}
 
-                                <div className="mt-3 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                        <span className="inline-flex items-center gap-1">{p.rating ? '★' : ''} <strong className="text-sm text-gray-700">{p.rating || '-'}</strong></span>
-                                        <span>•</span>
-                                        <span>{p.capacity || p.model || ''}</span>
-                                    </div>
-                                    <Link href={`/products/${p.slug}`} className="px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-bold">View</Link>
+                                {/* Replace with actual product image */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img alt={p.title || 'Product image'} className="h-full w-auto object-contain mix-blend-multiply" src={p.thumbnail || '/placeholder-product.png'} />
+
+                                <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                                    <span className="material-symbols-outlined text-[20px]">favorite</span>
+                                </button>
+                            </div>
+                            <div className="p-4 flex flex-col flex-1 gap-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
+                                    <span className="text-xs font-medium text-gray-500">{p.model || p.capacity || ''}</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
+                                <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>
+
+                                <div className="mt-auto pt-3 border-t border-[#f0f2f4] flex gap-2">
+                                    <Link href={`/products/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
+                                    <button className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#111418] hover:bg-gray-50 transition-colors">
+                                        <span className="material-symbols-outlined text-[20px]">compare_arrows</span>
+                                    </button>
                                 </div>
                             </div>
                         </article>

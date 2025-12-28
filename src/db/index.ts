@@ -12,6 +12,8 @@ import * as faqPageSchema from './faqPageSchema';
 import * as termsPageSchema from './termsPageSchema';
 import * as blogPageSchema from './blogPageSchema';
 import * as review from './reviewSchema';
+import * as reviewTestimonialServices from './reviewTestimonialServicesSchema';
+import * as reviewTestimonialProducts from './reviewTestimonialProductsSchema';
 import * as navbarSchema from './navbarSchema';
 
 // Singleton pattern for database connection to prevent "Too many connections" error in development
@@ -39,6 +41,8 @@ export const db = drizzle(pool, {
         ...termsPageSchema,
         ...blogPageSchema,
         ...review,
+        ...reviewTestimonialServices,
+        ...reviewTestimonialProducts,
         ...navbarSchema
     },
     mode: 'default'

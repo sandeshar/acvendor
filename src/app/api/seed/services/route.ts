@@ -77,17 +77,17 @@ export async function POST() {
             is_active: 1,
         });
 
-        const categorySlug = 'content-services';
+        const categorySlug = 'content';
         await db.insert(serviceCategories).values({
-            name: 'Content Services',
+            name: 'Content',
             slug: categorySlug,
-            description: 'Strategic writing, SEO, and social storytelling crafted for measurable growth.',
+            description: 'SEO, social and copy services to grow your brand.',
             icon: 'category',
             thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1400&q=80',
             display_order: 1,
             is_active: 1,
-            meta_title: 'Content Services',
-            meta_description: 'Explore SEO content, social media, website copy, and blog writing services.',
+            meta_title: 'Content',
+            meta_description: 'Explore SEO, social, and website copy services.',
         });
 
         const [category] = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, categorySlug)).limit(1);
@@ -96,7 +96,7 @@ export async function POST() {
             {
                 key: 'seo',
                 icon: 'search',
-                title: 'SEO Content',
+                title: 'SEO',
                 description: 'Search-optimized articles and landing pages.',
                 bullets: ['Keyword research', 'On-page SEO', 'Long-form content'],
                 image: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1400&q=80',
@@ -105,8 +105,8 @@ export async function POST() {
             {
                 key: 'social',
                 icon: 'thumb_up',
-                title: 'Social Media Content',
-                description: 'Platform-ready posts and short-form video hooks.',
+                title: 'Social',
+                description: 'Platform posts and short-form video content.',
                 bullets: ['Content calendars', 'Short video hooks', 'Design kits'],
                 image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1400&q=80',
                 image_alt: 'Team planning social content with phones and laptops',
@@ -114,27 +114,11 @@ export async function POST() {
             {
                 key: 'copy',
                 icon: 'language',
-                title: 'Website Copywriting',
-                description: 'Conversion-focused messaging and microcopy.',
+                title: 'Copy',
+                description: 'Conversion-focused website copy and microcopy.',
                 bullets: ['Value prop', 'Landing pages', 'Microcopy'],
                 image: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1400&q=80',
                 image_alt: 'Copywriter drafting website copy next to design mockups',
-            },
-            {
-                key: 'social',
-                icon: 'thumb_up',
-                title: 'Social Media Content',
-                description: 'Platform-ready posts and short-form video hooks.',
-                bullets: ['Content calendars', 'Short video hooks', 'Design kits'],
-                image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1400&q=80',
-            },
-            {
-                key: 'copy',
-                icon: 'language',
-                title: 'Website Copywriting',
-                description: 'Conversion-focused messaging and microcopy.',
-                bullets: ['Value prop', 'Landing pages', 'Microcopy'],
-                image: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1400&q=80',
             },
         ];
 

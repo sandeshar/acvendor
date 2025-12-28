@@ -86,6 +86,8 @@ export async function POST(request: NextRequest) {
             meta_title,
             meta_description,
             content,
+            application_areas,
+            features,
         } = body;
 
         const result = await db.insert(servicesPageDetails).values({
@@ -112,6 +114,8 @@ export async function POST(request: NextRequest) {
             smart: smart ? Number(!!smart) : 0,
             filtration: filtration ? Number(!!filtration) : 0,
             brochure_url: brochure_url || null,
+            application_areas: application_areas ? (typeof application_areas === 'string' ? application_areas : JSON.stringify(application_areas)) : null,
+            features: features ? (typeof features === 'string' ? features : JSON.stringify(features)) : null,
             meta_title: meta_title || null,
             meta_description: meta_description || null,
             content: content || null,
@@ -127,12 +131,14 @@ export async function POST(request: NextRequest) {
         );
     } catch (error: any) {
         console.error('Error creating service detail:', error);
+        try { console.error('Create payload:', typeof body !== 'undefined' ? body : null); } catch (e) { /* ignore */ }
 
         if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'A service with this key already exists' }, { status: 409 });
         }
 
-        return NextResponse.json({ error: 'Failed to create service detail' }, { status: 500 });
+        // Return the actual error message for easier debugging in development
+        return NextResponse.json({ error: error?.message || 'Failed to create service detail' }, { status: 500 });
     }
 }
 
@@ -178,6 +184,8 @@ export async function PUT(request: NextRequest) {
             meta_title,
             meta_description,
             content,
+            application_areas,
+            features,
         } = body;
 
         if (postId !== undefined) updateData.postId = postId;
@@ -195,6 +203,8 @@ export async function PUT(request: NextRequest) {
         if (smart !== undefined) updateData.smart = Number(!!smart);
         if (filtration !== undefined) updateData.filtration = Number(!!filtration);
         if (brochure_url !== undefined) updateData.brochure_url = brochure_url;
+        if (application_areas !== undefined) updateData.application_areas = typeof application_areas === 'string' ? application_areas : JSON.stringify(application_areas);
+        if (features !== undefined) updateData.features = typeof features === 'string' ? features : JSON.stringify(features);
         if (meta_title !== undefined) updateData.meta_title = meta_title;
         if (meta_description !== undefined) updateData.meta_description = meta_description;
         if (content !== undefined) updateData.content = content;
@@ -206,12 +216,14 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ success: true, message: 'Service detail updated successfully' });
     } catch (error: any) {
         console.error('Error updating service detail:', error);
+        try { console.error('Update payload:', typeof body !== 'undefined' ? body : null); } catch (e) { /* ignore */ }
 
         if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'A service with this key already exists' }, { status: 409 });
         }
 
-        return NextResponse.json({ error: 'Failed to update service detail' }, { status: 500 });
+        // Return the actual error message for easier debugging in development
+        return NextResponse.json({ error: error?.message || 'Failed to update service detail' }, { status: 500 });
     }
 }
 

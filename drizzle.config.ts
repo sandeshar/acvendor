@@ -15,6 +15,7 @@ export default defineConfig({
         './src/db/blogPageSchema.ts',
         './src/db/reviewSchema.ts',
         './src/db/reviewTestimonialServicesSchema.ts',
+        './src/db/reviewTestimonialProductsSchema.ts',
         './src/db/navbarSchema.ts',
     ],
     dialect: 'mysql',

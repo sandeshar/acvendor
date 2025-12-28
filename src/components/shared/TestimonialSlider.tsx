@@ -44,7 +44,25 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
             }
 
             const response = await fetch(url);
-            const data = await response.json();
+            const text = await response.text();
+
+            if (!response.ok) {
+                console.error('Error fetching testimonials: HTTP', response.status, text);
+                setTestimonials([]);
+                return;
+            }
+
+            let data: any;
+            try {
+                data = text ? JSON.parse(text) : [];
+            } catch (err) {
+                console.error('Invalid JSON from testimonials endpoint:', { url, status: response.status, text });
+                setTestimonials([]);
+                return;
+            }
+
+            // Ensure data is an array for downstream code
+            if (!Array.isArray(data)) data = data ? [data] : [];
 
             // Filter by link/placement if it's not a service filter
             let filtered = data;
