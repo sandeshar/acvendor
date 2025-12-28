@@ -19,11 +19,11 @@ export default function CategoriesList({ selectedCategory = '', selectedSubcateg
         fetch('/api/pages/services/categories')
             .then(r => r.ok ? r.json() : [])
             .then((data) => { if (mounted) setCategories(data || []); })
-            .catch(() => {});
+            .catch(() => { });
         fetch('/api/pages/services/subcategories')
             .then(r => r.ok ? r.json() : [])
             .then((data) => { if (mounted) setSubcats(data || []); })
-            .catch(() => {});
+            .catch(() => { });
         return () => { mounted = false; };
     }, []);
 

@@ -1,9 +1,113 @@
-import { redirect } from 'next/navigation';
+import React from 'react';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import type { ProductWithRelations } from '@/types/product';
+import ProductTabs from '@/components/products/ProductTabs';
+import ProductGallery from '@/components/products/ProductGallery';
+import Star from '@/components/icons/Star';
 
-export default async function ProductDetailRedirect({ params }: any) {
-    const { slug } = params;
-    redirect(`/services/${slug}`);
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+async function getProductPost(slug: string): Promise<ProductWithRelations | null> {
+    try {
+        const res = await fetch(`${API_BASE}/api/products?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+        if (res.ok) {
+            const post = await res.json();
+            if (post && (post.id || post.slug)) {
+                // attempt to fetch service/detail record to enrich product with application_areas
+                try {
+                    const detailRes = await fetch(`${API_BASE}/api/pages/services/details?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+                    if (detailRes.ok) {
+                        const detail = await detailRes.json();
+                        if (detail) {
+                            // parse application_areas and features safely
+                            try {
+                                const areas = detail.application_areas ? (Array.isArray(detail.application_areas) ? detail.application_areas : JSON.parse(detail.application_areas)) : undefined;
+                                if (areas) post.application_areas = areas;
+                            } catch (e) {
+                                // ignore parse errors
+                            }
+                            try {
+                                const feats = detail.features ? (Array.isArray(detail.features) ? detail.features : JSON.parse(detail.features)) : undefined;
+                                if (feats) post.features = feats;
+                            } catch (e) {
+                                // ignore parse errors
+                            }
+                            // merge content/description if missing
+                            if (!post.excerpt && detail.description) post.excerpt = detail.description;
+                            if (!post.content && detail.content) post.content = detail.content;
+                            if (!post.thumbnail && detail.image) post.thumbnail = detail.image;
+                        }
+                    }
+                } catch (e) {
+                    // ignore
+                }
+
+                // Fetch related testimonials (reviews) for this product
+                try {
+                    if (post && post.id) {
+                        const revRes = await fetch(`${API_BASE}/api/testimonial?product=${encodeURIComponent(String(post.id))}&limit=10`, { cache: 'no-store' });
+                        if (revRes.ok) {
+                            post.reviews = await revRes.json();
+                        }
+                    }
+                } catch (e) {
+                    // ignore testimonial fetch errors
+                    console.error('Failed to fetch product testimonials:', (e as Error)?.message || String(e));
+                }
+
+                return post as ProductWithRelations;
+            }
+        }
+
+        // fallback: try pages/details if present
+        try {
+            const detailRes = await fetch(`${API_BASE}/api/pages/products/details?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+            if (detailRes.ok) {
+                const detail = await detailRes.json();
+                if (detail && detail.id) {
+                    return {
+                        slug: detail.slug || slug,
+                        title: detail.title || 'Product',
+                        excerpt: detail.description || '',
+                        content: detail.content || `<p>${detail.description || ''}</p>`,
+                        thumbnail: detail.image || null,
+                    } as ProductWithRelations;
+                }
+            }
+        } catch (e) {
+            // ignore fallback errors
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error fetching product via API:', (error as Error)?.message || String(error));
+        return null;
+    }
 }
+
+const getCurrencySymbol = (currency?: string | null) => {
+    const symbols: Record<string, string> = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'CAD': 'C$',
+        'AUD': 'A$',
+        'JPY': '¥',
+        'INR': '₹',
+        'NRS': 'रु'
+    };
+    return symbols[currency || 'USD'] || '$';
+};
+
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+    const { slug } = await params;
+    const post = await getProductPost(slug);
+
+    if (!post) notFound();
 
     const images = (post.images && post.images.length) ? post.images.map(i => i.url) : (post.thumbnail ? [post.thumbnail] : ['/placeholder-product.png']);
 

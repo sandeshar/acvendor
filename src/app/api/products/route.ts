@@ -53,10 +53,10 @@ export async function GET(request: NextRequest) {
                         const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
                         // compute star breakdown counts
-                        const breakdown: Record<number, number> = {5:0,4:0,3:0,2:0,1:0};
+                        const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                         testimonials.forEach((t: any) => {
                             const r = Number(t.rating || 0);
-                            if (r >=1 && r <=5) breakdown[r] = (breakdown[r] || 0) + 1;
+                            if (r >= 1 && r <= 5) breakdown[r] = (breakdown[r] || 0) + 1;
                         });
 
                         return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
@@ -71,22 +71,22 @@ export async function GET(request: NextRequest) {
                     const product = rows[0];
                     const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
 
-                // attach category/subcategory objects when available
-                try {
-                    const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                    if (product.category_id) {
-                        const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
-                        if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                    // attach category/subcategory objects when available
+                    try {
+                        const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                        if (product.category_id) {
+                            const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
+                            if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                        }
+                        if (product.subcategory_id) {
+                            const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
+                            if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                        }
+                    } catch (e) {
+                        // ignore if category schema missing
                     }
-                    if (product.subcategory_id) {
-                        const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
-                        if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
-                    }
-                } catch (e) {
-                    // ignore if category schema missing
-                }
 
-                return NextResponse.json({ ...product, images });
+                    return NextResponse.json({ ...product, images });
                 }
 
                 // Fallback: check servicePosts by slug
@@ -143,10 +143,10 @@ export async function GET(request: NextRequest) {
                     const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
                     // compute star breakdown counts
-                    const breakdown: Record<number, number> = {5:0,4:0,3:0,2:0,1:0};
+                    const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
                     testimonials.forEach((t: any) => {
                         const r = Number(t.rating || 0);
-                        if (r >=1 && r <=5) breakdown[r] = (breakdown[r] || 0) + 1;
+                        if (r >= 1 && r <= 5) breakdown[r] = (breakdown[r] || 0) + 1;
                     });
 
                     return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
@@ -232,12 +232,12 @@ export async function GET(request: NextRequest) {
                     .leftJoin(reviewTestimonials, eq(reviewTestimonials.id, reviewTestimonialProducts.testimonialId))
                     .where(inArray(reviewTestimonialProducts.productId, ids));
 
-                const agg: Record<number, {count:number,sum:number,breakdown:Record<number,number>}> = {};
+                const agg: Record<number, { count: number, sum: number, breakdown: Record<number, number> }> = {};
                 revRows.forEach((row: any) => {
                     const pid = row.mapping?.productId ?? row.productId ?? null;
                     const t = row.testimonial ?? row;
                     if (!pid) return;
-                    if (!agg[pid]) agg[pid] = { count: 0, sum: 0, breakdown: {5:0,4:0,3:0,2:0,1:0} };
+                    if (!agg[pid]) agg[pid] = { count: 0, sum: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
                     const r = Number(t?.rating || 0);
                     if (r >= 1 && r <= 5) {
                         agg[pid].count += 1;

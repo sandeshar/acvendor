@@ -12,11 +12,11 @@ export default function CategoriesPills({ selectedCategory = '', selectedSubcate
         fetch('/api/pages/services/categories')
             .then(r => r.ok ? r.json() : [])
             .then((data) => { if (mounted) setCategories(data || []); })
-            .catch(() => {});
+            .catch(() => { });
         fetch('/api/pages/services/subcategories')
             .then(r => r.ok ? r.json() : [])
             .then((data) => { if (mounted) setSubcats(data || []); })
-            .catch(() => {});
+            .catch(() => { });
         return () => { mounted = false; };
     }, []);
 
@@ -26,7 +26,7 @@ export default function CategoriesPills({ selectedCategory = '', selectedSubcate
             {categories.map((c) => (
                 <div key={c.id} className="flex items-center gap-2">
                     <Link href={`/products?category=${encodeURIComponent(c.slug)}`} className={`flex h-9 items-center justify-center gap-x-2 rounded-full ${selectedCategory === c.slug ? 'bg-[#111418] text-white' : 'bg-white border border-gray-200'} px-4`}>{c.name}</Link>
-                    {subcats.filter(sc => sc.category_id === c.id).slice(0,3).map((sc:any) => (
+                    {subcats.filter(sc => sc.category_id === c.id).slice(0, 3).map((sc: any) => (
                         <Link key={sc.id} href={`/products?category=${encodeURIComponent(c.slug)}&subcategory=${encodeURIComponent(sc.slug)}`} className={`px-2 py-1 rounded-full text-sm ${selectedSubcategory === sc.slug ? 'bg-primary/10 text-primary font-medium' : 'bg-white text-[#617589] border border-gray-100'}`}>
                             {sc.name}
                         </Link>

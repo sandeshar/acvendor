@@ -48,7 +48,7 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
         })();
 
         return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams?.toString()]);
 
     return <ProductsListClient products={products} />;

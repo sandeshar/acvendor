@@ -293,7 +293,7 @@ export default function EditProductPage() {
                 } catch (e) {
                     try { errBody = await putRes.text(); } catch { errBody = null; }
                 }
-                console.error('Product update failed:', putRes.status, putRes.statusText, errBody, {payload: updatePayload});
+                console.error('Product update failed:', putRes.status, putRes.statusText, errBody, { payload: updatePayload });
 
                 if (putRes.status === 401 || putRes.status === 403) {
                     showToast('Unauthorized. Please sign in as an admin and try again.', { type: 'error' });
@@ -356,7 +356,7 @@ export default function EditProductPage() {
                 application_areas: JSON.stringify(product.application_areas || []),
                 features: JSON.stringify(product.features || []),
                 technical: product.technical ? (typeof product.technical === 'string' ? product.technical : JSON.stringify(product.technical)) : null,
-            }; 
+            };
 
             let detailRes;
             if (detailExists && detailData?.id) {
