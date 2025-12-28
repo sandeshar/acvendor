@@ -216,7 +216,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                             <div className="flex gap-1 text-yellow-500">
                                 {(() => {
                                     const r = Number(post.rating || 0);
-                                    const stars = [1,2,3,4,5];
+                                    const stars = [1, 2, 3, 4, 5];
                                     return stars.map((s) => {
                                         if (r >= s) return <Star key={s} variant="full" className="text-yellow-500" size={18} />;
                                         if (r >= s - 0.5) return <Star key={s} variant="half" className="text-yellow-500" size={18} />;
@@ -260,7 +260,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                         <div className="ml-auto text-yellow-500 font-bold flex items-center gap-1">
                                             {(() => {
                                                 const rr = Number(r.rating || 0);
-                                                return [1,2,3,4,5].map((s) => {
+                                                return [1, 2, 3, 4, 5].map((s) => {
                                                     if (rr >= s) return <Star key={s} variant="full" className="text-yellow-500" size={14} />;
                                                     if (rr >= s - 0.5) return <Star key={s} variant="half" className="text-yellow-500" size={14} />;
                                                     return <Star key={s} variant="empty" className="text-yellow-500" size={14} />;
