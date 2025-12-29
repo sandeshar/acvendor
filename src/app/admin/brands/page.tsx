@@ -65,8 +65,8 @@ export default function AdminBrandsPage() {
                 <label className="block text-sm font-medium mt-3">Logo (URL)</label>
                 <div className="flex gap-2 items-center">
                     <input value={logo} onChange={e => setLogo(e.target.value)} className="mt-1 p-2 border rounded w-full" />
-                    <div style={{width:120}}>
-                        <ImageUploader label="Logo" value={logo} onChange={(url:string) => setLogo(url)} folder="brands" />
+                    <div style={{ width: 120 }}>
+                        <ImageUploader label="Logo" value={logo} onChange={(url: string) => setLogo(url)} folder="brands" />
                     </div>
                 </div>
                 <div className="mt-4">

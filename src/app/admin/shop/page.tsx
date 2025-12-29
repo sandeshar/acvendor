@@ -74,8 +74,8 @@ export default function AdminShopPage() {
                     <label className="block text-sm font-medium mt-3">Background Image</label>
                     <div className="flex gap-2 items-center">
                         <input value={backgroundImage} onChange={e => setBackgroundImage(e.target.value)} className="mt-1 p-2 border rounded w-full" />
-                        <div style={{width:120}}>
-                            <ImageUploader label="Background" value={backgroundImage} onChange={(url:string) => setBackgroundImage(url)} folder="shop" />
+                        <div style={{ width: 120 }}>
+                            <ImageUploader label="Background" value={backgroundImage} onChange={(url: string) => setBackgroundImage(url)} folder="shop" />
                         </div>
                     </div>
                 </div>

@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['tagline','title','subtitle','description','cta_text','cta_link','background_image','hero_image_alt','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['tagline', 'title', 'subtitle', 'description', 'cta_text', 'cta_link', 'background_image', 'hero_image_alt', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await db.update(shopPageHero).set(update).where(eq(shopPageHero.id, id));
         revalidateTag('shop-hero', 'max');
         return NextResponse.json({ success: true });

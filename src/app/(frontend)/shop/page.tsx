@@ -69,7 +69,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                 <span className="text-primary text-xs font-bold uppercase tracking-wide">Official Distributor</span>
                             </div>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
-                                {hero?.title || 'Shop By Brand'}<br/><span className="text-primary">{hero?.subtitle || 'Find trusted AC brands'}</span>
+                                {hero?.title || 'Shop By Brand'}<br /><span className="text-primary">{hero?.subtitle || 'Find trusted AC brands'}</span>
                             </h1>
                             <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">
                                 {hero?.description || 'Compare features and prices across multiple brands to find the right cooling solution for your space.'}
@@ -132,7 +132,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {(brandProductsMap[slug] || []).length ? (brandProductsMap[slug] || []).map((p:any) => (
+                            {(brandProductsMap[slug] || []).length ? (brandProductsMap[slug] || []).map((p: any) => (
                                 <div key={p.id} className="group bg-surface-light rounded-xl border border-[#f0f2f4] overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
                                     <Link href={`/products/${p.slug || p.id}`} className="block">
                                         <div className="relative aspect-square overflow-hidden bg-gray-50">
@@ -142,12 +142,12 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                             <h3 className="font-bold text-lg text-text-main-light line-clamp-1">{p.title}</h3>
                                             <div className="flex items-center gap-2 text-xs text-text-sub-light">
                                                 <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity || 'N/A'}</span>                                            {p.category?.slug ? (
-                                                <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="bg-background-light px-2 py-1 rounded border border-gray-200">
-                                                    {p.category?.name || 'Category'}
-                                                </Link>
-                                            ) : (
-                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || ''}</span>
-                                            )}                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.subcategory?.name || ''}</span>
+                                                    <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="bg-background-light px-2 py-1 rounded border border-gray-200">
+                                                        {p.category?.name || 'Category'}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || ''}</span>
+                                                )}                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.subcategory?.name || ''}</span>
                                             </div>
                                         </div>
                                     </Link>

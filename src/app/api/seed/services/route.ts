@@ -127,8 +127,8 @@ export async function POST(request: Request) {
                         const [existingProd] = await db.select().from(products).where(eq(products.slug, pslug)).limit(1);
                         if (existingProd && !clean) continue;
                         if (existingProd && clean) {
-                            try { await db.delete(productImages).where(eq(productImages.product_id, existingProd.id)); } catch(e){}
-                            try { await db.delete(products).where(eq(products.id, existingProd.id)); } catch(e){}
+                            try { await db.delete(productImages).where(eq(productImages.product_id, existingProd.id)); } catch (e) { }
+                            try { await db.delete(products).where(eq(products.id, existingProd.id)); } catch (e) { }
                         }
 
                         const title = `${b.name} ${t.name} ${i}`;
@@ -317,7 +317,7 @@ export async function POST(request: Request) {
                         slug: s.key,
                         title: s.title,
                         excerpt: s.description,
-                        content: (() => { let out = `<h1>${s.title}</h1>`; for (let i=1;i<=6;i++) out += `<h2>Section ${i}</h2><p>${s.title} paragraph ${i} with practical advice and examples.</p>`; return out; })(),
+                        content: (() => { let out = `<h1>${s.title}</h1>`; for (let i = 1; i <= 6; i++) out += `<h2>Section ${i}</h2><p>${s.title} paragraph ${i} with practical advice and examples.</p>`; return out; })(),
                         thumbnail: s.image,
                         icon: s.icon,
                         featured: index === 0 ? 1 : 0,
@@ -390,15 +390,15 @@ export async function POST(request: Request) {
                 delete payload.image_urls;
                 const [existing] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
                 if (existing && clean) {
-                    try { await db.delete(productImages).where(eq(productImages.product_id, existing.id)); } catch(e){}
-                    try { await db.delete(products).where(eq(products.id, existing.id)); } catch(e){}
+                    try { await db.delete(productImages).where(eq(productImages.product_id, existing.id)); } catch (e) { }
+                    try { await db.delete(products).where(eq(products.id, existing.id)); } catch (e) { }
                 }
                 if (!existing || clean) {
                     const result = await db.insert(products).values(payload as any);
                     const insertId = result?.[0]?.insertId;
                     if (insertId && Array.isArray(p.image_urls) && p.image_urls.length) {
                         const imageInserts = p.image_urls.map((url: string, idx: number) => ({ product_id: insertId, url, alt: p.title || '', is_primary: idx === 0 ? 1 : 0, display_order: idx }));
-                        try { await db.insert(productImages).values(imageInserts); } catch(e) { logDbError(e, `insert product images ${p.slug}`); }
+                        try { await db.insert(productImages).values(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
                     }
                 }
             }

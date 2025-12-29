@@ -46,7 +46,7 @@ export default function CategoriesManagerPage() {
 
     useEffect(() => {
         // Load brands for selection
-        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => {});
+        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
     }, []);
 
     useEffect(() => {
