@@ -354,7 +354,7 @@ export default function AboutPageUI() {
                                             </button>
                                         </div>
 
-                                        {(Array.isArray(journeyData.highlights) ? journeyData.highlights : []).map((h, idx) => (
+                                        {(Array.isArray(journeyData.highlights) ? journeyData.highlights : []).map((h: string, idx: number) => (
                                             <div key={idx} className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-center">
                                                 <input type="text" className="col-span-5 block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 px-4" value={h || ''} onChange={(e) => {
                                                     const arr = Array.isArray(journeyData.highlights) ? [...journeyData.highlights] : [];

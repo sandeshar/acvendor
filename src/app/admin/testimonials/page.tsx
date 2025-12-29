@@ -15,6 +15,7 @@ interface Testimonial {
     service: number;
     date: string;
     serviceIds?: number[];
+    productIds?: number[];
 }
 
 interface Service {

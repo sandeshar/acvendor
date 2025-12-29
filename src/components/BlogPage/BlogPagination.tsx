@@ -17,7 +17,7 @@ const BlogPagination = ({ currentPage, totalPages, searchQuery, category }: Blog
         params.set('page', page.toString());
         if (searchQuery) params.set('search', searchQuery);
         if (category && category !== 'All') params.set('category', category);
-        return `/products?${params.toString()}`;
+        return `/midea-ac?${params.toString()}`;
     };
 
     // Generate array of page numbers to display

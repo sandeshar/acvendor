@@ -24,7 +24,7 @@ export async function POST() {
             title: 'AC Vendor — Trusted Air Conditioners & Parts',
             subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
             cta_text: 'Shop Now',
-            cta_link: '/products',
+            cta_link: '/midea-ac',
             background_image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80',
             hero_image_alt: 'Modern air conditioning units in a showroom',
             badge_text: 'Free installation on select models',

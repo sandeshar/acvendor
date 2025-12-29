@@ -49,6 +49,8 @@ export const storeSettings = mysqlTable("store_settings", {
     footer_text: varchar("footer_text", { length: 512 }).notNull(),
     // Theme selection for the site (e.g., light, dark, ocean, corporate)
     theme: varchar("theme", { length: 100 }).notNull().default('light'),
+    // Optional featured brand identifier used by the storefront (e.g., 'midea')
+    featured_brand: varchar("featured_brand", { length: 128 }).notNull().default(''),
     // Whether to remove the site name entirely (all screens)
     hide_site_name: int("hide_site_name").default(0).notNull(),
     // Whether to hide the site name on small screens (mobile)

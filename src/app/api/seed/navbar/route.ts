@@ -12,7 +12,7 @@ export async function POST(request: Request) {
         // Seed default navbar items
         const defaultItems = [
             { label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-            { label: 'Products', href: '/products', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
+            { label: 'Midea AC', href: '/midea-ac', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
             { label: 'Brands', href: '/brands', order: 2, is_button: 0, is_active: 1 },
             { label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
             { label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         }
 
         // Get the Products main nav ID
-        const productNavRow = await db.select().from(navbarItems).where(eq(navbarItems.href, '/products')).limit(1);
+        const productNavRow = await db.select().from(navbarItems).where(eq(navbarItems.href, '/midea-ac')).limit(1);
         const productsId = productNavRow[0]?.id;
         if (!productsId) {
             return NextResponse.json({ error: 'Products nav item not found' }, { status: 500 });

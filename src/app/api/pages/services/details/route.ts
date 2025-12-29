@@ -55,8 +55,9 @@ export async function GET(request: NextRequest) {
 
 // POST - Create service detail
 export async function POST(request: NextRequest) {
+    let body: any = undefined;
     try {
-        const body = await request.json();
+        body = await request.json();
         const { key, slug, icon, title, description, bullets, image, image_alt, display_order, is_active = 1 } = body;
 
         if (!key || !icon || !title || !description || bullets === undefined || !image || !image_alt || display_order === undefined) {
@@ -144,8 +145,9 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update service detail
 export async function PUT(request: NextRequest) {
+    let body: any = undefined;
     try {
-        const body = await request.json();
+        body = await request.json();
         const { id, key, slug, icon, title, description, bullets, image, image_alt, display_order, is_active } = body;
 
         if (!id) {

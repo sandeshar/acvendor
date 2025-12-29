@@ -45,8 +45,25 @@ import { servicePosts } from '@/db/servicePostsSchema';
 import { reviewTestimonials } from '@/db/reviewSchema';
 import { eq } from 'drizzle-orm';
 
+function logDbError(e: any, context = '') {
+    try {
+        console.error('DB Error', context ? `(${context})` : '', e?.message || e, {
+            code: e?.code,
+            errno: e?.errno,
+            sql: e?.sql || e?.cause?.sql,
+            params: e?.params || e?.cause?.params,
+        });
+    } catch (err) {
+        console.error('Failed to log DB error', err);
+    }
+}
+
 export async function POST(request: Request) {
     try {
+        const body = await request.json().catch(() => ({} as any));
+        const forwardedBrand = body?.brand || undefined;
+        const forwardedClean = body?.clean === true || body?.clean === '1' || body?.clean === 1;
+
         const results: Record<string, { success: boolean; message: string }> = {
             status: { success: false, message: '' },
             users: { success: false, message: '' },
@@ -120,7 +137,7 @@ export async function POST(request: Request) {
             results.store = { success: true, message: 'Store settings present' };
         } catch (e) {
             // non-fatal
-            console.warn('Failed to ensure store settings', e);
+            logDbError(e, 'ensure store settings');
         }
 
         // 3. Seed Homepage
@@ -136,7 +153,7 @@ export async function POST(request: Request) {
                 title: 'AC Vendor — Trusted Air Conditioners & Parts',
                 subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
                 cta_text: 'Shop Now',
-                cta_link: '/products',
+                cta_link: '/midea-ac',
                 background_image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80',
                 hero_image_alt: 'Modern air conditioning units in a showroom',
                 badge_text: 'Free installation on select models',
@@ -284,7 +301,7 @@ export async function POST(request: Request) {
                 title: 'Who We Are',
                 description: "AC Vendor is a trusted retailer of air conditioning solutions — from efficient home units to commercial systems. We provide quality products, certified installation, and dependable after-sales support.",
                 button1_text: 'Our Products',
-                button1_link: '/products',
+                button1_link: '/midea-ac',
                 button2_text: 'Contact Support',
                 button2_link: '/contact',
                 hero_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
@@ -347,7 +364,7 @@ export async function POST(request: Request) {
                 title: 'Ready to Upgrade Your Cooling?',
                 description: "Browse our top-rated ACs or talk to an expert to find the right model for your space.",
                 primary_button_text: 'Shop Now',
-                primary_button_link: '/products',
+                primary_button_link: '/midea-ac',
                 secondary_button_text: 'Request a Quote',
                 secondary_button_link: '/contact',
                 is_active: 1,
@@ -387,7 +404,7 @@ export async function POST(request: Request) {
                     badge_text: 'Free Installation Offer',
                     highlight_text: 'Air Conditioners',
                     primary_cta_text: 'Shop Products',
-                    primary_cta_link: '/products',
+                    primary_cta_link: '/midea-ac',
                     secondary_cta_text: 'Request Installation',
                     secondary_cta_link: '/contact',
                     background_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
@@ -401,17 +418,38 @@ export async function POST(request: Request) {
                 });
 
                 const categorySlug = 'ac-products';
-                await db.insert(serviceCategories).values({
-                    name: 'AC Products',
-                    slug: categorySlug,
-                    description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
-                    icon: 'ac_unit',
-                    thumbnail: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
-                    display_order: 1,
-                    is_active: 1,
-                    meta_title: 'AC Products',
-                    meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
-                });
+                // Ensure idempotent insert/update to avoid unique key errors
+                const [existingCategory] = await db
+                    .select()
+                    .from(serviceCategories)
+                    .where(eq(serviceCategories.slug, categorySlug))
+                    .limit(1);
+
+                if (!existingCategory) {
+                    await db.insert(serviceCategories).values({
+                        name: 'AC Products',
+                        slug: categorySlug,
+                        description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
+                        icon: 'ac_unit',
+                        thumbnail: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
+                        display_order: 1,
+                        is_active: 1,
+                        meta_title: 'AC Products',
+                        meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
+                    });
+                } else {
+                    // Update fields if the category already exists (best-effort)
+                    await db.update(serviceCategories).set({
+                        name: 'AC Products',
+                        description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
+                        icon: 'ac_unit',
+                        thumbnail: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
+                        display_order: 1,
+                        is_active: 1,
+                        meta_title: 'AC Products',
+                        meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
+                    }).where(eq(serviceCategories.id, existingCategory.id));
+                }
 
                 const [category] = await db
                     .select()
@@ -466,25 +504,49 @@ export async function POST(request: Request) {
                 const subcategoryMap: Record<string, number> = {};
 
                 for (const s of serviceData) {
-                    await db.insert(serviceSubcategories).values({
-                        category_id: category?.id as number,
-                        name: s.title,
-                        slug: s.key,
-                        description: s.description,
-                        icon: s.icon,
-                        thumbnail: s.image,
-                        display_order: serviceData.indexOf(s) + 1,
-                        is_active: 1,
-                        meta_title: s.title,
-                        meta_description: s.description,
-                    });
-
-                    const [subcat] = await db
-                        .select()
-                        .from(serviceSubcategories)
-                        .where(eq(serviceSubcategories.slug, s.key))
-                        .limit(1);
-                    if (subcat) subcategoryMap[s.key] = subcat.id as number;
+                    try {
+                        const [existingSub] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, s.key)).limit(1);
+                        if (!existingSub) {
+                            await db.insert(serviceSubcategories).values({
+                                category_id: category?.id as number,
+                                name: s.title,
+                                ac_type: null,
+                                slug: s.key,
+                                description: s.description,
+                                icon: s.icon,
+                                thumbnail: s.image,
+                                display_order: serviceData.indexOf(s) + 1,
+                                is_active: 1,
+                                meta_title: s.title,
+                                meta_description: s.description,
+                            });
+                            const [subcat] = await db
+                                .select()
+                                .from(serviceSubcategories)
+                                .where(eq(serviceSubcategories.slug, s.key))
+                                .limit(1);
+                            if (subcat) subcategoryMap[s.key] = subcat.id as number;
+                        } else {
+                            // Update existing to keep data current
+                            await db.update(serviceSubcategories).set({
+                                category_id: category?.id as number,
+                                name: s.title,
+                                ac_type: null,
+                                description: s.description,
+                                icon: s.icon,
+                                thumbnail: s.image,
+                                display_order: serviceData.indexOf(s) + 1,
+                                is_active: 1,
+                                meta_title: s.title,
+                                meta_description: s.description,
+                                updatedAt: new Date(),
+                            }).where(eq(serviceSubcategories.id, existingSub.id));
+                            subcategoryMap[s.key] = existingSub.id as number;
+                        }
+                    } catch (e) {
+                        logDbError(e, `insert/update subcategory ${s.key}`);
+                        throw e;
+                    }
                 }
 
                 for (const [index, s] of serviceData.entries()) {
@@ -627,13 +689,19 @@ export async function POST(request: Request) {
 
             // Seed products that reference the same category manager (if a products seeder exists)
             try {
-                const prodModule = await import('@/app/api/seed/products/route');
-                const prodRes: any = await prodModule.POST(new Request('http://localhost/api/seed/products'));
+                const origin = new URL(request.url).origin;
+                const params = new URLSearchParams();
+                if (forwardedBrand) params.set('brand', forwardedBrand);
+                if (forwardedClean) params.set('clean', '1');
+                const url = `${origin}/api/seed/products${params.toString() ? `?${params.toString()}` : ''}`;
+
+                const prodRes = await fetch(url, { method: 'POST' });
                 let prodJson: any = null;
                 try { prodJson = await prodRes.json(); } catch (e) { prodJson = null; }
                 const ok = prodRes && (prodRes.status === 200 || prodRes.status === 201);
                 results.products = { success: ok, message: prodJson?.message || (ok ? 'Products seeded' : 'Products seeding failed') };
             } catch (err) {
+                logDbError(err as any, 'calling products seeder');
                 results.products = { success: false, message: err instanceof Error ? err.message : String(err) };
             }
         } catch (error) {

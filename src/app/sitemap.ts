@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 const posts = await res.json();
                 if (Array.isArray(posts)) {
                     const productPages: MetadataRoute.Sitemap = posts.map((post: any) => ({
-                        url: `${baseUrl}/products/${post.slug}`,
+                        url: `${baseUrl}/midea-ac/${post.slug}`,
                         lastModified: new Date(post.updatedAt || post.createdAt),
                         changeFrequency: 'weekly',
                         priority: 0.8,

@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { name, logo = '', link = '', display_order = 0, is_active = 1 } = body;
+        const { name, slug = '', logo = '', link = '', display_order = 0, is_active = 1 } = body;
         if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
-        const res = await db.insert(servicesPageBrands).values({ name, logo, link, display_order, is_active });
+        const res = await db.insert(servicesPageBrands).values({ name, slug: slug || null, logo, link, display_order, is_active });
         revalidateTag('services-brands', 'max');
         return NextResponse.json({ success: true, id: res[0].insertId }, { status: 201 });
     } catch (error) {
@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['name','logo','link','display_order','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['name','slug','logo','link','display_order','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await db.update(servicesPageBrands).set(update).where(eq(servicesPageBrands.id, id));
         revalidateTag('services-brands', 'max');
         return NextResponse.json({ success: true });

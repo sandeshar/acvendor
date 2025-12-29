@@ -24,6 +24,8 @@ function toDb(payload: any) {
         footer_text: payload.footerText ?? '',
         // Theme is stored as a simple string identifier (e.g., 'default', 'ocean')
         theme: payload.theme ?? 'default',
+        // Optional featured brand for product listing pages (e.g., 'midea')
+        featured_brand: payload.featuredBrand ?? payload.featured_brand ?? '',
         // Boolean flags stored as tinyint(1)
         hide_site_name: payload.hideSiteName ? 1 : 0,
         hide_site_name_on_mobile: payload.hideSiteNameOnMobile ? 1 : 0,
@@ -52,6 +54,8 @@ function fromDb(row: any) {
         footerText: row.footer_text,
         // Theme identifier available to front-end
         theme: row.theme,
+        // Optional featured brand
+        featuredBrand: row.featured_brand || '',
         // Whether to remove the site name entirely (all screens)
         hideSiteName: !!row.hide_site_name,
         // Mobile preference: whether to hide the site name on small screens

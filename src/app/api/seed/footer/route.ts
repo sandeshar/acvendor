@@ -20,7 +20,7 @@ export async function POST() {
             {
                 title: 'Products',
                 links: [
-                    { label: 'All Products', href: '/products' },
+                    { label: 'All Products', href: '/midea-ac' },
                     { label: 'Brands', href: '/brands' },
                     { label: 'Installation', href: '/services' },
                     { label: 'Contact', href: '/contact' },

@@ -96,11 +96,11 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                 if (isMounted) {
                     setNavLinks([
                         { id: 1, label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-                        { id: 2, label: 'Products', href: '/products', order: 1, is_button: 0, is_active: 1 },
-                        { id: 3, label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 },
-                        { id: 4, label: 'Brands', href: '/brands', order: 3, is_button: 0, is_active: 1 },
-                        { id: 5, label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-
+                        { id: 2, label: 'Midea AC', href: '/midea-ac', order: 1, is_button: 0, is_active: 1 },
+                        { id: 3, label: 'Shop', href: '/shop', order: 2, is_button: 0, is_active: 1 },
+                        { id: 4, label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
+                        { id: 5, label: 'Brands', href: '/brands', order: 4, is_button: 0, is_active: 1 },
+                        { id: 6, label: 'FAQ', href: '/faq', order: 5, is_button: 0, is_active: 1 },
                     ]);
                 }
             } finally {

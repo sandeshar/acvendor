@@ -5,7 +5,6 @@ import ServiceDetails from "@/components/ServicesPage/ServiceDetails";
 import ProcessSection from "@/components/ServicesPage/ProcessSection";
 import ServicesBrands from "@/components/ServicesPage/ServicesBrands";
 import TrustSection from "@/components/ServicesPage/TrustSection";
-import TestimonialSlider from "@/components/shared/TestimonialSlider";
 import CTASection from "@/components/ServicesPage/CTASection";
 
 export const dynamic = 'force-dynamic';

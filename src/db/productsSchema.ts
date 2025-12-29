@@ -16,6 +16,7 @@ export const products = mysqlTable("products", {
     compare_at_price: decimal("compare_at_price", { precision: 10, scale: 2 }),
     currency: varchar("currency", { length: 10 }).default("NRS"),
     statusId: int("status_id").default(1).notNull(),
+    featured: int("featured").default(0).notNull(),
     category_id: int("category_id").references(() => serviceCategories.id),
     subcategory_id: int("subcategory_id").references(() => serviceSubcategories.id),
     model: varchar("model", { length: 256 }),

@@ -123,7 +123,7 @@ export async function POST() {
                 }
             }
 
-            const replaceBlogs = (s: string) => (typeof s === 'string' ? s.replace(/\/blogs/g, '/products') : s);
+            const replaceBlogs = (s: string) => (typeof s === 'string' ? s.replace(/\/blogs/g, '/midea-ac') : s);
 
             for (const p of posts) {
                 // ensure any references to '/blogs' in content or meta fields are rewritten to '/products'

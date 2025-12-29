@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type SeedResults = Record<string, { success: boolean; message: string }>;
 
@@ -18,6 +18,13 @@ const SeedRunner = () => {
     const [individualLoading, setIndividualLoading] = useState<string | null>(null);
     const [individualResults, setIndividualResults] = useState<SeedResults>({});
     const [individualOptions, setIndividualOptions] = useState<Record<string, { clean?: boolean }>>({});
+    const [availableBrands, setAvailableBrands] = useState<any[]>([]);
+    const [selectedBrand, setSelectedBrand] = useState<string>('');
+
+    // Fetch brands for seeding options
+    useEffect(() => {
+        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => {});
+    }, []);
 
     const seedTargets = [
         { key: "status", label: "Status (Required First)", priority: true },
@@ -33,7 +40,7 @@ const SeedRunner = () => {
         setError(null);
         setResponse(null);
         try {
-            const res = await fetch("/api/seed/all", { method: "POST" });
+            const res = await fetch("/api/seed/all", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brand: selectedBrand || undefined }) });
             const data: SeedResponse = await res.json();
             if (!res.ok) {
                 throw new Error(data.error || data.message || "Seeding failed");
@@ -51,7 +58,10 @@ const SeedRunner = () => {
         setError(null);
         try {
             const opts = individualOptions[key] || {};
-            const url = `/api/seed/${key}${opts.clean ? '?clean=1' : ''}`;
+            let url = `/api/seed/${key}${opts.clean ? '?clean=1' : ''}`;
+            if (key === 'products' && selectedBrand) {
+                url += opts.clean ? `&brand=${encodeURIComponent(selectedBrand)}` : `?brand=${encodeURIComponent(selectedBrand)}`;
+            }
             const res = await fetch(url, { method: "POST" });
             const data: SeedResponse = await res.json();
             const success = res.ok;
@@ -121,6 +131,13 @@ const SeedRunner = () => {
                     <div>
                         <p className="text-sm font-semibold text-slate-900">Individual seeders</p>
                         <p className="text-sm text-slate-600">Run a specific section without touching others.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm text-slate-600">Brand:</label>
+                        <select value={selectedBrand} onChange={(e) => setSelectedBrand(e.target.value)} className="h-9 rounded-lg border-gray-200 text-sm bg-white text-[#111418] focus:ring-primary focus:border-primary">
+                            <option value="">(none)</option>
+                            {availableBrands.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
+                        </select>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

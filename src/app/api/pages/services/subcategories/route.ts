@@ -1,10 +1,22 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { serviceSubcategories } from "@/db/serviceCategoriesSchema";
-import { eq } from "drizzle-orm";
+import { serviceSubcategories, serviceCategories } from "@/db/serviceCategoriesSchema";
+import { eq, inArray } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const brand = request.nextUrl.searchParams.get('brand');
+        if (brand) {
+            // fetch categories with this brand, then return subcategories for those categories
+            const cats = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
+            const catIds = cats.map((c: any) => c.id).filter(Boolean);
+            if (catIds.length) {
+                const subs = await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.category_id, catIds));
+                return NextResponse.json(subs);
+            }
+            return NextResponse.json([]);
+        }
+
         const subcategories = await db.select().from(serviceSubcategories);
         return NextResponse.json(subcategories);
     } catch (error) {
@@ -16,7 +28,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { category_id, name, slug, description } = body;
+        const { category_id, name, slug, description, ac_type } = body;
 
         if (!category_id || !name || !slug) {
             return NextResponse.json({ error: "Category ID, name, and slug are required" }, { status: 400 });
@@ -25,6 +37,7 @@ export async function POST(request: Request) {
         const result = await db.insert(serviceSubcategories).values({
             category_id,
             name,
+            ac_type: ac_type || null,
             slug,
             description: description || null,
         });
@@ -39,7 +52,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
-        const { id, category_id, name, slug, description } = body;
+        const { id, category_id, name, slug, description, ac_type } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -49,6 +62,7 @@ export async function PUT(request: Request) {
             .set({
                 category_id,
                 name,
+                ac_type: ac_type || null,
                 slug,
                 description: description || null,
                 updatedAt: new Date(),

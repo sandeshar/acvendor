@@ -23,6 +23,8 @@ export default function StoreSettingPage() {
         logo: "",
         favicon: "",
         theme: "default",
+        // Featured brand to show on the products landing page (e.g. 'midea')
+        featuredBrand: '',
         hideSiteNameOnMobile: false,
         hideSiteName: false,
     });
@@ -30,6 +32,9 @@ export default function StoreSettingPage() {
     // Theme select UI state
     const [themeOpen, setThemeOpen] = useState(false);
     const themeRef = useRef<HTMLDivElement | null>(null);
+
+    // Brands available for selection on store settings
+    const [availableBrands, setAvailableBrands] = useState<any[]>([]);
 
     // Preset themes for quick selection (colors mirror globals.css variables)
     const presetThemes = [
@@ -66,9 +71,19 @@ export default function StoreSettingPage() {
                         logo: d.storeLogo || "",
                         favicon: d.favicon || "",
                         theme: d.theme || "default",
+                        featuredBrand: d.featuredBrand || '',
                         hideSiteNameOnMobile: !!d.hideSiteNameOnMobile,
                         hideSiteName: !!d.hideSiteName,
                     });
+                }
+
+                // Load brands for selection
+                try {
+                    const resBrands = await fetch('/api/pages/services/brands');
+                    const brandsJson = await resBrands.json();
+                    if (Array.isArray(brandsJson)) setAvailableBrands(brandsJson as any[]);
+                } catch (e) {
+                    // ignore
                 }
             } catch (e) {
                 console.error('Failed to load settings/themes', e);
@@ -145,6 +160,7 @@ export default function StoreSettingPage() {
                 metaDescription: formData.metaDescription,
                 metaKeywords: formData.metaKeywords,
                 theme: formData.theme,
+                featuredBrand: formData.featuredBrand,
                 hideSiteNameOnMobile: !!formData.hideSiteNameOnMobile,
                 hideSiteName: !!formData.hideSiteName,
             };
@@ -276,6 +292,16 @@ export default function StoreSettingPage() {
                                                 <img src={formData.logo} alt="Logo preview" className="w-16 h-16 object-contain border border-slate-200 rounded-lg" />
                                             )}
                                         </div>
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="featuredBrand" className="block text-sm font-medium text-slate-700 mb-2">Featured brand (for products page)</label>
+                                        <select id="featuredBrand" value={formData.featuredBrand} onChange={(e) => setFormData({ ...formData, featuredBrand: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary">
+                                            <option value="">(none)</option>
+                                            {availableBrands.map((b: any) => (
+                                                <option key={b.id} value={b.slug}>{b.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     <div>

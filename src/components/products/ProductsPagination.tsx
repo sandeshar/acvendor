@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function ProductsPagination({ currentPage, hasMore }: { currentPage: number, hasMore: boolean }) {
+export default function ProductsPagination({ currentPage, hasMore, basePath }: { currentPage: number, hasMore: boolean, basePath?: string }) {
     const searchParams = useSearchParams();
     const category = searchParams?.get('category');
     const subcategory = searchParams?.get('subcategory');
+    const brand = searchParams?.get('brand');
 
     const buildHref = (newPage: number) => {
         const params = new URLSearchParams();
@@ -14,7 +15,18 @@ export default function ProductsPagination({ currentPage, hasMore }: { currentPa
         if (subcategory) params.set('subcategory', subcategory);
         if (newPage && newPage > 1) params.set('page', String(newPage));
         const qs = params.toString();
-        return `/products${qs ? `?${qs}` : ''}`;
+        if (basePath) return `${basePath}${qs ? `?${qs}` : ''}`;
+
+        // If brand query is present, paginate within /shop
+        if (brand) {
+            const p = new URLSearchParams();
+            if (brand) p.set('brand', brand);
+            if (newPage && newPage > 1) p.set('page', String(newPage));
+            const qq = p.toString();
+            return `/shop${qq ? `?${qq}` : ''}`;
+        }
+
+        return `/midea-ac${qs ? `?${qs}` : ''}`;
     };
 
     const page = Math.max(1, currentPage || 1);

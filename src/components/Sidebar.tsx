@@ -33,6 +33,7 @@ const SideBar = () => {
         { name: 'Services Manager', icon: 'service_toolbox', href: '/admin/services/manager' },
         { name: 'Category Manager', icon: 'category', href: '/admin/categories' },
         { name: 'Products', icon: 'inventory_2', href: '/admin/products' },
+        { name: 'Shop', icon: 'store', href: '/admin/shop' },
         { name: 'Testimonials', icon: 'reviews', href: '/admin/testimonials' },
         { name: 'Contact', icon: 'contact_mail', href: '/admin/contact' },
     ];
@@ -53,7 +54,7 @@ const SideBar = () => {
     ];
 
     return (
-        <aside className="admin-sidebar hidden md:flex sticky top-0 flex h-screen max-h-screen w-64 min-w-64 shrink-0 flex-col justify-between border-r border-gray-700 bg-gray-900 p-4 shadow-sm overflow-y-auto overflow-x-hidden">
+        <aside className="admin-sidebar hidden md:flex sticky top-0 h-screen max-h-screen w-64 min-w-64 shrink-0 flex-col justify-between border-r border-gray-700 bg-gray-900 p-4 shadow-sm overflow-y-auto overflow-x-hidden">
             <div className="flex flex-col gap-8">
                 <div className="flex items-center gap-3 px-2">
                     <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">

@@ -7,6 +7,8 @@ type Category = {
     id?: number;
     name: string;
     slug: string;
+    // brand slug (e.g., 'midea')
+    brand?: string | null;
     description?: string | null;
     icon?: string | null;
     isNew?: boolean;
@@ -16,6 +18,8 @@ type Subcategory = {
     id?: number;
     category_id: number;
     name: string;
+    // AC type (e.g., 'Inverter', 'Window', 'Split')
+    ac_type?: string | null;
     slug: string;
     description?: string | null;
     isNew?: boolean;
@@ -36,6 +40,14 @@ export default function CategoriesManagerPage() {
     const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Brands available for selection on category (display list of known brands)
+    const [availableBrands, setAvailableBrands] = useState<any[]>([]);
+
+    useEffect(() => {
+        // Load brands for selection
+        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => {});
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -69,6 +81,7 @@ export default function CategoriesManagerPage() {
         setSelectedCategory({
             name: "",
             slug: "",
+            brand: '',
             description: "",
             icon: "",
             isNew: true,
@@ -80,6 +93,7 @@ export default function CategoriesManagerPage() {
         setSelectedSubcategory({
             category_id: categories[0]?.id || 0,
             name: "",
+            ac_type: '',
             slug: "",
             description: "",
             isNew: true,
@@ -93,10 +107,14 @@ export default function CategoriesManagerPage() {
         setSaving(true);
         try {
             const method = selectedCategory.isNew ? 'POST' : 'PUT';
+            // Only send brand property if present (server handles empty string)
+            const payload: any = {
+                ...selectedCategory,
+            };
             const response = await fetch('/api/pages/services/categories', {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(selectedCategory),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) throw new Error('Failed to save category');
@@ -119,10 +137,11 @@ export default function CategoriesManagerPage() {
         setSaving(true);
         try {
             const method = selectedSubcategory.isNew ? 'POST' : 'PUT';
+            const payload: any = { ...selectedSubcategory };
             const response = await fetch('/api/pages/services/subcategories', {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(selectedSubcategory),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) throw new Error('Failed to save subcategory');
@@ -295,7 +314,7 @@ export default function CategoriesManagerPage() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>
-                                                        <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
+                                                        <p className="text-xs text-slate-500 mt-1">{category.slug}{category.brand ? ` • Brand: ${category.brand.toUpperCase()}` : ''}</p>
                                                         {category.description && (
                                                             <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
                                                         )}
@@ -374,7 +393,7 @@ export default function CategoriesManagerPage() {
                                                     <div className="flex-1">
                                                         <h3 className="text-base font-semibold text-slate-900">{subcategory.name}</h3>
                                                         <p className="text-xs text-slate-500 mt-1">
-                                                            {subcategory.slug} • Parent: {parentCategory?.name || 'Unknown'}
+                                                            {subcategory.slug} • Parent: {parentCategory?.name || 'Unknown'}{subcategory.ac_type ? ` • Type: ${subcategory.ac_type}` : ''}
                                                         </p>
                                                         {subcategory.description && (
                                                             <p className="text-sm text-slate-600 mt-2">{subcategory.description}</p>
@@ -436,6 +455,20 @@ export default function CategoriesManagerPage() {
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
+                                <select
+                                    value={selectedCategory.brand || ''}
+                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, brand: e.target.value })}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option value="">(none)</option>
+                                    {availableBrands.map((b) => (
+                                        <option key={b.id} value={b.slug}>{b.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Icon (Material Symbol)</label>
                                 <input
@@ -507,6 +540,16 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedSubcategory.name}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, name: e.target.value })}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">AC Type</label>
+                                <input
+                                    type="text"
+                                    value={selectedSubcategory.ac_type || ''}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, ac_type: e.target.value })}
+                                    placeholder="Inverter, Window, Split, Cassette..."
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 />
                             </div>

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Star from '@/components/icons/Star';
 
-export default function ProductsListClient({ products }: { products: any[] }) {
+export default function ProductsListClient({ products, productPathPrefix }: { products: any[], productPathPrefix?: string }) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [query, setQuery] = useState('');
 
@@ -49,14 +49,18 @@ export default function ProductsListClient({ products }: { products: any[] }) {
                             </div>
                             <div className="p-4 flex flex-col flex-1 gap-2">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
+                                    {p.category?.slug ? (
+                                        <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category?.name || p.category_name || 'Category'}</Link>
+                                    ) : (
+                                        <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
+                                    )}
                                     <span className="text-xs font-medium text-gray-500">{p.model || p.capacity || ''}</span>
                                 </div>
                                 <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
                                 <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>
 
                                 <div className="mt-auto pt-3 border-t border-[#f0f2f4] flex gap-2">
-                                    <Link href={`/products/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
+                                    <Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
                                     <button className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#111418] hover:bg-gray-50 transition-colors">
                                         <span className="material-symbols-outlined text-[20px]">compare_arrows</span>
                                     </button>
@@ -92,7 +96,7 @@ export default function ProductsListClient({ products }: { products: any[] }) {
                                     <td className="px-4 py-4 font-bold">{p.price}</td>
                                     <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
-                                    <td className="px-4 py-4"><Link href={`/products/${p.slug}`} className="px-3 py-1 rounded border border-gray-200 text-sm">View</Link></td>
+                                    <td className="px-4 py-4"><Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="px-3 py-1 rounded border border-gray-200 text-sm">View</Link></td>
                                 </tr>
                             ))}
                         </tbody>

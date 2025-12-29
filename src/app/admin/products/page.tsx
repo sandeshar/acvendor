@@ -311,7 +311,7 @@ export default function AdminProductsPage() {
 
                                     <div className="mt-4 flex items-center justify-between">
                                         <div className="text-sm text-slate-700 font-bold">{p.price || '-'}</div>
-                                        <a href={`/products/${p.slug}`} className="px-3 py-1.5 bg-primary text-white rounded-md text-sm font-semibold">View</a>
+                                        <a href={`/midea-ac/${p.slug}`} className="px-3 py-1.5 bg-primary text-white rounded-md text-sm font-semibold">View</a>
                                     </div>
                                 </div>
                             </article>
@@ -396,7 +396,7 @@ export default function AdminProductsPage() {
                                             <button onClick={() => deleteProduct(p)} className="p-2 rounded hover:bg-gray-100" title="Delete">
                                                 <span className="material-symbols-outlined text-base text-red-600">delete</span>
                                             </button>
-                                            <NextLink href={`/products/${p.slug}`} className="p-2 rounded hover:bg-gray-100" title="View">
+                                            <NextLink href={`/midea-ac/${p.slug}`} className="p-2 rounded hover:bg-gray-100" title="View">
                                                 <span className="material-symbols-outlined text-base text-slate-600">open_in_new</span>
                                             </NextLink>
                                         </div>

@@ -194,7 +194,7 @@ export async function POST() {
             primary_button_text: 'Get Started',
             primary_button_link: '/contact',
             secondary_button_text: 'Browse Products',
-            secondary_button_link: '/products',
+            secondary_button_link: '/midea-ac',
             is_active: 1,
         });
 

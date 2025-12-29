@@ -98,6 +98,7 @@ export const servicesPageCTA = mysqlTable("services_page_cta", {
 export const servicesPageBrands = mysqlTable("services_page_brands", {
     id: int("id").primaryKey().autoincrement(),
     name: varchar("name", { length: 256 }).notNull(),
+    slug: varchar("slug", { length: 128 }),
     logo: varchar("logo", { length: 512 }).notNull().default(''),
     link: varchar("link", { length: 512 }).notNull().default(''),
     display_order: int("display_order").notNull().default(0),

@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { serviceCategories } from "@/db/serviceCategoriesSchema";
 import { eq } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const categories = await db.select().from(serviceCategories);
+        const brand = request.nextUrl.searchParams.get('brand');
+        const categories = brand ? await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand)) : await db.select().from(serviceCategories);
         return NextResponse.json(categories);
     } catch (error) {
         console.error("Error fetching service categories:", error);
@@ -13,10 +14,10 @@ export async function GET() {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { name, slug, description, icon } = body;
+        const { name, slug, description, icon, brand } = body;
 
         if (!name || !slug) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
         const result = await db.insert(serviceCategories).values({
             name,
             slug,
+            brand: brand || '',
             description: description || null,
             icon: icon || null,
         });
@@ -36,10 +38,10 @@ export async function POST(request: Request) {
     }
 }
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, name, slug, description, icon } = body;
+        const { id, name, slug, description, icon, brand } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -49,6 +51,7 @@ export async function PUT(request: Request) {
             .set({
                 name,
                 slug,
+                brand: brand || '',
                 description: description || null,
                 icon: icon || null,
                 updatedAt: new Date(),
@@ -62,7 +65,7 @@ export async function PUT(request: Request) {
     }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
     try {
         const body = await request.json();
         const { id } = body;

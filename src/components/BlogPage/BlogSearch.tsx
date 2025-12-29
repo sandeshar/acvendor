@@ -25,7 +25,7 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         params.delete('page'); // Reset to page 1 on search
 
         startTransition(() => {
-            router.push(`/products?${params.toString()}`);
+            router.push(`/midea-ac?${params.toString()}`);
         });
     };
 
@@ -39,7 +39,7 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         params.delete('page'); // Reset to page 1 on category change
 
         startTransition(() => {
-            router.push(`/products?${params.toString()}`);
+            router.push(`/midea-ac?${params.toString()}`);
         });
     };
 
@@ -53,7 +53,7 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         <div className="mb-10 px-4">
             <div className="flex flex-col md:flex-row gap-6 items-center">
                 <div className="w-full md:max-w-sm">
-                    <label className="flex flex-col min-w-40 h-14 w-full h-12">
+                    <label className="flex flex-col min-w-40 w-full h-12">
                         <div className="flex w-full flex-1 items-stretch rounded-xl h-full shadow-lg">
                             <div className="text-slate-500 flex bg-white items-center justify-center pl-4 rounded-l-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">

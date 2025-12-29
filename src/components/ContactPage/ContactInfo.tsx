@@ -6,6 +6,15 @@ interface ContactInfoProps {
         office_location: string;
         phone: string;
         email: string;
+        info_title?: string;
+        info_description?: string;
+        phone_item_1_subtext?: string;
+        phone_item_2_subtext?: string;
+        whatsapp_title?: string;
+        whatsapp_subtext?: string;
+        location_title?: string;
+        opening_hours_title?: string;
+        opening_hours_text?: string;
     };
 }
 
@@ -72,7 +81,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                             <h3 className="font-bold text-[#111418]">{data.opening_hours_title || 'Opening Hours'}</h3>
                         </div>
                         <p className="text-sm text-[#617589] pl-9">
-                            {(data.opening_hours_text || 'Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed').split('\n').map((line, i) => (<span key={i}>{line}<br /></span>))}
+                            {(data.opening_hours_text || 'Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed').split('\n').map((line: string, i: number) => (<span key={i}>{line}<br /></span>))}
                         </p>
                     </div>
                 </div>

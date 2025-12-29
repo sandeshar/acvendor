@@ -3,13 +3,26 @@ import { db } from '@/db';
 import { products, productImages } from '@/db/productsSchema';
 import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
 import { status, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
+
+function logDbError(e: any, context = '') {
+    try {
+        console.error('DB Error', context ? `(${context})` : '', e?.message || e, {
+            code: e?.code,
+            errno: e?.errno,
+            sql: e?.sql || e?.cause?.sql,
+            params: e?.params || e?.cause?.params,
+        });
+    } catch (err) {
+        console.error('Failed to log DB error', err);
+    }
+}
 
 export async function POST(request: Request) {
     try {
-        // Allow an optional ?clean=1 query param to force re-creation
-        const url = new URL(request.url);
-        const clean = url.searchParams.get('clean') === '1' || url.searchParams.get('clean') === 'true';
+        const reqUrl = new URL(request.url);
+        const clean = reqUrl.searchParams.get('clean') === '1' || reqUrl.searchParams.get('clean') === 'true';
+        const brand = reqUrl.searchParams.get('brand') || null;
 
         // Ensure we have a published status and at least one user
         const [firstUser] = await db.select().from(users).limit(1);
@@ -29,7 +42,7 @@ export async function POST(request: Request) {
 
         const results: any[] = [];
 
-        // Sample products (base) and generated products per subcategory
+        // Base sample products linked to an existing category/subcategory
         const baseSamples = [
             {
                 slug: 'sample-mini-1',
@@ -73,31 +86,56 @@ export async function POST(request: Request) {
             },
         ];
 
-        // Generate additional sample products across all subcategories (3 per subcategory)
-        const subcatRows = await db.select().from(serviceSubcategories);
+        // Determine which subcategories to generate products for
+        let subcatRows: any[] = [];
+        if (brand) {
+            const catRows = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
+            const catIds = catRows.map((c: any) => c.id).filter(Boolean);
+            if (catIds.length) {
+                subcatRows = await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.category_id, catIds));
+            } else {
+                subcatRows = [];
+            }
+        } else {
+            subcatRows = await db.select().from(serviceSubcategories);
+        }
+
+        // Generate 3 products per subcategory with brand-aware metadata
         const generated: any[] = [];
+        const categoryMap: Record<number, any> = {};
+        const catIds = Array.from(new Set(subcatRows.map(s => s.category_id).filter(Boolean)));
+        if (catIds.length) {
+            const catRows = await db.select().from(serviceCategories).where(inArray(serviceCategories.id, catIds));
+            catRows.forEach((c: any) => (categoryMap[c.id] = c));
+        }
+
         for (const sc of subcatRows) {
+            const parentCat = categoryMap[sc.category_id] || null;
             for (let i = 1; i <= 3; i++) {
                 const slug = `${sc.slug}-prod-${i}`;
+                const brandPrefix = parentCat && parentCat.brand ? `${(parentCat.brand || '').toUpperCase()} ` : '';
+                const title = `${brandPrefix}${sc.name} Product ${i}`;
+                const excerpt = `${brandPrefix}${sc.name} sample product #${i}.`;
+
                 generated.push({
                     slug,
-                    title: `${sc.name} Product ${i}`,
-                    excerpt: `A ${sc.name.toLowerCase()} product example #${i}.`,
-                    content: `<p>Example product in ${sc.name} category, variation ${i}.</p>`,
+                    title,
+                    excerpt,
+                    content: `<p>Example product in ${sc.name}${parentCat ? ' / ' + parentCat.name : ''}, variation ${i}.</p>`,
                     thumbnail: `https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80&ixid=${i}`,
                     image_urls: [`https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80&ixid=${i}`],
                     price: (99 + i * 50).toFixed(2),
                     currency: 'USD',
                     inventory_status: 'in_stock',
-                    model: `${sc.slug.toUpperCase()}-${i}`,
-                    capacity: 'N/A',
+                    model: `${(parentCat?.brand || sc.slug).toUpperCase()}-${i}`,
+                    capacity: sc.ac_type || 'N/A',
                     warranty: `${i} year${i > 1 ? 's' : ''}`,
                     category_id: sc.category_id,
                     subcategory_id: sc.id,
                     statusId: publishedStatus.id,
                     featured: i === 1 ? 1 : 0,
-                    meta_title: `${sc.name} Product ${i}`,
-                    meta_description: `Seed product in ${sc.name}`,
+                    meta_title: `${brandPrefix}${sc.name} Product ${i}`,
+                    meta_description: `${excerpt} Part of ${parentCat ? parentCat.name : sc.name} category${parentCat?.brand ? ` for ${parentCat.brand}` : ''}`,
                 });
             }
         }
@@ -109,13 +147,8 @@ export async function POST(request: Request) {
                 const [existing] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
 
                 if (existing && clean) {
-                    // delete images and product so we can recreate
-                    try {
-                        await db.delete(productImages).where(eq(productImages.product_id, existing.id));
-                    } catch (e) { /* ignore */ }
-                    try {
-                        await db.delete(products).where(eq(products.id, existing.id));
-                    } catch (e) { /* ignore */ }
+                    try { await db.delete(productImages).where(eq(productImages.product_id, existing.id)); } catch (e) { }
+                    try { await db.delete(products).where(eq(products.id, existing.id)); } catch (e) { }
                 }
 
                 const [already] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
@@ -129,30 +162,20 @@ export async function POST(request: Request) {
                 const result = await db.insert(products).values(payload as any);
                 const insertId = result?.[0]?.insertId;
                 if (insertId && Array.isArray(p.image_urls) && p.image_urls.length) {
-                    const imageInserts = p.image_urls.map((url: string, idx: number) => ({
-                        product_id: insertId,
-                        url,
-                        alt: p.title || '',
-                        is_primary: idx === 0 ? 1 : 0,
-                        display_order: idx,
-                    }));
-                    try {
-                        await db.insert(productImages).values(imageInserts);
-                    } catch (e) {
-                        console.warn('Failed to insert product images for', p.slug, e);
-                    }
+                    const imageInserts = p.image_urls.map((u: string, idx: number) => ({ product_id: insertId, url: u, alt: p.title || '', is_primary: idx === 0 ? 1 : 0, display_order: idx }));
+                    try { await db.insert(productImages).values(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
                 }
 
                 results.push({ slug: p.slug, created: true, id: insertId });
             } catch (e: any) {
-                console.warn('Failed to seed product', p.slug, e);
+                logDbError(e, `seed product ${p.slug}`);
                 results.push({ slug: p.slug, created: false, error: e?.message || String(e) });
             }
         }
 
         return NextResponse.json({ success: true, message: 'Products seeded', results }, { status: 201 });
     } catch (error) {
-        console.error('Error seeding products:', error);
+        logDbError(error, 'seeding products');
         return NextResponse.json({ error: 'Failed to seed products', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }

@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
         const slug = searchParams.get('slug');
         const category = searchParams.get('category');
         const subcategory = searchParams.get('subcategory');
+        const brand = searchParams.get('brand');
         const limit = searchParams.get('limit');
         const status = searchParams.get('status');
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
             if (!isNaN(idNum)) {
                 const rows = await db.select().from(products).where(eq(products.id, idNum)).limit(1);
                 if (rows && rows.length) {
-                    const product = rows[0];
+                    const product: any = rows[0];
                     const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
 
                     // attach category/subcategory objects when available
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
                 // treat `id` as a slug
                 const rows = await db.select().from(products).where(eq(products.slug, id)).limit(1);
                 if (rows && rows.length) {
-                    const product = rows[0];
+                    const product: any = rows[0];
                     const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
 
                     // attach category/subcategory objects when available
@@ -114,7 +115,7 @@ export async function GET(request: NextRequest) {
         if (slug) {
             const rows = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
             if (rows && rows.length) {
-                const product = rows[0];
+                const product: any = rows[0];
                 const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
 
                 // attach category/subcategory objects when available
@@ -182,6 +183,19 @@ export async function GET(request: NextRequest) {
                 const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
                 const catRow = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, category)).limit(1);
                 if (catRow.length) query = query.where(eq(products.category_id, catRow[0].id)) as any;
+            }
+        }
+
+        // If brand parameter is provided, restrict products to categories tagged with that brand
+        if (brand) {
+            const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
+            const brandCats = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
+            const catIds = brandCats.map((c: any) => c.id).filter(Boolean);
+            if (catIds.length) {
+                query = query.where(inArray(products.category_id, catIds)) as any;
+            } else {
+                // If no categories for brand, return empty set
+                return NextResponse.json([]);
             }
         }
 
