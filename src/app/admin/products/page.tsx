@@ -5,6 +5,7 @@ import NextLink from "next/link";
 import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 
+
 type ProductPost = {
     id?: number;
     slug: string;
@@ -244,6 +245,10 @@ export default function AdminProductsPage() {
                         <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400">search</span>
                         <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search products, models, or descriptions..." className="rounded-full border border-gray-200 pl-10 pr-3 py-2 text-sm w-72 shadow-sm focus:ring-1 focus:ring-primary" />
                     </div>
+                    <NextLink href="/admin/quotation" className="inline-flex items-center gap-2 h-10 px-4 bg-[#f3f4f6] text-[#111418] rounded-lg shadow-sm hover:shadow-md transition">
+                        <span className="material-symbols-outlined">receipt_long</span>
+                        <span className="font-medium">Make a Quotation</span>
+                    </NextLink>
                     <a href="/admin/products/new" className="inline-flex items-center gap-2 h-10 px-4 bg-primary text-white rounded-lg shadow-sm hover:shadow-md transition">
                         <span className="material-symbols-outlined">add</span>
                         <span className="font-medium">Add</span>
@@ -426,7 +431,7 @@ export default function AdminProductsPage() {
                 </div>
             </div>
 
-            {/* Modal */}
+
             {isModalOpen && selected && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="w-full max-w-2xl bg-white rounded-xl p-6">

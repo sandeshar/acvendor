@@ -10,6 +10,13 @@ export async function GET() {
         return NextResponse.json(rows && rows.length ? rows[0] : {});
     } catch (error) {
         console.error('Error fetching shop hero:', error);
+        const e: any = error;
+        // Gracefully handle missing table (e.g., local dev DB not seeded)
+        if (e?.cause?.code === 'ER_NO_SUCH_TABLE' || e?.code === 'ER_NO_SUCH_TABLE' || e?.errno === 1146) {
+            // eslint-disable-next-line no-console
+            console.warn('Shop hero table missing - returning empty hero object');
+            return NextResponse.json({});
+        }
         return NextResponse.json({ error: 'Failed to fetch shop hero' }, { status: 500 });
     }
 }

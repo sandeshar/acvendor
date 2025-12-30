@@ -3,6 +3,9 @@
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Star from '@/components/icons/Star';
+import useCompare from './useCompare';
+import CompareTray from './CompareTray';
+
 
 export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { brand?: string } }) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -10,6 +13,9 @@ export default function ProductsListClient({ products, productPathPrefix, search
 
     const [remoteProducts, setRemoteProducts] = useState<any[] | null>(null);
     const [loading, setLoading] = useState(false);
+
+    // Compare hook for inline buttons and tray (so grid/list can show + beside price and tray uses same state)
+    const { items, addItem, removeItem, clear, contains } = useCompare();
 
     const filteredLocal = useMemo(() => {
         const q = query.trim().toLowerCase();
@@ -53,6 +59,40 @@ export default function ProductsListClient({ products, productPathPrefix, search
     }, [query, searchContext?.brand]);
 
     const displayedProducts = remoteProducts !== null ? remoteProducts : filteredLocal;
+
+    // helpers for inline price compare buttons
+    function containsButtonIcon(p: any) {
+        return p?.id && contains(p.id) ? 'check' : 'add';
+    }
+    function containsButtonClass(p: any) {
+        return p?.id && contains(p.id) ? 'bg-primary/10 border-primary text-primary' : 'border-[#e5e7eb] text-[#111418] hover:bg-gray-50';
+    }
+    function containsButtonAria(p: any) {
+        return p?.id && contains(p.id) ? 'Remove from compare' : 'Add to compare';
+    }
+    function onCompareClick(e: any, product: any) {
+        e.preventDefault();
+        if (!product?.id) return;
+        if (contains(product.id)) removeItem(product.id);
+        else addItem({ id: product.id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
+    }
+
+    // Compare button component (uses local compare hook)
+    function CompareButton({ product }: { product: any }) {
+        const id = product?.id;
+        const selected = id ? contains(id) : false;
+        const onClick = (e: any) => {
+            e.preventDefault();
+            if (!id) return;
+            if (selected) removeItem(id);
+            else addItem({ id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
+        };
+        return (
+            <button onClick={onClick} className={`h-9 w-9 flex items-center justify-center rounded-lg border ${selected ? 'bg-primary/10 border-primary text-primary' : 'border-[#e5e7eb] text-[#111418] hover:bg-gray-50'} transition-colors`}>
+                <span className="material-symbols-outlined text-[20px]">{selected ? 'check' : 'add'}</span>
+            </button>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -99,11 +139,18 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                 <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
                                 <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>
 
-                                <div className="mt-auto pt-3 border-t border-[#f0f2f4] flex gap-2">
+                                {/* Price row: show price and compare add button */}
+                                <div className="flex items-center justify-between mt-3">
+                                    <div className="text-lg font-bold text-[#111418]">{p.price}</div>
+                                    <div className="flex items-center gap-2">
+                                        <button aria-label={containsButtonAria(p) ? 'Remove from compare' : 'Add to compare'} onClick={(e) => onCompareClick(e, p)} className={`h-9 w-9 flex items-center justify-center rounded-lg border bg-white shadow-sm relative z-10 ${containsButtonClass(p)} transition-colors`}>
+                                            <span className="material-symbols-outlined text-[20px]">{containsButtonIcon(p)}</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="mt-3 pt-3 border-t border-[#f0f2f4] flex gap-2 items-center">
                                     <Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
-                                    <button className="h-9 w-9 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#111418] hover:bg-gray-50 transition-colors">
-                                        <span className="material-symbols-outlined text-[20px]">compare_arrows</span>
-                                    </button>
                                 </div>
                             </div>
                         </article>
@@ -136,13 +183,21 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                     <td className="px-4 py-4 font-bold">{p.price}</td>
                                     <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
-                                    <td className="px-4 py-4"><Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="px-3 py-1 rounded border border-gray-200 text-sm">View</Link></td>
+                                    <td className="px-4 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="px-3 py-1 rounded border border-gray-200 text-sm">View</Link>
+                                            <button onClick={(e) => onCompareClick(e, p)} aria-label={containsButtonAria(p)} className={`h-8 w-8 flex items-center justify-center rounded border bg-white shadow-sm relative z-10 ${containsButtonClass(p)}`}>
+                                                <span className="material-symbols-outlined text-[18px]">{containsButtonIcon(p)}</span>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             )}
+            <CompareTray items={items} removeItem={removeItem} clear={clear} />
         </div>
     );
 }

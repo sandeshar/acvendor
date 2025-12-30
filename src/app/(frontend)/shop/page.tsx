@@ -1,6 +1,11 @@
 import Link from 'next/link';
 import ProductsListClient from '@/components/products/ProductsListClientWrapper';
 import ProductsPagination from '@/components/products/ProductsPagination';
+import dynamicImport from 'next/dynamic';
+
+const CompareAddButton = dynamicImport(() => import('@/components/products/CompareAddButton'));
+const CompareTrayWrapper = dynamicImport(() => import('@/components/products/CompareTrayWrapper'));
+
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -22,25 +27,41 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
 
     // QUICK SAFETY: avoid accessing properties on potentially hostile Proxy-like objects that throw
     try {
-        const tag = Object.prototype.toString.call(searchParams);
+        // Handle Promise-shaped searchParams that Next may pass in dev/server: await if necessary
+        let sp: any = searchParams;
+        try {
+            const initialTag = Object.prototype.toString.call(sp);
+            if (initialTag === '[object Promise]') {
+                try {
+                    sp = await sp;
+                } catch (awaitErr) {
+                    // eslint-disable-next-line no-console
+                    console.warn('ShopPage: failed to resolve searchParams promise', awaitErr);
+                }
+            }
+        } catch (tagErr) {
+            // proceed - will be handled below
+        }
+
+        const tag = Object.prototype.toString.call(sp);
         const isSafe = tag === '[object Object]' || tag === '[object URLSearchParams]';
         if (!isSafe) {
             // eslint-disable-next-line no-console
-            console.warn('ShopPage: unsafe searchParams shape detected, skipping brand parsing', { tag, searchParams });
+            console.warn('ShopPage: unsafe searchParams shape detected, skipping brand parsing', { tag, searchParams: sp });
         } else {
             try {
                 // Safe-path: URLSearchParams-like object with .get or plain object
-                if (typeof (searchParams as any).get === 'function') {
-                    const v = (searchParams as any).get('brand');
+                if (typeof (sp as any).get === 'function') {
+                    const v = (sp as any).get('brand');
                     brandParam = v == null ? null : String(v);
                 } else {
-                    const raw = (searchParams as any)['brand'];
+                    const raw = (sp as any)['brand'];
                     brandParam = raw == null ? null : String(raw);
                 }
             } catch (errInner) {
                 // Last-resort catch; log and move on without throwing
                 // eslint-disable-next-line no-console
-                console.error('Error accessing searchParams brand in ShopPage', errInner, { searchParams });
+                console.error('Error accessing searchParams brand in ShopPage', errInner, { searchParams: sp });
                 brandParam = null;
             }
         }
@@ -200,9 +221,10 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                     </Link>
                                     <div className="p-4 border-t border-[#f0f2f4] flex items-center justify-between">
                                         <span className="text-primary font-bold text-lg">{p.price || 'NPR 0'}</span>
-                                        <button className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-colors">
-                                            <span className="material-symbols-outlined text-lg">add</span>
-                                        </button>
+                                        {/* Compare add button (client) */}
+                                        <div className="relative z-10">
+                                            <CompareAddButton product={p} />
+                                        </div>
                                     </div>
                                 </div>
                             )) : (<div className="text-sm text-slate-500">No products found for {slug}</div>)}
@@ -213,6 +235,8 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
 
             {/* Consultation Banner */}
             <section className="py-16 px-4 md:px-10">
+                {/* Compare tray (client) */}
+                <CompareTrayWrapper />
                 <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-blue-500/20">
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
                         <div className="max-w-xl text-white">

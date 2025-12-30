@@ -170,6 +170,14 @@ export async function GET(request: NextRequest) {
 
         let query = db.select().from(products);
 
+        // Support fetching by explicit ids list: ?ids=1,2,3
+        const idsParam = searchParams.get('ids');
+        if (idsParam) {
+            const parsed = String(idsParam).split(',').map(s => parseInt(s)).filter(n => !isNaN(n));
+            if (!parsed.length) return NextResponse.json([]);
+            query = query.where(inArray(products.id, parsed)) as any;
+        }
+
         if (status) {
             query = query.where(eq(products.statusId, parseInt(status))) as any;
         }

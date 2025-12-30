@@ -36,31 +36,47 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
     let subcategory: string | undefined = undefined;
     let page: number = 1;
     try {
-        const tag = Object.prototype.toString.call(searchParams);
+        // If searchParams is a Promise, try to await it
+        let sp: any = searchParams;
+        try {
+            const initialTag = Object.prototype.toString.call(sp);
+            if (initialTag === '[object Promise]') {
+                try {
+                    sp = await sp;
+                } catch (awaitErr) {
+                    // eslint-disable-next-line no-console
+                    console.warn('MideaPage: failed to resolve searchParams promise', awaitErr);
+                }
+            }
+        } catch (tagErr) {
+            // ignore
+        }
+
+        const tag = Object.prototype.toString.call(sp);
         const isSafe = tag === '[object Object]' || tag === '[object URLSearchParams]';
         if (!isSafe) {
             // eslint-disable-next-line no-console
-            console.warn('MideaPage: unsafe searchParams shape detected, skipping parse', { tag, searchParams });
+            console.warn('MideaPage: unsafe searchParams shape detected, skipping parse', { tag, searchParams: sp });
         } else {
             try {
-                if (typeof (searchParams as any).get === 'function') {
-                    const c = (searchParams as any).get('category');
+                if (typeof (sp as any).get === 'function') {
+                    const c = (sp as any).get('category');
                     category = c == null ? '' : String(c);
-                    const sc = (searchParams as any).get('subcategory');
+                    const sc = (sp as any).get('subcategory');
                     subcategory = sc == null ? undefined : String(sc);
-                    const p = (searchParams as any).get('page');
+                    const p = (sp as any).get('page');
                     page = p ? parseInt(String(p)) || 1 : 1;
                 } else {
-                    const rawC = (searchParams as any)['category'];
+                    const rawC = (sp as any)['category'];
                     category = rawC == null ? '' : String(rawC);
-                    const rawSC = (searchParams as any)['subcategory'];
+                    const rawSC = (sp as any)['subcategory'];
                     subcategory = rawSC == null ? undefined : String(rawSC);
-                    const rawP = (searchParams as any)['page'];
+                    const rawP = (sp as any)['page'];
                     page = rawP ? parseInt(String(rawP)) || 1 : 1;
                 }
             } catch (innerErr) {
                 // eslint-disable-next-line no-console
-                console.error('Error accessing MideaPage searchParams properties', innerErr, { searchParams });
+                console.error('Error accessing MideaPage searchParams properties', innerErr, { searchParams: sp });
             }
         }
     } catch (err) {

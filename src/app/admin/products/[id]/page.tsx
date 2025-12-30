@@ -548,7 +548,16 @@ export default function EditProductPage() {
                         <input value={product.compare_at_price ?? ''} onChange={(e) => setProduct({ ...product, compare_at_price: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
 
                         <label className="block text-sm font-medium mb-1">Currency</label>
-                        <input value={product.currency ?? ''} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3" />
+                        <select value={product.currency ?? 'NRS'} onChange={(e) => setProduct({ ...product, currency: e.target.value })} className="w-full rounded-lg border border-gray-200 px-3 py-2 mb-3">
+                            <option value="NRS">NRS</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="AUD">AUD</option>
+                            <option value="CAD">CAD</option>
+                            <option value="JPY">JPY</option>
+                            <option value="CNY">CNY</option>
+                        </select>
 
 
 
