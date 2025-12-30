@@ -186,10 +186,11 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // If brand parameter is provided, restrict products to categories tagged with that brand
+        // If brand parameter is provided, restrict products to categories tagged with that brand or global categories
         if (brand) {
             const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
-            const brandCats = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
+            const { or } = await import('drizzle-orm');
+            const brandCats = await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, '')));
             const catIds = brandCats.map((c: any) => c.id).filter(Boolean);
             if (catIds.length) {
                 query = query.where(inArray(products.category_id, catIds)) as any;
@@ -208,6 +209,22 @@ export async function GET(request: NextRequest) {
                 const subRow = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, subcategory)).limit(1);
                 if (subRow.length) query = query.where(eq(products.subcategory_id, subRow[0].id)) as any;
             }
+        }
+
+        // Server-side free-text search (q): title, slug, excerpt, model, content
+        const qParam = searchParams.get('q');
+        if (qParam) {
+            const { or, like } = await import('drizzle-orm');
+            const pattern = `%${qParam}%`;
+            query = query.where(
+                or(
+                    like(products.title, pattern),
+                    like(products.slug, pattern),
+                    like(products.excerpt, pattern),
+                    like(products.model, pattern),
+                    like(products.content, pattern)
+                )!
+            ) as any;
         }
 
         const offset = searchParams.get('offset');

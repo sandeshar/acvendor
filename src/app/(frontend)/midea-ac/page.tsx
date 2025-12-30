@@ -30,9 +30,44 @@ async function getProducts(limit = 12, brand?: string, category?: string, subcat
 export default async function MideaPage({ searchParams }: { searchParams?: { subcategory?: string, page?: string, category?: string } }) {
     // Force brand to 'midea' for this page
     const brand = 'midea';
-    const category = searchParams?.category ?? '';
-    const subcategory = searchParams?.subcategory;
-    const page = searchParams?.page ? parseInt(String(searchParams.page)) || 1 : 1;
+
+    // Defensive parsing of searchParams because it can be a Proxy-like object that throws
+    let category: string = '';
+    let subcategory: string | undefined = undefined;
+    let page: number = 1;
+    try {
+        const tag = Object.prototype.toString.call(searchParams);
+        const isSafe = tag === '[object Object]' || tag === '[object URLSearchParams]';
+        if (!isSafe) {
+            // eslint-disable-next-line no-console
+            console.warn('MideaPage: unsafe searchParams shape detected, skipping parse', { tag, searchParams });
+        } else {
+            try {
+                if (typeof (searchParams as any).get === 'function') {
+                    const c = (searchParams as any).get('category');
+                    category = c == null ? '' : String(c);
+                    const sc = (searchParams as any).get('subcategory');
+                    subcategory = sc == null ? undefined : String(sc);
+                    const p = (searchParams as any).get('page');
+                    page = p ? parseInt(String(p)) || 1 : 1;
+                } else {
+                    const rawC = (searchParams as any)['category'];
+                    category = rawC == null ? '' : String(rawC);
+                    const rawSC = (searchParams as any)['subcategory'];
+                    subcategory = rawSC == null ? undefined : String(rawSC);
+                    const rawP = (searchParams as any)['page'];
+                    page = rawP ? parseInt(String(rawP)) || 1 : 1;
+                }
+            } catch (innerErr) {
+                // eslint-disable-next-line no-console
+                console.error('Error accessing MideaPage searchParams properties', innerErr, { searchParams });
+            }
+        }
+    } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('MideaPage: failed to inspect searchParams', err, { searchParams });
+    }
+
     const products = await getProducts(12, brand, category || undefined, subcategory, page);
 
     const hasMore = (products || []).length === 12;

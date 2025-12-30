@@ -1,20 +1,58 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import Star from '@/components/icons/Star';
 
-export default function ProductsListClient({ products, productPathPrefix }: { products: any[], productPathPrefix?: string }) {
+export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { brand?: string } }) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [query, setQuery] = useState('');
 
-    const filtered = useMemo(() => {
+    const [remoteProducts, setRemoteProducts] = useState<any[] | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const filteredLocal = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return products;
         return products.filter((p: any) => {
             return (p.title || '').toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q) || (p.excerpt || '').toLowerCase().includes(q);
         });
     }, [products, query]);
+
+    useEffect(() => {
+        let active = true;
+        const q = query.trim();
+        if (!q) {
+            setRemoteProducts(null);
+            setLoading(false);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            try {
+                setLoading(true);
+                const params = new URLSearchParams();
+                params.set('q', q);
+                params.set('limit', '48');
+                if (searchContext?.brand) params.set('brand', searchContext.brand);
+                const res = await fetch(`/api/products?${params.toString()}`);
+                if (!res.ok) {
+                    if (active) setRemoteProducts([]);
+                    return;
+                }
+                const data = await res.json();
+                if (active) setRemoteProducts(Array.isArray(data) ? data : []);
+            } catch (e) {
+                console.error('Error performing remote product search:', (e as Error)?.message || String(e));
+                if (active) setRemoteProducts([]);
+            } finally {
+                if (active) setLoading(false);
+            }
+        }, 300);
+
+        return () => { active = false; clearTimeout(timer); };
+    }, [query, searchContext?.brand]);
+
+    const displayedProducts = remoteProducts !== null ? remoteProducts : filteredLocal;
 
     return (
         <div className="flex flex-col gap-4">
@@ -28,11 +66,13 @@ export default function ProductsListClient({ products, productPathPrefix }: { pr
                 </div>
             </div>
 
-            {filtered.length === 0 ? (
+            {loading ? (
+                <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">Searching...</div>
+            ) : displayedProducts.length === 0 ? (
                 <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">No products matched your search.</div>
             ) : view === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filtered.map((p: any) => (
+                    {displayedProducts.map((p: any) => (
                         <article key={p.id || p.slug} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
                             <div className="relative h-48 w-full bg-[#f3f6f9] flex items-center justify-center p-4">
                                 {p.inventory_status === 'in_stock' && (
@@ -82,7 +122,7 @@ export default function ProductsListClient({ products, productPathPrefix }: { pr
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.map((p: any) => (
+                            {displayedProducts.map((p: any) => (
                                 <tr key={p.id || p.slug} className="border-t hover:bg-gray-50 transition-colors">
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-4">

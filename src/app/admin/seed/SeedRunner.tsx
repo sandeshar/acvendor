@@ -28,11 +28,17 @@ const SeedRunner = () => {
 
     const seedTargets = [
         { key: "status", label: "Status (Required First)", priority: true },
-        { key: "users", label: "Users" },
+        { key: "users", label: "Users", priority: true },
         { key: "homepage", label: "Homepage" },
         { key: "about", label: "About" },
         { key: "services", label: "Services" },
         { key: "products", label: "Products (Sample)" },
+        { key: "contact", label: "Contact" },
+        { key: "faq", label: "FAQ" },
+        { key: "terms", label: "Terms" },
+        { key: "blog", label: "Blog" },
+        { key: "navbar", label: "Navbar" },
+        { key: "footer", label: "Footer" },
     ];
 
     const runSeed = async () => {
@@ -58,10 +64,12 @@ const SeedRunner = () => {
         setError(null);
         try {
             const opts = individualOptions[key] || {};
-            let url = `/api/seed/${key}${opts.clean ? '?clean=1' : ''}`;
-            if (key === 'products' && selectedBrand) {
-                url += opts.clean ? `&brand=${encodeURIComponent(selectedBrand)}` : `?brand=${encodeURIComponent(selectedBrand)}`;
-            }
+            const params = new URLSearchParams();
+            if (opts.clean) params.set('clean', '1');
+            // Support brand parameter for products and services seeders
+            if ((key === 'products' || key === 'services') && selectedBrand) params.set('brand', selectedBrand);
+            const query = params.toString() ? `?${params.toString()}` : '';
+            const url = `/api/seed/${key}${query}`;
             const res = await fetch(url, { method: "POST" });
             const data: SeedResponse = await res.json();
             const success = res.ok;
@@ -157,8 +165,8 @@ const SeedRunner = () => {
                                     {itemState ? itemState.message : "Not run yet."}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {/* Show clean toggle only for products seeder */}
-                                    {key === 'products' && (
+                                    {/* Show clean toggle for products and services */}
+                                    {(key === 'products' || key === 'services') && (
                                         <label className="inline-flex items-center gap-2 text-xs text-slate-600">
                                             <input type="checkbox" checked={!!individualOptions[key]?.clean} onChange={(e) => setIndividualOptions((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), clean: e.target.checked } }))} />
                                             <span>Clean before seed</span>

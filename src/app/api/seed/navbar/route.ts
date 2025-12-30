@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         const defaultItems = [
             { label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
             { label: 'Midea AC', href: '/midea-ac', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
-            { label: 'Brands', href: '/brands', order: 2, is_button: 0, is_active: 1 },
+            { label: 'Shop', href: '/shop', order: 2, is_button: 0, is_active: 1 },
             { label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
             { label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
             { label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
@@ -45,19 +45,19 @@ export async function POST(request: Request) {
             const subs = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.category_id, cat.id));
             const catHasSub = Array.isArray(subs) && subs.length > 0;
 
-            const [existingChild] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
+            const [existingChild] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
             let catNavId = undefined as number | undefined;
             if (!existingChild) {
                 await db.insert(navbarItems).values({
                     label: cat.name,
-                    href: `/services?category=${cat.slug}`,
+                    href: `/services/category/${cat.slug}`,
                     order: i,
                     parent_id: productsId,
                     is_button: 0,
                     is_active: 1,
                     is_dropdown: catHasSub ? 1 : 0,
                 });
-                const created = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
+                const created = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
                 catNavId = created[0]?.id;
             } else {
                 catNavId = existingChild.id;
@@ -71,11 +71,11 @@ export async function POST(request: Request) {
                 const subsList = subs;
                 for (let si = 0; si < subsList.length; si++) {
                     const sub = subsList[si];
-                    const [existingSub] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services?category=${cat.slug}&subcategory=${sub.slug}`), eq(navbarItems.parent_id, catNavId))).limit(1);
+                    const [existingSub] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}/${sub.slug}`), eq(navbarItems.parent_id, catNavId))).limit(1);
                     if (!existingSub) {
                         await db.insert(navbarItems).values({
                             label: sub.name,
-                            href: `/services?category=${cat.slug}&subcategory=${sub.slug}`,
+                            href: `/services/category/${cat.slug}/${sub.slug}`,
                             order: si,
                             parent_id: catNavId,
                             is_button: 0,

@@ -30,7 +30,7 @@ export default async function BrandPage({ params, searchParams }: { params?: { s
     const hasMore = Array.isArray(products) && products.length === limit;
 
     return (
-        <main className="flex-1">
+        <main className="flex-1 p-10">
             <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
                 <div className="flex items-center gap-2 text-sm mb-4">
                     <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary transition-colors">Home</Link>
@@ -42,7 +42,7 @@ export default async function BrandPage({ params, searchParams }: { params?: { s
 
                 <h1 className="text-3xl font-bold mb-2">{slug.toUpperCase()} Products</h1>
 
-                <ProductsListClient products={products} productPathPrefix="/products" />
+                <ProductsListClient products={products} productPathPrefix="/products" searchContext={{ brand: slug }} />
                 <ProductsPagination currentPage={page} hasMore={hasMore} basePath={`/shop/brand/${encodeURIComponent(slug)}`} />
             </div>
         </main>

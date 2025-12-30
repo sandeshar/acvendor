@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { serviceCategories } from "@/db/serviceCategoriesSchema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
     try {
         const brand = request.nextUrl.searchParams.get('brand');
-        const categories = brand ? await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand)) : await db.select().from(serviceCategories);
+        // Include both brand-specific categories and global (empty-brand) categories so brand pages show shared categories too
+        const categories = brand ? await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, ''))) : await db.select().from(serviceCategories);
         return NextResponse.json(categories);
     } catch (error) {
         console.error("Error fetching service categories:", error);

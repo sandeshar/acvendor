@@ -18,9 +18,58 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
     const categories = categoriesRes.ok ? await categoriesRes.json() : [];
 
     // If a brand is requested, render a brand-specific listing view
-    const brandParam = searchParams?.brand;
+    let brandParam: string | null = null;
+
+    // QUICK SAFETY: avoid accessing properties on potentially hostile Proxy-like objects that throw
+    try {
+        const tag = Object.prototype.toString.call(searchParams);
+        const isSafe = tag === '[object Object]' || tag === '[object URLSearchParams]';
+        if (!isSafe) {
+            // eslint-disable-next-line no-console
+            console.warn('ShopPage: unsafe searchParams shape detected, skipping brand parsing', { tag, searchParams });
+        } else {
+            try {
+                // Safe-path: URLSearchParams-like object with .get or plain object
+                if (typeof (searchParams as any).get === 'function') {
+                    const v = (searchParams as any).get('brand');
+                    brandParam = v == null ? null : String(v);
+                } else {
+                    const raw = (searchParams as any)['brand'];
+                    brandParam = raw == null ? null : String(raw);
+                }
+            } catch (errInner) {
+                // Last-resort catch; log and move on without throwing
+                // eslint-disable-next-line no-console
+                console.error('Error accessing searchParams brand in ShopPage', errInner, { searchParams });
+                brandParam = null;
+            }
+        }
+    } catch (errTag) {
+        // If even Object.prototype.toString.call throws, bail silently and avoid throwing
+        // eslint-disable-next-line no-console
+        console.error('ShopPage: failed to inspect searchParams', errTag, { searchParams });
+        brandParam = null;
+    }
+
     if (brandParam) {
-        const page = searchParams?.page ? parseInt(String(searchParams.page)) || 1 : 1;
+        const page = (() => {
+            try {
+                let rawPage: any = undefined;
+                try {
+                    rawPage = (searchParams as any)['page'];
+                } catch (e) {
+                    try {
+                        const getter = (searchParams as any).get;
+                        if (typeof getter === 'function') rawPage = getter.call(searchParams, 'page');
+                    } catch (e2) {
+                        rawPage = undefined;
+                    }
+                }
+                return rawPage ? parseInt(String(rawPage)) || 1 : 1;
+            } catch (e) {
+                return 1;
+            }
+        })();
         const limit = 12;
         const offset = (Math.max(1, page) - 1) * limit;
         const productsRes = await fetch(`${API_BASE}/api/products?brand=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}`, { cache: 'no-store' });
@@ -142,9 +191,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                             <h3 className="font-bold text-lg text-text-main-light line-clamp-1">{p.title}</h3>
                                             <div className="flex items-center gap-2 text-xs text-text-sub-light">
                                                 <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity || 'N/A'}</span>                                            {p.category?.slug ? (
-                                                    <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="bg-background-light px-2 py-1 rounded border border-gray-200">
-                                                        {p.category?.name || 'Category'}
-                                                    </Link>
+                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || 'Category'}</span>
                                                 ) : (
                                                     <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || ''}</span>
                                                 )}                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.subcategory?.name || ''}</span>

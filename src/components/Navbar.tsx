@@ -137,7 +137,15 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         try {
             // if href is relative, new URL with origin works
             const url = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-            return url.searchParams.get('subcategory') || null;
+            // First, prefer explicit query param for backwards compatibility
+            const qp = url.searchParams.get('subcategory');
+            if (qp) return qp;
+            // Path-based format: /services/category/:categorySlug/:subcategorySlug
+            const segments = url.pathname.split('/').filter(Boolean);
+            if (segments[0] === 'services' && segments[1] === 'category' && segments.length >= 4) {
+                return segments[3];
+            }
+            return null;
         } catch (err) {
             return null;
         }

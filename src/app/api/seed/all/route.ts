@@ -63,6 +63,7 @@ export async function POST(request: Request) {
         const body = await request.json().catch(() => ({} as any));
         const forwardedBrand = body?.brand || undefined;
         const forwardedClean = body?.clean === true || body?.clean === '1' || body?.clean === 1;
+        const origin = new URL(request.url).origin;
 
         const results: Record<string, { success: boolean; message: string }> = {
             status: { success: false, message: '' },
@@ -80,34 +81,20 @@ export async function POST(request: Request) {
             footer: { success: false, message: '' },
         };
 
-        // 1. Seed Status
+        // 1. Seed Status (delegated)
         try {
-            const existingStatuses = await db.select().from(status);
-            if (existingStatuses.length === 0) {
-                await db.insert(status).values([
-                    { name: 'draft' },
-                    { name: 'published' },
-                    { name: 'in-review' },
-                ]);
-            }
-            results.status = { success: true, message: 'Status seeded successfully' };
+            const res = await fetch(`${origin}/api/seed/status`, { method: 'POST' });
+            const data = await res.json().catch(() => ({}));
+            results.status = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Status seeded' : 'Failed to seed status') };
         } catch (error) {
             results.status.message = error instanceof Error ? error.message : 'Failed to seed status';
         }
 
-        // 2. Seed Users (Admin)
+        // 2. Seed Users (delegated)
         try {
-            const existingUsers = await db.select().from(users);
-            if (existingUsers.length === 0) {
-                const { hashPassword } = await import('@/utils/authHelper');
-                await db.insert(users).values({
-                    name: 'Super Admin',
-                    email: 'admin@contentsolution.np',
-                    password: await hashPassword('password123'),
-                    role: 'superadmin',
-                });
-            }
-            results.users = { success: true, message: 'Users seeded successfully' };
+            const res = await fetch(`${origin}/api/seed/users`, { method: 'POST' });
+            const data = await res.json().catch(() => ({}));
+            results.users = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Users seeded' : 'Failed to seed users') };
         } catch (error) {
             results.users.message = error instanceof Error ? error.message : 'Failed to seed users';
         }
@@ -138,6 +125,28 @@ export async function POST(request: Request) {
         } catch (e) {
             // non-fatal
             logDbError(e, 'ensure store settings');
+        }
+
+        // Delegate to individual seeders where possible and return early (fallback to inline if delegation fails)
+        try {
+            const delegateKeys = ['status', 'users', 'homepage', 'about', 'services', 'products', 'contact', 'faq', 'terms', 'blog', 'navbar', 'footer'];
+            for (const key of delegateKeys) {
+                try {
+                    const params = new URLSearchParams();
+                    if ((key === 'products' || key === 'services') && forwardedBrand) params.set('brand', forwardedBrand);
+                    if ((key === 'products' || key === 'services') && forwardedClean) params.set('clean', '1');
+                    const url = `${origin}/api/seed/${key}${params.toString() ? `?${params.toString()}` : ''}`;
+                    const res = await fetch(url, { method: 'POST' });
+                    const data = await res.json().catch(() => ({}));
+                    results[key] = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Seeded' : 'Failed') };
+                } catch (err) {
+                    results[key] = { success: false, message: err instanceof Error ? err.message : String(err) };
+                }
+            }
+
+            return NextResponse.json({ success: true, message: 'All individual seeders executed', results }, { status: 200 });
+        } catch (err) {
+            console.error('Delegated master seeder failed, falling back to inline seeding', err);
         }
 
         // 3. Seed Homepage
@@ -285,92 +294,11 @@ export async function POST(request: Request) {
             results.homepage.message = error instanceof Error ? error.message : 'Failed to seed homepage';
         }
 
-        // 4. Seed About
+        // 4. Seed About (delegated)
         try {
-            await db.delete(aboutPageHero);
-            await db.delete(aboutPageJourney);
-            await db.delete(aboutPageStats);
-            await db.delete(aboutPageFeatures);
-            await db.delete(aboutPagePhilosophy);
-            await db.delete(aboutPagePrinciples);
-            await db.delete(aboutPageTeamMembers);
-            await db.delete(aboutPageTeamSection);
-            await db.delete(aboutPageCTA);
-
-            await db.insert(aboutPageHero).values({
-                title: 'Who We Are',
-                description: "AC Vendor is a trusted retailer of air conditioning solutions — from efficient home units to commercial systems. We provide quality products, certified installation, and dependable after-sales support.",
-                button1_text: 'Our Products',
-                button1_link: '/midea-ac',
-                button2_text: 'Contact Support',
-                button2_link: '/contact',
-                hero_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
-                hero_image_alt: 'AC units displayed in a bright showroom',
-                is_active: 1,
-            });
-
-            await db.insert(aboutPageJourney).values({
-                title: 'Our Journey',
-                paragraph1: 'Founded by HVAC specialists, AC Vendor began with a simple goal: make reliable cooling accessible to homes and businesses. Over the years we have partnered with top manufacturers and built a network of certified installers.',
-                paragraph2: 'We focus on product quality, transparent pricing, and exceptional service so customers can trust their purchase and enjoy long-term performance.',
-                thinking_box_title: 'Our Promise',
-                thinking_box_content: 'Quality products, professional installation, and responsive support — every time.',
-                is_active: 1,
-            });
-
-            const stats = [
-                { label: 'Happy Clients', value: '150+', display_order: 1, is_active: 1 },
-                { label: 'Projects Delivered', value: '500+', display_order: 2, is_active: 1 },
-                { label: 'Team Members', value: '25', display_order: 3, is_active: 1 },
-                { label: 'Years of Experience', value: '8', display_order: 4, is_active: 1 },
-            ];
-            for (const stat of stats) await db.insert(aboutPageStats).values(stat);
-
-            const features = [
-                { title: 'Wide Selection', description: 'A curated range of ACs and spare parts across price points.', display_order: 1, is_active: 1 },
-                { title: 'Certified Installers', description: 'Trained technicians ensuring proper, safe installations.', display_order: 2, is_active: 1 },
-                { title: 'Transparent Pricing', description: 'Clear pricing on products and services with no hidden fees.', display_order: 3, is_active: 1 },
-                { title: 'After-Sales Support', description: 'Ongoing maintenance and warranty servicing to keep your AC running smoothly.', display_order: 4, is_active: 1 },
-            ];
-            for (const feature of features) await db.insert(aboutPageFeatures).values(feature);
-
-            await db.insert(aboutPagePhilosophy).values({
-                title: 'Our Philosophy',
-                description: 'A blend of art and science guided by authenticity, data, and continual improvement.',
-                is_active: 1,
-            });
-
-            const principles = [
-                { title: 'Quality First', description: "We prioritize reliable products and workmanship.", display_order: 1, is_active: 1 },
-                { title: 'Customer Focus', description: 'We put customers at the heart of every decision.', display_order: 2, is_active: 1 },
-                { title: 'Integrity', description: 'Transparent pricing and honest recommendations.', display_order: 3, is_active: 1 },
-            ];
-            for (const principle of principles) await db.insert(aboutPagePrinciples).values(principle);
-
-            await db.insert(aboutPageTeamSection).values({
-                title: 'Our Team',
-                description: 'Certified HVAC technicians and support staff dedicated to quality service.',
-                is_active: 1,
-            });
-
-            const teamMembers = [
-                { name: 'Amit Thapa', role: 'Head Technician', description: '20+ years in HVAC installation and maintenance.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Amit Thapa headshot', display_order: 1, is_active: 1 },
-                { name: 'Sita Gurung', role: 'Service Manager', description: 'Oversees installation scheduling and warranty service.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Sita Gurung headshot', display_order: 2, is_active: 1 },
-                { name: 'Ramesh Koirala', role: 'Customer Support Lead', description: 'Handles pre-sales and after-sales inquiries.', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', image_alt: 'Ramesh Koirala headshot', display_order: 3, is_active: 1 },
-            ];
-            for (const member of teamMembers) await db.insert(aboutPageTeamMembers).values(member);
-
-            await db.insert(aboutPageCTA).values({
-                title: 'Ready to Upgrade Your Cooling?',
-                description: "Browse our top-rated ACs or talk to an expert to find the right model for your space.",
-                primary_button_text: 'Shop Now',
-                primary_button_link: '/midea-ac',
-                secondary_button_text: 'Request a Quote',
-                secondary_button_link: '/contact',
-                is_active: 1,
-            });
-
-            results.about = { success: true, message: 'About seeded successfully' };
+            const res = await fetch(`${origin}/api/seed/about`, { method: 'POST' });
+            const data = await res.json().catch(() => ({}));
+            results.about = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'About seeded' : 'Failed to seed about') };
         } catch (error) {
             results.about.message = error instanceof Error ? error.message : 'Failed to seed about';
         }
@@ -1085,7 +1013,7 @@ export async function POST(request: Request) {
                         const isDropdown = !!catSubs ? 1 : 0;
                         await db.insert(navbarItems).values({
                             label: categories[i].name,
-                            href: `/services?category=${categories[i].slug}`,
+                            href: `/services/category/${categories[i].slug}`,
                             order: i,
                             parent_id: servicesId,
                             is_button: 0,

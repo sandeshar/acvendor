@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { serviceSubcategories, serviceCategories } from "@/db/serviceCategoriesSchema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
     try {
         const brand = request.nextUrl.searchParams.get('brand');
         if (brand) {
-            // fetch categories with this brand, then return subcategories for those categories
-            const cats = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
+            // fetch categories with this brand OR global categories, then return subcategories for those categories
+            const cats = await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, '')));
             const catIds = cats.map((c: any) => c.id).filter(Boolean);
             if (catIds.length) {
                 const subs = await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.category_id, catIds));

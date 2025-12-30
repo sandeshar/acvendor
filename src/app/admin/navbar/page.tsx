@@ -150,7 +150,7 @@ export default function NavbarManagerPage() {
         const data = await fetchCategories();
         const defaults: Record<number, boolean> = {};
         for (const cat of data) {
-            const exists = navbarItems.some(n => n.href === `/services?category=${cat.slug}` && n.parent_id === id);
+            const exists = navbarItems.some(n => n.href === `/services/category/${cat.slug}` && n.parent_id === id);
             defaults[cat.id] = exists;
         }
         setSelectedCategories(defaults);
@@ -163,7 +163,7 @@ export default function NavbarManagerPage() {
             // For each category, create a navbar item and then create nav items for subcategories under it (if any)
             for (const [selIndex, cat] of selected.entries()) {
                 // Prevent duplicates: reuse existing category nav item under parent if present
-                const existingCat = navbarItems.find(n => n.href === `/services?category=${cat.slug}` && n.parent_id === parentId);
+                const existingCat = navbarItems.find(n => n.href === `/services/category/${cat.slug}` && n.parent_id === parentId);
                 let newNavId: number | undefined;
                 if (existingCat && existingCat.id) {
                     newNavId = existingCat.id;
@@ -187,7 +187,7 @@ export default function NavbarManagerPage() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             label: cat.name,
-                            href: `/services?category=${cat.slug}`,
+                            href: `/services/category/${cat.slug}`,
                             order: newOrder,
                             parent_id: parentId,
                             is_button: 0,
@@ -205,7 +205,7 @@ export default function NavbarManagerPage() {
                             {
                                 id: newNavId,
                                 label: cat.name,
-                                href: `/services?category=${cat.slug}`,
+                                href: `/services/category/${cat.slug}`,
                                 order: newOrder,
                                 parent_id: parentId,
                                 is_button: 0,
@@ -222,14 +222,14 @@ export default function NavbarManagerPage() {
                     // Skip subcategory creation if includeSubcategories is false
                     if (!includeSubcategories) break;
                     // Check if subcategory nav item exists under this category nav
-                    const existingSub = navbarItems.find(n => n.href === `/services?category=${cat.slug}&subcategory=${sub.slug}` && n.parent_id === newNavId);
+                    const existingSub = navbarItems.find(n => n.href === `/services/category/${cat.slug}/${sub.slug}` && n.parent_id === newNavId);
                     if (existingSub) continue;
                     const subRes = await fetch('/api/navbar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             label: sub.name,
-                            href: `/services?category=${cat.slug}&subcategory=${sub.slug}`,
+                            href: `/services/category/${cat.slug}/${sub.slug}`,
                             order: 0,
                             parent_id: newNavId,
                             is_button: 0,
@@ -246,7 +246,7 @@ export default function NavbarManagerPage() {
                                 {
                                     id: newSubId,
                                     label: sub.name,
-                                    href: `/services?category=${cat.slug}&subcategory=${sub.slug}`,
+                                    href: `/services/category/${cat.slug}/${sub.slug}`,
                                     order: 0,
                                     parent_id: newNavId as number,
                                     is_button: 0,
@@ -608,7 +608,7 @@ export default function NavbarManagerPage() {
                                                         </label>
                                                         <div className="flex items-center gap-2">
                                                             {item.id && (() => {
-                                                                const existing = navbarItems.filter(n => n.parent_id === item.id).find(n => n.href === `/services?category=${cat.slug}`);
+                                                                const existing = navbarItems.filter(n => n.parent_id === item.id).find(n => n.href === `/services/category/${cat.slug}`);
                                                                 if (existing && existing.id) {
                                                                     return (
                                                                         <div className="flex gap-2 items-center text-sm">
