@@ -1,0 +1,98 @@
+[
+  {
+    "status": "sent",
+    "client": {},
+    "dateIssued": "2025-12-30",
+    "validUntil": "2026-01-29",
+    "referenceNo": "",
+    "items": [
+      {
+        "description": "LG Inverter Product 1",
+        "qty": 1,
+        "unitPrice": 100,
+        "discountPercent": 10
+      },
+      {
+        "description": "l;sd,a;ld,",
+        "qty": 2,
+        "unitPrice": 50,
+        "discountPercent": 20
+      }
+    ],
+    "notes": "",
+    "totals": {
+      "subtotal": 170,
+      "discount": 0,
+      "tax": 1.7,
+      "grandTotal": 171.7
+    },
+    "id": 1,
+    "number": "QT-2025-001",
+    "createdAt": "2025-12-30T12:53:37.120Z",
+    "updatedAt": "2025-12-30T13:04:18.604Z"
+  },
+  {
+    "status": "draft",
+    "client": {},
+    "dateIssued": "2025-12-30",
+    "validUntil": "2026-01-29",
+    "referenceNo": "",
+    "items": [],
+    "notes": "",
+    "totals": {
+      "subtotal": 0,
+      "discount": 0,
+      "tax": 0,
+      "grandTotal": 0
+    },
+    "id": 2,
+    "number": "QT-2025-002",
+    "createdAt": "2025-12-30T12:55:03.200Z",
+    "updatedAt": "2025-12-30T12:55:03.200Z"
+  },
+  {
+    "status": "sent",
+    "client": {},
+    "dateIssued": "2025-12-30",
+    "validUntil": "2026-01-29",
+    "referenceNo": "",
+    "items": [],
+    "notes": "",
+    "totals": {
+      "subtotal": 0,
+      "discount": 0,
+      "tax": 0,
+      "grandTotal": 0
+    },
+    "id": 3,
+    "number": "QT-2025-003",
+    "createdAt": "2025-12-30T12:56:35.238Z",
+    "updatedAt": "2025-12-30T12:56:35.272Z"
+  },
+  {
+    "status": "sent",
+    "client": {},
+    "dateIssued": "2025-12-30",
+    "validUntil": "2026-01-29",
+    "referenceNo": "",
+    "items": [
+      {
+        "description": "LG Inverter Product 1",
+        "qty": 1,
+        "unitPrice": 149,
+        "discountPercent": 0
+      }
+    ],
+    "notes": "",
+    "totals": {
+      "subtotal": 149,
+      "discount": 0,
+      "tax": 14.9,
+      "grandTotal": 163.9
+    },
+    "id": 4,
+    "number": "QT-2025-004",
+    "createdAt": "2025-12-30T12:56:50.354Z",
+    "updatedAt": "2025-12-30T12:58:02.323Z"
+  }
+]

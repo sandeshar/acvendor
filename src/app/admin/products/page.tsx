@@ -245,7 +245,7 @@ export default function AdminProductsPage() {
                         <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400">search</span>
                         <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search products, models, or descriptions..." className="rounded-full border border-gray-200 pl-10 pr-3 py-2 text-sm w-72 shadow-sm focus:ring-1 focus:ring-primary" />
                     </div>
-                    <NextLink href="/admin/quotation" className="inline-flex items-center gap-2 h-10 px-4 bg-[#f3f4f6] text-[#111418] rounded-lg shadow-sm hover:shadow-md transition">
+                    <NextLink href={`/admin/quotation${selectedIds.length ? `?productIds=${selectedIds.join(',')}` : ''}`} className="inline-flex items-center gap-2 h-10 px-4 bg-[#f3f4f6] text-[#111418] rounded-lg shadow-sm hover:shadow-md transition">
                         <span className="material-symbols-outlined">receipt_long</span>
                         <span className="font-medium">Make a Quotation</span>
                     </NextLink>
