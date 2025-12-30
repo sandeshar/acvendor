@@ -39,6 +39,10 @@ export const storeSettings = mysqlTable("store_settings", {
     contact_email: varchar("contact_email", { length: 256 }).notNull(),
     contact_phone: varchar("contact_phone", { length: 50 }).notNull(),
     address: varchar("address", { length: 512 }).notNull(),
+    // PAN (tax id) for corporate documents
+    pan: varchar("pan", { length: 128 }).notNull().default(''),
+    // Authorized signatory name for printed documents
+    authorized_person: varchar("authorized_person", { length: 256 }).notNull().default(''),
     facebook: varchar("facebook", { length: 512 }).notNull(),
     twitter: varchar("twitter", { length: 512 }).notNull(),
     instagram: varchar("instagram", { length: 512 }).notNull(),

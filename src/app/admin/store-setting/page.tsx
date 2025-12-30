@@ -23,8 +23,6 @@ export default function StoreSettingPage() {
         logo: "",
         favicon: "",
         theme: "default",
-        // Featured brand to show on the products landing page (e.g. 'midea')
-        featuredBrand: '',
         hideSiteNameOnMobile: false,
         hideSiteName: false,
     });
@@ -33,8 +31,6 @@ export default function StoreSettingPage() {
     const [themeOpen, setThemeOpen] = useState(false);
     const themeRef = useRef<HTMLDivElement | null>(null);
 
-    // Brands available for selection on store settings
-    const [availableBrands, setAvailableBrands] = useState<any[]>([]);
 
     // Preset themes for quick selection (colors mirror globals.css variables)
     const presetThemes = [
@@ -71,20 +67,12 @@ export default function StoreSettingPage() {
                         logo: d.storeLogo || "",
                         favicon: d.favicon || "",
                         theme: d.theme || "default",
-                        featuredBrand: d.featuredBrand || '',
                         hideSiteNameOnMobile: !!d.hideSiteNameOnMobile,
                         hideSiteName: !!d.hideSiteName,
                     });
                 }
 
-                // Load brands for selection
-                try {
-                    const resBrands = await fetch('/api/pages/services/brands');
-                    const brandsJson = await resBrands.json();
-                    if (Array.isArray(brandsJson)) setAvailableBrands(brandsJson as any[]);
-                } catch (e) {
-                    // ignore
-                }
+
             } catch (e) {
                 console.error('Failed to load settings/themes', e);
             } finally {
@@ -160,7 +148,6 @@ export default function StoreSettingPage() {
                 metaDescription: formData.metaDescription,
                 metaKeywords: formData.metaKeywords,
                 theme: formData.theme,
-                featuredBrand: formData.featuredBrand,
                 hideSiteNameOnMobile: !!formData.hideSiteNameOnMobile,
                 hideSiteName: !!formData.hideSiteName,
             };
@@ -240,6 +227,18 @@ export default function StoreSettingPage() {
                                             />
                                             <span className="text-slate-700">Remove site name (hide on all screens)</span>
                                         </label>
+
+                                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <label className="flex flex-col gap-2 text-sm">
+                                                <span className="text-sm font-medium text-slate-700">Authorized Signatory (Optional)</span>
+                                                <input type="text" value={formData.authorizedPerson} onChange={(e) => setFormData({ ...formData, authorizedPerson: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="e.g. John Doe" />
+                                            </label>
+
+                                            <label className="flex flex-col gap-2 text-sm">
+                                                <span className="text-sm font-medium text-slate-700">PAN (Tax ID)</span>
+                                                <input type="text" value={formData.pan} onChange={(e) => setFormData({ ...formData, pan: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="e.g. 601234567" />
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -294,15 +293,7 @@ export default function StoreSettingPage() {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label htmlFor="featuredBrand" className="block text-sm font-medium text-slate-700 mb-2">Featured brand (for products page)</label>
-                                        <select id="featuredBrand" value={formData.featuredBrand} onChange={(e) => setFormData({ ...formData, featuredBrand: e.target.value })} className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary">
-                                            <option value="">(none)</option>
-                                            {availableBrands.map((b: any) => (
-                                                <option key={b.id} value={b.slug}>{b.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+
 
                                     <div>
                                         <label htmlFor="favicon" className="block text-sm font-medium text-slate-700 mb-2">

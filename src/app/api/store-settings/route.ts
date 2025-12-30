@@ -44,6 +44,8 @@ function fromDb(row: any) {
         contactEmail: row.contact_email,
         contactPhone: row.contact_phone,
         address: row.address,
+        pan: row.pan,
+        authorizedPerson: row.authorized_person,
         facebook: row.facebook,
         twitter: row.twitter,
         instagram: row.instagram,
@@ -61,7 +63,7 @@ function fromDb(row: any) {
         // Mobile preference: whether to hide the site name on small screens
         hideSiteNameOnMobile: !!row.hide_site_name_on_mobile,
         updatedAt: row.updated_at,
-    };
+    }; 
 }
 
 export async function GET() {

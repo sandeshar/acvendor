@@ -114,18 +114,28 @@ export default function AdminQuotationPage() {
     const saveDraft = async () => {
         setSaving(true);
         try {
+            // normalize client and payload to ensure fields are persisted
+            const normalizedClient = {
+                name: client.name || '',
+                company: (client as any).company || '',
+                email: client.email || '',
+                phone: client.phone || '',
+                address: client.address || '',
+                pan: client.pan || ''
+            };
             const payload: Quotation = {
                 id,
                 number,
                 status: 'draft',
-                client,
-                dateIssued,
-                validUntil,
-                referenceNo,
+                client: normalizedClient,
+                dateIssued: dateIssued || new Date().toISOString().substring(0,10),
+                validUntil: validUntil || (() => { const d = new Date(); d.setDate(d.getDate()+30); return d.toISOString().substring(0,10); })(),
+                referenceNo: referenceNo || '',
                 items,
-                notes,
+                notes: notes || '',
                 totals: { subtotal: totals.subtotal, discount: totals.discount, tax: totals.tax, grandTotal: totals.grandTotal }
             };
+            console.debug('Saving quotation payload', payload);
             const res = id ? await fetch('/api/admin/quotations', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }) : await fetch('/api/admin/quotations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) {
                 let msg = 'Failed to save';
@@ -147,10 +157,11 @@ export default function AdminQuotationPage() {
     const saveAndSend = async () => {
         setSaving(true);
         try {
-            // ensure saved first (capture saved record)
-            const saved = id ? { id } : await saveDraft();
-            const quoteId = id || saved?.id;
+            // ensure current edits are saved first (capture saved record)
+            const saved = await saveDraft();
+            const quoteId = saved?.id || id;
             if (!quoteId) throw new Error('Missing id after save');
+
             // test connectivity to API before marking sent
             try {
                 const test = await fetch('/api/admin/quotations');
@@ -160,11 +171,12 @@ export default function AdminQuotationPage() {
                 console.error('API connectivity test failed', e);
                 throw new Error('API connectivity test failed: ' + (e as any)?.message);
             }
+
             // mark quotation as sent and get the updated record
             const res = await fetch('/api/admin/quotations', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: quoteId, status: 'sent' }) });
             if (!res.ok) {
                 let msg = 'Failed to update status';
-                try { const body = await res.json(); if (body?.error) msg = body.error; else msg = JSON.stringify(body); } catch (_e) { try { const t = await res.text(); if (t) msg = t; } catch (_e) {} }
+                try { const body = await res.json(); if (body?.error) msg = body.error; else msg = JSON.stringify(body); } catch (_e) { try { const t = await res.text(); if (t) msg = t; } catch (_e) { } }
                 throw new Error(msg);
             }
             const json = await res.json();
@@ -207,10 +219,7 @@ export default function AdminQuotationPage() {
                             <input value={client.name ?? ''} onChange={(e) => setClient(prev => ({ ...prev, name: e.target.value }))} className="w-full rounded-lg border border-[#dbdfe6] bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="Client name" type="text" />
                         </label>
 
-                        <label className="flex flex-col gap-2">
-                            <span className="text-sm font-medium text-[#616f89]">Company</span>
-                            <input value={client.company ?? ''} onChange={(e) => setClient(prev => ({ ...prev, company: e.target.value }))} className="w-full rounded-lg border border-[#dbdfe6] bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="Company (optional)" type="text" />
-                        </label>
+
 
                         <div className="flex gap-2">
                             <input value={client.email ?? ''} onChange={(e) => setClient(prev => ({ ...prev, email: e.target.value }))} className="w-1/2 rounded-lg border border-[#dbdfe6] bg-white px-4 py-2 text-sm" placeholder="Email" type="email" />

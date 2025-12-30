@@ -34,7 +34,8 @@ export default function AdminQuotationPrintPage() {
                 const res = await fetch('/api/store-settings');
                 if (!res.ok) return;
                 const json = await res.json();
-                setStoreSettings(json);
+                // API returns { success: true, data }
+                setStoreSettings(json?.data || null);
             } catch (e) {
                 console.warn('Failed to fetch store settings', e);
             }
@@ -47,6 +48,7 @@ export default function AdminQuotationPrintPage() {
 
     return (
         <div>
+            <style>{`@media print { body * { visibility: hidden !important; } #quotation-paper, #quotation-paper * { visibility: visible !important; } #quotation-paper { position: absolute !important; left: 0; top: 0; width: 100% !important; } .no-print { display: none !important; } }`}</style>
             <div className="sticky top-0 z-50 w-full border-b border-[#e5e7eb] bg-white px-4 py-3 no-print">
                 <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
@@ -90,15 +92,15 @@ export default function AdminQuotationPrintPage() {
                                             <span className="material-symbols-outlined text-[32px]">ac_unit</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <h2 className="text-2xl font-black tracking-tight text-slate-900">{storeSettings?.businessName || 'Nepal Cooling'}</h2>
-                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{storeSettings?.legalName || 'Solutions Pvt. Ltd.'}</span>
+                                            <h2 className="text-2xl font-black tracking-tight text-slate-900">{storeSettings?.storeName || 'Nepal Cooling'}</h2>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{storeSettings?.storeDescription || 'Solutions Pvt. Ltd.'}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1 text-right sm:items-end">
-                                    <p className="text-sm font-semibold text-slate-900">{storeSettings?.officeName || 'Corporate Office'}</p>
+                                    <p className="text-sm font-semibold text-slate-900">{storeSettings?.storeName ? (storeSettings.storeName + (storeSettings?.officeName ? ' - ' + storeSettings.officeName : '')) : 'Corporate Office'}</p>
                                     <p className="text-sm text-slate-500">{storeSettings?.address || 'New Baneshwor, Kathmandu, Nepal'}</p>
-                                    <p className="text-sm text-slate-500">{storeSettings?.phone || '+977-01-44XXXXX'}{(storeSettings?.phone || storeSettings?.email) ? ' | ' : ''}{storeSettings?.email || 'info@nepalcooling.com'}</p>
+                                    <p className="text-sm text-slate-500">{storeSettings?.contactPhone || '+977-01-44XXXXX'}{(storeSettings?.contactPhone || storeSettings?.contactEmail) ? ' | ' : ''}{storeSettings?.contactEmail || 'info@nepalcooling.com'}</p>
                                     <p className="text-sm text-slate-500">PAN: {storeSettings?.pan || '601234567'}</p>
                                 </div>
                             </div>
@@ -171,8 +173,6 @@ export default function AdminQuotationPrintPage() {
                                         <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Payment Terms</p>
                                         <p className="text-sm text-slate-600">{quotation.notes || '50% Advance along with Purchase Order.'}</p>
                                         <p className="text-sm text-slate-600">{quotation.notes ? '' : 'Remaining 50% after successful installation.'}</p>
-                                        <p className="text-sm text-slate-600 mt-2">Bank: <strong>{storeSettings?.bankName || 'Nabil Bank Ltd.'}</strong></p>
-                                        <p className="text-sm text-slate-600">Acct: <strong>{storeSettings?.bankAccount || '0010101010101'}</strong></p>
                                     </div>
                                 </div>
                                 <div className="flex w-full max-w-sm flex-col">
@@ -199,25 +199,14 @@ export default function AdminQuotationPrintPage() {
                                 </div>
                             </div>
 
-                            {/* Footer: Terms & Signature */}
+                            {/* Footer: Signature */}
                             <div className="mt-auto flex flex-col gap-12">
-                                <div>
-                                    <p className="mb-3 border-b border-slate-200 pb-1 text-sm font-bold uppercase tracking-wider text-slate-400">Terms &amp; Conditions</p>
-                                    <ul className="ml-4 list-disc space-y-1 text-xs text-slate-500">
-                                        <li>The prices quoted are valid for 30 days from the date of quotation.</li>
-                                        <li>Warranty: 1 Year on Product/Parts and 5 Years on Compressor from date of installation.</li>
-                                        <li>Civil works like hole cutting through beams/columns is not included in this scope.</li>
-                                        <li>Extra copper piping beyond 10ft per AC will be charged at NPR 450 per ft.</li>
-                                        <li>Delivery time: 2-3 working days after confirmation.</li>
-                                    </ul>
-                                </div>
-
                                 <div className="flex justify-between pt-8">
                                     <div className="flex flex-col gap-8">
                                         <div className="h-16 w-32 border-b border-dashed border-slate-300"></div>
                                         <div className="flex flex-col">
-                                            <p className="text-sm font-bold text-slate-900">Customer Signature</p>
-                                            <p className="text-xs text-slate-500">Authorized Signatory</p>
+                                            <p className="text-sm font-bold text-slate-900">{quotation?.client?.name || 'Customer Signature'}</p>
+                                            <p className="text-xs text-slate-500">{quotation?.client?.company || ''}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-8 text-right items-end">
@@ -228,8 +217,8 @@ export default function AdminQuotationPrintPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col">
-                                            <p className="text-sm font-bold text-slate-900">Nepal Cooling Solutions</p>
-                                            <p className="text-xs text-slate-500">Authorized Signature</p>
+                                            <p className="text-sm font-bold text-slate-900">{storeSettings?.authorizedPerson || storeSettings?.officeName || storeSettings?.storeName || 'Nepal Cooling Solutions'}</p>
+                                            <p className="text-xs text-slate-500">{storeSettings?.contactEmail || 'Authorized Signature'}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -252,6 +241,7 @@ function AdminQuotationPrintLegacy() {
     const id = search?.get('id');
     const [loading, setLoading] = useState(true);
     const [quotation, setQuotation] = useState<Quotation | null>(null);
+    const [storeSettings, setStoreSettings] = useState<any>(null);
 
     useEffect(() => {
         if (!id) return setLoading(false);
@@ -266,6 +256,19 @@ function AdminQuotationPrintLegacy() {
             } finally { setLoading(false); }
         })();
     }, [id]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch('/api/store-settings');
+                if (!res.ok) return;
+                const json = await res.json();
+                setStoreSettings(json?.data || null);
+            } catch (e) {
+                console.warn('Failed to fetch store settings', e);
+            }
+        })();
+    }, []);
 
     const handlePrint = () => { if (typeof window !== 'undefined') window.print(); };
 
@@ -427,8 +430,6 @@ function AdminQuotationPrintLegacy() {
                                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Payment Terms</p>
                                 <p className="text-sm text-slate-600">50% Advance along with Purchase Order.</p>
                                 <p className="text-sm text-slate-600">Remaining 50% after successful installation.</p>
-                                <p className="text-sm text-slate-600 mt-2">Bank: <strong>Nabil Bank Ltd.</strong></p>
-                                <p className="text-sm text-slate-600">Acct: <strong>0010101010101</strong></p>
                             </div>
                         </div>
                         <div className="flex w-full max-w-sm flex-col">
@@ -455,25 +456,14 @@ function AdminQuotationPrintLegacy() {
                         </div>
                     </div>
 
-                    {/* Footer: Terms & Signature */}
+                    {/* Footer: Signature */}
                     <div className="mt-auto flex flex-col gap-12">
-                        <div>
-                            <p className="mb-3 border-b border-slate-200 pb-1 text-sm font-bold uppercase tracking-wider text-slate-400">Terms &amp; Conditions</p>
-                            <ul className="ml-4 list-disc space-y-1 text-xs text-slate-500">
-                                <li>The prices quoted are valid for 30 days from the date of quotation.</li>
-                                <li>Warranty: 1 Year on Product/Parts and 5 Years on Compressor from date of installation.</li>
-                                <li>Civil works like hole cutting through beams/columns is not included in this scope.</li>
-                                <li>Extra copper piping beyond 10ft per AC will be charged at NPR 450 per ft.</li>
-                                <li>Delivery time: 2-3 working days after confirmation.</li>
-                            </ul>
-                        </div>
-
                         <div className="flex justify-between pt-8">
                             <div className="flex flex-col gap-8">
                                 <div className="h-16 w-32 border-b border-dashed border-slate-300"></div>
                                 <div className="flex flex-col">
-                                    <p className="text-sm font-bold text-slate-900">Customer Signature</p>
-                                    <p className="text-xs text-slate-500">Authorized Signatory</p>
+                                    <p className="text-sm font-bold text-slate-900">{quotation.client?.name || 'Customer Signature'}</p>
+                                    <p className="text-xs text-slate-500">{quotation.client?.company || ''}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-8 text-right items-end">
@@ -484,8 +474,8 @@ function AdminQuotationPrintLegacy() {
                                     </div>
                                 </div>
                                 <div className="flex flex-col">
-                                    <p className="text-sm font-bold text-slate-900">Nepal Cooling Solutions</p>
-                                    <p className="text-xs text-slate-500">Authorized Signature</p>
+                                    <p className="text-sm font-bold text-slate-900">{storeSettings?.authorizedPerson || storeSettings?.officeName || storeSettings?.storeName || 'Nepal Cooling Solutions'}</p>
+                                    <p className="text-xs text-slate-500">{storeSettings?.contactEmail || 'Authorized Signature'}</p>
                                 </div>
                             </div>
                         </div>
