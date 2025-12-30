@@ -63,7 +63,7 @@ function fromDb(row: any) {
         // Mobile preference: whether to hide the site name on small screens
         hideSiteNameOnMobile: !!row.hide_site_name_on_mobile,
         updatedAt: row.updated_at,
-    }; 
+    };
 }
 
 export async function GET() {
