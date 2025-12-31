@@ -4,15 +4,39 @@ import { useEffect, useState } from 'react';
 import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 
+interface Project {
+    id?: number;
+    title: string;
+    category: string;
+    location: string;
+    capacity: string;
+    system: string;
+    image: string;
+    display_order: number;
+    is_active: boolean;
+}
+
+interface ProjectSection {
+    id?: number;
+    badge_text?: string;
+    title?: string;
+    description?: string;
+    background_image?: string;
+    cta_title?: string;
+    cta_description?: string;
+    cta_button_text?: string;
+    cta_button_link?: string;
+}
+
 export default function AdminProjectsPage() {
-    const [section, setSection] = useState<any>(null);
-    const [projects, setProjects] = useState<any[]>([]);
+    const [section, setSection] = useState<ProjectSection>({});
+    const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     // Project Form State
-    const [editingProject, setEditingProject] = useState<any>(null);
-    const [projectForm, setProjectForm] = useState({
+    const [editingProject, setEditingProject] = useState<number | 'new' | null>(null);
+    const [projectForm, setProjectForm] = useState<Project>({
         title: '',
         category: 'Commercial',
         location: '',
@@ -381,14 +405,14 @@ export default function AdminProjectsPage() {
                                         <button
                                             onClick={() => {
                                                 setProjectForm(p);
-                                                setEditingProject(p.id);
+                                                setEditingProject(p.id!);
                                             }}
                                             className="text-blue-600 hover:text-blue-800 text-sm font-bold"
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteProject(p.id)}
+                                            onClick={() => handleDeleteProject(p.id!)}
                                             className="text-red-500 hover:text-red-700 text-sm font-bold"
                                         >
                                             Delete
