@@ -97,6 +97,20 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         return `/midea-ac${qs ? `?${qs}` : ''}`;
     };
 
+    // Fetch brand-specific hero (fallback to global shop hero if not present)
+    let brandHero: any = null;
+    try {
+        const res = await fetch(`${API_BASE}/api/pages/shop/brand-hero?brand=${brand}`, { cache: 'no-store', next: { tags: ['shop-brand-hero'] } });
+        if (res.ok) brandHero = await res.json();
+    } catch (e) { /* ignore */ }
+
+    // Fetch global shop hero as fallback
+    let shopHero: any = null;
+    try {
+        const res = await fetch(`${API_BASE}/api/pages/shop/hero`, { cache: 'no-store', next: { tags: ['shop-hero'] } });
+        if (res.ok) shopHero = await res.json();
+    } catch (e) { /* ignore */ }
+
 
     return (
         <div className="layout-container flex flex-col md:flex-row grow max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 gap-6">
@@ -125,16 +139,27 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                 </div>
 
                 <div className="relative w-full overflow-hidden rounded-xl">
-                    <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k")' }}>
-                        <div className="flex flex-col gap-2 text-left max-w-lg">
-                            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">Official Midea Distributor</span>
-                            <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">Midea Xtreme Series</h1>
-                            <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">Energy-efficient Midea air conditioners optimized for local conditions.</h2>
-                        </div>
-                        <div className="flex gap-3">
-                            <button className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">Explore Midea Series</button>
-                        </div>
-                    </div>
+                    {(() => {
+                        const h = brandHero && Object.keys(brandHero).length ? brandHero : (shopHero && Object.keys(shopHero).length ? shopHero : null);
+                        const bg = h?.background_image || '';
+                        const badge = h?.badge_text || (brand ? `Official ${brand.charAt(0).toUpperCase() + brand.slice(1)} Distributor` : 'Official Distributor');
+                        const title = h?.title || (brand ? `${brand.charAt(0).toUpperCase() + brand.slice(1)} Xtreme Series` : 'Brand Series');
+                        const subtitle = h?.subtitle || (brand ? `${brand.charAt(0).toUpperCase() + brand.slice(1)} energy-efficient models.` : 'Energy-efficient models.');
+                        const cta = h?.cta_text || 'Explore Series';
+
+                        return (
+                            <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || ''}")` }}>
+                                <div className="flex flex-col gap-2 text-left max-w-lg">
+                                    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">{badge}</span>
+                                    <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">{title}</h1>
+                                    <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">{subtitle}</h2>
+                                </div>
+                                <div className="flex gap-3">
+                                    <a href={h?.cta_link || '/midea-ac'} className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">{cta}</a>
+                                </div>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 <div className="md:hidden overflow-x-auto pb-2 scrollbar-hide">

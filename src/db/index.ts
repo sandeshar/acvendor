@@ -15,6 +15,9 @@ import * as review from './reviewSchema';
 import * as reviewTestimonialServices from './reviewTestimonialServicesSchema';
 import * as reviewTestimonialProducts from './reviewTestimonialProductsSchema';
 import * as navbarSchema from './navbarSchema';
+import * as shopPageSchema from './shopPageSchema';
+import * as projectsSchema from './projectsSchema';
+
 
 // Singleton pattern for database connection to prevent "Too many connections" error in development
 const globalForDb = global as unknown as { conn: Pool | undefined };
@@ -43,7 +46,9 @@ export const db = drizzle(pool, {
         ...review,
         ...reviewTestimonialServices,
         ...reviewTestimonialProducts,
-        ...navbarSchema
+        ...navbarSchema,
+        ...shopPageSchema,
+        ...projectsSchema
     },
     mode: 'default'
 });

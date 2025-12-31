@@ -17,6 +17,7 @@ export default defineConfig({
         './src/db/reviewTestimonialServicesSchema.ts',
         './src/db/reviewTestimonialProductsSchema.ts',
         './src/db/navbarSchema.ts',
+        './src/db/shopPageSchema.ts',
     ],
     dialect: 'mysql',
     dbCredentials: {

@@ -192,6 +192,25 @@ export async function POST(request: Request) {
             }
         } catch (e) { /* non-fatal */ }
 
+        // Seed a brand-specific hero for Midea if missing
+        try {
+            const { shopPageBrandHero } = await import('@/db/shopPageSchema');
+            const [mideaHero] = await db.select().from(shopPageBrandHero).where(eq(shopPageBrandHero.brand_slug, 'midea')).limit(1);
+            if (!mideaHero) {
+                await db.insert(shopPageBrandHero).values({
+                    brand_slug: 'midea',
+                    badge_text: 'Official Midea Distributor',
+                    title: 'Midea Xtreme Series',
+                    subtitle: 'Energy-efficient Midea air conditioners optimized for local conditions.',
+                    cta_text: 'Explore Midea Series',
+                    cta_link: '/midea-ac',
+                    background_image: 'https://images.unsplash.com/photo-1582719478250-7e5b49b8d6c3?auto=format&fit=crop&w=1400&q=80',
+                    hero_image_alt: 'Midea showroom',
+                    is_active: 1,
+                });
+            }
+        } catch (e) { /* non-fatal */ }
+
         // Seed additional static content if missing (idempotent checks)
         const [heroExists] = await db.select().from(servicesPageHero).limit(1);
         if (!heroExists) {

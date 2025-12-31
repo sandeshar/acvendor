@@ -462,8 +462,8 @@ function AdminQuotationPrintLegacy() {
                             <div className="flex flex-col gap-8">
                                 <div className="h-16 w-32 border-b border-dashed border-slate-300"></div>
                                 <div className="flex flex-col">
-                                    <p className="text-sm font-bold text-slate-900">{quotation.client?.name || 'Customer Signature'}</p>
-                                    <p className="text-xs text-slate-500">{quotation.client?.company || ''}</p>
+                                    <p className="text-sm font-bold text-slate-900">{quotation?.client?.name || 'Customer Signature'}</p>
+                                    <p className="text-xs text-slate-500">{quotation?.client?.company || ''}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-8 text-right items-end">

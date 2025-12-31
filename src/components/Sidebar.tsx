@@ -51,6 +51,7 @@ const SideBar = () => {
         { name: 'Contact', icon: 'contact_mail', href: '/admin/ui/contact' },
         { name: 'FaQ', icon: 'help_outline', href: '/admin/ui/faq' },
         { name: 'Terms and Conditions', icon: 'description', href: '/admin/ui/termsandconditions' },
+        { name: 'Projects', icon: 'architecture', href: '/admin/projects' },
     ];
 
     return (

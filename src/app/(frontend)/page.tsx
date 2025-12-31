@@ -17,7 +17,8 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/pages/homepage/expertise-section`, { next: { tags: ['homepage-expertise-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/expertise-items`, { next: { tags: ['homepage-expertise-items'] } }),
             fetch(`${baseUrl}/api/pages/homepage/contact-section`, { next: { tags: ['homepage-contact-section'] } }),
-            fetch(`${baseUrl}/api/services?featured=1&limit=4`, { next: { tags: ['services'] } }),
+            // Request featured products for the Midea brand
+            fetch(`${baseUrl}/api/products?featured=1&limit=4&brand=midea`, { next: { tags: ['products'] } }),
         ]);
 
         const hero = heroRes.ok ? await heroRes.json() : {};
@@ -60,7 +61,7 @@ export default async function Home() {
                 <Hero data={data.hero} />
                 <Trust section={data.trustSection} logos={data.trustLogos} />
                 {/* Product showcase (featured products) */}
-                <ProductShowcase products={data.products || []} />
+                <ProductShowcase products={data.products || []} brand="midea" />
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
                 <TestimonialSlider filter="homepage" />
                 <Contact data={data.contactSection} />

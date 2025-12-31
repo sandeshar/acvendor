@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         const brand = searchParams.get('brand');
         const limit = searchParams.get('limit');
         const status = searchParams.get('status');
+        const featured = searchParams.get('featured');
 
         if (id) {
             // Accept numeric IDs or slugs passed in the `id` parameter
@@ -180,6 +181,10 @@ export async function GET(request: NextRequest) {
 
         if (status) {
             query = query.where(eq(products.statusId, parseInt(status))) as any;
+        }
+
+        if (featured === '1' || featured === 'true') {
+            query = query.where(eq(products.featured, 1)) as any;
         }
 
         if (category) {
