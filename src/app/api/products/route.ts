@@ -10,7 +10,7 @@ import { ReviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema'
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const slug = searchParams.get('slug');
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
                         const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
                         const testimonialIds = reviewMappings.map(m => m.testimonialId);
                         const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
-                        
+
                         const reviews_count = testimonials.length;
                         const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
                     const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
                     const testimonialIds = reviewMappings.map(m => m.testimonialId);
                     const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
-                    
+
                     const reviews_count = testimonials.length;
                     const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
@@ -244,7 +244,7 @@ export async function GET(request: NextRequest) {
         if (limit && !isNaN(parseInt(limit))) {
             productQuery = productQuery.limit(parseInt(limit));
         }
-        
+
         const rows = await productQuery.lean();
 
         // attach category / subcategory objects for list responses
@@ -323,7 +323,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
         const authorId = getUserIdFromToken(token);
@@ -438,7 +438,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
         const authorId = getUserIdFromToken(token);
@@ -546,7 +546,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - missing token' }, { status: 401 });
         const userId = getUserIdFromToken(token);

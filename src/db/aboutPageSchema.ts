@@ -22,7 +22,7 @@ const aboutPageHeroSchema = new Schema({
     float_bottom_value: { type: String, required: true, default: '5k+', maxlength: 64 },
     rating_text: { type: String, required: true, default: '', maxlength: 128 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_hero'
 });
@@ -40,7 +40,7 @@ const aboutPageJourneySchema = new Schema({
     hero_image: { type: String, required: true, default: '', maxlength: 512 },
     hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_journey'
 });
@@ -53,7 +53,7 @@ const aboutPageStatsSchema = new Schema({
     value: { type: String, required: true, maxlength: 50 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_stats'
 });
@@ -67,7 +67,7 @@ const aboutPageFeaturesSchema = new Schema({
     description: { type: String, required: true, maxlength: 512 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_features'
 });
@@ -81,7 +81,7 @@ const aboutPageCertificationsSchema = new Schema({
     link: { type: String, required: true, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_certifications'
 });
@@ -93,7 +93,7 @@ const aboutPageCertificationsSectionSchema = new Schema({
     title: { type: String, required: true, default: '', maxlength: 256 },
     subtitle: { type: String, required: true, default: '', maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_certifications_section'
 });
@@ -107,7 +107,7 @@ const aboutPageBadgesSchema = new Schema({
     link: { type: String, required: true, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_badges'
 });
@@ -119,7 +119,7 @@ const aboutPagePhilosophySchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_philosophy'
 });
@@ -132,7 +132,7 @@ const aboutPagePrinciplesSchema = new Schema({
     description: { type: String, required: true, maxlength: 1024 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_principles'
 });
@@ -144,7 +144,7 @@ const aboutPageTeamSectionSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_team_section'
 });
@@ -160,7 +160,7 @@ const aboutPageTeamMembersSchema = new Schema({
     image_alt: { type: String, required: true, maxlength: 256 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'about_page_team_members'
 });
@@ -176,7 +176,7 @@ const aboutPageCTASchema = new Schema({
     secondary_button_text: { type: String, required: true, maxlength: 100 },
     secondary_button_link: { type: String, required: true, maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'about_page_cta'
 });

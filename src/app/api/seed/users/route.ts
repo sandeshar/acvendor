@@ -6,7 +6,7 @@ import { hashPassword } from '@/utils/authHelper';
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Only seed a Super Admin if no users exist (avoid foreign key issues)
         const existing = await User.find().lean();
         if (!existing || existing.length === 0) {

@@ -5,7 +5,7 @@ import { Status } from '@/db/schema';
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Delete existing status entries
         await Status.deleteMany({});
 

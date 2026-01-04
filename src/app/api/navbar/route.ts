@@ -5,7 +5,7 @@ import { NavbarItems } from "@/db/navbarSchema";
 export async function GET() {
     try {
         await connectDB();
-        
+
         const items = await NavbarItems.find().sort({ order: 1 }).lean();
         return NextResponse.json(items);
     } catch (error) {
@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         await connectDB();
-        
+
         const body = await request.json();
         const { label, href, order, parent_id, is_button, is_active, is_dropdown } = body;
 
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         await connectDB();
-        
+
         const body = await request.json();
         const { id, label, href, order, parent_id, is_button, is_active, is_dropdown } = body;
 
@@ -92,7 +92,7 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
     try {
         await connectDB();
-        
+
         const body = await request.json();
         const { id } = body;
 

@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
-        
+
         // Get user ID from JWT token
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) {
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const body = await request.json();
         const { id, slug, title, excerpt, content, thumbnail, icon, featured, statusId, metaTitle, metaDescription, category_id, subcategory_id, price, price_type, price_label, price_description } = body;
 
@@ -202,7 +202,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     try {
         await connectDB();
-        
+
         // Require authentication for delete operations
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) {

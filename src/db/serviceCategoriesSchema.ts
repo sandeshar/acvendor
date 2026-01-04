@@ -12,7 +12,7 @@ const serviceCategoriesSchema = new Schema({
     is_active: { type: Number, default: 1, required: true },
     meta_title: { type: String, maxlength: 256, default: '' },
     meta_description: { type: String, maxlength: 512, default: '' },
-}, { 
+}, {
     timestamps: true,
     collection: 'service_categories'
 });
@@ -32,7 +32,7 @@ const serviceSubcategoriesSchema = new Schema({
     is_active: { type: Number, default: 1, required: true },
     meta_title: { type: String, maxlength: 256, default: '' },
     meta_description: { type: String, maxlength: 512, default: '' },
-}, { 
+}, {
     timestamps: true,
     collection: 'service_subcategories'
 });

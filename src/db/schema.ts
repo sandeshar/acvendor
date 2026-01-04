@@ -6,7 +6,7 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true, maxlength: 256 },
     password: { type: String, required: true, maxlength: 512 },
     role: { type: String, required: true, default: 'admin', maxlength: 50 },
-}, { 
+}, {
     timestamps: true,
     collection: 'users'
 });
@@ -16,7 +16,7 @@ export const User = models.User || model('User', userSchema);
 // Status Schema
 const statusSchema = new Schema({
     name: { type: String, required: true, unique: true, maxlength: 50 },
-}, { 
+}, {
     timestamps: true,
     collection: 'status'
 });
@@ -34,7 +34,7 @@ const blogPostSchema = new Schema({
     metaDescription: { type: String, maxlength: 512, default: '' },
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     status: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'blog_posts'
 });
@@ -70,7 +70,7 @@ const storeSettingsSchema = new Schema({
     hide_site_name: { type: Number, default: 0, required: true },
     // Whether to hide the site name on small screens (mobile)
     hide_site_name_on_mobile: { type: Number, default: 0, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'store_settings'
 });
@@ -82,7 +82,7 @@ const footerSectionSchema = new Schema({
     store_id: { type: Schema.Types.ObjectId, ref: 'StoreSettings' },
     title: { type: String, required: true, maxlength: 128 },
     order: { type: Number, default: 0, required: true },
-}, { 
+}, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
     collection: 'footer_sections'
 });
@@ -96,7 +96,7 @@ const footerLinkSchema = new Schema({
     href: { type: String, required: true, maxlength: 512 },
     is_external: { type: Number, default: 0, required: true },
     order: { type: Number, default: 0, required: true },
-}, { 
+}, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
     collection: 'footer_links'
 });

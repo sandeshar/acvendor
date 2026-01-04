@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     try {
         await connectDB();
-        
+
         const reqUrl = new URL(request.url);
         brandParam = reqUrl.searchParams.get('brand');
         clean = reqUrl.searchParams.get('clean') === '1' || reqUrl.searchParams.get('clean') === 'true';

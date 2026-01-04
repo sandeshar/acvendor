@@ -12,7 +12,7 @@ import {
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Clear existing data
         await HomepageHero.deleteMany({});
         await HomepageTrustSection.deleteMany({});

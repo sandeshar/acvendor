@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 async function getProjectsData() {
     try {
         await connectDB();
-        
+
         const [sectionData, allProjects] = await Promise.all([
             ProjectsSection.findOne().lean(),
             Projects.find({ is_active: true }).sort({ display_order: 1 }).lean()

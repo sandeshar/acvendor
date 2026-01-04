@@ -10,7 +10,7 @@ const reviewTestimonialsSchema = new Schema({
     service: { type: Schema.Types.ObjectId, ref: 'ServicePosts' },
     link: { type: String, required: true, default: 'homepage', maxlength: 256 },
     date: { type: Date, default: Date.now, required: true },
-}, { 
+}, {
     timestamps: false,
     collection: 'review_testimonials'
 });

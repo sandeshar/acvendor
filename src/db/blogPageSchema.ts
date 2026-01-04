@@ -6,7 +6,7 @@ const blogPageHeroSchema = new Schema({
     subtitle: { type: String, required: true, maxlength: 512 },
     background_image: { type: String, required: true, maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'blog_page_hero'
 });
@@ -19,7 +19,7 @@ const blogPageCTASchema = new Schema({
     description: { type: String, required: true, maxlength: 512 },
     button_text: { type: String, required: true, maxlength: 100 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'blog_page_cta'
 });

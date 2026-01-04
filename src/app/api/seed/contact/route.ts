@@ -9,7 +9,7 @@ import {
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Clear existing data
         await ContactPageHero.deleteMany({});
         await ContactPageInfo.deleteMany({});

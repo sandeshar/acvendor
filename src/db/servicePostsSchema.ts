@@ -22,7 +22,7 @@ const servicePostsSchema = new Schema({
     statusId: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
     meta_title: { type: String, maxlength: 256, default: '' },
     meta_description: { type: String, maxlength: 512, default: '' },
-}, { 
+}, {
     timestamps: true,
     collection: 'service_posts'
 });

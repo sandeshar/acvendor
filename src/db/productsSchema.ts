@@ -33,7 +33,7 @@ const productSchema = new Schema({
     reviews_count: { type: Number, default: 0, required: true },
     meta_title: { type: String, maxlength: 256, default: '' },
     meta_description: { type: String, maxlength: 512, default: '' },
-}, { 
+}, {
     timestamps: true,
     collection: 'products'
 });
@@ -47,7 +47,7 @@ const productImageSchema = new Schema({
     alt: { type: String, required: true, default: '', maxlength: 256 },
     is_primary: { type: Number, default: 0, required: true },
     display_order: { type: Number, default: 0, required: true },
-}, { 
+}, {
     timestamps: { createdAt: 'createdAt', updatedAt: false },
     collection: 'product_images'
 });

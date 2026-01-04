@@ -5,7 +5,7 @@ const termsPageHeaderSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     last_updated: { type: String, required: true, maxlength: 100 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'terms_page_header'
 });
@@ -19,7 +19,7 @@ const termsPageSectionsSchema = new Schema({
     has_email: { type: Number, default: 0, required: true },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'terms_page_sections'
 });

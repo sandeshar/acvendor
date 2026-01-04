@@ -20,7 +20,7 @@ const servicesPageHeroSchema = new Schema({
     stat3_value: { type: String, required: true, default: '', maxlength: 64 },
     stat3_label: { type: String, required: true, default: '', maxlength: 128 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'services_page_hero'
 });
@@ -59,7 +59,7 @@ const servicesPageDetailsSchema = new Schema({
     content: { type: String, default: '' },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'services_page_details'
 });
@@ -71,7 +71,7 @@ const servicesPageProcessSectionSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'services_page_process_section'
 });
@@ -85,7 +85,7 @@ const servicesPageProcessStepsSchema = new Schema({
     description: { type: String, required: true, maxlength: 512 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'services_page_process_steps'
 });
@@ -99,7 +99,7 @@ const servicesPageCTASchema = new Schema({
     button_text: { type: String, required: true, maxlength: 100 },
     button_link: { type: String, required: true, maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'services_page_cta'
 });
@@ -114,7 +114,7 @@ const servicesPageBrandsSchema = new Schema({
     link: { type: String, required: true, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'services_page_brands'
 });
@@ -130,7 +130,7 @@ const servicesPageTrustSchema = new Schema({
     quote_role: { type: String, required: true, default: '', maxlength: 256 },
     quote_image: { type: String, required: true, default: '', maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'services_page_trust'
 });
@@ -144,7 +144,7 @@ const servicesPageFeaturesSchema = new Schema({
     description: { type: String, required: true, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'services_page_features'
 });

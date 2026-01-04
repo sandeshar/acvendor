@@ -6,7 +6,7 @@ const contactPageHeroSchema = new Schema({
     title: { type: String, required: true, maxlength: 512 },
     description: { type: String, required: true, maxlength: 1024 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'contact_page_hero'
 });
@@ -30,7 +30,7 @@ const contactPageInfoSchema = new Schema({
     opening_hours_title: { type: String, required: true, default: 'Opening Hours', maxlength: 128 },
     opening_hours_text: { type: String, required: true, default: "Sun - Fri: 9:00 AM - 6:00 PM\nSaturday: Closed", maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'contact_page_info'
 });
@@ -48,7 +48,7 @@ const contactPageFormConfigSchema = new Schema({
     submit_button_text: { type: String, required: true, maxlength: 100 },
     success_message: { type: String, required: true, maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'contact_page_form_config'
 });
@@ -64,7 +64,7 @@ const contactFormSubmissionsSchema = new Schema({
     service: { type: String, maxlength: 256, default: '' },
     message: { type: String, required: true, maxlength: 65535 },
     status: { type: String, default: 'new', required: true, maxlength: 50 },
-}, { 
+}, {
     timestamps: true,
     collection: 'contact_form_submissions'
 });

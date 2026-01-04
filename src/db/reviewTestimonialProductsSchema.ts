@@ -4,7 +4,7 @@ import mongoose, { Schema, model, models } from 'mongoose';
 const reviewTestimonialProductsSchema = new Schema({
     testimonialId: { type: Schema.Types.ObjectId, ref: 'ReviewTestimonials', required: true },
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-}, { 
+}, {
     timestamps: false,
     collection: 'review_testimonial_products'
 });

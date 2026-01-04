@@ -7,7 +7,7 @@ import { revalidateTag } from 'next/cache';
 
 export async function GET(request: NextRequest) {
     await connectDB();
-    
+
     const searchParams = request.nextUrl.searchParams;
     const service = parseInt(searchParams.get('service') || '0');
     const product = parseInt(searchParams.get('product') || '0');
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         // Get testimonial IDs from service mapping
         const serviceMappings = await ReviewTestimonialServices.find({ serviceId: service }).lean();
         const testimonialIds = serviceMappings.map(m => m.testimonialId);
-        
+
         const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } })
             .sort({ date: -1 })
             .limit(limit || 10)
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
         // Get testimonial IDs from product mapping
         const productMappings = await ReviewTestimonialProducts.find({ productId: product }).lean();
         const testimonialIds = productMappings.map(m => m.testimonialId);
-        
+
         const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } })
             .sort({ date: -1 })
             .limit(limit || 10)
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const { name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         await connectDB();
-        
+
         const { id, name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
@@ -184,7 +184,7 @@ export async function PUT(request: NextRequest) {
 }
 export async function DELETE(request: NextRequest) {
     await connectDB();
-    
+
     const token = request.cookies.get('admin_auth')?.value;
     const id = request.nextUrl.searchParams.get('id');
     if (!token) {
@@ -226,10 +226,10 @@ async function attachRelationIds(testimonials: any[]) {
 
     return testimonials.map((t) => {
         const idStr = t._id.toString();
-        return { 
-            ...t, 
-            serviceIds: serviceMap.get(idStr) ?? [], 
-            productIds: productMap.get(idStr) ?? [] 
+        return {
+            ...t,
+            serviceIds: serviceMap.get(idStr) ?? [],
+            productIds: productMap.get(idStr) ?? []
         };
     });
 }

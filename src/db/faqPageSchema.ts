@@ -6,7 +6,7 @@ const faqPageHeaderSchema = new Schema({
     description: { type: String, required: true, maxlength: 1024 },
     search_placeholder: { type: String, required: true, maxlength: 256 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'faq_page_header'
 });
@@ -18,7 +18,7 @@ const faqCategoriesSchema = new Schema({
     name: { type: String, required: true, unique: true, maxlength: 100 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'faq_categories'
 });
@@ -32,7 +32,7 @@ const faqItemsSchema = new Schema({
     answer: { type: String, required: true, maxlength: 2048 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'faq_items'
 });
@@ -46,7 +46,7 @@ const faqPageCTASchema = new Schema({
     button_text: { type: String, required: true, maxlength: 100 },
     button_link: { type: String, required: true, maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'faq_page_cta'
 });

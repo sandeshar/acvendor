@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Seed Projects Section
         // Use a simple check to avoid duplicates if needed, but for seeding usually we just insert or update
         const existing = await ProjectsSection.findOne().lean();

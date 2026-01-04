@@ -11,7 +11,7 @@ const shopPageHeroSchema = new Schema({
     background_image: { type: String, required: true, default: '', maxlength: 512 },
     hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'shop_page_hero'
 });
@@ -32,7 +32,7 @@ const shopPageBrandHeroSchema = new Schema({
     hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
     display_order: { type: Number, default: 0, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'shop_page_brand_hero'
 });

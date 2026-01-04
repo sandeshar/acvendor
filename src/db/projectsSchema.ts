@@ -13,7 +13,7 @@ const projectsSectionSchema = new Schema({
     cta_button_link: { type: String, default: '/contact', maxlength: 255 },
     secondary_cta_text: { type: String, default: 'Download Portfolio', maxlength: 100 },
     secondary_cta_link: { type: String, default: '#', maxlength: 255 },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'projects_section'
 });
@@ -31,7 +31,7 @@ const projectsSchema = new Schema({
     image_alt: { type: String, maxlength: 255, default: '' },
     display_order: { type: Number, default: 0 },
     is_active: { type: Boolean, default: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'projects'
 });

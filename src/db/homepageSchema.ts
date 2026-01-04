@@ -25,7 +25,7 @@ const homepageHeroSchema = new Schema({
     secondary_cta_link: { type: String, required: true, default: '', maxlength: 512 },
     rating_text: { type: String, required: true, default: '', maxlength: 128 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'homepage_hero'
 });
@@ -39,7 +39,7 @@ const homepageTrustLogosSchema = new Schema({
     invert: { type: Number, default: 0, required: true },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'homepage_trust_logos'
 });
@@ -50,7 +50,7 @@ export const HomepageTrustLogos = models.HomepageTrustLogos || model('HomepageTr
 const homepageTrustSectionSchema = new Schema({
     heading: { type: String, required: true, maxlength: 256 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'homepage_trust_section'
 });
@@ -62,7 +62,7 @@ const homepageExpertiseSectionSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'homepage_expertise_section'
 });
@@ -76,7 +76,7 @@ const homepageExpertiseItemsSchema = new Schema({
     description: { type: String, required: true, maxlength: 512 },
     display_order: { type: Number, required: true },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: true,
     collection: 'homepage_expertise_items'
 });
@@ -94,7 +94,7 @@ const homepageContactSectionSchema = new Schema({
     message_placeholder: { type: String, required: true, maxlength: 100 },
     submit_button_text: { type: String, required: true, maxlength: 100 },
     is_active: { type: Number, default: 1, required: true },
-}, { 
+}, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'homepage_contact_section'
 });

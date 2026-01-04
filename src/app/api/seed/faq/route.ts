@@ -10,7 +10,7 @@ import {
 export async function POST() {
     try {
         await connectDB();
-        
+
         // Clear existing data
         await FAQItems.deleteMany({});
         await FAQCategories.deleteMany({});

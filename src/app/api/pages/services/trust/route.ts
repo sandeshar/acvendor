@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['title','description','quote_text','quote_author','quote_role','quote_image','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['title', 'description', 'quote_text', 'quote_author', 'quote_role', 'quote_image', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await ServicesPageTrust.findByIdAndUpdate(id, update, { new: true });
         revalidateTag('services-trust', 'max');
         return NextResponse.json({ success: true });

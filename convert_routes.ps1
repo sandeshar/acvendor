@@ -67,7 +67,8 @@ foreach ($route in $routes) {
         Set-Content $filePath $content -NoNewline
         
         Write-Host "Completed: $filePath" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "File not found: $filePath" -ForegroundColor Yellow
     }
 }

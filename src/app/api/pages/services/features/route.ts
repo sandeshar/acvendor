@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['icon','title','description','display_order','is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['icon', 'title', 'description', 'display_order', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await ServicesPageFeatures.findByIdAndUpdate(id, update, { new: true });
         revalidateTag('services-features', 'max');
         return NextResponse.json({ success: true });
