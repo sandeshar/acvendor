@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, productImages } from '@/db/productsSchema';
-import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
-import { status, users } from '@/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { connectDB } from '@/db';
+import { Product, ProductImage } from '@/db/productsSchema';
+import { ServiceCategories, ServiceSubcategories } from '@/db/serviceCategoriesSchema';
+import { Status, User } from '@/db/schema';
 
 function logDbError(e: any, context = '') {
     try {
@@ -20,18 +19,20 @@ function logDbError(e: any, context = '') {
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
+        
         const reqUrl = new URL(request.url);
         const clean = reqUrl.searchParams.get('clean') === '1' || reqUrl.searchParams.get('clean') === 'true';
         const brand = reqUrl.searchParams.get('brand') || null;
 
         // Ensure we have a published status and at least one user
-        const [firstUser] = await db.select().from(users).limit(1);
-        const statusRows = await db.select().from(status);
+        const firstUser = await User.findOne().lean();
+        const statusRows = await Status.find().lean();
         const publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
 
         // Require categories to exist (seed services first if missing)
-        const [someCategory] = await db.select().from(serviceCategories).limit(1);
-        const [someSub] = await db.select().from(serviceSubcategories).limit(1);
+        const someCategory = await ServiceCategories.findOne().lean();
+        const someSub = await ServiceSubcategories.findOne().lean();
         if (!someCategory || !someSub) {
             return NextResponse.json({ message: 'No product categories found. Run /api/seed/services first' }, { status: 200 });
         }
@@ -57,9 +58,9 @@ export async function POST(request: Request) {
                 model: 'SAMPLE-1',
                 capacity: 'N/A',
                 warranty: '1 year',
-                category_id: someCategory.id,
-                subcategory_id: someSub.id,
-                statusId: publishedStatus.id,
+                category_id: someCategory._id,
+                subcategory_id: someSub._id,
+                statusId: publishedStatus._id,
                 featured: 1,
                 meta_title: 'Sample Mini Product',
                 meta_description: 'Demo product used by the seed script',
@@ -77,9 +78,9 @@ export async function POST(request: Request) {
                 model: 'SAMPLE-2',
                 capacity: 'N/A',
                 warranty: '2 years',
-                category_id: someCategory.id,
-                subcategory_id: someSub.id,
-                statusId: publishedStatus.id,
+                category_id: someCategory._id,
+                subcategory_id: someSub._id,
+                statusId: publishedStatus._id,
                 featured: 0,
                 meta_title: 'Sample Large Product',
                 meta_description: 'Demo product used by the seed script',
@@ -89,28 +90,28 @@ export async function POST(request: Request) {
         // Determine which subcategories to generate products for
         let subcatRows: any[] = [];
         if (brand) {
-            const catRows = await db.select().from(serviceCategories).where(eq(serviceCategories.brand, brand));
-            const catIds = catRows.map((c: any) => c.id).filter(Boolean);
+            const catRows = await ServiceCategories.find({ brand }).lean();
+            const catIds = catRows.map((c: any) => c._id).filter(Boolean);
             if (catIds.length) {
-                subcatRows = await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.category_id, catIds));
+                subcatRows = await ServiceSubcategories.find({ category_id: { $in: catIds } }).lean();
             } else {
                 subcatRows = [];
             }
         } else {
-            subcatRows = await db.select().from(serviceSubcategories);
+            subcatRows = await ServiceSubcategories.find().lean();
         }
 
         // Generate 3 products per subcategory with brand-aware metadata
         const generated: any[] = [];
-        const categoryMap: Record<number, any> = {};
+        const categoryMap: Record<string, any> = {};
         const catIds = Array.from(new Set(subcatRows.map(s => s.category_id).filter(Boolean)));
         if (catIds.length) {
-            const catRows = await db.select().from(serviceCategories).where(inArray(serviceCategories.id, catIds));
-            catRows.forEach((c: any) => (categoryMap[c.id] = c));
+            const catRows = await ServiceCategories.find({ _id: { $in: catIds } }).lean();
+            catRows.forEach((c: any) => (categoryMap[c._id.toString()] = c));
         }
 
         for (const sc of subcatRows) {
-            const parentCat = categoryMap[sc.category_id] || null;
+            const parentCat = categoryMap[sc.category_id?.toString()] || null;
             for (let i = 1; i <= 3; i++) {
                 const slug = `${sc.slug}-prod-${i}`;
                 const brandPrefix = parentCat && parentCat.brand ? `${(parentCat.brand || '').toUpperCase()} ` : '';
@@ -144,14 +145,14 @@ export async function POST(request: Request) {
 
         for (const p of samples) {
             try {
-                const [existing] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
+                const existing = await Product.findOne({ slug: p.slug }).lean();
 
                 if (existing && clean) {
-                    try { await db.delete(productImages).where(eq(productImages.product_id, existing.id)); } catch (e) { }
-                    try { await db.delete(products).where(eq(products.id, existing.id)); } catch (e) { }
+                    try { await ProductImage.deleteMany({ product_id: existing._id }); } catch (e) { }
+                    try { await Product.findByIdAndDelete(existing._id); } catch (e) { }
                 }
 
-                const [already] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
+                const already = await Product.findOne({ slug: p.slug }).lean();
                 if (already) {
                     results.push({ slug: p.slug, created: false, reason: 'exists' });
                     continue;
@@ -159,11 +160,11 @@ export async function POST(request: Request) {
 
                 const payload: any = { ...p };
                 delete payload.image_urls;
-                const result = await db.insert(products).values(payload as any);
-                const insertId = result?.[0]?.insertId;
+                const result = await Product.create(payload as any);
+                const insertId = result._id;
                 if (insertId && Array.isArray(p.image_urls) && p.image_urls.length) {
                     const imageInserts = p.image_urls.map((u: string, idx: number) => ({ product_id: insertId, url: u, alt: p.title || '', is_primary: idx === 0 ? 1 : 0, display_order: idx }));
-                    try { await db.insert(productImages).values(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
+                    try { await ProductImage.create(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
                 }
 
                 results.push({ slug: p.slug, created: true, id: insertId });

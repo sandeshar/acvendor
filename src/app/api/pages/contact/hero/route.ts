@@ -1,32 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { contactPageHero } from '@/db/contactPageSchema';
+
+import { connectDB } from '@/db';
+import { ContactPageHero } from '@/db/contactPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch hero section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const hero = await db.select().from(contactPageHero).where(eq(contactPageHero.id, parseInt(id))).limit(1);
+            const hero = await ContactPageHero.findById(id).lean();
 
-            if (hero.length === 0) {
+            if (!hero) {
                 return NextResponse.json({ error: 'Hero section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(hero[0]);
+            return NextResponse.json(hero);
         }
 
-        const hero = await db.select().from(contactPageHero).where(eq(contactPageHero.is_active, 1)).limit(1);
+        const hero = await ContactPageHero.findOne({ is_active: 1 }).lean();
 
-        if (hero.length === 0) {
+        if (!hero) {
             return NextResponse.json({ error: 'No active hero section found' }, { status: 404 });
         }
 
-        return NextResponse.json(hero[0]);
+        return NextResponse.json(hero);
     } catch (error) {
         console.error('Error fetching hero section:', error);
         return NextResponse.json({ error: 'Failed to fetch hero section' }, { status: 500 });
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 // POST - Create hero section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { tagline, title, description, is_active = 1 } = body;
 
@@ -43,12 +45,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Tagline, title, and description are required' }, { status: 400 });
         }
 
-        const result = await db.insert(contactPageHero).values({ tagline, title, description, is_active });
+        const newHero = await ContactPageHero.create({ tagline, title, description, is_active });
 
         revalidateTag('contact-hero', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Hero section created successfully', id: result[0].insertId },
+            { success: true, message: 'Hero section created successfully', id: newHero._id },
             { status: 201 }
         );
     } catch (error) {
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update hero section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, tagline, title, description, is_active } = body;
 
@@ -73,7 +76,7 @@ export async function PUT(request: NextRequest) {
         if (description !== undefined) updateData.description = description;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(contactPageHero).set(updateData).where(eq(contactPageHero.id, id));
+        await ContactPageHero.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('contact-hero', 'max');
 
@@ -87,6 +90,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete hero section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -94,7 +98,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(contactPageHero).where(eq(contactPageHero.id, parseInt(id)));
+        await ContactPageHero.findByIdAndDelete(id);
 
         revalidateTag('contact-hero', 'max');
 

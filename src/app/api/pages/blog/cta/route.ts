@@ -1,12 +1,13 @@
-import { db } from "@/db";
-import { blogPageCTA } from "@/db/blogPageSchema";
+import { connectDB } from "@/db";
+import { BlogPageCTA } from "@/db/blogPageSchema";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const cta = await db.select().from(blogPageCTA).limit(1);
+        await connectDB();
+        const cta = await BlogPageCTA.findOne().lean();
 
-        if (!cta.length) {
+        if (!cta) {
             return NextResponse.json({
                 title: "Stay Ahead of the Curve",
                 description: "Get the latest content marketing tips delivered to your inbox.",
@@ -14,7 +15,7 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(cta[0]);
+        return NextResponse.json(cta);
     } catch (error) {
         console.error("Error fetching blog page cta:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

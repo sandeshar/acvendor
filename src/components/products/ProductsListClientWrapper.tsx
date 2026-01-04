@@ -10,7 +10,22 @@ const ProductsListClient = dynamic(() => import('./ProductsListClient'), { ssr: 
 export default function ProductsListClientWrapper(props: ComponentProps<typeof ProductsListClient>) {
     // Client-side wrapper: accepts server-provided `products` as initial data
     const initialProducts = (props as any).products ?? [];
-    const [products, setProducts] = useState(initialProducts);
+
+    // Deep-normalize Decimal128-like objects (e.g., { $numberDecimal: '123.45' }) so React never receives objects as children
+    const normalizeValue = (v: any): any => {
+        if (v && typeof v === 'object') {
+            if ('$numberDecimal' in v) return String(v['$numberDecimal']);
+            if (Array.isArray(v)) return v.map(normalizeValue);
+            const out: any = {};
+            for (const k of Object.keys(v)) out[k] = normalizeValue(v[k]);
+            return out;
+        }
+        return v;
+    };
+
+    const normalizeProducts = (list: any[]) => Array.isArray(list) ? list.map((p: any) => normalizeValue(p)) : [];
+
+    const [products, setProducts] = useState(normalizeProducts(initialProducts));
 
     const searchParams = useSearchParams();
 
@@ -43,7 +58,7 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
                 const res = await fetch(`/api/products?${q.toString()}`);
                 if (!res.ok) return;
                 const data = await res.json();
-                if (!cancelled) setProducts(data);
+                if (!cancelled) setProducts(normalizeProducts(Array.isArray(data) ? data : []));
             } catch (e) {
                 console.error('Error fetching filtered products (client):', (e as Error)?.message || String(e));
             }
@@ -53,5 +68,35 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams?.toString()]);
 
-    return <ProductsListClient {...(props as any)} products={products} />;
+    // Final safety: ensure no Decimal128-like objects remain; compute a safe copy to pass downstream
+    const containsDecimal = (obj: any): boolean => {
+        if (obj && typeof obj === 'object') {
+            if ('$numberDecimal' in obj) return true;
+            if (Array.isArray(obj)) return obj.some(containsDecimal);
+            return Object.values(obj).some(containsDecimal);
+        }
+        return false;
+    };
+
+    let safeProducts = normalizeProducts(products);
+    if (containsDecimal(safeProducts)) {
+        console.warn('ProductsListClientWrapper: Found Decimal-like values in products after normalization, applying replacement across objects', { example: safeProducts.find((p: any) => containsDecimal(p)) });
+        const replaceDecimalObjects = (v: any): any => {
+            if (v && typeof v === 'object') {
+                if ('$numberDecimal' in v) return String(v['$numberDecimal']);
+                if (Array.isArray(v)) return v.map(replaceDecimalObjects);
+                const out: any = {};
+                for (const k of Object.keys(v)) out[k] = replaceDecimalObjects(v[k]);
+                return out;
+            }
+            return v;
+        };
+        safeProducts = safeProducts.map(replaceDecimalObjects);
+
+        if (containsDecimal(safeProducts)) {
+            console.error('ProductsListClientWrapper: Decimal-like values still present after replacement (unexpected)');
+        }
+    }
+
+    return <ProductsListClient {...(props as any)} products={safeProducts} />;
 }

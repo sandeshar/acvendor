@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { shopPageHero } from '@/db/shopPageSchema';
-import { eq } from 'drizzle-orm';
+import { connectDB } from '@/db';
+import { ShopPageHero } from '@/db/shopPageSchema';
 import { revalidateTag } from 'next/cache';
 
 export async function GET() {
     try {
-        const rows = await db.select().from(shopPageHero).limit(1);
-        return NextResponse.json(rows && rows.length ? rows[0] : {});
+        await connectDB();
+        const row = await ShopPageHero.findOne().lean();
+        return NextResponse.json(row || {});
     } catch (error) {
         console.error('Error fetching shop hero:', error);
         const e: any = error;
@@ -23,11 +23,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { tagline = '', title = '', subtitle = '', description = '', cta_text = '', cta_link = '', background_image = '', hero_image_alt = '', is_active = 1 } = body;
-        const res: any = await db.insert(shopPageHero).values({ tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active });
+        const res = await ShopPageHero.create({ tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active });
         revalidateTag('shop-hero', 'max');
-        return NextResponse.json({ success: true, id: res[0].insertId }, { status: 201 });
+        return NextResponse.json({ success: true, id: res._id }, { status: 201 });
     } catch (error) {
         console.error('Error creating shop hero:', error);
         return NextResponse.json({ error: 'Failed to create shop hero' }, { status: 500 });
@@ -36,12 +37,13 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
         ['tagline', 'title', 'subtitle', 'description', 'cta_text', 'cta_link', 'background_image', 'hero_image_alt', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
-        await db.update(shopPageHero).set(update).where(eq(shopPageHero.id, id));
+        await ShopPageHero.findByIdAndUpdate(id, update, { new: true });
         revalidateTag('shop-hero', 'max');
         return NextResponse.json({ success: true });
     } catch (error) {

@@ -1,32 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { contactPageFormConfig } from '@/db/contactPageSchema';
+
+import { connectDB } from '@/db';
+import { ContactPageFormConfig } from '@/db/contactPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch form config
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const config = await db.select().from(contactPageFormConfig).where(eq(contactPageFormConfig.id, parseInt(id))).limit(1);
+            const config = await ContactPageFormConfig.findById(id).lean();
 
-            if (config.length === 0) {
+            if (!config) {
                 return NextResponse.json({ error: 'Form config not found' }, { status: 404 });
             }
 
-            return NextResponse.json(config[0]);
+            return NextResponse.json(config);
         }
 
-        const config = await db.select().from(contactPageFormConfig).where(eq(contactPageFormConfig.is_active, 1)).limit(1);
+        const config = await ContactPageFormConfig.findOne({ is_active: 1 }).lean();
 
-        if (config.length === 0) {
+        if (!config) {
             return NextResponse.json({ error: 'No active form config found' }, { status: 404 });
         }
 
-        return NextResponse.json(config[0]);
+        return NextResponse.json(config);
     } catch (error) {
         console.error('Error fetching form config:', error);
         return NextResponse.json({ error: 'Failed to fetch form config' }, { status: 500 });
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
 // POST - Create form config
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { name_placeholder, email_placeholder, phone_placeholder, subject_placeholder, service_placeholder, message_placeholder, submit_button_text, success_message, is_active = 1 } = body;
 
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
-        const result = await db.insert(contactPageFormConfig).values({
+        const result = await ContactPageFormConfig.create({
             name_placeholder,
             email_placeholder,
             phone_placeholder: phone_placeholder || null,
@@ -58,7 +60,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('contact-form-config', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Form config created successfully', id: result[0].insertId },
+            { success: true, message: 'Form config created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update form config
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, name_placeholder, email_placeholder, phone_placeholder, subject_placeholder, service_placeholder, message_placeholder, submit_button_text, success_message, is_active } = body;
 
@@ -88,7 +91,7 @@ export async function PUT(request: NextRequest) {
         if (success_message !== undefined) updateData.success_message = success_message;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(contactPageFormConfig).set(updateData).where(eq(contactPageFormConfig.id, id));
+        await ContactPageFormConfig.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('contact-form-config', 'max');
 
@@ -102,6 +105,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete form config
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -109,7 +113,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(contactPageFormConfig).where(eq(contactPageFormConfig.id, parseInt(id)));
+        await ContactPageFormConfig.findByIdAndDelete(id);
 
         revalidateTag('contact-form-config', 'max');
 

@@ -21,15 +21,27 @@ interface HeroProps {
     data?: HeroData | null;
 }
 
+const isValidUrl = (s: any) => {
+    try {
+        if (!s || typeof s !== 'string') return false;
+        new URL(s);
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
 const Hero = ({ data }: HeroProps) => {
     if (!data) return null;
 
-    const bgUrl = data.background_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuD9qPavrX9o-kZM2q3qZwFJ5yR6tt4n1YwD_OUxwlwFVIYWNlUq9LEOlpvBTw8I6qRuX0RBjYsFxO39FcWVYKWrrajhZbQYLB-aj9ipExwGUVuT3v-iU6O10flSSmGi_mtLUkpA7irghagtxi-ovfSfHHE-eW9v6pc9XrJvXz_iO-cQEsQzeJTUr6FarmOWY7PGlqR1fBYvnOKUCdHM48_VdRTEZ2a5mAxXZftP70bSpuneuURFJ-sOon_E4rUHM7pbjzb7JTIeGFw';
+    const defaultBg = 'https://lh3.googleusercontent.com/aida-public/AB6AXuD9qPavrX9o-kZM2q3qZwFJ5yR6tt4n1YwD_OUxwlwFVIYWNlUq9LEOlpvBTw8I6qRuX0RBjYsFxO39FcWVYKWrrajhZbQYLB-aj9ipExwGUVuT3v-iU6O10flSSmGi_mtLUkpA7irghagtxi-ovfSfHHE-eW9v6pc9XrJvXz_iO-cQEsQzeJTUr6FarmOWY7PGlqR1fBYvnOKUCdHM48_VdRTEZ2a5mAxXZftP70bSpuneuURFJ-sOon_E4rUHM7pbjzb7JTIeGFw';
+    const bgUrl = isValidUrl(data.background_image) ? String(data.background_image).trim() : defaultBg;
 
     return (
         <div className="relative flex min-h-[calc(100vh-60px)] flex-col justify-center overflow-hidden">
-            {/* Background Image with Overlay */}
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0" data-alt={data.hero_image_alt || 'Modern living room with air conditioner'} style={{ backgroundImage: `url("${bgUrl}")` }}>
+            {/* Background Image with Overlay (use <img> to ensure loading and avoid CSS url parsing issues) */}
+            <div className="absolute inset-0 z-0 overflow-hidden">
+                <img src={bgUrl} alt={data.hero_image_alt || 'Modern living room with air conditioner'} className="w-full h-full object-cover object-center" loading="eager" decoding="async" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30"></div>
             </div>
 

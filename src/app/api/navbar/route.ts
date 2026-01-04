@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { navbarItems } from "@/db/navbarSchema";
-import { eq, and, asc } from "drizzle-orm";
+import { connectDB } from "@/db";
+import { NavbarItems } from "@/db/navbarSchema";
 
 export async function GET() {
     try {
-        const items = await db.select().from(navbarItems).orderBy(asc(navbarItems.order));
+        await connectDB();
+        
+        const items = await NavbarItems.find().sort({ order: 1 }).lean();
         return NextResponse.json(items);
     } catch (error) {
         console.error("Error fetching navbar items:", error);
@@ -15,6 +16,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
+        
         const body = await request.json();
         const { label, href, order, parent_id, is_button, is_active, is_dropdown } = body;
 
@@ -23,24 +26,18 @@ export async function POST(request: Request) {
         }
 
         // Check for duplicate by href and parent_id to avoid duplicate creation
-        const [existing] = await db
-            .select()
-            .from(navbarItems)
-            .where(
-                and(
-                    eq(navbarItems.href, href),
-                    eq(navbarItems.parent_id, parent_id || null),
-                    eq(navbarItems.is_button, is_button || 0)
-                )
-            )
-            .limit(1);
+        const existing = await NavbarItems.findOne({
+            href,
+            parent_id: parent_id || null,
+            is_button: is_button || 0
+        }).lean();
 
         if (existing) {
-            return NextResponse.json({ id: existing.id, message: "Navbar item already exists", existing: true }, { status: 200 });
+            return NextResponse.json({ id: existing._id, message: "Navbar item already exists", existing: true }, { status: 200 });
         }
 
         try {
-            const result = await db.insert(navbarItems).values({
+            const result = await NavbarItems.create({
                 label,
                 href,
                 order: order || 0,
@@ -49,11 +46,10 @@ export async function POST(request: Request) {
                 is_active: is_active !== undefined ? is_active : 1,
                 is_dropdown: is_dropdown || 0,
             });
-            return NextResponse.json({ id: result[0].insertId, message: "Navbar item created successfully" }, { status: 201 });
+            return NextResponse.json({ id: result._id, message: "Navbar item created successfully" }, { status: 201 });
         } catch (err: any) {
             // If DB reports duplicate key, return 409
-            const code = err?.cause?.errno || err?.errno || err?.code;
-            if (code === 'ER_DUP_ENTRY' || code === 1062) {
+            if (err.code === 11000) {
                 return NextResponse.json({ error: 'Duplicate navbar item', details: String(err?.message || err) }, { status: 409 });
             }
             throw err;
@@ -66,6 +62,8 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        await connectDB();
+        
         const body = await request.json();
         const { id, label, href, order, parent_id, is_button, is_active, is_dropdown } = body;
 
@@ -73,18 +71,16 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.update(navbarItems)
-            .set({
-                label,
-                href,
-                order,
-                parent_id: parent_id || null,
-                is_button,
-                is_active,
-                is_dropdown,
-                updated_at: new Date(),
-            })
-            .where(eq(navbarItems.id, id));
+        await NavbarItems.findByIdAndUpdate(id, {
+            label,
+            href,
+            order,
+            parent_id: parent_id || null,
+            is_button,
+            is_active,
+            is_dropdown,
+            updated_at: new Date(),
+        }, { new: true });
 
         return NextResponse.json({ message: "Navbar item updated successfully" });
     } catch (error) {
@@ -95,6 +91,8 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
+        await connectDB();
+        
         const body = await request.json();
         const { id } = body;
 
@@ -102,7 +100,7 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.delete(navbarItems).where(eq(navbarItems.id, id));
+        await NavbarItems.findByIdAndDelete(id);
         return NextResponse.json({ message: "Navbar item deleted successfully" });
     } catch (error) {
         console.error("Error deleting navbar item:", error);

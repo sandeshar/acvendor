@@ -23,13 +23,13 @@ export default function AboutPageUI() {
     const [badges, setBadges] = useState<any[]>([]);
     const [ctaData, setCtaData] = useState<any>({});
 
-    // Track deleted items to remove from DB on save
-    const [deletedStats, setDeletedStats] = useState<number[]>([]);
-    const [deletedFeatures, setDeletedFeatures] = useState<number[]>([]);
-    const [deletedPrinciples, setDeletedPrinciples] = useState<number[]>([]);
-    const [deletedTeamMembers, setDeletedTeamMembers] = useState<number[]>([]);
-    const [deletedCertifications, setDeletedCertifications] = useState<number[]>([]);
-    const [deletedBadges, setDeletedBadges] = useState<number[]>([]);
+    // Track deleted items to remove from DB on save (use string|number to accept Mongo _id or legacy numeric id)
+    const [deletedStats, setDeletedStats] = useState<Array<string | number>>([]);
+    const [deletedFeatures, setDeletedFeatures] = useState<Array<string | number>>([]);
+    const [deletedPrinciples, setDeletedPrinciples] = useState<Array<string | number>>([]);
+    const [deletedTeamMembers, setDeletedTeamMembers] = useState<Array<string | number>>([]);
+    const [deletedCertifications, setDeletedCertifications] = useState<Array<string | number>>([]);
+    const [deletedBadges, setDeletedBadges] = useState<Array<string | number>>([]);
 
     // --- Fetch Data ---
     useEffect(() => {
@@ -93,21 +93,25 @@ export default function AboutPageUI() {
         try {
             // Helper to save a single section (create or update)
             const saveSection = async (url: string, data: any) => {
-                const method = data.id ? 'PUT' : 'POST';
+                const entityId = data?.id ?? data?._id ?? null;
+                const method = entityId ? 'PUT' : 'POST';
+                const bodyData = entityId ? { ...data, id: entityId } : { ...data };
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(bodyData),
                 });
                 if (!res.ok) throw new Error(`Failed to save ${url}`);
                 return res.json();
             };
 
             // Helper to save a list of items
-            const saveList = async (url: string, items: any[], deletedIds: number[]) => {
+            const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 // Delete removed items
                 for (const id of deletedIds) {
-                    await fetch(`${url}?id=${id}`, { method: 'DELETE' });
+                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    if (!delId) continue;
+                    await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }
 
                 // If saving team members, validate required fields to provide a clearer error early
@@ -172,8 +176,8 @@ export default function AboutPageUI() {
             setDeletedTeamMembers([]);
 
             showToast("Settings saved successfully!", { type: 'success' });
-            // Optionally refetch data to get new IDs for created items
-            window.location.reload();
+            // Re-fetch fresh data instead of full reload so UI shows exact current state
+            await fetchData();
 
         } catch (error) {
             console.error("Error saving settings:", error);
@@ -390,7 +394,8 @@ export default function AboutPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (stat.id) setDeletedStats([...deletedStats, stat.id]);
+                                                        const idToDelete = stat.id ?? stat._id ?? null;
+                                                        if (idToDelete) setDeletedStats([...deletedStats, idToDelete]);
                                                         setStats(stats.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"

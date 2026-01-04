@@ -117,7 +117,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
                     </p>
                 </div>
 
-                <div className="relative mask-gradient">
+                <div className="relative ">
                     <div className="flex gap-8 animate-scroll">
                         {duplicatedTestimonials.map((testimonial, index) => (
                             <div

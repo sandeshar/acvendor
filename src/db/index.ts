@@ -1,54 +1,65 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import { createPool, type Pool } from 'mysql2/promise';
+import mongoose from 'mongoose';
 import 'dotenv/config';
-import * as schema from './schema';
-import * as homepageSchema from './homepageSchema';
-import * as servicesPageSchema from './servicesPageSchema';
-import * as servicePostsSchema from './servicePostsSchema';
-import * as serviceCategoriesSchema from './serviceCategoriesSchema';
-import * as aboutPageSchema from './aboutPageSchema';
-import * as contactPageSchema from './contactPageSchema';
-import * as faqPageSchema from './faqPageSchema';
-import * as termsPageSchema from './termsPageSchema';
-import * as blogPageSchema from './blogPageSchema';
-import * as review from './reviewSchema';
-import * as reviewTestimonialServices from './reviewTestimonialServicesSchema';
-import * as reviewTestimonialProducts from './reviewTestimonialProductsSchema';
-import * as navbarSchema from './navbarSchema';
-import * as shopPageSchema from './shopPageSchema';
-import * as projectsSchema from './projectsSchema';
 
+// Import all models - Mongoose version
+export * from './schema';
+export * from './homepageSchema';
+export * from './servicesPageSchema';
+export * from './servicePostsSchema';
+export * from './serviceCategoriesSchema';
+export * from './aboutPageSchema';
+export * from './contactPageSchema';
+export * from './faqPageSchema';
+export * from './termsPageSchema';
+export * from './blogPageSchema';
+export * from './reviewSchema';
+export * from './reviewTestimonialServicesSchema';
+export * from './reviewTestimonialProductsSchema';
+export * from './navbarSchema';
+export * from './shopPageSchema';
+export * from './projectsSchema';
+export * from './productsSchema';
 
 // Singleton pattern for database connection to prevent "Too many connections" error in development
-const globalForDb = global as unknown as { conn: Pool | undefined };
+const globalForDb = global as unknown as { mongoose: typeof mongoose | undefined };
 
-const pool = globalForDb.conn ?? createPool({
-    uri: process.env.NODE_ENV === 'production' ? process.env.P_DB_URL! : process.env.DATABASE_URL!,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
+const MONGODB_URI = process.env.NODE_ENV === 'production' ? process.env.P_DB_URL! : process.env.DATABASE_URL!;
 
-if (process.env.NODE_ENV !== 'production') globalForDb.conn = pool;
+if (!MONGODB_URI) {
+    throw new Error('Please define the DATABASE_URL environment variable');
+}
 
-export const db = drizzle(pool, {
-    schema: {
-        ...schema,
-        ...homepageSchema,
-        ...servicesPageSchema,
-        ...servicePostsSchema,
-        ...serviceCategoriesSchema,
-        ...aboutPageSchema,
-        ...contactPageSchema,
-        ...faqPageSchema,
-        ...termsPageSchema,
-        ...blogPageSchema,
-        ...review,
-        ...reviewTestimonialServices,
-        ...reviewTestimonialProducts,
-        ...navbarSchema,
-        ...shopPageSchema,
-        ...projectsSchema
-    },
-    mode: 'default'
-});
+let cached = globalForDb.mongoose;
+
+if (!cached) {
+    cached = globalForDb.mongoose = mongoose;
+}
+
+export async function connectDB() {
+    if (cached && mongoose.connection.readyState === 1) {
+        return mongoose;
+    }
+
+    const opts = {
+        bufferCommands: false,
+    };
+
+    await mongoose.connect(MONGODB_URI, opts);
+    
+    return mongoose;
+}
+
+// Auto-connect on import in production
+if (process.env.NODE_ENV === 'production') {
+    connectDB().catch(console.error);
+}
+
+// Backward compatibility: export db object
+// Note: This is a stub for migration - old Drizzle code needs to be updated to use Mongoose models
+export const db = {
+    // This is a migration helper - code using db.select/insert/update/delete needs to be converted to Mongoose
+    __mongoose: true,
+    __deprecated: 'Use Mongoose models directly instead of db object'
+};
+
+export default mongoose;

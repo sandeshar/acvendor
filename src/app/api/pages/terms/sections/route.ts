@@ -1,28 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { termsPageSections } from '@/db/termsPageSchema';
+import { connectDB } from '@/db';
+import { TermsPageSections } from '@/db/termsPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch sections
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const section = await db.select().from(termsPageSections).where(eq(termsPageSections.id, parseInt(id))).limit(1);
+            const section = await TermsPageSections.findById(id).lean();
 
-            if (section.length === 0) {
+            if (!section) {
                 return NextResponse.json({ error: 'Section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(section[0]);
+            return NextResponse.json(section);
         }
 
-        const sections = await db.select().from(termsPageSections)
-            .where(eq(termsPageSections.is_active, 1))
-            .orderBy(asc(termsPageSections.display_order));
+        const sections = await TermsPageSections.find({ is_active: 1 })
+            .sort({ display_order: 1 })
+            .lean();
 
         return NextResponse.json(sections);
     } catch (error) {
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
 // POST - Create section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { title, content, has_email = 0, display_order, is_active = 1 } = body;
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Title, content, and display_order are required' }, { status: 400 });
         }
 
-        const result = await db.insert(termsPageSections).values({
+        const result = await TermsPageSections.create({
             title,
             content,
             has_email,
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('terms-sections', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Section created successfully', id: result[0].insertId },
+            { success: true, message: 'Section created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, title, content, has_email, display_order, is_active } = body;
 
@@ -78,7 +80,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(termsPageSections).set(updateData).where(eq(termsPageSections.id, id));
+        await TermsPageSections.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('terms-sections', 'max');
 
@@ -92,6 +94,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -99,7 +102,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(termsPageSections).where(eq(termsPageSections.id, parseInt(id)));
+        await TermsPageSections.findByIdAndDelete(id);
 
         revalidateTag('terms-sections', 'max');
 

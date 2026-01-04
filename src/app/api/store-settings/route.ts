@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { db } from '@/db';
-import { storeSettings, footerSections, footerLinks } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { connectDB } from '@/db';
+import { StoreSettings, FooterSection, FooterLink } from '@/db/schema';
 
 // Map camelCase payload to snake_case DB columns
 function toDb(payload: any) {
@@ -36,7 +35,7 @@ function toDb(payload: any) {
 function fromDb(row: any) {
     if (!row) return null;
     return {
-        id: row.id,
+        id: row._id || row.id,
         storeName: row.store_name,
         storeDescription: row.store_description,
         storeLogo: row.store_logo,
@@ -68,23 +67,24 @@ function fromDb(row: any) {
 
 export async function GET() {
     try {
-        const rows = await db.select().from(storeSettings).limit(1);
-        const data = rows.length ? fromDb(rows[0]) : null;
+        await connectDB();
+        const row = await StoreSettings.findOne().lean();
+        const data = row ? fromDb(row) : null;
 
         // Load footer sections + links if we have a store row
-        if (data && rows[0]?.id) {
-            const secs = await db.select().from(footerSections).where(eq(footerSections.store_id, rows[0].id)).orderBy(asc(footerSections.order));
+        if (data && row?._id) {
+            const secs = await FooterSection.find({ store_id: row._id }).sort({ order: 1 }).lean();
             const sections: any[] = [];
             for (const s of secs) {
-                const links = await db.select().from(footerLinks).where(eq(footerLinks.section_id, s.id)).orderBy(asc(footerLinks.order));
+                const links = await FooterLink.find({ section_id: s._id }).sort({ order: 1 }).lean();
                 sections.push({
-                    id: s.id,
+                    id: s._id,
                     title: s.title,
                     order: s.order,
-                    links: links.map((l: any) => ({ id: l.id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })),
+                    links: links.map((l: any) => ({ id: l._id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })),
                 });
             }
-            (data as any).footerSections = sections;
+            (data as any).FooterSection = sections;
         }
 
         return NextResponse.json({ success: true, data });
@@ -96,40 +96,38 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const update = toDb(body);
 
         // Read current row (single row table semantics)
-        const rows = await db.select().from(storeSettings).limit(1);
+        const row = await StoreSettings.findOne().lean();
 
-        if (rows.length === 0) {
-            const result: any = await db.insert(storeSettings).values(update);
-            // MySQL2 drizzle returns insertId on result[0].insertId sometimes when not typed; try both
-            const insertedId = Array.isArray(result) ? result[0]?.insertId : (result as any)?.insertId;
-            const created = await db.select().from(storeSettings).limit(1);
-            return NextResponse.json({ success: true, message: 'Store settings created', data: fromDb(created[0]), id: insertedId });
+        if (!row) {
+            const created = await StoreSettings.create(update);
+            const data = fromDb(created);
+            return NextResponse.json({ success: true, message: 'Store settings created', data, id: created._id });
         }
 
-        const id = rows[0].id;
-        await db.update(storeSettings).set(update).where(eq(storeSettings.id, id));
+        const id = row._id;
+        const updated = await StoreSettings.findByIdAndUpdate(id, update, { new: true }).lean();
 
         // If footer sections were provided in the payload, replace existing sections/links
-        if (body.footerSections && Array.isArray(body.footerSections)) {
+        if (body.FooterSection && Array.isArray(body.FooterSection)) {
             // Delete existing sections + links for this store
-            const existing = await db.select().from(footerSections).where(eq(footerSections.store_id, id));
+            const existing = await FooterSection.find({ store_id: id }).lean();
             for (const ex of existing) {
-                await db.delete(footerLinks).where(eq(footerLinks.section_id, ex.id));
-                await db.delete(footerSections).where(eq(footerSections.id, ex.id));
+                await FooterLink.deleteMany({ section_id: ex._id });
+                await FooterSection.findByIdAndDelete(ex._id);
             }
 
             // Insert new sections and links
-            for (const [sIdx, sec] of body.footerSections.entries()) {
-                const secRes: any = await db.insert(footerSections).values({ store_id: id, title: sec.title || '', order: sec.order ?? sIdx });
-                const newSecId = Array.isArray(secRes) ? secRes[0]?.insertId : (secRes as any)?.insertId;
+            for (const [sIdx, sec] of body.FooterSection.entries()) {
+                const newSection = await FooterSection.create({ store_id: id, title: sec.title || '', order: sec.order ?? sIdx });
                 if (sec.links && Array.isArray(sec.links)) {
                     for (const [lIdx, ln] of sec.links.entries()) {
-                        await db.insert(footerLinks).values({
-                            section_id: newSecId,
+                        await FooterLink.create({
+                            section_id: newSection._id,
                             label: ln.label || '',
                             href: ln.href || '#',
                             is_external: ln.isExternal ? 1 : 0,
@@ -140,18 +138,17 @@ export async function PUT(request: NextRequest) {
             }
         }
 
-        const updated = await db.select().from(storeSettings).where(eq(storeSettings.id, id)).limit(1);
         try { revalidateTag('store-settings', 'max'); } catch (e) { /* ignore */ }
         // Re-fetch footer sections so response includes them
-        const data = fromDb(updated[0]);
+        const data = fromDb(updated);
         if (data) {
-            const secs = await db.select().from(footerSections).where(eq(footerSections.store_id, id)).orderBy(asc(footerSections.order));
+            const secs = await FooterSection.find({ store_id: id }).sort({ order: 1 }).lean();
             const sections: any[] = [];
             for (const s of secs) {
-                const links = await db.select().from(footerLinks).where(eq(footerLinks.section_id, s.id)).orderBy(asc(footerLinks.order));
-                sections.push({ id: s.id, title: s.title, order: s.order, links: links.map((l: any) => ({ id: l.id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })) });
+                const links = await FooterLink.find({ section_id: s._id }).sort({ order: 1 }).lean();
+                sections.push({ id: s._id, title: s.title, order: s.order, links: links.map((l: any) => ({ id: l._id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })) });
             }
-            (data as any).footerSections = sections;
+            (data as any).FooterSection = sections;
         }
 
         return NextResponse.json({ success: true, message: 'Store settings updated', data });

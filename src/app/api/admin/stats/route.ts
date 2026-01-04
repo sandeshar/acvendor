@@ -1,48 +1,78 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { blogPosts, users, status } from '@/db/schema';
-import { contactFormSubmissions } from '@/db/contactPageSchema';
-import { eq, desc, count } from 'drizzle-orm';
+import { connectDB } from '@/db';
+import { BlogPost, User, Status } from '@/db/schema';
+import { resolveStatusId } from '@/utils/resolveStatus';
+import { ContactFormSubmissions } from '@/db/contactPageSchema';
 
 export async function GET() {
     try {
+        await connectDB();
+
+        // Resolve status ObjectIds for numeric status codes
+        const publishedStatusId = await resolveStatusId(2);
+        const draftStatusId = await resolveStatusId(1);
+
         const [
             totalPosts,
             publishedPosts,
             draftPosts,
-            recentPosts,
+            recentPostsData,
             totalContact,
             newContact,
         ] = await Promise.all([
-            db.select({ count: count() }).from(blogPosts),
-            db.select({ count: count() }).from(blogPosts).where(eq(blogPosts.status, 2)),
-            db.select({ count: count() }).from(blogPosts).where(eq(blogPosts.status, 1)),
-            db.select({
-                id: blogPosts.id,
-                slug: blogPosts.slug,
-                title: blogPosts.title,
-                authorName: users.name,
-                statusId: blogPosts.status,
-                statusName: status.name,
-                createdAt: blogPosts.createdAt,
-            })
-                .from(blogPosts)
-                .leftJoin(users, eq(blogPosts.authorId, users.id))
-                .leftJoin(status, eq(blogPosts.status, status.id))
-                .orderBy(desc(blogPosts.createdAt))
-                .limit(4),
-            db.select({ count: count() }).from(contactFormSubmissions),
-            db.select({ count: count() }).from(contactFormSubmissions).where(eq(contactFormSubmissions.status, 'new')),
+            BlogPost.countDocuments(),
+            publishedStatusId ? BlogPost.countDocuments({ status: publishedStatusId }) : Promise.resolve(0),
+            draftStatusId ? BlogPost.countDocuments({ status: draftStatusId }) : Promise.resolve(0),
+            BlogPost.find()
+                .sort({ createdAt: -1 })
+                .limit(4)
+                .lean(),
+            ContactFormSubmissions.countDocuments(),
+            ContactFormSubmissions.countDocuments({ status: 'new' }),
         ]);
+
+        // For recent posts, fetch author and status info separately
+        const recentPosts = await Promise.all(
+            recentPostsData.map(async (post: any) => {
+                const [author, statusInfo] = await Promise.all([
+                    User.findById(post.authorId).lean(),
+                    (async () => {
+                        // Handle both ObjectId and numeric status values stored in DB
+                        try {
+                            if (post?.status && typeof post.status === 'string' && /^[a-fA-F0-9]{24}$/.test(post.status)) {
+                                return await Status.findById(post.status).lean();
+                            }
+                            if (typeof post?.status === 'number') {
+                                const resolved = await resolveStatusId(post.status);
+                                return resolved ? await Status.findById(resolved).lean() : null;
+                            }
+                            // Fallback: attempt to find by name using numeric-to-name mapping
+                            return await Status.findById(post.status).lean().catch(() => null);
+                        } catch (e) {
+                            return null;
+                        }
+                    })(),
+                ]);
+                return {
+                    id: post._id,
+                    slug: post.slug,
+                    title: post.title,
+                    authorName: author?.name || 'Unknown',
+                    statusId: post.status,
+                    statusName: statusInfo?.name || 'Unknown',
+                    createdAt: post.createdAt,
+                };
+            })
+        );
 
         return NextResponse.json({
             success: true,
             stats: {
-                totalPosts: Number(totalPosts[0]?.count || 0),
-                publishedPosts: Number(publishedPosts[0]?.count || 0),
-                draftPosts: Number(draftPosts[0]?.count || 0),
-                totalContact: Number(totalContact[0]?.count || 0),
-                newContact: Number(newContact[0]?.count || 0),
+                totalPosts,
+                publishedPosts,
+                draftPosts,
+                totalContact,
+                newContact,
             },
             recentPosts,
         });

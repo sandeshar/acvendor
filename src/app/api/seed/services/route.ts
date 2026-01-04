@@ -1,22 +1,21 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { connectDB } from '@/db';
 import {
-    servicesPageHero,
-    servicesPageDetails,
-    servicesPageProcessSection,
-    servicesPageProcessSteps,
-    servicesPageCTA,
-    servicesPageFeatures,
-    servicesPageBrands,
-    servicesPageTrust,
+    ServicesPageHero,
+    ServicesPageDetails,
+    ServicesPageProcessSection,
+    ServicesPageProcessSteps,
+    ServicesPageCTA,
+    ServicesPageFeatures,
+    ServicesPageBrands,
+    ServicesPageTrust,
 } from '@/db/servicesPageSchema';
-import { products, productImages } from '@/db/productsSchema';
-import { servicePosts } from '@/db/servicePostsSchema';
-import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
-import { reviewTestimonials } from '@/db/reviewSchema';
-import { shopPageHero } from '@/db/shopPageSchema';
-import { status, users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { Product, ProductImage } from '@/db/productsSchema';
+import { ServicePosts } from '@/db/servicePostsSchema';
+import { ServiceCategories, ServiceSubcategories } from '@/db/serviceCategoriesSchema';
+import { ReviewTestimonials } from '@/db/reviewSchema';
+import { ShopPageHero } from '@/db/shopPageSchema';
+import { Status, User } from '@/db/schema';
 
 function logDbError(e: any, context = '') {
     try {
@@ -39,13 +38,14 @@ export async function POST(request: Request) {
     let brandParam: string | null = null;
 
     try {
+        await connectDB();
+        
         const reqUrl = new URL(request.url);
         brandParam = reqUrl.searchParams.get('brand');
         clean = reqUrl.searchParams.get('clean') === '1' || reqUrl.searchParams.get('clean') === 'true';
 
-        const usersRows = await db.select().from(users).limit(1);
-        firstUser = usersRows[0];
-        const statusRows = await db.select().from(status);
+        firstUser = await User.findOne().lean();
+        const statusRows = await Status.find().lean();
         publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
 
         if (!firstUser || !publishedStatus) {
@@ -73,10 +73,10 @@ export async function POST(request: Request) {
 
         for (const b of targetBrands) {
             // Ensure category exists (idempotent)
-            const [existingBrand] = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, b.slug)).limit(1);
-            let brandId: number | null = null;
+            const existingBrand = await ServiceCategories.findOne({ slug: b.slug }).lean();
+            let brandId: any = null;
             if (!existingBrand) {
-                const res: any = await db.insert(serviceCategories).values({
+                const res = await ServiceCategories.create({
                     name: b.name,
                     slug: b.slug,
                     brand: b.slug,
@@ -88,19 +88,19 @@ export async function POST(request: Request) {
                     meta_title: `${b.name} AC`,
                     meta_description: `Authorized ${b.name} air conditioners and spare parts`,
                 });
-                brandId = Array.isArray(res) ? res[0]?.insertId : (res as any)?.insertId;
+                brandId = res._id;
             } else {
-                brandId = existingBrand.id;
-                await db.update(serviceCategories).set({ brand: b.slug }).where(eq(serviceCategories.id, existingBrand.id));
+                brandId = existingBrand._id;
+                await ServiceCategories.findByIdAndUpdate(existingBrand._id, { brand: b.slug });
             }
 
             // Seed subcategories for the brand
             for (const t of acTypes) {
                 const subSlug = `${b.slug}-${t.slug}`;
-                const [existingSub] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, subSlug)).limit(1);
+                const existingSub = await ServiceSubcategories.findOne({ slug: subSlug }).lean();
                 if (!existingSub) {
-                    await db.insert(serviceSubcategories).values({
-                        category_id: brandId as number,
+                    await ServiceSubcategories.create({
+                        category_id: brandId,
                         name: t.name,
                         ac_type: t.ac_type,
                         slug: subSlug,
@@ -115,24 +115,24 @@ export async function POST(request: Request) {
                 } else if (clean) {
                     // if clean requested, remove existing products for this subcategory so we can re-create
                     try {
-                        await db.delete(products).where(eq(products.subcategory_id, existingSub.id));
+                        await Product.deleteMany({ subcategory_id: existingSub._id });
                     } catch (e) { /* ignore */ }
                 }
 
                 // Insert 1-2 sample products per brand/subcategory (idempotent)
                 try {
-                    const [sub] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, subSlug)).limit(1);
+                    const sub = await ServiceSubcategories.findOne({ slug: subSlug }).lean();
                     for (let i = 1; i <= 2; i++) {
                         const pslug = `${b.slug}-${t.slug}-sample-${i}`;
-                        const [existingProd] = await db.select().from(products).where(eq(products.slug, pslug)).limit(1);
+                        const existingProd = await Product.findOne({ slug: pslug }).lean();
                         if (existingProd && !clean) continue;
                         if (existingProd && clean) {
-                            try { await db.delete(productImages).where(eq(productImages.product_id, existingProd.id)); } catch (e) { }
-                            try { await db.delete(products).where(eq(products.id, existingProd.id)); } catch (e) { }
+                            try { await ProductImage.deleteMany({ product_id: existingProd._id }); } catch (e) { }
+                            try { await Product.findByIdAndDelete(existingProd._id); } catch (e) { }
                         }
 
                         const title = `${b.name} ${t.name} ${i}`;
-                        const res: any = await db.insert(products).values({
+                        const res = await Product.create({
                             slug: pslug,
                             title,
                             excerpt: `${b.name} ${t.name} sample model ${i}`,
@@ -146,17 +146,17 @@ export async function POST(request: Request) {
                             capacity: t.ac_type,
                             warranty: '2 years',
                             category_id: brandId,
-                            subcategory_id: sub?.id || null,
-                            statusId: publishedStatus.id,
+                            subcategory_id: sub?._id || null,
+                            statusId: publishedStatus._id,
                             featured: i === 1 ? 1 : 0,
                             meta_title: title,
                             meta_description: `Seeded ${b.name} ${t.name}`,
                         });
 
-                        const insertId = Array.isArray(res) ? res[0]?.insertId : (res as any)?.insertId;
+                        const insertId = res._id;
                         if (insertId) {
                             try {
-                                await db.insert(productImages).values({
+                                await ProductImage.create({
                                     product_id: insertId,
                                     url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
                                     alt: title,
@@ -176,9 +176,9 @@ export async function POST(request: Request) {
 
         // Seed default Shop hero if missing
         try {
-            const [shopHero] = await db.select().from(shopPageHero).limit(1);
+            const shopHero = await ShopPageHero.findOne().lean();
             if (!shopHero) {
-                await db.insert(shopPageHero).values({
+                await ShopPageHero.create({
                     tagline: 'OFFICIAL DISTRIBUTORS',
                     title: 'Shop By Brand',
                     subtitle: "Compare features and prices across trusted brands",
@@ -194,10 +194,10 @@ export async function POST(request: Request) {
 
         // Seed a brand-specific hero for Midea if missing
         try {
-            const { shopPageBrandHero } = await import('@/db/shopPageSchema');
-            const [mideaHero] = await db.select().from(shopPageBrandHero).where(eq(shopPageBrandHero.brand_slug, 'midea')).limit(1);
+            const { ShopPageBrandHero } = await import('@/db/shopPageSchema');
+            const mideaHero = await ShopPageBrandHero.findOne({ brand_slug: 'midea' }).lean();
             if (!mideaHero) {
-                await db.insert(shopPageBrandHero).values({
+                await ShopPageBrandHero.create({
                     brand_slug: 'midea',
                     badge_text: 'Official Midea Distributor',
                     title: 'Midea Xtreme Series',
@@ -212,9 +212,9 @@ export async function POST(request: Request) {
         } catch (e) { /* non-fatal */ }
 
         // Seed additional static content if missing (idempotent checks)
-        const [heroExists] = await db.select().from(servicesPageHero).limit(1);
+        const heroExists = await ServicesPageHero.findOne().lean();
         if (!heroExists) {
-            await db.insert(servicesPageHero).values({
+            await ServicesPageHero.create({
                 tagline: 'OUR SERVICES',
                 title: 'Quality Air Conditioners & Parts',
                 description: 'Explore a wide range of AC units, parts, and installation services from trusted brands.',
@@ -238,9 +238,9 @@ export async function POST(request: Request) {
 
         // Ensure a content category and its subcategories exist
         const contentSlug = 'content';
-        const [contentCat] = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, contentSlug)).limit(1);
+        let contentCat = await ServiceCategories.findOne({ slug: contentSlug }).lean();
         if (!contentCat) {
-            await db.insert(serviceCategories).values({
+            await ServiceCategories.create({
                 name: 'Content',
                 slug: contentSlug,
                 description: 'SEO, social and copy services to grow your brand.',
@@ -253,7 +253,7 @@ export async function POST(request: Request) {
             });
         }
 
-        const [category] = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, contentSlug)).limit(1);
+        const category = await ServiceCategories.findOne({ slug: contentSlug }).lean();
 
         const serviceData = [
             { key: 'seo', icon: 'search', title: 'SEO', description: 'Search-optimized articles and landing pages.', bullets: ['Keyword research', 'On-page SEO', 'Long-form content'], image: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1400&q=80', image_alt: 'Content strategist reviewing SEO metrics on a laptop' },
@@ -261,12 +261,12 @@ export async function POST(request: Request) {
             { key: 'copy', icon: 'language', title: 'Copy', description: 'Conversion-focused website copy and microcopy.', bullets: ['Value prop', 'Landing pages', 'Microcopy'], image: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1400&q=80', image_alt: 'Copywriter drafting website copy next to design mockups' },
         ];
 
-        const subcategoryMap: Record<string, number> = {};
+        const subcategoryMap: Record<string, any> = {};
         for (const [index, s] of serviceData.entries()) {
-            const [existingSub] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, s.key)).limit(1);
+            const existingSub = await ServiceSubcategories.findOne({ slug: s.key }).lean();
             if (!existingSub) {
-                await db.insert(serviceSubcategories).values({
-                    category_id: category?.id as number,
+                await ServiceSubcategories.create({
+                    category_id: category?._id,
                     name: s.title,
                     slug: s.key,
                     description: s.description,
@@ -277,17 +277,17 @@ export async function POST(request: Request) {
                     meta_title: s.title,
                     meta_description: s.description,
                 });
-                const [subcat] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, s.key)).limit(1);
-                if (subcat?.id) subcategoryMap[s.key] = subcat.id as number;
+                const subcat = await ServiceSubcategories.findOne({ slug: s.key }).lean();
+                if (subcat?._id) subcategoryMap[s.key] = subcat._id;
             } else {
-                subcategoryMap[s.key] = existingSub.id as number;
+                subcategoryMap[s.key] = existingSub._id;
             }
         }
 
         for (const [index, s] of serviceData.entries()) {
-            const [existingDetail] = await db.select().from(servicesPageDetails).where(eq(servicesPageDetails.key, s.key)).limit(1);
+            const existingDetail = await ServicesPageDetails.findOne({ key: s.key }).lean();
             if (!existingDetail) {
-                await db.insert(servicesPageDetails).values({
+                await ServicesPageDetails.create({
                     key: s.key,
                     icon: s.icon,
                     title: s.title,
@@ -306,9 +306,9 @@ export async function POST(request: Request) {
                     return out;
                 })();
 
-                const [existingPost] = await db.select().from(servicePosts).where(eq(servicePosts.slug, `${s.key}-guide`)).limit(1);
+                const existingPost = await ServicePosts.findOne({ slug: `${s.key}-guide` }).lean();
                 if (!existingPost) {
-                    await db.insert(servicePosts).values({
+                    await ServicePosts.create({
                         slug: `${s.key}-guide`,
                         title: `${s.title} — guide`,
                         excerpt: s.description,
@@ -316,23 +316,23 @@ export async function POST(request: Request) {
                         thumbnail: s.image,
                         icon: s.icon,
                         featured: index === 0 ? 1 : 0,
-                        category_id: category?.id,
+                        category_id: category?._id,
                         subcategory_id: subcategoryMap[s.key],
                         price: '499.00',
                         price_type: 'fixed',
                         price_label: 'Starting at',
                         price_description: 'Pricing varies by scope and deliverables.',
                         currency: 'USD',
-                        authorId: firstUser.id,
-                        statusId: publishedStatus.id,
+                        authorId: firstUser._id,
+                        statusId: publishedStatus._id,
                         meta_title: `${s.title} — guide`,
                         meta_description: `Professional ${s.title.toLowerCase()} services`,
                     });
                 }
 
-                const [existingBase] = await db.select().from(servicePosts).where(eq(servicePosts.slug, s.key)).limit(1);
+                const existingBase = await ServicePosts.findOne({ slug: s.key }).lean();
                 if (!existingBase) {
-                    await db.insert(servicePosts).values({
+                    await ServicePosts.create({
                         slug: s.key,
                         title: s.title,
                         excerpt: s.description,
@@ -340,15 +340,15 @@ export async function POST(request: Request) {
                         thumbnail: s.image,
                         icon: s.icon,
                         featured: index === 0 ? 1 : 0,
-                        category_id: category?.id,
+                        category_id: category?._id,
                         subcategory_id: subcategoryMap[s.key],
                         price: '499.00',
                         price_type: 'fixed',
                         price_label: 'Starting at',
                         price_description: 'Pricing varies by scope and deliverables.',
                         currency: 'USD',
-                        authorId: firstUser.id,
-                        statusId: publishedStatus.id,
+                        authorId: firstUser._id,
+                        statusId: publishedStatus._id,
                         meta_title: s.title,
                         meta_description: `Professional ${s.title.toLowerCase()} services`,
                     });
@@ -373,9 +373,9 @@ export async function POST(request: Request) {
                     model: 'MSAG-18HRFN1',
                     capacity: '18,000 BTU/h',
                     warranty: '2 years',
-                    category_id: category?.id || null,
+                    category_id: category?._id || null,
                     subcategory_id: subcategoryMap['seo'] || null,
-                    statusId: publishedStatus.id,
+                    statusId: publishedStatus._id,
                     featured: 1,
                     meta_title: 'Xtreme Save 1.5 Ton Inverter AC',
                     meta_description: 'Efficient inverter AC ideal for Nepali homes and small offices.',
@@ -394,9 +394,9 @@ export async function POST(request: Request) {
                     model: 'MSAG-24HRFN1',
                     capacity: '24,000 BTU/h',
                     warranty: '2 years',
-                    category_id: category?.id || null,
+                    category_id: category?._id || null,
                     subcategory_id: subcategoryMap['social'] || null,
-                    statusId: publishedStatus.id,
+                    statusId: publishedStatus._id,
                     featured: 0,
                     meta_title: 'Xtreme Save 2.0 Ton',
                     meta_description: 'Powerful cooling for larger rooms and small halls.',
@@ -407,17 +407,17 @@ export async function POST(request: Request) {
             for (const p of productSamples) {
                 const payload: any = { ...p };
                 delete payload.image_urls;
-                const [existing] = await db.select().from(products).where(eq(products.slug, p.slug)).limit(1);
+                const existing = await Product.findOne({ slug: p.slug }).lean();
                 if (existing && clean) {
-                    try { await db.delete(productImages).where(eq(productImages.product_id, existing.id)); } catch (e) { }
-                    try { await db.delete(products).where(eq(products.id, existing.id)); } catch (e) { }
+                    try { await ProductImage.deleteMany({ product_id: existing._id }); } catch (e) { }
+                    try { await Product.findByIdAndDelete(existing._id); } catch (e) { }
                 }
                 if (!existing || clean) {
-                    const result = await db.insert(products).values(payload as any);
-                    const insertId = result?.[0]?.insertId;
+                    const result = await Product.create(payload as any);
+                    const insertId = result._id;
                     if (insertId && Array.isArray(p.image_urls) && p.image_urls.length) {
                         const imageInserts = p.image_urls.map((url: string, idx: number) => ({ product_id: insertId, url, alt: p.title || '', is_primary: idx === 0 ? 1 : 0, display_order: idx }));
-                        try { await db.insert(productImages).values(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
+                        try { await ProductImage.create(imageInserts); } catch (e) { logDbError(e, `insert product images ${p.slug}`); }
                     }
                 }
             }

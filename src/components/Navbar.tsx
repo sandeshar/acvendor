@@ -9,11 +9,13 @@ interface NavBarProps {
 }
 
 type NavbarItem = {
-    id: number;
+    _id?: string;
+    id?: number;
     label: string;
     href: string;
     order: number;
-    parent_id?: number | null;
+    // parent_id can be a numeric legacy id or an ObjectId (string)
+    parent_id?: any | null;
     is_button: number;
     is_active: number;
     is_dropdown?: number;
@@ -200,7 +202,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                     <nav className="flex items-center gap-9">
                         {navLinks
                             .filter((link) => link.is_button === 0 && (link.parent_id == null || link.parent_id === 0))
-                            .map((link) => {
+                            .map((link, linkIdx) => {
                                 const children = getChildren(link.id);
                                 const colCount = Math.max(1, Math.ceil(children.length / ITEMS_PER_COLUMN));
                                 const containerMinWidth = Math.max(
@@ -211,7 +213,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
                                 return (
                                     <div
-                                        key={link.id}
+                                        key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                                         className="static"
                                         onMouseEnter={() => {
                                             clearAllCloseTimers();
@@ -265,12 +267,12 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                         style={{ minWidth: `${CHILD_COLUMN_WIDTH}px` }}
                                                                         onMouseEnter={() => { clearAllCloseTimers(); setOpenDropdown(link.id); }}
                                                                     >
-                                                                        {col.map((child) => {
+                                                                        {col.map((child, childIdx) => {
                                                                             const grandchildren = getChildren(child.id);
                                                                             const childHasDesc = grandchildren.length > 0;
                                                                             return (
                                                                                 <div
-                                                                                    key={child.id}
+                                                                                    key={`${child._id ?? child.id ?? child.href}-${childIdx}`}
                                                                                     className="relative"
                                                                                     onMouseEnter={() => {
                                                                                         clearAllCloseTimers();
@@ -328,10 +330,10 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                         onMouseEnter={() => setOpenChildDropdown(child.id)}
                                                                         className={`py-1 ${openChildDropdown === child.id ? 'block' : 'hidden'}`}
                                                                     >
-                                                                        {grandchildren.map((gc) => {
+                                                                        {grandchildren.map((gc, gcIdx) => {
                                                                             const subSlug = safeParseSubcategoryFromHref(gc.href);
                                                                             return (
-                                                                                <div key={`g-${gc.id}`}>
+                                                                                <div key={`g-${gc._id ?? gc.id ?? gc.href}-${gcIdx}`}>
                                                                                     <Link
                                                                                         href={gc.href}
                                                                                         className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary transition-colors"
@@ -374,13 +376,13 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             <div className="py-2 px-3">
                                                                 {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
                                                                     <div className="space-y-2">
-                                                                        {subServices[hoveredSubSlug].map((s) => (
-                                                                            <Link key={s.id} href={`/services/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded">
+                                                                        {subServices[hoveredSubSlug].map((s, sIdx) => (
+                                                                            <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/services/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded">
                                                                                 {s.thumbnail ? (
                                                                                     // eslint-disable-next-line @next/next/no-img-element
                                                                                     <img src={s.thumbnail} alt={s.title} className="w-12 h-8 object-cover rounded" />
                                                                                 ) : (
-                                                                                    <span className="rounded w-12 h-8 bg-slate-100 block" />
+                                                                                    <span className="rounded w12 h-8 bg-slate-100 block" />
                                                                                 )}
                                                                                 <div className="flex-1">
                                                                                     <div className="text-sm font-medium text-slate-800 truncate">{s.title}</div>
@@ -403,9 +405,9 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                             })}
                     </nav>
 
-                    {navLinks.filter((link) => link.is_button === 1).map((link) => (
+                    {navLinks.filter((link) => link.is_button === 1).map((link, linkIdx) => (
                         <a
-                            key={link.id}
+                            key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                             href={link.href}
                             className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
                         >
@@ -436,13 +438,13 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
             {isMenuOpen && (
                 <div className="md:hidden absolute top-full left-0 right-0 bg-card backdrop-blur-none border-b border-slate-200/80 shadow-lg">
                     <nav className="flex flex-col px-4 py-4 gap-1">
-                        {navLinks.filter((link) => link.is_button === 0 && (link.parent_id == null || link.parent_id === 0)).map((link) => {
+                        {navLinks.filter((link) => link.is_button === 0 && (link.parent_id == null || link.parent_id === 0)).map((link, linkIdx) => {
                             const children = getChildren(link.id);
                             const hasDropdown = link.is_dropdown === 1 && children.length > 0;
                             const isExpanded = mobileOpenDropdown === link.id;
 
                             return (
-                                <div key={link.id}>
+                                <div key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}>
                                     <div className="flex items-center justify-between">
                                         <a
                                             className="flex-1 text-sm font-medium leading-normal text-slate-700 hover:text-primary hover:bg-slate-100 px-4 py-3 rounded-lg transition-colors"
@@ -503,9 +505,9 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                             );
                         })}
 
-                        {navLinks.filter((link) => link.is_button === 1).map((link) => (
+                        {navLinks.filter((link) => link.is_button === 1).map((link, linkIdx) => (
                             <a
-                                key={link.id}
+                                key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                                 href={link.href}
                                 className="flex items-center justify-center overflow-hidden rounded-lg h-10 px-4 mt-2 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
                                 onClick={() => setIsMenuOpen(false)}

@@ -1,41 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { contactPageInfo } from '@/db/contactPageSchema';
+
+import { connectDB } from '@/db';
+import { ContactPageInfo } from '@/db/contactPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch info section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const info = await db.select().from(contactPageInfo).where(eq(contactPageInfo.id, parseInt(id))).limit(1);
+            const info = await ContactPageInfo.findById(id).lean();
 
-            if (info.length === 0) {
+            if (!info) {
                 return NextResponse.json({ error: 'Info section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(info[0]);
+            return NextResponse.json(info);
         }
 
-        const info = await db.select().from(contactPageInfo).where(eq(contactPageInfo.is_active, 1)).limit(1);
+        const info = await ContactPageInfo.findOne({ is_active: 1 }).lean();
 
-        if (info.length === 0) {
+        if (!info) {
             return NextResponse.json({ error: 'No active info section found' }, { status: 404 });
         }
 
-        return NextResponse.json(info[0]);
-    } catch (error) {
-        console.error('Error fetching info section:', error);
-        return NextResponse.json({ error: 'Failed to fetch info section' }, { status: 500 });
-    }
-}
-
-// POST - Create info section
-export async function POST(request: NextRequest) {
-    try {
+        return NextResponse.json(info);
+        await connectDB();
         const body = await request.json();
         const {
             office_location,
@@ -59,7 +52,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'office_location, phone, email and map_url are required' }, { status: 400 });
         }
 
-        const result = await db.insert(contactPageInfo).values({
+        const result = await ContactPageInfo.create({
             office_location,
             phone,
             email,
@@ -80,7 +73,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('contact-info', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Info section created successfully', id: result[0].insertId },
+            { success: true, message: 'Info section created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -92,6 +85,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update info section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const {
             id,
@@ -133,7 +127,7 @@ export async function PUT(request: NextRequest) {
         if (opening_hours_text !== undefined) updateData.opening_hours_text = opening_hours_text;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(contactPageInfo).set(updateData).where(eq(contactPageInfo.id, id));
+        await ContactPageInfo.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('contact-info', 'max');
 
@@ -147,6 +141,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete info section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -154,7 +149,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(contactPageInfo).where(eq(contactPageInfo.id, parseInt(id)));
+        await ContactPageInfo.findByIdAndDelete(id);
 
         revalidateTag('contact-info', 'max');
 

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Quotation, QuotationItem, ClientInfo } from '@/types/quotation';
 import { showToast } from '@/components/Toast';
+import { parsePriceNumber, formatPrice } from '@/utils/formatPrice';
 
 function formatCurrency(n: number) { return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
@@ -81,7 +82,7 @@ export default function AdminQuotationPage() {
                 if (!res.ok) return;
                 const arr = await res.json();
                 if (Array.isArray(arr) && arr.length) {
-                    const mapped = arr.map((p: any) => ({ description: p.title || p.slug, qty: 1, unitPrice: p.price ? Number(String(p.price).replace(/[^0-9.-]+/g, '')) : 0, discountPercent: 0 }));
+                    const mapped = arr.map((p: any) => ({ description: p.title || p.slug, qty: 1, unitPrice: p.price ? parsePriceNumber(p.price) : 0, discountPercent: 0 }));
                     setItems(prev => [...mapped, ...prev]);
                 }
             } catch (e) { console.error(e); }
@@ -89,7 +90,7 @@ export default function AdminQuotationPage() {
     }, [productIdsParam, editId]);
 
     const addProduct = (p: any) => {
-        const price = p.price ? Number(String(p.price).replace(/[^0-9.-]+/g, '')) : 0;
+        const price = p.price ? parsePriceNumber(p.price) : 0;
         const desc = p.title || p.name || (p.slug || 'Product');
         setItems(prev => [...prev, { description: desc, qty: 1, unitPrice: price, discountPercent: 0 }]);
         setSearchQuery('');
@@ -280,7 +281,7 @@ export default function AdminQuotationPage() {
                                     {searchResults.map((p, i) => (
                                         <button key={i} onClick={() => addProduct(p)} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3">
                                             <div className="text-sm font-medium">{p.title || p.name || p.slug}</div>
-                                            <div className="ml-auto text-xs text-gray-500">{p.price ? `$${p.price}` : ''}</div>
+                                            <div className="ml-auto text-xs text-gray-500">{p.price ? `NPR ${formatPrice(p.price)}` : ''}</div>
                                         </button>
                                     ))}
                                 </div>

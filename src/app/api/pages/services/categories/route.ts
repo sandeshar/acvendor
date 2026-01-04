@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { serviceCategories } from "@/db/serviceCategoriesSchema";
-import { eq, or } from "drizzle-orm";
+import { connectDB } from "@/db";
+import { ServiceCategories } from "@/db/serviceCategoriesSchema";
 
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const brand = request.nextUrl.searchParams.get('brand');
         // Include both brand-specific categories and global (empty-brand) categories so brand pages show shared categories too
-        const categories = brand ? await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, ''))) : await db.select().from(serviceCategories);
+        const categories = brand ? await ServiceCategories.find({ $or: [{ brand: brand }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
         return NextResponse.json(categories);
     } catch (error) {
         console.error("Error fetching service categories:", error);
@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { name, slug, description, icon, brand } = body;
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
         }
 
-        const result = await db.insert(serviceCategories).values({
+        const result = await ServiceCategories.create({
             name,
             slug,
             brand: brand || '',
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
             icon: icon || null,
         });
 
-        return NextResponse.json({ id: result[0].insertId, message: "Category created successfully" });
+        return NextResponse.json({ id: result._id, message: "Category created successfully" });
     } catch (error) {
         console.error("Error creating category:", error);
         return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, name, slug, description, icon, brand } = body;
 
@@ -48,16 +50,14 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.update(serviceCategories)
-            .set({
-                name,
-                slug,
-                brand: brand || '',
-                description: description || null,
-                icon: icon || null,
-                updatedAt: new Date(),
-            })
-            .where(eq(serviceCategories.id, id));
+        await ServiceCategories.findByIdAndUpdate(id, {
+            name,
+            slug,
+            brand: brand || '',
+            description: description || null,
+            icon: icon || null,
+            updatedAt: new Date(),
+        }, { new: true });
 
         return NextResponse.json({ message: "Category updated successfully" });
     } catch (error) {
@@ -68,6 +68,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id } = body;
 
@@ -75,7 +76,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.delete(serviceCategories).where(eq(serviceCategories.id, id));
+        await ServiceCategories.findByIdAndDelete(id);
         return NextResponse.json({ message: "Category deleted successfully" });
     } catch (error) {
         console.error("Error deleting category:", error);

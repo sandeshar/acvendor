@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { serviceSubcategories, serviceCategories } from "@/db/serviceCategoriesSchema";
-import { eq, inArray, or } from "drizzle-orm";
+import { connectDB } from "@/db";
+import { ServiceSubcategories, ServiceCategories } from "@/db/serviceCategoriesSchema";
 
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const brand = request.nextUrl.searchParams.get('brand');
         if (brand) {
             // fetch categories with this brand OR global categories, then return subcategories for those categories
-            const cats = await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, '')));
-            const catIds = cats.map((c: any) => c.id).filter(Boolean);
+            const cats = await ServiceCategories.find({ $or: [{ brand }, { brand: '' }] }).lean();
+            const catIds = cats.map((c: any) => c._id).filter(Boolean);
             if (catIds.length) {
-                const subs = await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.category_id, catIds));
+                const subs = await ServiceSubcategories.find({ category_id: { $in: catIds } }).lean();
                 return NextResponse.json(subs);
             }
             return NextResponse.json([]);
         }
 
-        const subcategories = await db.select().from(serviceSubcategories);
+        const subcategories = await ServiceSubcategories.find().lean();
         return NextResponse.json(subcategories);
     } catch (error) {
         console.error("Error fetching service subcategories:", error);
@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
         const body = await request.json();
         const { category_id, name, slug, description, ac_type } = body;
 
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Category ID, name, and slug are required" }, { status: 400 });
         }
 
-        const result = await db.insert(serviceSubcategories).values({
+        const result = await ServiceSubcategories.create({
             category_id,
             name,
             ac_type: ac_type || null,
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
             description: description || null,
         });
 
-        return NextResponse.json({ id: result[0].insertId, message: "Subcategory created successfully" });
+        return NextResponse.json({ id: result._id, message: "Subcategory created successfully" });
     } catch (error) {
         console.error("Error creating subcategory:", error);
         return NextResponse.json({ error: "Failed to create subcategory" }, { status: 500 });
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, category_id, name, slug, description, ac_type } = body;
 
@@ -58,16 +60,18 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.update(serviceSubcategories)
-            .set({
+        await ServiceSubcategories.findByIdAndUpdate(
+            id,
+            {
                 category_id,
                 name,
                 ac_type: ac_type || null,
                 slug,
                 description: description || null,
                 updatedAt: new Date(),
-            })
-            .where(eq(serviceSubcategories.id, id));
+            },
+            { new: true }
+        );
 
         return NextResponse.json({ message: "Subcategory updated successfully" });
     } catch (error) {
@@ -78,6 +82,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id } = body;
 
@@ -85,7 +90,7 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
         }
 
-        await db.delete(serviceSubcategories).where(eq(serviceSubcategories.id, id));
+        await ServiceSubcategories.findByIdAndDelete(id);
         return NextResponse.json({ message: "Subcategory deleted successfully" });
     } catch (error) {
         console.error("Error deleting subcategory:", error);

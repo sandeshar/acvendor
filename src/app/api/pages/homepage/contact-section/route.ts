@@ -1,33 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { homepageContactSection } from '@/db/homepageSchema';
+import { connectDB } from '@/db';
+import { HomepageContactSection } from '@/db/homepageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch contact section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const section = await db.select().from(homepageContactSection).where(eq(homepageContactSection.id, parseInt(id))).limit(1);
+            const section = await HomepageContactSection.findById(id).lean();
 
-            if (section.length === 0) {
+            if (!section) {
                 return NextResponse.json({ error: 'Contact section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(section[0]);
+            return NextResponse.json(section);
         }
 
-        const section = await db.select().from(homepageContactSection).where(eq(homepageContactSection.is_active, 1)).limit(1);
+        const section = await HomepageContactSection.findOne({ is_active: 1 }).lean();
 
-        if (section.length === 0) {
+        if (!section) {
             // Return empty object to allow admin UI to create new entry
             return NextResponse.json({});
         }
 
-        return NextResponse.json(section[0]);
+        return NextResponse.json(section);
     } catch (error) {
         console.error('Error fetching contact section:', error);
         return NextResponse.json({ error: 'Failed to fetch contact section' }, { status: 500 });
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
 // POST - Create contact section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { title, description, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active = 1 } = body;
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
-        const result = await db.insert(homepageContactSection).values({
+        const result = await HomepageContactSection.create({
             title,
             description,
             name_placeholder,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('homepage-contact-section', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Contact section created successfully', id: result[0].insertId },
+            { success: true, message: 'Contact section created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update contact section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, title, description, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active } = body;
 
@@ -88,7 +90,7 @@ export async function PUT(request: NextRequest) {
         if (submit_button_text !== undefined) updateData.submit_button_text = submit_button_text;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(homepageContactSection).set(updateData).where(eq(homepageContactSection.id, id));
+        await HomepageContactSection.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('homepage-contact-section', 'max');
         return NextResponse.json({ success: true, message: 'Contact section updated successfully' });
     } catch (error) {
@@ -100,6 +102,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete contact section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -107,7 +110,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(homepageContactSection).where(eq(homepageContactSection.id, parseInt(id)));
+        await HomepageContactSection.findByIdAndDelete(id);
         revalidateTag('homepage-contact-section', 'max');
 
         return NextResponse.json({ success: true, message: 'Contact section deleted successfully' });

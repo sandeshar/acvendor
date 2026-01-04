@@ -1,24 +1,18 @@
-import { foreignKey, int, mysqlTable, primaryKey } from "drizzle-orm/mysql-core";
-import { reviewTestimonials } from "./reviewSchema";
-import { servicePosts } from "./servicePostsSchema";
+import mongoose, { Schema, model, models } from 'mongoose';
 
-export const reviewTestimonialServices = mysqlTable(
-    "review_testimonial_services",
-    {
-        testimonialId: int("testimonial_id").notNull(),
-        serviceId: int("service_id").notNull(),
-    },
-    (table) => ({
-        pk: primaryKey({ columns: [table.testimonialId, table.serviceId] }),
-        testimonialFk: foreignKey({
-            columns: [table.testimonialId],
-            foreignColumns: [reviewTestimonials.id],
-            name: "rt_svc_testimonial_fk",
-        }).onDelete("cascade"),
-        serviceFk: foreignKey({
-            columns: [table.serviceId],
-            foreignColumns: [servicePosts.id],
-            name: "rt_svc_service_fk",
-        }).onDelete("cascade"),
-    })
-);
+// Review Testimonial Services (Many-to-Many relationship)
+const reviewTestimonialServicesSchema = new Schema({
+    testimonialId: { type: Schema.Types.ObjectId, ref: 'ReviewTestimonials', required: true },
+    serviceId: { type: Schema.Types.ObjectId, ref: 'ServicePosts', required: true },
+}, { 
+    timestamps: false,
+    collection: 'review_testimonial_services'
+});
+
+// Create compound index for the many-to-many relationship
+reviewTestimonialServicesSchema.index({ testimonialId: 1, serviceId: 1 }, { unique: true });
+
+export const ReviewTestimonialServices = models.ReviewTestimonialServices || model('ReviewTestimonialServices', reviewTestimonialServicesSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const reviewTestimonialServices = ReviewTestimonialServices;

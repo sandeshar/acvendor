@@ -45,16 +45,16 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
                 <span className="material-symbols-outlined">ac_unit</span>
                 <p className="text-sm font-bold leading-normal">{brand ? `${brand.toUpperCase()} All` : 'All Midea'}</p>
             </Link>
-            {categories.map((c) => (
-                <div key={c.id}>
+            {categories.map((c, cIdx) => (
+                <div key={c._id ?? c.id ?? c.slug ?? cIdx}>
                     <Link href={`/midea-ac?category=${encodeURIComponent(c.slug)}`} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${selectedCategory === c.slug ? 'bg-primary/10 text-primary' : 'hover:bg-[#f0f2f4]'} transition-colors`}>
                         <span className="material-symbols-outlined text-[#617589]">{c.icon || 'inventory_2'}</span>
                         <p className="text-[#111418] text-sm font-medium leading-normal">{c.name}</p>
                     </Link>
                     {/* subcategories */}
                     <div className="ml-6 mt-1 flex flex-col gap-1">
-                        {subcats.filter(sc => sc.category_id === c.id).map((sc: any) => (
-                            <Link key={sc.id} href={`/midea-ac?category=${encodeURIComponent(c.slug)}&subcategory=${encodeURIComponent(sc.slug)}`} className={`px-3 py-1 rounded-lg text-sm ${selectedSubcategory === sc.slug ? 'bg-primary/10 text-primary font-medium' : 'text-[#617589] hover:bg-[#f0f2f4]'}`}>
+                        {subcats.filter(sc => sc.category_id === c.id).map((sc: any, scIdx: number) => (
+                            <Link key={sc._id ?? sc.id ?? sc.slug ?? scIdx} href={`/midea-ac?category=${encodeURIComponent(c.slug)}&subcategory=${encodeURIComponent(sc.slug)}`} className={`px-3 py-1 rounded-lg text-sm ${selectedSubcategory === sc.slug ? 'bg-primary/10 text-primary font-medium' : 'text-[#617589] hover:bg-[#f0f2f4]'}`}>
                                 {sc.name}
                             </Link>
                         ))}

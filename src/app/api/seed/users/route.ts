@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import { connectDB } from '@/db';
+import { User } from '@/db/schema';
 import { hashPassword } from '@/utils/authHelper';
 
 export async function POST() {
     try {
+        await connectDB();
+        
         // Only seed a Super Admin if no users exist (avoid foreign key issues)
-        const existing = await db.select().from(users);
+        const existing = await User.find().lean();
         if (!existing || existing.length === 0) {
-            await db.insert(users).values({
+            await User.create({
                 name: 'Super Admin',
                 email: 'admin@contentsolution.np',
                 password: await hashPassword('password123'),

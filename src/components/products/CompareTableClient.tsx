@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 export default function CompareTableClient({ products }: { products: any[] }) {
     const [showOnlyDifferences, setShowOnlyDifferences] = useState(false);
@@ -32,7 +33,7 @@ export default function CompareTableClient({ products }: { products: any[] }) {
     // helper: get raw value for checking presence/comparison
     function getRaw(p: any, key: string) {
         switch (key) {
-            case 'compare_at_price': return p.compare_at_price;
+            case 'compare_at_price': return parsePriceNumber(p.compare_at_price);
             case 'currency': return p.currency;
             case 'category': return p.category?.name;
             case 'subcategory': return p.subcategory?.name;
@@ -59,7 +60,7 @@ export default function CompareTableClient({ products }: { products: any[] }) {
 
     function renderField(p: any, key: string) {
         switch (key) {
-            case 'compare_at_price': return p.compare_at_price ? String(p.compare_at_price) : '-';
+            case 'compare_at_price': return p.compare_at_price ? `NPR ${formatPrice(p.compare_at_price)}` : '-';
             case 'currency': return p.currency || '-';
             case 'category': return p.category?.name || '-';
             case 'subcategory': return p.subcategory?.name || '-';
@@ -153,7 +154,7 @@ export default function CompareTableClient({ products }: { products: any[] }) {
                                         <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="h-24 w-24 object-contain rounded" />
                                         <div className="font-bold text-center">{p.title}</div>
                                         <div className="text-xs text-gray-500">{p.model || p.capacity}</div>
-                                        <div className="text-sm font-semibold mt-1">{p.price}</div>
+                                        <div className="text-sm font-semibold mt-1">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</div>
                                         <div className="mt-2"><Link href={`/products/${p.slug}`} className="text-sm text-primary">View</Link></div>
                                     </div>
                                 </th>

@@ -1,14 +1,21 @@
-import { mysqlTable, int, varchar, timestamp } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
-export const navbarItems = mysqlTable("navbar_items", {
-    id: int("id").autoincrement().primaryKey(),
-    label: varchar("label", { length: 100 }).notNull(),
-    href: varchar("href", { length: 255 }).notNull(),
-    order: int("order").default(0).notNull(),
-    parent_id: int("parent_id"),
-    is_button: int("is_button").default(0).notNull(), // 0 = link, 1 = button
-    is_dropdown: int("is_dropdown").default(0).notNull(), // 0 = normal, 1 = dropdown that contains children
-    is_active: int("is_active").default(1).notNull(), // 0 = hidden, 1 = visible
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+// Navbar Items
+const navbarItemsSchema = new Schema({
+    label: { type: String, required: true, maxlength: 100 },
+    href: { type: String, required: true, maxlength: 255 },
+    order: { type: Number, default: 0, required: true },
+    // Use ObjectId for parent references to support current seeding and DB ids
+    parent_id: { type: Schema.Types.ObjectId, ref: 'NavbarItems', default: null },
+    is_button: { type: Number, default: 0, required: true }, // 0 = link, 1 = button
+    is_dropdown: { type: Number, default: 0, required: true }, // 0 = normal, 1 = dropdown that contains children
+    is_active: { type: Number, default: 1, required: true }, // 0 = hidden, 1 = visible
+}, {
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+    collection: 'navbar_items'
 });
+
+export const NavbarItems = models.NavbarItems || model('NavbarItems', navbarItemsSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const navbarItems = NavbarItems;

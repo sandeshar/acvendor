@@ -1,21 +1,31 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Blog Page Hero Section
-export const blogPageHero = mysqlTable("blog_page_hero", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    subtitle: varchar("subtitle", { length: 512 }).notNull(),
-    background_image: varchar("background_image", { length: 512 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const blogPageHeroSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    subtitle: { type: String, required: true, maxlength: 512 },
+    background_image: { type: String, required: true, maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'blog_page_hero'
 });
 
+export const BlogPageHero = models.BlogPageHero || model('BlogPageHero', blogPageHeroSchema);
+
 // Blog Page CTA Section
-export const blogPageCTA = mysqlTable("blog_page_cta", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    button_text: varchar("button_text", { length: 100 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const blogPageCTASchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    button_text: { type: String, required: true, maxlength: 100 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'blog_page_cta'
 });
+
+export const BlogPageCTA = models.BlogPageCTA || model('BlogPageCTA', blogPageCTASchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const blogPageHero = BlogPageHero;
+export const blogPageCTA = BlogPageCTA;

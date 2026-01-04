@@ -1,43 +1,45 @@
-import { db } from "@/db";
-import { blogPageHero, blogPageCTA } from "@/db/blogPageSchema";
-import { blogPosts, users, status } from "@/db/schema";
+import { connectDB } from "@/db";
+import { BlogPageHero, BlogPageCTA } from "@/db/blogPageSchema";
+import { BlogPost, User, Status } from "@/db/schema";
 import { NextResponse } from "next/server";
 
 export async function POST() {
     try {
+        await connectDB();
+
         // Clear existing data
-        await db.delete(blogPageHero);
-        await db.delete(blogPageCTA);
-        await db.delete(blogPosts);
+        await BlogPageHero.deleteMany({});
+        await BlogPageCTA.deleteMany({});
+        await BlogPost.deleteMany({});
 
         // Seed Hero
-        await db.insert(blogPageHero).values({
+        await BlogPageHero.create({
             title: "The Content Solution Blog",
             subtitle: "Expert insights, trends, and strategies in content marketing for Nepali businesses.",
             background_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBP7wRSP6PNVQerc44qHCLRoYYd7gD0XXulRDkuPttKz8c2wm7R80QfOir0XcMWFKjBGgyJ5pcMWrIKbPt6SCgNWruICSXdJlao0ovxqmc5rLvSBMdY5X6oZLjHPx9qPTGkgNMIYnTzo9hXeQxzkwUbhDDc7WVvEd49h17mKa6w8QfB2EIEDD7W8XIG5RncWJ-n5n8nCSqHu4E6zkNP0BsMHsoIQz9Vpi8C5qNBL4Po-ca4mAAVTciZ-3q8TREYwunoIejOppPSO_k"
         });
 
         // Seed CTA
-        await db.insert(blogPageCTA).values({
+        await BlogPageCTA.create({
             title: "Stay Ahead of the Curve",
             description: "Get the latest content marketing tips delivered to your inbox.",
             button_text: "Subscribe"
         });
 
         // Ensure users and statuses exist so this seeder can run independently
-        const existingUsers = await db.select().from(users).limit(1);
+        const existingUsers = await User.find().limit(1).lean();
         if (!existingUsers || existingUsers.length === 0) {
             const { hashPassword } = await import('@/utils/authHelper');
-            await db.insert(users).values({
+            await User.create({
                 name: 'Super Admin',
                 email: 'admin@contentsolution.np',
                 password: await hashPassword('password123'),
                 role: 'superadmin',
             });
         }
-        const existingStatuses = await db.select().from(status).limit(1);
+        const existingStatuses = await Status.find().limit(1).lean();
         if (!existingStatuses || existingStatuses.length === 0) {
-            await db.insert(status).values([
+            await Status.create([
                 { name: 'draft' },
                 { name: 'published' },
                 { name: 'in-review' },
@@ -45,8 +47,9 @@ export async function POST() {
         }
 
         // Create a set of realistic, long blog posts
-        const [firstUser] = await db.select().from(users).limit(1);
-        const statusRows = await db.select().from(status);
+        // NOTE: we need full Mongoose documents here so `.id` virtual is available
+        const firstUser = await User.findOne();
+        const statusRows = await Status.find();
         const publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
 
         if (firstUser && publishedStatus) {
@@ -130,7 +133,7 @@ export async function POST() {
                 p.content = replaceBlogs(p.content);
                 p.metaDescription = replaceBlogs(p.metaDescription);
                 p.metaTitle = replaceBlogs(p.metaTitle);
-                await db.insert(blogPosts).values(p as any);
+                await BlogPost.create(p as any);
             }
         }
 

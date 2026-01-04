@@ -1,26 +1,28 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { connectDB } from '@/db';
 import {
-    homepageHero,
-    homepageTrustSection,
-    homepageTrustLogos,
-    homepageExpertiseSection,
-    homepageExpertiseItems,
-    homepageContactSection
+    HomepageHero,
+    HomepageTrustSection,
+    HomepageTrustLogos,
+    HomepageExpertiseSection,
+    HomepageExpertiseItems,
+    HomepageContactSection
 } from '@/db/homepageSchema';
 
 export async function POST() {
     try {
+        await connectDB();
+        
         // Clear existing data
-        await db.delete(homepageHero);
-        await db.delete(homepageTrustSection);
-        await db.delete(homepageTrustLogos);
-        await db.delete(homepageExpertiseSection);
-        await db.delete(homepageExpertiseItems);
-        await db.delete(homepageContactSection);
+        await HomepageHero.deleteMany({});
+        await HomepageTrustSection.deleteMany({});
+        await HomepageTrustLogos.deleteMany({});
+        await HomepageExpertiseSection.deleteMany({});
+        await HomepageExpertiseItems.deleteMany({});
+        await HomepageContactSection.deleteMany({});
 
         // Seed Hero Section
-        await db.insert(homepageHero).values({
+        await HomepageHero.create({
             title: 'AC Vendor — Trusted Air Conditioners & Parts',
             subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
             cta_text: 'Shop Now',
@@ -45,7 +47,7 @@ export async function POST() {
         });
 
         // Seed Trust Section
-        await db.insert(homepageTrustSection).values({
+        await HomepageTrustSection.create({
             heading: 'TRUSTED BY INDUSTRY LEADERS',
             is_active: 1,
         });
@@ -97,11 +99,11 @@ export async function POST() {
         ];
 
         for (const logo of trustLogos) {
-            await db.insert(homepageTrustLogos).values(logo);
+            await HomepageTrustLogos.create(logo);
         }
 
         // Seed Expertise Section
-        await db.insert(homepageExpertiseSection).values({
+        await HomepageExpertiseSection.create({
             title: 'Why Shop With Us',
             description: 'Quality AC units, professional installation, and trusted after-sales service tailored for homes and businesses.',
             is_active: 1,
@@ -140,11 +142,11 @@ export async function POST() {
         ];
 
         for (const item of expertiseItems) {
-            await db.insert(homepageExpertiseItems).values(item);
+            await HomepageExpertiseItems.create(item);
         }
 
         // Seed Contact Section
-        await db.insert(homepageContactSection).values({
+        await HomepageContactSection.create({
             title: 'Need Help Choosing?',
             description: "Our support team can help you pick the right AC and schedule installation. Fill out the form and we'll respond within 24 hours.",
             name_placeholder: 'Your Name',

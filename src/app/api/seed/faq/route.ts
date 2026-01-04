@@ -1,22 +1,24 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { connectDB } from '@/db';
 import {
-    faqPageHeader,
-    faqCategories,
-    faqItems,
-    faqPageCTA
+    FAQPageHeader,
+    FAQCategories,
+    FAQItems,
+    FAQPageCTA
 } from '@/db/faqPageSchema';
 
 export async function POST() {
     try {
+        await connectDB();
+        
         // Clear existing data
-        await db.delete(faqItems);
-        await db.delete(faqCategories);
-        await db.delete(faqPageHeader);
-        await db.delete(faqPageCTA);
+        await FAQItems.deleteMany({});
+        await FAQCategories.deleteMany({});
+        await FAQPageHeader.deleteMany({});
+        await FAQPageCTA.deleteMany({});
 
         // Seed Header Section
-        await db.insert(faqPageHeader).values({
+        await FAQPageHeader.create({
             title: 'Frequently Asked Questions',
             description: "Answers to common questions about products, shipping, installation, and warranty. If you don't find your answer, contact our support team.",
             search_placeholder: 'Search for a question...',
@@ -31,10 +33,10 @@ export async function POST() {
             { name: 'Warranty', display_order: 4, is_active: 1 },
         ];
 
-        const categoryIds: number[] = [];
+        const categoryIds: any[] = [];
         for (const category of categories) {
-            const result = await db.insert(faqCategories).values(category);
-            categoryIds.push(result[0].insertId);
+            const result = await FAQCategories.create(category);
+            categoryIds.push(result._id);
         }
 
         // Seed FAQ Items
@@ -77,11 +79,11 @@ export async function POST() {
         ];
 
         for (const item of faqItemsData) {
-            await db.insert(faqItems).values(item);
+            await FAQItems.create(item);
         }
 
         // Seed CTA Section
-        await db.insert(faqPageCTA).values({
+        await FAQPageCTA.create({
             title: 'Still have questions?',
             description: "Can't find the answer you're looking for? Please chat to our friendly team.",
             button_text: 'Get in Touch',

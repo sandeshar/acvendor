@@ -1,39 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc, and } from 'drizzle-orm';
-import { db } from '@/db';
-import { faqItems } from '@/db/faqPageSchema';
+import { connectDB } from '@/db';
+import { FAQItems } from '@/db/faqPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch FAQ items
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const category_id = searchParams.get('category_id');
 
         if (id) {
-            const item = await db.select().from(faqItems).where(eq(faqItems.id, parseInt(id))).limit(1);
+            const item = await FAQItems.findById(id).lean();
 
-            if (item.length === 0) {
+            if (!item) {
                 return NextResponse.json({ error: 'FAQ item not found' }, { status: 404 });
             }
 
-            return NextResponse.json(item[0]);
+            return NextResponse.json(item);
         }
 
         let items;
 
         if (category_id) {
-            items = await db.select().from(faqItems)
-                .where(and(
-                    eq(faqItems.is_active, 1),
-                    eq(faqItems.category_id, parseInt(category_id))
-                ))
-                .orderBy(asc(faqItems.display_order));
+            items = await FAQItems.find({ is_active: 1, category_id }).sort({ display_order: 1 }).lean();
         } else {
-            items = await db.select().from(faqItems)
-                .where(eq(faqItems.is_active, 1))
-                .orderBy(asc(faqItems.display_order));
+            items = await FAQItems.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
         }
 
         return NextResponse.json(items);
@@ -46,6 +39,7 @@ export async function GET(request: NextRequest) {
 // POST - Create FAQ item
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { category_id, question, answer, display_order, is_active = 1 } = body;
 
@@ -56,7 +50,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await db.insert(faqItems).values({
+        const result = await FAQItems.create({
             category_id,
             question,
             answer,
@@ -67,7 +61,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('faq-items', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'FAQ item created successfully', id: result[0].insertId },
+            { success: true, message: 'FAQ item created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -79,6 +73,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update FAQ item
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, category_id, question, answer, display_order, is_active } = body;
 
@@ -93,7 +88,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(faqItems).set(updateData).where(eq(faqItems.id, id));
+        await FAQItems.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('faq-items', 'max');
 
@@ -107,6 +102,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete FAQ item
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -114,7 +110,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(faqItems).where(eq(faqItems.id, parseInt(id)));
+        await FAQItems.findByIdAndDelete(id);
 
         revalidateTag('faq-items', 'max');
 

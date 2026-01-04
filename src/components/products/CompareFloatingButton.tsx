@@ -6,7 +6,7 @@ import useCompare from './useCompare';
 export default function CompareFloatingButton() {
     const { items } = useCompare();
     if (!items || items.length === 0) return null;
-    const ids = items.map(i => i.id).join(',');
+    const ids = items.map(i => String(i._id ?? i.id)).join(',');
 
     return (
         <div className="fixed bottom-24 right-6 z-50">

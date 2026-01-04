@@ -1,54 +1,59 @@
-import { int, mysqlTable, timestamp, varchar, decimal, text } from "drizzle-orm/mysql-core";
-import { serviceCategories, serviceSubcategories } from "./serviceCategoriesSchema";
+import mongoose, { Schema, model, models } from 'mongoose';
 
-// NOTE: Products use the central category manager tables (`service_categories` and `service_subcategories`).
-// We do not create separate product category tables; instead products reference the category manager.
-
-// Products table
-export const products = mysqlTable("products", {
-    id: int("id").primaryKey().autoincrement(),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    title: varchar("title", { length: 512 }).notNull(),
-    excerpt: varchar("excerpt", { length: 1024 }).notNull().default(''),
-    content: text("content"),
-    thumbnail: varchar("thumbnail", { length: 512 }),
-    price: decimal("price", { precision: 10, scale: 2 }),
-    compare_at_price: decimal("compare_at_price", { precision: 10, scale: 2 }),
-    currency: varchar("currency", { length: 10 }).default("NRS"),
-    statusId: int("status_id").default(1).notNull(),
-    featured: int("featured").default(0).notNull(),
-    category_id: int("category_id").references(() => serviceCategories.id),
-    subcategory_id: int("subcategory_id").references(() => serviceSubcategories.id),
-    model: varchar("model", { length: 256 }),
-    capacity: varchar("capacity", { length: 128 }),
-    warranty: varchar("warranty", { length: 128 }),
-    energy_saving: varchar("energy_saving", { length: 128 }),
-    smart: int("smart").default(0).notNull(),
-    filtration: int("filtration").default(0).notNull(),
-    brochure_url: varchar("brochure_url", { length: 512 }),
-    power: varchar("power", { length: 128 }),
-    iseer: varchar("iseer", { length: 64 }),
-    refrigerant: varchar("refrigerant", { length: 64 }),
-    noise: varchar("noise", { length: 64 }),
-    dimensions: varchar("dimensions", { length: 128 }),
-    voltage: varchar("voltage", { length: 64 }),
-    locations: text("locations"),
-    inventory_status: varchar("inventory_status", { length: 64 }).default('in_stock'),
-    rating: decimal("rating", { precision: 3, scale: 2 }).default('0'),
-    reviews_count: int("reviews_count").default(0).notNull(),
-    meta_title: varchar("meta_title", { length: 256 }),
-    meta_description: varchar("meta_description", { length: 512 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+// Products Schema
+const productSchema = new Schema({
+    slug: { type: String, required: true, unique: true, maxlength: 256 },
+    title: { type: String, required: true, maxlength: 512 },
+    excerpt: { type: String, required: true, default: '', maxlength: 1024 },
+    content: { type: String, default: '' },
+    thumbnail: { type: String, maxlength: 512, default: '' },
+    price: { type: mongoose.Schema.Types.Decimal128, default: null },
+    compare_at_price: { type: mongoose.Schema.Types.Decimal128, default: null },
+    currency: { type: String, default: 'NRS', maxlength: 10 },
+    statusId: { type: Number, default: 1, required: true },
+    featured: { type: Number, default: 0, required: true },
+    category_id: { type: Schema.Types.ObjectId, ref: 'ServiceCategories' },
+    subcategory_id: { type: Schema.Types.ObjectId, ref: 'ServiceSubcategories' },
+    model: { type: String, maxlength: 256, default: '' },
+    capacity: { type: String, maxlength: 128, default: '' },
+    warranty: { type: String, maxlength: 128, default: '' },
+    energy_saving: { type: String, maxlength: 128, default: '' },
+    smart: { type: Number, default: 0, required: true },
+    filtration: { type: Number, default: 0, required: true },
+    brochure_url: { type: String, maxlength: 512, default: '' },
+    power: { type: String, maxlength: 128, default: '' },
+    iseer: { type: String, maxlength: 64, default: '' },
+    refrigerant: { type: String, maxlength: 64, default: '' },
+    noise: { type: String, maxlength: 64, default: '' },
+    dimensions: { type: String, maxlength: 128, default: '' },
+    voltage: { type: String, maxlength: 64, default: '' },
+    locations: { type: String, default: '' },
+    inventory_status: { type: String, default: 'in_stock', maxlength: 64 },
+    rating: { type: mongoose.Schema.Types.Decimal128, default: 0 },
+    reviews_count: { type: Number, default: 0, required: true },
+    meta_title: { type: String, maxlength: 256, default: '' },
+    meta_description: { type: String, maxlength: 512, default: '' },
+}, { 
+    timestamps: true,
+    collection: 'products'
 });
 
-// Product images (gallery)
-export const productImages = mysqlTable("product_images", {
-    id: int("id").primaryKey().autoincrement(),
-    product_id: int("product_id").references(() => products.id).notNull(),
-    url: varchar("url", { length: 512 }).notNull(),
-    alt: varchar("alt", { length: 256 }).notNull().default(''),
-    is_primary: int("is_primary").default(0).notNull(),
-    display_order: int("display_order").default(0).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+export const Product = models.Product || model('Product', productSchema);
+
+// Product Images Schema
+const productImageSchema = new Schema({
+    product_id: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    url: { type: String, required: true, maxlength: 512 },
+    alt: { type: String, required: true, default: '', maxlength: 256 },
+    is_primary: { type: Number, default: 0, required: true },
+    display_order: { type: Number, default: 0, required: true },
+}, { 
+    timestamps: { createdAt: 'createdAt', updatedAt: false },
+    collection: 'product_images'
 });
+
+export const ProductImage = models.ProductImage || model('ProductImage', productImageSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const products = Product;
+export const productImages = ProductImage;

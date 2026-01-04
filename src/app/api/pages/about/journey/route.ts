@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { aboutPageJourney } from '@/db/aboutPageSchema';
+import { connectDB } from '@/db';
+import { AboutPageJourney } from '@/db/aboutPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch journey section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const journey = await db.select().from(aboutPageJourney).where(eq(aboutPageJourney.id, parseInt(id))).limit(1);
+            const journey = await AboutPageJourney.findById(id).lean();
 
-            if (journey.length === 0) {
+            if (!journey) {
                 return NextResponse.json({ error: 'Journey section not found' }, { status: 404 });
             }
 
-            const j = { ...journey[0] } as any;
+            const j = { ...journey } as any;
             if (j.highlights && typeof j.highlights === 'string') {
                 try {
                     j.highlights = JSON.parse(j.highlights);
@@ -31,13 +31,13 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(j);
         }
 
-        const journey = await db.select().from(aboutPageJourney).where(eq(aboutPageJourney.is_active, 1)).limit(1);
+        const journey = await AboutPageJourney.findOne({ is_active: 1 }).lean();
 
-        if (journey.length === 0) {
+        if (!journey) {
             return NextResponse.json({ error: 'No active journey section found' }, { status: 404 });
         }
 
-        const j = { ...journey[0] } as any;
+        const j = { ...journey } as any;
         if (j.highlights && typeof j.highlights === 'string') {
             try {
                 j.highlights = JSON.parse(j.highlights);
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
 // POST - Create journey section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { title, paragraph1, paragraph2, thinking_box_title = '', thinking_box_content = '', highlights = [], hero_image = '', hero_image_alt = '', is_active = 1 } = body;
 
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
 
         const highlightsStr = Array.isArray(highlights) ? JSON.stringify(highlights) : (typeof highlights === 'string' ? highlights : JSON.stringify([]));
 
-        const result = await db.insert(aboutPageJourney).values({
+        const newJourney = await AboutPageJourney.create({
             title,
             paragraph1,
             paragraph2,
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(
-            { success: true, message: 'Journey section created successfully', id: result[0].insertId },
+            { success: true, message: 'Journey section created successfully', id: newJourney._id },
             { status: 201 }
         );
     } catch (error) {
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update journey section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, title, paragraph1, paragraph2, thinking_box_title, thinking_box_content, highlights, hero_image, hero_image_alt, is_active } = body;
 
@@ -114,7 +116,7 @@ export async function PUT(request: NextRequest) {
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(aboutPageJourney).set(updateData).where(eq(aboutPageJourney.id, id));
+        await AboutPageJourney.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('about-journey', 'max');
         return NextResponse.json({ success: true, message: 'Journey section updated successfully' });
     } catch (error) {
@@ -126,6 +128,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete journey section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -133,7 +136,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(aboutPageJourney).where(eq(aboutPageJourney.id, parseInt(id)));
+        await AboutPageJourney.findByIdAndDelete(id);
 
         return NextResponse.json({ success: true, message: 'Journey section deleted successfully' });
     } catch (error) {

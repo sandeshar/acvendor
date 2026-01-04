@@ -1,29 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { homepageExpertiseItems } from '@/db/homepageSchema';
+import { connectDB } from '@/db';
+import { HomepageExpertiseItems } from '@/db/homepageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch expertise items
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const item = await db.select().from(homepageExpertiseItems).where(eq(homepageExpertiseItems.id, parseInt(id))).limit(1);
+            const item = await HomepageExpertiseItems.findById(id).lean();
 
-            if (item.length === 0) {
+            if (!item) {
                 return NextResponse.json({ error: 'Expertise item not found' }, { status: 404 });
             }
 
-            return NextResponse.json(item[0]);
+            return NextResponse.json(item);
         }
 
         // Get all active items ordered by display_order
-        const items = await db.select().from(homepageExpertiseItems)
-            .where(eq(homepageExpertiseItems.is_active, 1))
-            .orderBy(asc(homepageExpertiseItems.display_order));
+        const items = await HomepageExpertiseItems.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
 
         return NextResponse.json(items);
     } catch (error) {
@@ -35,6 +33,7 @@ export async function GET(request: NextRequest) {
 // POST - Create expertise item
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { icon, title, description, display_order, is_active = 1 } = body;
 
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await db.insert(homepageExpertiseItems).values({
+        const result = await HomepageExpertiseItems.create({
             icon,
             title,
             description,
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
         });
         revalidateTag('homepage-expertise-items', 'max');
         return NextResponse.json(
-            { success: true, message: 'Expertise item created successfully', id: result[0].insertId },
+            { success: true, message: 'Expertise item created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -66,6 +65,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update expertise item
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, icon, title, description, display_order, is_active } = body;
 
@@ -80,7 +80,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(homepageExpertiseItems).set(updateData).where(eq(homepageExpertiseItems.id, id));
+        await HomepageExpertiseItems.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('homepage-expertise-items', 'max');
 
         return NextResponse.json({ success: true, message: 'Expertise item updated successfully' });
@@ -93,6 +93,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete expertise item
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -100,7 +101,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(homepageExpertiseItems).where(eq(homepageExpertiseItems.id, parseInt(id)));
+        await HomepageExpertiseItems.findByIdAndDelete(id);
         revalidateTag('homepage-expertise-items', 'max');
 
         return NextResponse.json({ success: true, message: 'Expertise item deleted successfully' });

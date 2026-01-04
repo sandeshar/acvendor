@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 
-export default function CompareTray({ items, removeItem, clear }: { items: any[], removeItem: (id: number) => void, clear: () => void }) {
-    const ids = items.map(i => i.id).join(',');
+export default function CompareTray({ items, removeItem, clear }: { items: any[], removeItem: (id: string | number) => void, clear: () => void }) {
+    const ids = items.map(i => String(i._id ?? i.id)).join(',');
 
     if (!items || items.length === 0) return null;
 
@@ -20,13 +20,13 @@ export default function CompareTray({ items, removeItem, clear }: { items: any[]
             </div>
             <div className="p-3 max-h-40 overflow-auto">
                 {items.map(it => (
-                    <div key={it.id} className="flex items-center gap-3 mb-2">
+                    <div key={String(it._id ?? it.id)} className="flex items-center gap-3 mb-2">
                         <img src={it.thumbnail || '/placeholder-product.png'} alt={it.title} className="h-10 w-10 object-contain rounded" />
                         <div className="flex-1 text-sm">
                             <div className="font-medium truncate">{it.title}</div>
                             <div className="text-xs text-gray-500">{it.price}</div>
                         </div>
-                        <button onClick={() => removeItem(it.id)} className="text-sm text-gray-500">Remove</button>
+                        <button onClick={() => removeItem(it._id ?? it.id)} className="text-sm text-gray-500">Remove</button>
                     </div>
                 ))}
             </div>

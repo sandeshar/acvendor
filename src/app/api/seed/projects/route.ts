@@ -1,29 +1,34 @@
-import { db } from '@/db';
-import { projects, projectsSection } from '@/db/projectsSchema';
+import { connectDB } from '@/db';
+import { Projects, ProjectsSection } from '@/db/projectsSchema';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
     try {
+        await connectDB();
+        
         // Seed Projects Section
         // Use a simple check to avoid duplicates if needed, but for seeding usually we just insert or update
-        await db.insert(projectsSection).values({
-            title: 'Our Engineering Excellence',
-            description: 'Cooling Nepal, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
-            background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
-            badge_text: 'Portfolio',
-            cta_title: 'Ready to upgrade your climate control?',
-            cta_description: 'From residential comfort to industrial precision, our engineers are ready to design the perfect solution for your needs.',
-            cta_button_text: 'Contact Our Engineers',
-            cta_button_link: '/contact',
-            secondary_cta_text: 'Download Portfolio',
-            secondary_cta_link: '#'
-        }).onDuplicateKeyUpdate({
-            set: {
+        const existing = await ProjectsSection.findOne().lean();
+        if (existing) {
+            await ProjectsSection.findByIdAndUpdate(existing._id, {
                 title: 'Our Engineering Excellence',
                 description: 'Cooling Nepal, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
                 background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
-            }
-        });
+            });
+        } else {
+            await ProjectsSection.create({
+                title: 'Our Engineering Excellence',
+                description: 'Cooling Nepal, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
+                background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
+                badge_text: 'Portfolio',
+                cta_title: 'Ready to upgrade your climate control?',
+                cta_description: 'From residential comfort to industrial precision, our engineers are ready to design the perfect solution for your needs.',
+                cta_button_text: 'Contact Our Engineers',
+                cta_button_link: '/contact',
+                secondary_cta_text: 'Download Portfolio',
+                secondary_cta_link: '#'
+            });
+        }
 
         // Seed Projects
         const projectData = [
@@ -91,10 +96,10 @@ export async function POST() {
 
         // For projects, we can safely just skip if they are already there or delete first
         // Simple approach: delete existing if any and re-insert
-        await db.delete(projects);
+        await Projects.deleteMany({});
 
         for (const p of projectData) {
-            await db.insert(projects).values(p);
+            await Projects.create(p);
         }
 
         return NextResponse.json({ success: true, message: 'Projects data seeded successfully' });

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { shopPageBrandHero } from '@/db/shopPageSchema';
+import { connectDB } from '@/db';
+import { ShopPageBrandHero } from '@/db/shopPageSchema';
 import { revalidateTag } from 'next/cache';
 
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const brand = searchParams.get('brand');
 
@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'brand query param is required' }, { status: 400 });
         }
 
-        const rows = await db.select().from(shopPageBrandHero).where(eq(shopPageBrandHero.brand_slug, brand)).limit(1);
-        if (!rows || rows.length === 0) return NextResponse.json({}, { status: 200 });
-        return NextResponse.json(rows[0]);
+        const row = await ShopPageBrandHero.findOne({ brand_slug: brand }).lean();
+        if (!row) return NextResponse.json({}, { status: 200 });
+        return NextResponse.json(row);
     } catch (error) {
         console.error('Error fetching brand hero:', error);
         // If table not present or other DB issue, return empty object (non-fatal)
@@ -25,13 +25,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { brand_slug, badge_text, tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
         if (!brand_slug) return NextResponse.json({ error: 'brand_slug is required' }, { status: 400 });
 
-        const res: any = await db.insert(shopPageBrandHero).values({ brand_slug, badge_text: badge_text || '', tagline: tagline || '', title: title || '', subtitle: subtitle || '', description: description || '', cta_text: cta_text || '', cta_link: cta_link || '', background_image: background_image || '', hero_image_alt: hero_image_alt || '', is_active: typeof is_active === 'number' ? is_active : 1, display_order: display_order || 0 });
+        const res = await ShopPageBrandHero.create({ brand_slug, badge_text: badge_text || '', tagline: tagline || '', title: title || '', subtitle: subtitle || '', description: description || '', cta_text: cta_text || '', cta_link: cta_link || '', background_image: background_image || '', hero_image_alt: hero_image_alt || '', is_active: typeof is_active === 'number' ? is_active : 1, display_order: display_order || 0 });
         try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
-        return NextResponse.json({ success: true, id: res?.[0]?.insertId });
+        return NextResponse.json({ success: true, id: res._id });
     } catch (error) {
         console.error('Error creating brand hero:', error);
         return NextResponse.json({ error: 'Failed to create brand hero' }, { status: 500 });
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, brand_slug, badge_text, tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
         if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
@@ -58,7 +60,7 @@ export async function PUT(request: NextRequest) {
         if (is_active !== undefined) updateData.is_active = is_active;
         if (display_order !== undefined) updateData.display_order = display_order;
 
-        await db.update(shopPageBrandHero).set(updateData).where(eq(shopPageBrandHero.id, id));
+        await ShopPageBrandHero.findByIdAndUpdate(id, updateData, { new: true });
         try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -69,10 +71,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'id query param is required' }, { status: 400 });
-        await db.delete(shopPageBrandHero).where(eq(shopPageBrandHero.id, parseInt(id)));
+        await ShopPageBrandHero.findByIdAndDelete(id);
         try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
         return NextResponse.json({ success: true });
     } catch (error) {

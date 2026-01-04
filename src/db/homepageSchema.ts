@@ -1,84 +1,110 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Homepage Hero Section
-export const homepageHero = mysqlTable("homepage_hero", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 512 }).notNull(),
-    subtitle: varchar("subtitle", { length: 1024 }).notNull(),
-    cta_text: varchar("cta_text", { length: 100 }).notNull(),
-    cta_link: varchar("cta_link", { length: 512 }).notNull(),
-    background_image: varchar("background_image", { length: 512 }).notNull(),
-    hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull().default(''),
-    badge_text: varchar("badge_text", { length: 128 }).notNull().default(''),
-    highlight_text: varchar("highlight_text", { length: 256 }).notNull().default(''),
-    colored_word: varchar("colored_word", { length: 256 }).notNull().default(''),
+const homepageHeroSchema = new Schema({
+    title: { type: String, required: true, maxlength: 512 },
+    subtitle: { type: String, required: true, maxlength: 1024 },
+    cta_text: { type: String, required: true, maxlength: 100 },
+    cta_link: { type: String, required: true, maxlength: 512 },
+    background_image: { type: String, required: true, maxlength: 512 },
+    hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
+    colored_word: { type: String, required: true, default: '', maxlength: 256 },
     // Floating UI element - top card
-    float_top_enabled: int("float_top_enabled").default(1).notNull(),
-    float_top_icon: varchar("float_top_icon", { length: 100 }).notNull().default('trending_up'),
-    float_top_title: varchar("float_top_title", { length: 128 }).notNull().default('Growth'),
-    float_top_value: varchar("float_top_value", { length: 64 }).notNull().default('+240% ROI'),
+    float_top_enabled: { type: Number, default: 1, required: true },
+    float_top_icon: { type: String, required: true, default: 'trending_up', maxlength: 100 },
+    float_top_title: { type: String, required: true, default: 'Growth', maxlength: 128 },
+    float_top_value: { type: String, required: true, default: '+240% ROI', maxlength: 64 },
     // Floating UI element - bottom card
-    float_bottom_enabled: int("float_bottom_enabled").default(1).notNull(),
-    float_bottom_icon: varchar("float_bottom_icon", { length: 100 }).notNull().default('check_circle'),
-    float_bottom_title: varchar("float_bottom_title", { length: 128 }).notNull().default('Ranking'),
-    float_bottom_value: varchar("float_bottom_value", { length: 64 }).notNull().default('#1 Result'),
-    secondary_cta_text: varchar("secondary_cta_text", { length: 128 }).notNull().default(''),
-    secondary_cta_link: varchar("secondary_cta_link", { length: 512 }).notNull().default(''),
-    rating_text: varchar("rating_text", { length: 128 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+    float_bottom_enabled: { type: Number, default: 1, required: true },
+    float_bottom_icon: { type: String, required: true, default: 'check_circle', maxlength: 100 },
+    float_bottom_title: { type: String, required: true, default: 'Ranking', maxlength: 128 },
+    float_bottom_value: { type: String, required: true, default: '#1 Result', maxlength: 64 },
+    secondary_cta_text: { type: String, required: true, default: '', maxlength: 128 },
+    secondary_cta_link: { type: String, required: true, default: '', maxlength: 512 },
+    rating_text: { type: String, required: true, default: '', maxlength: 128 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_hero'
 });
+
+export const HomepageHero = models.HomepageHero || model('HomepageHero', homepageHeroSchema);
 
 // Homepage Trust Section (Company Logos)
-export const homepageTrustLogos = mysqlTable("homepage_trust_logos", {
-    id: int("id").primaryKey().autoincrement(),
-    alt_text: varchar("alt_text", { length: 256 }).notNull(),
-    logo_url: varchar("logo_url", { length: 512 }).notNull(),
-    invert: int("invert").default(0).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const homepageTrustLogosSchema = new Schema({
+    alt_text: { type: String, required: true, maxlength: 256 },
+    logo_url: { type: String, required: true, maxlength: 512 },
+    invert: { type: Number, default: 0, required: true },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'homepage_trust_logos'
 });
 
-export const homepageTrustSection = mysqlTable("homepage_trust_section", {
-    id: int("id").primaryKey().autoincrement(),
-    heading: varchar("heading", { length: 256 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const HomepageTrustLogos = models.HomepageTrustLogos || model('HomepageTrustLogos', homepageTrustLogosSchema);
+
+// Homepage Trust Section
+const homepageTrustSectionSchema = new Schema({
+    heading: { type: String, required: true, maxlength: 256 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_trust_section'
 });
+
+export const HomepageTrustSection = models.HomepageTrustSection || model('HomepageTrustSection', homepageTrustSectionSchema);
 
 // Homepage Expertise Section
-export const homepageExpertiseSection = mysqlTable("homepage_expertise_section", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const homepageExpertiseSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_expertise_section'
 });
 
-export const homepageExpertiseItems = mysqlTable("homepage_expertise_items", {
-    id: int("id").primaryKey().autoincrement(),
-    icon: varchar("icon", { length: 100 }).notNull(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const HomepageExpertiseSection = models.HomepageExpertiseSection || model('HomepageExpertiseSection', homepageExpertiseSectionSchema);
+
+// Homepage Expertise Items
+const homepageExpertiseItemsSchema = new Schema({
+    icon: { type: String, required: true, maxlength: 100 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'homepage_expertise_items'
 });
+
+export const HomepageExpertiseItems = models.HomepageExpertiseItems || model('HomepageExpertiseItems', homepageExpertiseItemsSchema);
 
 // Homepage Contact Section
-export const homepageContactSection = mysqlTable("homepage_contact_section", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    name_placeholder: varchar("name_placeholder", { length: 100 }).notNull(),
-    email_placeholder: varchar("email_placeholder", { length: 100 }).notNull(),
-    phone_placeholder: varchar("phone_placeholder", { length: 100 }),
-    service_placeholder: varchar("service_placeholder", { length: 100 }).notNull(),
-    message_placeholder: varchar("message_placeholder", { length: 100 }).notNull(),
-    submit_button_text: varchar("submit_button_text", { length: 100 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const homepageContactSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    name_placeholder: { type: String, required: true, maxlength: 100 },
+    email_placeholder: { type: String, required: true, maxlength: 100 },
+    phone_placeholder: { type: String, maxlength: 100, default: '' },
+    service_placeholder: { type: String, required: true, maxlength: 100 },
+    message_placeholder: { type: String, required: true, maxlength: 100 },
+    submit_button_text: { type: String, required: true, maxlength: 100 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_contact_section'
 });
+
+export const HomepageContactSection = models.HomepageContactSection || model('HomepageContactSection', homepageContactSectionSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const homepageHero = HomepageHero;
+export const homepageTrustLogos = HomepageTrustLogos;
+export const homepageTrustSection = HomepageTrustSection;
+export const homepageExpertiseSection = HomepageExpertiseSection;
+export const homepageExpertiseItems = HomepageExpertiseItems;
+export const homepageContactSection = HomepageContactSection;

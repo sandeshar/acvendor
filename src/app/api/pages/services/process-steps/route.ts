@@ -1,28 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { servicesPageProcessSteps } from '@/db/servicesPageSchema';
+import { connectDB } from '@/db';
+import { ServicesPageProcessSteps } from '@/db/servicesPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch process steps
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const step = await db.select().from(servicesPageProcessSteps).where(eq(servicesPageProcessSteps.id, parseInt(id))).limit(1);
+            const step = await ServicesPageProcessSteps.findById(id).lean();
 
-            if (step.length === 0) {
+            if (!step) {
                 return NextResponse.json({ error: 'Process step not found' }, { status: 404 });
             }
 
-            return NextResponse.json(step[0]);
+            return NextResponse.json(step);
         }
 
-        const steps = await db.select().from(servicesPageProcessSteps)
-            .where(eq(servicesPageProcessSteps.is_active, 1))
-            .orderBy(asc(servicesPageProcessSteps.display_order));
+        const steps = await ServicesPageProcessSteps.find({ is_active: 1 })
+            .sort({ display_order: 1 })
+            .lean();
 
         return NextResponse.json(steps);
     } catch (error) {
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
 // POST - Create process step
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { step_number, title, description, display_order, is_active = 1 } = body;
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await db.insert(servicesPageProcessSteps).values({
+        const result = await ServicesPageProcessSteps.create({
             step_number,
             title,
             description,
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('services-process-steps', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Process step created successfully', id: result[0].insertId },
+            { success: true, message: 'Process step created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update process step
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, step_number, title, description, display_order, is_active } = body;
 
@@ -81,7 +83,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(servicesPageProcessSteps).set(updateData).where(eq(servicesPageProcessSteps.id, id));
+        await ServicesPageProcessSteps.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('services-process-steps', 'max');
 
@@ -95,6 +97,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete process step
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -102,7 +105,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(servicesPageProcessSteps).where(eq(servicesPageProcessSteps.id, parseInt(id)));
+        await ServicesPageProcessSteps.findByIdAndDelete(id);
 
         revalidateTag('services-process-steps', 'max');
 

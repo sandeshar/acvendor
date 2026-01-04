@@ -1,133 +1,162 @@
-import { int, mysqlTable, timestamp, varchar, text } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Services Page Hero Section
-export const servicesPageHero = mysqlTable("services_page_hero", {
-    id: int("id").primaryKey().autoincrement(),
-    tagline: varchar("tagline", { length: 100 }).notNull(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    badge_text: varchar("badge_text", { length: 128 }).notNull().default(''),
-    highlight_text: varchar("highlight_text", { length: 256 }).notNull().default(''),
-    primary_cta_text: varchar("primary_cta_text", { length: 128 }).notNull().default(''),
-    primary_cta_link: varchar("primary_cta_link", { length: 512 }).notNull().default(''),
-    secondary_cta_text: varchar("secondary_cta_text", { length: 128 }).notNull().default(''),
-    secondary_cta_link: varchar("secondary_cta_link", { length: 512 }).notNull().default(''),
-    background_image: varchar("background_image", { length: 512 }).notNull().default(''),
-    hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull().default(''),
-    stat1_value: varchar("stat1_value", { length: 64 }).notNull().default(''),
-    stat1_label: varchar("stat1_label", { length: 128 }).notNull().default(''),
-    stat2_value: varchar("stat2_value", { length: 64 }).notNull().default(''),
-    stat2_label: varchar("stat2_label", { length: 128 }).notNull().default(''),
-    stat3_value: varchar("stat3_value", { length: 64 }).notNull().default(''),
-    stat3_label: varchar("stat3_label", { length: 128 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const servicesPageHeroSchema = new Schema({
+    tagline: { type: String, required: true, maxlength: 100 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
+    primary_cta_text: { type: String, required: true, default: '', maxlength: 128 },
+    primary_cta_link: { type: String, required: true, default: '', maxlength: 512 },
+    secondary_cta_text: { type: String, required: true, default: '', maxlength: 128 },
+    secondary_cta_link: { type: String, required: true, default: '', maxlength: 512 },
+    background_image: { type: String, required: true, default: '', maxlength: 512 },
+    hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
+    stat1_value: { type: String, required: true, default: '', maxlength: 64 },
+    stat1_label: { type: String, required: true, default: '', maxlength: 128 },
+    stat2_value: { type: String, required: true, default: '', maxlength: 64 },
+    stat2_label: { type: String, required: true, default: '', maxlength: 128 },
+    stat3_value: { type: String, required: true, default: '', maxlength: 64 },
+    stat3_label: { type: String, required: true, default: '', maxlength: 128 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'services_page_hero'
 });
 
-// Services Page - Services Section (grid) removed as unused
+export const ServicesPageHero = models.ServicesPageHero || model('ServicesPageHero', servicesPageHeroSchema);
 
-// Services Page - Service Details
-export const servicesPageDetails = mysqlTable("services_page_details", {
-    id: int("id").primaryKey().autoincrement(),
-    key: varchar("key", { length: 50 }).notNull().unique(),
-    slug: varchar("slug", { length: 256 }),
-    icon: varchar("icon", { length: 100 }).notNull(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    bullets: text("bullets").notNull(), // JSON array stored as string
-    image: varchar("image", { length: 512 }).notNull(),
-    image_alt: varchar("image_alt", { length: 256 }).notNull(),
-    postId: int("post_id"),
-    locations: text("locations"), // JSON array stored as string
-    inventory_status: varchar("inventory_status", { length: 64 }).default('in_stock'),
-    images: text("images"), // JSON array stored as string
-    price: varchar("price", { length: 64 }),
-    compare_at_price: varchar("compare_at_price", { length: 64 }),
-    currency: varchar("currency", { length: 10 }).default('NRS'),
-    model: varchar("model", { length: 256 }),
-    capacity: varchar("capacity", { length: 128 }),
-    warranty: varchar("warranty", { length: 128 }),
-    technical: text("technical"),
-    energy_saving: varchar("energy_saving", { length: 128 }),
-    smart: int("smart").default(0).notNull(),
-    filtration: int("filtration").default(0).notNull(),
-    brochure_url: varchar("brochure_url", { length: 512 }),
-    application_areas: text("application_areas"),
-    features: text("features"),
-    meta_title: varchar("meta_title", { length: 256 }),
-    meta_description: varchar("meta_description", { length: 512 }),
-    content: text("content"),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+// Services Page Details
+const servicesPageDetailsSchema = new Schema({
+    key: { type: String, required: true, unique: true, maxlength: 50 },
+    slug: { type: String, maxlength: 256, default: '' },
+    icon: { type: String, required: true, maxlength: 100 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    bullets: { type: String, required: true, default: '[]' }, // JSON array
+    image: { type: String, required: true, maxlength: 512 },
+    image_alt: { type: String, required: true, maxlength: 256 },
+    postId: { type: Number, default: null },
+    locations: { type: String, default: '[]' }, // JSON array
+    inventory_status: { type: String, default: 'in_stock', maxlength: 64 },
+    images: { type: String, default: '[]' }, // JSON array
+    price: { type: String, maxlength: 64, default: '' },
+    compare_at_price: { type: String, maxlength: 64, default: '' },
+    currency: { type: String, default: 'NRS', maxlength: 10 },
+    model: { type: String, maxlength: 256, default: '' },
+    capacity: { type: String, maxlength: 128, default: '' },
+    warranty: { type: String, maxlength: 128, default: '' },
+    technical: { type: String, default: '' },
+    energy_saving: { type: String, maxlength: 128, default: '' },
+    smart: { type: Number, default: 0, required: true },
+    filtration: { type: Number, default: 0, required: true },
+    brochure_url: { type: String, maxlength: 512, default: '' },
+    application_areas: { type: String, default: '' },
+    features: { type: String, default: '' },
+    meta_title: { type: String, maxlength: 256, default: '' },
+    meta_description: { type: String, maxlength: 512, default: '' },
+    content: { type: String, default: '' },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'services_page_details'
 });
 
-// Services Page - Process Section
-export const servicesPageProcessSection = mysqlTable("services_page_process_section", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageDetails = models.ServicesPageDetails || model('ServicesPageDetails', servicesPageDetailsSchema);
+
+// Services Page Process Section
+const servicesPageProcessSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'services_page_process_section'
 });
 
-export const servicesPageProcessSteps = mysqlTable("services_page_process_steps", {
-    id: int("id").primaryKey().autoincrement(),
-    step_number: int("step_number").notNull(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageProcessSection = models.ServicesPageProcessSection || model('ServicesPageProcessSection', servicesPageProcessSectionSchema);
+
+// Services Page Process Steps
+const servicesPageProcessStepsSchema = new Schema({
+    step_number: { type: Number, required: true },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'services_page_process_steps'
 });
 
-// Services Page - CTA Section
-export const servicesPageCTA = mysqlTable("services_page_cta", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    button_text: varchar("button_text", { length: 100 }).notNull(),
-    button_link: varchar("button_link", { length: 512 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageProcessSteps = models.ServicesPageProcessSteps || model('ServicesPageProcessSteps', servicesPageProcessStepsSchema);
+
+// Services Page CTA
+const servicesPageCTASchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    button_text: { type: String, required: true, maxlength: 100 },
+    button_link: { type: String, required: true, maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'services_page_cta'
 });
 
-// Services Page - Brands (trusted brands logos)
-export const servicesPageBrands = mysqlTable("services_page_brands", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    slug: varchar("slug", { length: 128 }),
-    logo: varchar("logo", { length: 512 }).notNull().default(''),
-    link: varchar("link", { length: 512 }).notNull().default(''),
-    display_order: int("display_order").notNull().default(0),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageCTA = models.ServicesPageCTA || model('ServicesPageCTA', servicesPageCTASchema);
+
+// Services Page Brands
+const servicesPageBrandsSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    slug: { type: String, maxlength: 128, default: '' },
+    logo: { type: String, required: true, default: '', maxlength: 512 },
+    link: { type: String, required: true, default: '', maxlength: 512 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'services_page_brands'
 });
 
-// Services Page - Trust Section (stats / testimonial)
-export const servicesPageTrust = mysqlTable("services_page_trust", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull().default(''),
-    description: varchar("description", { length: 1024 }).notNull().default(''),
-    quote_text: varchar("quote_text", { length: 1024 }).notNull().default(''),
-    quote_author: varchar("quote_author", { length: 256 }).notNull().default(''),
-    quote_role: varchar("quote_role", { length: 256 }).notNull().default(''),
-    quote_image: varchar("quote_image", { length: 512 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageBrands = models.ServicesPageBrands || model('ServicesPageBrands', servicesPageBrandsSchema);
+
+// Services Page Trust
+const servicesPageTrustSchema = new Schema({
+    title: { type: String, required: true, default: '', maxlength: 256 },
+    description: { type: String, required: true, default: '', maxlength: 1024 },
+    quote_text: { type: String, required: true, default: '', maxlength: 1024 },
+    quote_author: { type: String, required: true, default: '', maxlength: 256 },
+    quote_role: { type: String, required: true, default: '', maxlength: 256 },
+    quote_image: { type: String, required: true, default: '', maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'services_page_trust'
 });
 
-// Services Page - Features (strip items)
-export const servicesPageFeatures = mysqlTable("services_page_features", {
-    id: int("id").primaryKey().autoincrement(),
-    icon: varchar("icon", { length: 128 }).notNull().default(''),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull().default(''),
-    display_order: int("display_order").notNull().default(0),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const ServicesPageTrust = models.ServicesPageTrust || model('ServicesPageTrust', servicesPageTrustSchema);
+
+// Services Page Features
+const servicesPageFeaturesSchema = new Schema({
+    icon: { type: String, required: true, default: '', maxlength: 128 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, default: '', maxlength: 512 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'services_page_features'
 });
+
+export const ServicesPageFeatures = models.ServicesPageFeatures || model('ServicesPageFeatures', servicesPageFeaturesSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const servicesPageHero = ServicesPageHero;
+export const servicesPageDetails = ServicesPageDetails;
+export const servicesPageProcessSection = ServicesPageProcessSection;
+export const servicesPageProcessSteps = ServicesPageProcessSteps;
+export const servicesPageCTA = ServicesPageCTA;
+export const servicesPageBrands = ServicesPageBrands;
+export const servicesPageTrust = ServicesPageTrust;
+export const servicesPageFeatures = ServicesPageFeatures;

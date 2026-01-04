@@ -25,6 +25,8 @@ export default function StoreSettingPage() {
         theme: "default",
         hideSiteNameOnMobile: false,
         hideSiteName: false,
+        pan: "",
+        authorizedPerson: "",
     });
 
     // Theme select UI state
@@ -69,6 +71,8 @@ export default function StoreSettingPage() {
                         theme: d.theme || "default",
                         hideSiteNameOnMobile: !!d.hideSiteNameOnMobile,
                         hideSiteName: !!d.hideSiteName,
+                        pan: d.pan || "",
+                        authorizedPerson: d.authorizedPerson || "",
                     });
                 }
 

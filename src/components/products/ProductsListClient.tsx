@@ -5,6 +5,7 @@ import Link from "next/link";
 import Star from '@/components/icons/Star';
 import useCompare from './useCompare';
 import CompareTray from './CompareTray';
+import { formatPrice } from '@/utils/formatPrice';
 
 
 export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { brand?: string } }) {
@@ -46,7 +47,20 @@ export default function ProductsListClient({ products, productPathPrefix, search
                     return;
                 }
                 const data = await res.json();
-                if (active) setRemoteProducts(Array.isArray(data) ? data : []);
+                if (active) {
+                    const normalizeValue = (v: any): any => {
+                        if (v && typeof v === 'object') {
+                            if ('$numberDecimal' in v) return String(v['$numberDecimal']);
+                            if (Array.isArray(v)) return v.map(normalizeValue);
+                            const out: any = {};
+                            for (const k of Object.keys(v)) out[k] = normalizeValue(v[k]);
+                            return out;
+                        }
+                        return v;
+                    };
+                    const normalize = (list: any[]) => Array.isArray(list) ? list.map((p: any) => normalizeValue(p)) : [];
+                    setRemoteProducts(normalize(Array.isArray(data) ? data : []));
+                }
             } catch (e) {
                 console.error('Error performing remote product search:', (e as Error)?.message || String(e));
                 if (active) setRemoteProducts([]);
@@ -141,7 +155,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
 
                                 {/* Price row: show price and compare add button */}
                                 <div className="flex items-center justify-between mt-3">
-                                    <div className="text-lg font-bold text-[#111418]">{p.price}</div>
+                                    <div className="text-lg font-bold text-[#111418]">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</div>
                                     <div className="flex items-center gap-2">
                                         <button aria-label={containsButtonAria(p) ? 'Remove from compare' : 'Add to compare'} onClick={(e) => onCompareClick(e, p)} className={`h-9 w-9 flex items-center justify-center rounded-lg border bg-white shadow-sm relative z-10 ${containsButtonClass(p)} transition-colors`}>
                                             <span className="material-symbols-outlined text-[20px]">{containsButtonIcon(p)}</span>
@@ -180,7 +194,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 font-bold">{p.price}</td>
+                                    <td className="px-4 py-4 font-bold">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</td>
                                     <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
                                     <td className="px-4 py-4">

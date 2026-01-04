@@ -61,8 +61,8 @@ export default async function Home() {
                 <Hero data={data.hero} />
                 <Trust section={data.trustSection} logos={data.trustLogos} />
                 {/* Product showcase (featured products) */}
-                <ProductShowcase products={data.products || []} brand="midea" />
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
+                <ProductShowcase products={data.products || []} brand="midea" />
                 <TestimonialSlider filter="homepage" />
                 <Contact data={data.contactSection} />
             </div>

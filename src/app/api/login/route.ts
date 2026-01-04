@@ -1,17 +1,17 @@
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import { connectDB } from '@/db';
+import { User } from '@/db/schema';
 import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
         const { email, password } = await request.json();
-        const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        const user = await User.findOne({ email }).lean();
 
-        if (user.length && await bcrypt.compare(password, user[0].password)) {
-            const payload = { email: user[0].email, id: user[0].id, role: user[0].role };
+        if (user && await bcrypt.compare(password, user.password)) {
+            const payload = { email: user.email, id: user._id, role: user.role };
             const jwtoken = jwt.sign(
                 payload,
                 process.env.JWT_SECRET as string,

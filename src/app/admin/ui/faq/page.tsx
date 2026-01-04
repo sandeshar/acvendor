@@ -15,8 +15,8 @@ export default function FAQPageUI() {
     const [ctaData, setCtaData] = useState<any>({});
 
     // Track deleted items
-    const [deletedCategories, setDeletedCategories] = useState<number[]>([]);
-    const [deletedFaqItems, setDeletedFaqItems] = useState<number[]>([]);
+    const [deletedCategories, setDeletedCategories] = useState<Array<string | number>>([]);
+    const [deletedFaqItems, setDeletedFaqItems] = useState<Array<string | number>>([]);
 
     // --- Fetch Data ---
     useEffect(() => {
@@ -49,19 +49,23 @@ export default function FAQPageUI() {
         setSaving(true);
         try {
             const saveSection = async (url: string, data: any) => {
-                const method = data.id ? 'PUT' : 'POST';
+                const entityId = data?.id ?? data?._id ?? null;
+                const method = entityId ? 'PUT' : 'POST';
+                const bodyData = entityId ? { ...data, id: entityId } : { ...data };
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(bodyData),
                 });
                 if (!res.ok) throw new Error(`Failed to save ${url}`);
                 return res.json();
             };
 
-            const saveList = async (url: string, items: any[], deletedIds: number[]) => {
+            const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 for (const id of deletedIds) {
-                    await fetch(`${url}?id=${id}`, { method: 'DELETE' });
+                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    if (!delId) continue;
+                    await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }
                 for (const item of items) {
                     await saveSection(url, item);
@@ -195,7 +199,8 @@ export default function FAQPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (category.id) setDeletedCategories([...deletedCategories, category.id]);
+                                                        const idToDelete = category.id ?? category._id ?? null;
+                                                        if (idToDelete) setDeletedCategories([...deletedCategories, idToDelete]);
                                                         setCategories(categories.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -241,7 +246,8 @@ export default function FAQPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (item.id) setDeletedFaqItems([...deletedFaqItems, item.id]);
+                                                        const idToDelete = item.id ?? item._id ?? null;
+                                                        if (idToDelete) setDeletedFaqItems([...deletedFaqItems, idToDelete]);
                                                         setFaqItems(faqItems.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -257,12 +263,12 @@ export default function FAQPageUI() {
                                                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
                                                     <select
                                                         value={item.category_id || ''}
-                                                        onChange={(e) => updateItem(idx, 'category_id', Number(e.target.value), faqItems, setFaqItems)}
+                                                        onChange={(e) => updateItem(idx, 'category_id', e.target.value || '', faqItems, setFaqItems)}
                                                         className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
                                                     >
                                                         <option value="">Select Category</option>
                                                         {categories.map(cat => (
-                                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                            <option key={String(cat._id ?? cat.id)} value={String(cat._id ?? cat.id)}>{cat.name}</option>
                                                         ))}
                                                     </select>
                                                 </div>

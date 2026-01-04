@@ -1,44 +1,60 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // FAQ Page Header Section
-export const faqPageHeader = mysqlTable("faq_page_header", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    search_placeholder: varchar("search_placeholder", { length: 256 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const faqPageHeaderSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    search_placeholder: { type: String, required: true, maxlength: 256 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'faq_page_header'
 });
+
+export const FAQPageHeader = models.FAQPageHeader || model('FAQPageHeader', faqPageHeaderSchema);
 
 // FAQ Categories
-export const faqCategories = mysqlTable("faq_categories", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 100 }).notNull().unique(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const faqCategoriesSchema = new Schema({
+    name: { type: String, required: true, unique: true, maxlength: 100 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'faq_categories'
 });
+
+export const FAQCategories = models.FAQCategories || model('FAQCategories', faqCategoriesSchema);
 
 // FAQ Items
-export const faqItems = mysqlTable("faq_items", {
-    id: int("id").primaryKey().autoincrement(),
-    category_id: int("category_id").references(() => faqCategories.id).notNull(),
-    question: varchar("question", { length: 512 }).notNull(),
-    answer: varchar("answer", { length: 2048 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const faqItemsSchema = new Schema({
+    category_id: { type: Schema.Types.ObjectId, ref: 'FAQCategories', required: true },
+    question: { type: String, required: true, maxlength: 512 },
+    answer: { type: String, required: true, maxlength: 2048 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'faq_items'
 });
 
+export const FAQItems = models.FAQItems || model('FAQItems', faqItemsSchema);
+
 // FAQ Page CTA Section
-export const faqPageCTA = mysqlTable("faq_page_cta", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    button_text: varchar("button_text", { length: 100 }).notNull(),
-    button_link: varchar("button_link", { length: 512 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const faqPageCTASchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    button_text: { type: String, required: true, maxlength: 100 },
+    button_link: { type: String, required: true, maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'faq_page_cta'
 });
+
+export const FAQPageCTA = models.FAQPageCTA || model('FAQPageCTA', faqPageCTASchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const faqPageHeader = FAQPageHeader;
+export const faqCategories = FAQCategories;
+export const faqItems = FAQItems;
+export const faqPageCTA = FAQPageCTA;

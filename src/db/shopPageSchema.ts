@@ -1,35 +1,44 @@
-import { int, mysqlTable, timestamp, varchar, text } from 'drizzle-orm/mysql-core';
+import mongoose, { Schema, model, models } from 'mongoose';
 
-export const shopPageHero = mysqlTable('shop_page_hero', {
-    id: int('id').primaryKey().autoincrement(),
-    tagline: varchar('tagline', { length: 128 }).notNull().default(''),
-    title: varchar('title', { length: 256 }).notNull().default(''),
-    subtitle: varchar('subtitle', { length: 512 }).notNull().default(''),
-    description: text('description').notNull().default(''),
-    cta_text: varchar('cta_text', { length: 128 }).notNull().default(''),
-    cta_link: varchar('cta_link', { length: 512 }).notNull().default(''),
-    background_image: varchar('background_image', { length: 512 }).notNull().default(''),
-    hero_image_alt: varchar('hero_image_alt', { length: 256 }).notNull().default(''),
-    is_active: int('is_active').default(1).notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+// Shop Page Hero
+const shopPageHeroSchema = new Schema({
+    tagline: { type: String, required: true, default: '', maxlength: 128 },
+    title: { type: String, required: true, default: '', maxlength: 256 },
+    subtitle: { type: String, required: true, default: '', maxlength: 512 },
+    description: { type: String, required: true, default: '' },
+    cta_text: { type: String, required: true, default: '', maxlength: 128 },
+    cta_link: { type: String, required: true, default: '', maxlength: 512 },
+    background_image: { type: String, required: true, default: '', maxlength: 512 },
+    hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'shop_page_hero'
 });
+
+export const ShopPageHero = models.ShopPageHero || model('ShopPageHero', shopPageHeroSchema);
 
 // Brand-specific Shop Hero (e.g., Midea)
-export const shopPageBrandHero = mysqlTable('shop_page_brand_hero', {
-    id: int('id').primaryKey().autoincrement(),
-    brand_slug: varchar('brand_slug', { length: 128 }).notNull(),
-    badge_text: varchar('badge_text', { length: 128 }).notNull().default(''),
-    tagline: varchar('tagline', { length: 128 }).notNull().default(''),
-    title: varchar('title', { length: 256 }).notNull().default(''),
-    subtitle: varchar('subtitle', { length: 512 }).notNull().default(''),
-    description: text('description').notNull().default(''),
-    cta_text: varchar('cta_text', { length: 128 }).notNull().default(''),
-    cta_link: varchar('cta_link', { length: 512 }).notNull().default(''),
-    background_image: varchar('background_image', { length: 512 }).notNull().default(''),
-    hero_image_alt: varchar('hero_image_alt', { length: 256 }).notNull().default(''),
-    display_order: int('display_order').default(0).notNull(),
-    is_active: int('is_active').default(1).notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+const shopPageBrandHeroSchema = new Schema({
+    brand_slug: { type: String, required: true, maxlength: 128 },
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    tagline: { type: String, required: true, default: '', maxlength: 128 },
+    title: { type: String, required: true, default: '', maxlength: 256 },
+    subtitle: { type: String, required: true, default: '', maxlength: 512 },
+    description: { type: String, required: true, default: '' },
+    cta_text: { type: String, required: true, default: '', maxlength: 128 },
+    cta_link: { type: String, required: true, default: '', maxlength: 512 },
+    background_image: { type: String, required: true, default: '', maxlength: 512 },
+    hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
+    display_order: { type: Number, default: 0, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'shop_page_brand_hero'
 });
+
+export const ShopPageBrandHero = models.ShopPageBrandHero || model('ShopPageBrandHero', shopPageBrandHeroSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const shopPageHero = ShopPageHero;
+export const shopPageBrandHero = ShopPageBrandHero;

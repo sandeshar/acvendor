@@ -7,7 +7,8 @@ interface ExpertiseSectionData {
 }
 
 interface ExpertiseItemData {
-    id: number;
+    _id?: string;
+    id?: number;
     icon: string;
     title: string;
     description: string;
@@ -39,9 +40,9 @@ const Expertise = ({ section, items = [] }: ExpertiseProps) => {
                 </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-0">
-                {items.map((item) => (
+                {items.map((item, i) => (
                     <div
-                        key={item.id}
+                        key={item._id ?? item.id ?? item.title ?? i}
                         className="flex flex-1 gap-4 rounded-xl border border-muted bg-card p-6 flex-col"
                     >
                         <span className="material-symbols-outlined text-primary-var text-3xl">{item.icon}</span>

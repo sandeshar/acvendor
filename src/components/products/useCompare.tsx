@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 
 export type CompareItem = {
-    id: number;
+    id?: string | number;
+    _id?: string;
     slug?: string;
     title?: string;
     thumbnail?: string;
@@ -14,13 +15,19 @@ const STORAGE_KEY = 'compare_products';
 const MAX_ITEMS = 4;
 const EVENT_NAME = 'compare_products_changed';
 
+const getId = (item: any) => String(item?._id ?? item?.id ?? '');
+
 export default function useCompare() {
     const [items, setItems] = useState<CompareItem[]>([]);
 
     useEffect(() => {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) setItems(JSON.parse(raw));
+            if (raw) {
+                const parsed = JSON.parse(raw) as CompareItem[];
+                const normalized = parsed.map(p => ({ ...p, id: getId(p) }));
+                setItems(normalized);
+            }
         } catch (e) {
             setItems([]);
         }
@@ -30,7 +37,9 @@ export default function useCompare() {
             if (e.key !== STORAGE_KEY) return;
             try {
                 const raw = e.newValue;
-                setItems(raw ? JSON.parse(raw) : []);
+                const parsed = raw ? JSON.parse(raw) : [];
+                const normalized = parsed.map((p: any) => ({ ...p, id: getId(p) }));
+                setItems(normalized);
             } catch (err) {
                 // ignore
             }
@@ -41,10 +50,11 @@ export default function useCompare() {
             try {
                 const detail = (e as any)?.detail;
                 if (!Array.isArray(detail)) return;
+                const normalizedDetail = detail.map((d: any) => ({ ...d, id: getId(d) }));
                 setItems(prev => {
-                    // avoid unnecessary state updates during render - compare by id membership
-                    const same = prev.length === detail.length && detail.every((d: any) => prev.some(p => p.id === d.id));
-                    return same ? prev : (detail as CompareItem[]);
+                    // avoid unnecessary state updates during render - compare by id membership (string)
+                    const same = prev.length === normalizedDetail.length && normalizedDetail.every((d: any) => prev.some(p => getId(p) === getId(d)));
+                    return same ? prev : normalizedDetail;
                 });
             } catch (err) {
                 // ignore
@@ -62,7 +72,9 @@ export default function useCompare() {
     // helper to persist and notify
     function persistAndNotify(next: CompareItem[]) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+            // ensure ids are normalized before storing
+            const toStore = next.map(n => ({ ...n, id: getId(n) }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
         } catch (e) {
             // ignore
         }
@@ -79,22 +91,24 @@ export default function useCompare() {
     }
 
     function addItem(item: CompareItem) {
-        if (!item || !item.id) return;
+        const newId = getId(item);
+        if (!item || !newId) return;
         setItems(prev => {
-            if (prev.find(i => i.id === item.id)) return prev;
+            if (prev.find(i => getId(i) === newId)) return prev;
             if (prev.length >= MAX_ITEMS) {
                 alert(`You can compare up to ${MAX_ITEMS} products`);
                 return prev;
             }
-            const next = [...prev, item];
+            const next = [...prev, { ...item, id: newId }];
             persistAndNotify(next);
             return next;
         });
     }
 
-    function removeItem(id: number) {
+    function removeItem(id: string | number) {
+        const idStr = String(id);
         setItems(prev => {
-            const next = prev.filter(i => i.id !== id);
+            const next = prev.filter(i => getId(i) !== idStr);
             persistAndNotify(next);
             return next;
         });
@@ -108,8 +122,8 @@ export default function useCompare() {
         });
     }
 
-    function contains(id: number) {
-        return items.some(i => i.id === id);
+    function contains(id: string | number) {
+        return items.some(i => getId(i) === String(id));
     }
 
     return { items, addItem, removeItem, clear, contains };

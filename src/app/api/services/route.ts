@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, desc } from 'drizzle-orm';
-import { db } from '@/db';
-import { servicePosts } from '@/db/servicePostsSchema';
-import { reviewTestimonialServices } from '@/db/reviewTestimonialServicesSchema';
-import { reviewTestimonials } from '@/db/reviewSchema';
+import { connectDB } from '@/db';
+import { ServicePosts } from '@/db/servicePostsSchema';
+import { ReviewTestimonialServices } from '@/db/reviewTestimonialServicesSchema';
+import { ReviewTestimonials } from '@/db/reviewSchema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch service posts
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const slug = searchParams.get('slug');
@@ -20,45 +20,45 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get('status');
 
         if (id) {
-            const post = await db.select().from(servicePosts).where(eq(servicePosts.id, parseInt(id))).limit(1);
+            const post = await ServicePosts.findById(parseInt(id)).lean();
 
-            if (post.length === 0) {
+            if (!post) {
                 return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
             }
 
-            return NextResponse.json(post[0]);
+            return NextResponse.json(post);
         }
 
         if (slug) {
-            const post = await db.select().from(servicePosts).where(eq(servicePosts.slug, slug)).limit(1);
+            const post = await ServicePosts.findOne({ slug }).lean();
 
-            if (post.length === 0) {
+            if (!post) {
                 return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
             }
 
-            return NextResponse.json(post[0]);
+            return NextResponse.json(post);
         }
 
-        let query = db.select().from(servicePosts);
+        const filter: any = {};
 
         if (featured === '1' || featured === 'true') {
-            query = query.where(eq(servicePosts.featured, 1)) as any;
+            filter.featured = 1;
         }
 
         if (status) {
-            query = query.where(eq(servicePosts.statusId, parseInt(status))) as any;
+            filter.statusId = parseInt(status);
         }
 
         // Filter by category slug or id
         if (category) {
             const catId = parseInt(category);
             if (!isNaN(catId)) {
-                query = query.where(eq(servicePosts.category_id, catId)) as any;
+                filter.category_id = catId;
             } else {
                 // If category is a slug, find id by slug
-                const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
-                const catRow = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, category)).limit(1);
-                if (catRow.length) query = query.where(eq(servicePosts.category_id, catRow[0].id)) as any;
+                const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
+                const catRow = await ServiceCategories.findOne({ slug: category }).lean();
+                if (catRow) filter.category_id = catRow._id;
             }
         }
 
@@ -66,16 +66,16 @@ export async function GET(request: NextRequest) {
         if (subcategory) {
             const subId = parseInt(subcategory);
             if (!isNaN(subId)) {
-                query = query.where(eq(servicePosts.subcategory_id, subId)) as any;
+                filter.subcategory_id = subId;
             } else {
-                const { serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                const subRow = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, subcategory)).limit(1);
-                if (subRow.length) query = query.where(eq(servicePosts.subcategory_id, subRow[0].id)) as any;
+                const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                const subRow = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
+                if (subRow) filter.subcategory_id = subRow._id;
             }
         }
 
-        const ordered = query.orderBy(desc(servicePosts.createdAt));
-        const posts = limit && !isNaN(parseInt(limit)) ? await ordered.limit(parseInt(limit)) : await ordered;
+        let query = ServicePosts.find(filter).sort({ createdAt: -1 }).lean();
+        const posts = limit && !isNaN(parseInt(limit)) ? await query.limit(parseInt(limit)) : await query;
 
         return NextResponse.json(posts);
     } catch (error) {
@@ -87,6 +87,8 @@ export async function GET(request: NextRequest) {
 // POST - Create service post
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
+        
         // Get user ID from JWT token
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) {
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Required fields: slug, title, excerpt, content, statusId' }, { status: 400 });
         }
 
-        const result = await db.insert(servicePosts).values({
+        const newPost = await ServicePosts.create({
             slug,
             title,
             excerpt,
@@ -134,20 +136,20 @@ export async function POST(request: NextRequest) {
         try { revalidateTag('services', 'max'); } catch (e) { /* ignore */ }
 
         return NextResponse.json(
-            { success: true, message: 'Service post created successfully', id: result[0].insertId },
+            { success: true, message: 'Service post created successfully', id: newPost._id },
             { status: 201 }
         );
     } catch (error: any) {
         console.error('Error creating service post:', error);
 
         // Handle duplicate slug error
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 11000 && error.keyPattern?.slug) {
             return NextResponse.json({ error: 'A service with this slug already exists. Please use a different slug.' }, { status: 409 });
         }
 
-        // Handle foreign key constraint error
-        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.code === 'ER_NO_REFERENCED_ROW') {
-            return NextResponse.json({ error: 'Invalid user ID or status ID' }, { status: 400 });
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            return NextResponse.json({ error: error.message }, { status: 400 });
         }
 
         return NextResponse.json({ error: 'Failed to create service post' }, { status: 500 });
@@ -157,6 +159,8 @@ export async function POST(request: NextRequest) {
 // PUT - Update service post
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
+        
         const body = await request.json();
         const { id, slug, title, excerpt, content, thumbnail, icon, featured, statusId, metaTitle, metaDescription, category_id, subcategory_id, price, price_type, price_label, price_description } = body;
 
@@ -182,7 +186,7 @@ export async function PUT(request: NextRequest) {
         if (metaTitle !== undefined) updateData.metaTitle = metaTitle;
         if (metaDescription !== undefined) updateData.metaDescription = metaDescription;
 
-        await db.update(servicePosts).set(updateData).where(eq(servicePosts.id, id));
+        await ServicePosts.findByIdAndUpdate(id, updateData, { new: true });
 
         try { revalidateTag('services', 'max'); } catch (e) { /* ignore */ }
         try { revalidateTag(`service-${id}`, 'max'); } catch (e) { /* ignore */ }
@@ -197,6 +201,8 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete service post
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
+        
         // Require authentication for delete operations
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) {
@@ -230,11 +236,11 @@ export async function DELETE(request: NextRequest) {
         // Resolve slug to id if necessary
         let postId = id ? parseInt(id) : null;
         if (!postId && slug) {
-            const postRow = await db.select().from(servicePosts).where(eq(servicePosts.slug, slug)).limit(1);
-            if (!postRow || postRow.length === 0) {
+            const postRow = await ServicePosts.findOne({ slug }).lean();
+            if (!postRow) {
                 return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
             }
-            postId = postRow[0].id;
+            postId = postRow._id;
         }
 
         if (!postId) {
@@ -242,25 +248,25 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Check existence
-        const existing = await db.select().from(servicePosts).where(eq(servicePosts.id, postId)).limit(1);
-        if (!existing || existing.length === 0) {
+        const existing = await ServicePosts.findById(postId).lean();
+        if (!existing) {
             return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
         }
 
         // Attempts to delete dependent rows first to avoid FK issues (be defensive)
         try {
-            await db.delete(reviewTestimonialServices).where(eq(reviewTestimonialServices.serviceId, postId as number));
+            await ReviewTestimonialServices.deleteMany({ serviceId: postId as number });
         } catch (err) {
             // ignore
         }
         try {
-            await db.delete(reviewTestimonials).where(eq(reviewTestimonials.service, postId as number));
+            await ReviewTestimonials.deleteMany({ service: postId as number });
         } catch (err) {
             // ignore
         }
 
         try {
-            await db.delete(servicePosts).where(eq(servicePosts.id, postId as number));
+            await ServicePosts.findByIdAndDelete(postId as number);
         } catch (err: any) {
             console.error('Deletion failed:', err);
             return NextResponse.json({ error: 'Failed to delete service post', details: err.message || String(err) }, { status: 500 });

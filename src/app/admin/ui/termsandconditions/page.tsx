@@ -13,7 +13,7 @@ export default function TermsPageUI() {
     const [sections, setSections] = useState<any[]>([]);
 
     // Track deleted items
-    const [deletedSections, setDeletedSections] = useState<number[]>([]);
+    const [deletedSections, setDeletedSections] = useState<Array<string | number>>([]);
 
     // --- Fetch Data ---
     useEffect(() => {
@@ -42,19 +42,23 @@ export default function TermsPageUI() {
         setSaving(true);
         try {
             const saveSection = async (url: string, data: any) => {
-                const method = data.id ? 'PUT' : 'POST';
+                const entityId = data?.id ?? data?._id ?? null;
+                const method = entityId ? 'PUT' : 'POST';
+                const bodyData = entityId ? { ...data, id: entityId } : { ...data };
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(bodyData),
                 });
                 if (!res.ok) throw new Error(`Failed to save ${url}`);
                 return res.json();
             };
 
-            const saveList = async (url: string, items: any[], deletedIds: number[]) => {
+            const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 for (const id of deletedIds) {
-                    await fetch(`${url}?id=${id}`, { method: 'DELETE' });
+                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    if (!delId) continue;
+                    await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }
                 for (const item of items) {
                     await saveSection(url, item);
@@ -69,7 +73,7 @@ export default function TermsPageUI() {
             setDeletedSections([]);
 
             showToast("Settings saved successfully!", { type: 'success' });
-            window.location.reload();
+            await fetchData();
         } catch (error) {
             console.error("Error saving settings:", error);
             showToast("Failed to save settings. Please try again.", { type: 'error' });
@@ -182,7 +186,8 @@ export default function TermsPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (section.id) setDeletedSections([...deletedSections, section.id]);
+                                                        const idToDelete = section.id ?? section._id ?? null;
+                                                        if (idToDelete) setDeletedSections([...deletedSections, idToDelete]);
                                                         setSections(sections.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"

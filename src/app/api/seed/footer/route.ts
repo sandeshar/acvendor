@@ -1,19 +1,42 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { eq } from 'drizzle-orm';
-import { footerSections, footerLinks, storeSettings } from '@/db/schema';
+import { connectDB } from '@/db';
+import { FooterSection, FooterLink, StoreSettings } from '@/db/schema';
 
 // POST - seed footer sections/links and default footer text
 export async function POST() {
     try {
-        // Ensure we have a store row
-        const rows = await db.select().from(storeSettings).limit(1);
-        const store = rows[0];
-        if (!store) return NextResponse.json({ success: false, error: 'No store settings found. Seed store settings first.' }, { status: 400 });
+        await connectDB();
+
+        // Ensure we have a store row; create one if missing so footer can be seeded independently
+        let store = await StoreSettings.findOne().lean();
+        if (!store) {
+            store = (await StoreSettings.create({
+                store_name: 'AC Vendor',
+                store_description: 'Your trusted source for air conditioners, parts, and installation services.',
+                store_logo: '/logo.png',
+                favicon: '/favicon.ico',
+                contact_email: 'support@acvendor.com',
+                contact_phone: '+977 9800000000',
+                address: 'Kathmandu, Nepal',
+                // Provide non-empty social links so schema `required` validations pass
+                facebook: 'https://facebook.com/acvendor',
+                twitter: 'https://twitter.com/acvendor',
+                instagram: 'https://instagram.com/acvendor',
+                linkedin: 'https://linkedin.com/company/acvendor',
+                // Required corporate fields
+                pan: 'N/A',
+                authorized_person: 'Admin',
+                featured_brand: 'midea',
+                meta_title: 'AC Vendor - Air Conditioners and Installation',
+                meta_description: 'Shop the best air conditioners, parts, and professional installation services.',
+                meta_keywords: 'AC, air conditioner, installation, compressor, split AC',
+                footer_text: `© ${new Date().getFullYear()} AC Vendor. All rights reserved.`,
+            }))?.toObject?.() || (await StoreSettings.findOne().lean());
+        }
 
         // Clean existing footer data
-        await db.delete(footerLinks);
-        await db.delete(footerSections);
+        await FooterLink.deleteMany({});
+        await FooterSection.deleteMany({});
 
         // Insert default footer sections and links (no 'Connect' — social links are in store settings)
         const defaultSections = [
@@ -38,18 +61,18 @@ export async function POST() {
         ];
 
         for (const [sIdx, sec] of defaultSections.entries()) {
-            const res: any = await db.insert(footerSections).values({ store_id: store.id, title: sec.title || '', order: sIdx });
-            const newSecId = Array.isArray(res) ? res[0]?.insertId : (res as any)?.insertId;
+            const res = await FooterSection.create({ store_id: store._id, title: sec.title || '', order: sIdx });
+            const newSecId = res._id;
             if (sec.links && sec.links.length) {
                 for (const [lIdx, link] of sec.links.entries()) {
-                    await db.insert(footerLinks).values({ section_id: newSecId, label: link.label, href: link.href, is_external: 0, order: lIdx });
+                    await FooterLink.create({ section_id: newSecId, label: link.label, href: link.href, is_external: 0, order: lIdx });
                 }
             }
         }
 
         // Optionally seed a default footer_text if not present
         if (!store.footer_text) {
-            await db.update(storeSettings).set({ footer_text: '© ' + new Date().getFullYear() + ' ' + (store.store_name || 'Your Store') + '. All rights reserved.' }).where(eq(storeSettings.id, store.id));
+            await StoreSettings.findByIdAndUpdate(store._id, { footer_text: '© ' + new Date().getFullYear() + ' ' + (store.store_name || 'Your Store') + '. All rights reserved.' });
         }
 
         return NextResponse.json({ success: true, message: 'Footer seeded successfully' });

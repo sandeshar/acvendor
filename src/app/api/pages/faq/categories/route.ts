@@ -1,39 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { faqCategories } from '@/db/faqPageSchema';
+import { connectDB } from '@/db';
+import { FAQCategories } from '@/db/faqPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch categories
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const name = searchParams.get('name');
 
         if (id) {
-            const category = await db.select().from(faqCategories).where(eq(faqCategories.id, parseInt(id))).limit(1);
+            const category = await FAQCategories.findById(id).lean();
 
-            if (category.length === 0) {
+            if (!category) {
                 return NextResponse.json({ error: 'Category not found' }, { status: 404 });
             }
 
-            return NextResponse.json(category[0]);
+            return NextResponse.json(category);
         }
 
         if (name) {
-            const category = await db.select().from(faqCategories).where(eq(faqCategories.name, name)).limit(1);
+            const category = await FAQCategories.findOne({ name }).lean();
 
-            if (category.length === 0) {
+            if (!category) {
                 return NextResponse.json({ error: 'Category not found' }, { status: 404 });
             }
 
-            return NextResponse.json(category[0]);
+            return NextResponse.json(category);
         }
 
-        const categories = await db.select().from(faqCategories)
-            .where(eq(faqCategories.is_active, 1))
-            .orderBy(asc(faqCategories.display_order));
+        const categories = await FAQCategories.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
 
         return NextResponse.json(categories);
     } catch (error) {
@@ -45,6 +43,7 @@ export async function GET(request: NextRequest) {
 // POST - Create category
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { name, display_order, is_active = 1 } = body;
 
@@ -52,18 +51,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Name and display_order are required' }, { status: 400 });
         }
 
-        const result = await db.insert(faqCategories).values({ name, display_order, is_active });
+        const result = await FAQCategories.create({ name, display_order, is_active });
 
         revalidateTag('faq-categories', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Category created successfully', id: result[0].insertId },
+            { success: true, message: 'Category created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error: any) {
         console.error('Error creating category:', error);
 
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 11000) {
             return NextResponse.json({ error: 'A category with this name already exists' }, { status: 409 });
         }
 
@@ -74,6 +73,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update category
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, name, display_order, is_active } = body;
 
@@ -86,7 +86,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(faqCategories).set(updateData).where(eq(faqCategories.id, id));
+        await FAQCategories.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('faq-categories', 'max');
 
@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest) {
     } catch (error: any) {
         console.error('Error updating category:', error);
 
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 11000) {
             return NextResponse.json({ error: 'A category with this name already exists' }, { status: 409 });
         }
 
@@ -105,6 +105,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete category
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -112,7 +113,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(faqCategories).where(eq(faqCategories.id, parseInt(id)));
+        await FAQCategories.findByIdAndDelete(id);
 
         revalidateTag('faq-categories', 'max');
 

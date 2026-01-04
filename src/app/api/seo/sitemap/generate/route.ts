@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { blogPosts } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { connectDB } from '@/db';
+import { BlogPost } from '@/db/schema';
+import { resolveStatusId } from '@/utils/resolveStatus';
 import { getFrontendPageCount } from '@/utils/frontendPages';
 
 export async function POST() {
     try {
+        await connectDB();
         // Get published blog posts
-        const posts = await db.select().from(blogPosts).where(eq(blogPosts.status, 2));
+        const publishedStatusId = await resolveStatusId(2);
+        const posts = publishedStatusId ? await BlogPost.find({ status: publishedStatusId }).lean() : [];
         const pageCount = getFrontendPageCount();
 
         const stats = {

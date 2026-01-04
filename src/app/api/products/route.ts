@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { eq, desc, inArray } from 'drizzle-orm';
-import { products, productImages } from '@/db/productsSchema';
+import { connectDB } from '@/db';
+import { Product, ProductImage } from '@/db/productsSchema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { revalidateTag } from 'next/cache';
-import { reviewTestimonials } from '@/db/reviewSchema';
-import { reviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema';
+import { ReviewTestimonials } from '@/db/reviewSchema';
+import { ReviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema';
 
 // GET - Fetch products
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
+        
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const slug = searchParams.get('slug');
@@ -24,21 +25,20 @@ export async function GET(request: NextRequest) {
             // Accept numeric IDs or slugs passed in the `id` parameter
             const idNum = parseInt(id);
             if (!isNaN(idNum)) {
-                const rows = await db.select().from(products).where(eq(products.id, idNum)).limit(1);
-                if (rows && rows.length) {
-                    const product: any = rows[0];
-                    const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
+                const product = await Product.findById(idNum).lean();
+                if (product) {
+                    const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
 
                     // attach category/subcategory objects when available
                     try {
-                        const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                        const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
                         if (product.category_id) {
-                            const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
-                            if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                            const cat = await ServiceCategories.findById(product.category_id).lean();
+                            if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
                         }
                         if (product.subcategory_id) {
-                            const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
-                            if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                            const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
+                            if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
                         }
                     } catch (e) {
                         // ignore if category schema missing
@@ -46,11 +46,10 @@ export async function GET(request: NextRequest) {
 
                     // compute reviews and rating from testimonials if available
                     try {
-                        const reviewRows = await db.select({ testimonial: reviewTestimonials })
-                            .from(reviewTestimonials)
-                            .leftJoin(reviewTestimonialProducts, eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id))
-                            .where(eq(reviewTestimonialProducts.productId, product.id));
-                        const testimonials = reviewRows.map(r => (r && (r as any).testimonial) ? (r as any).testimonial : r);
+                        const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
+                        const testimonialIds = reviewMappings.map(m => m.testimonialId);
+                        const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
+                        
                         const reviews_count = testimonials.length;
                         const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
@@ -68,21 +67,20 @@ export async function GET(request: NextRequest) {
                 }
             } else {
                 // treat `id` as a slug
-                const rows = await db.select().from(products).where(eq(products.slug, id)).limit(1);
-                if (rows && rows.length) {
-                    const product: any = rows[0];
-                    const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
+                const product = await Product.findOne({ slug: id }).lean();
+                if (product) {
+                    const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
 
                     // attach category/subcategory objects when available
                     try {
-                        const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                        const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
                         if (product.category_id) {
-                            const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
-                            if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                            const cat = await ServiceCategories.findById(product.category_id).lean();
+                            if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
                         }
                         if (product.subcategory_id) {
-                            const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
-                            if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                            const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
+                            if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
                         }
                     } catch (e) {
                         // ignore if category schema missing
@@ -93,9 +91,9 @@ export async function GET(request: NextRequest) {
 
                 // Fallback: check servicePosts by slug
                 try {
-                    const { servicePosts } = await import('@/db/servicePostsSchema');
-                    const spRows = await db.select().from(servicePosts).where(eq(servicePosts.slug, id)).limit(1);
-                    if (spRows && spRows.length) return NextResponse.json(spRows[0]);
+                    const { ServicePosts } = await import('@/db/servicePostsSchema');
+                    const servicePost = await ServicePosts.findOne({ slug: id }).lean();
+                    if (servicePost) return NextResponse.json(servicePost);
                 } catch (e) {
                     // ignore
                 }
@@ -103,9 +101,9 @@ export async function GET(request: NextRequest) {
 
             // Fallback: check servicePosts table by numeric ID if we had a numeric id but it wasn't found
             try {
-                const { servicePosts } = await import('@/db/servicePostsSchema');
-                const spRows = await db.select().from(servicePosts).where(eq(servicePosts.id, isNaN(idNum) ? -1 : idNum)).limit(1);
-                if (spRows && spRows.length) return NextResponse.json(spRows[0]);
+                const { ServicePosts } = await import('@/db/servicePostsSchema');
+                const servicePost = await ServicePosts.findById(isNaN(idNum) ? null : idNum).lean();
+                if (servicePost) return NextResponse.json(servicePost);
             } catch (e) {
                 // ignore if servicePosts schema not present
             }
@@ -114,21 +112,20 @@ export async function GET(request: NextRequest) {
         }
 
         if (slug) {
-            const rows = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
-            if (rows && rows.length) {
-                const product: any = rows[0];
-                const images = await db.select().from(productImages).where(eq(productImages.product_id, product.id)).orderBy(desc(productImages.display_order));
+            const product = await Product.findOne({ slug }).lean();
+            if (product) {
+                const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
 
                 // attach category/subcategory objects when available
                 try {
-                    const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                    const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
                     if (product.category_id) {
-                        const cat = await db.select().from(serviceCategories).where(eq(serviceCategories.id, product.category_id)).limit(1);
-                        if (cat && cat.length) product.category = { id: cat[0].id, name: cat[0].name, slug: cat[0].slug };
+                        const cat = await ServiceCategories.findById(product.category_id).lean();
+                        if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
                     }
                     if (product.subcategory_id) {
-                        const sub = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.id, product.subcategory_id)).limit(1);
-                        if (sub && sub.length) product.subcategory = { id: sub[0].id, name: sub[0].name, slug: sub[0].slug };
+                        const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
+                        if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
                     }
                 } catch (e) {
                     // ignore if category schema missing
@@ -136,11 +133,10 @@ export async function GET(request: NextRequest) {
 
                 // compute reviews and rating from testimonials if available
                 try {
-                    const reviewRows = await db.select({ testimonial: reviewTestimonials })
-                        .from(reviewTestimonials)
-                        .leftJoin(reviewTestimonialProducts, eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id))
-                        .where(eq(reviewTestimonialProducts.productId, product.id));
-                    const testimonials = reviewRows.map(r => (r && (r as any).testimonial) ? (r as any).testimonial : r);
+                    const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
+                    const testimonialIds = reviewMappings.map(m => m.testimonialId);
+                    const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
+                    
                     const reviews_count = testimonials.length;
                     const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
 
@@ -159,9 +155,9 @@ export async function GET(request: NextRequest) {
 
             // Fallback to service posts (legacy services table)
             try {
-                const { servicePosts } = await import('@/db/servicePostsSchema');
-                const spRows = await db.select().from(servicePosts).where(eq(servicePosts.slug, slug)).limit(1);
-                if (spRows && spRows.length) return NextResponse.json(spRows[0]);
+                const { ServicePosts } = await import('@/db/servicePostsSchema');
+                const servicePost = await ServicePosts.findOne({ slug }).lean();
+                if (servicePost) return NextResponse.json(servicePost);
             } catch (e) {
                 // ignore if not available
             }
@@ -169,44 +165,48 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
-        let query = db.select().from(products);
+        let query: any = {};
 
         // Support fetching by explicit ids list: ?ids=1,2,3
         const idsParam = searchParams.get('ids');
         if (idsParam) {
             const parsed = String(idsParam).split(',').map(s => parseInt(s)).filter(n => !isNaN(n));
             if (!parsed.length) return NextResponse.json([]);
-            query = query.where(inArray(products.id, parsed)) as any;
+            query._id = { $in: parsed };
         }
 
         if (status) {
-            query = query.where(eq(products.statusId, parseInt(status))) as any;
+            query.statusId = parseInt(status);
         }
 
         if (featured === '1' || featured === 'true') {
-            query = query.where(eq(products.featured, 1)) as any;
+            query.featured = 1;
         }
 
         if (category) {
             const catId = parseInt(category);
             if (!isNaN(catId)) {
-                query = query.where(eq(products.category_id, catId)) as any;
+                query.category_id = catId;
             } else {
                 // if category slug provided, try to resolve via serviceCategories in other schema
-                const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
-                const catRow = await db.select().from(serviceCategories).where(eq(serviceCategories.slug, category)).limit(1);
-                if (catRow.length) query = query.where(eq(products.category_id, catRow[0].id)) as any;
+                const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
+                const cat = await ServiceCategories.findOne({ slug: category }).lean();
+                if (cat) query.category_id = cat._id;
             }
         }
 
         // If brand parameter is provided, restrict products to categories tagged with that brand or global categories
         if (brand) {
-            const { serviceCategories } = await import('@/db/serviceCategoriesSchema');
-            const { or } = await import('drizzle-orm');
-            const brandCats = await db.select().from(serviceCategories).where(or(eq(serviceCategories.brand, brand), eq(serviceCategories.brand, '')));
-            const catIds = brandCats.map((c: any) => c.id).filter(Boolean);
+            const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
+            const brandCats = await ServiceCategories.find({
+                $or: [
+                    { brand: brand },
+                    { brand: '' }
+                ]
+            }).lean();
+            const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
             if (catIds.length) {
-                query = query.where(inArray(products.category_id, catIds)) as any;
+                query.category_id = { $in: catIds };
             } else {
                 // If no categories for brand, return empty set
                 return NextResponse.json([]);
@@ -216,51 +216,52 @@ export async function GET(request: NextRequest) {
         if (subcategory) {
             const subId = parseInt(subcategory);
             if (!isNaN(subId)) {
-                query = query.where(eq(products.subcategory_id, subId)) as any;
+                query.subcategory_id = subId;
             } else {
-                const { serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                const subRow = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, subcategory)).limit(1);
-                if (subRow.length) query = query.where(eq(products.subcategory_id, subRow[0].id)) as any;
+                const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                const sub = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
+                if (sub) query.subcategory_id = sub._id;
             }
         }
 
         // Server-side free-text search (q): title, slug, excerpt, model, content
         const qParam = searchParams.get('q');
         if (qParam) {
-            const { or, like } = await import('drizzle-orm');
-            const pattern = `%${qParam}%`;
-            query = query.where(
-                or(
-                    like(products.title, pattern),
-                    like(products.slug, pattern),
-                    like(products.excerpt, pattern),
-                    like(products.model, pattern),
-                    like(products.content, pattern)
-                )!
-            ) as any;
+            const pattern = new RegExp(qParam, 'i');
+            query.$or = [
+                { title: pattern },
+                { slug: pattern },
+                { excerpt: pattern },
+                { model: pattern },
+                { content: pattern }
+            ];
         }
 
         const offset = searchParams.get('offset');
         const offsetNum = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
 
-        const ordered = query.orderBy(desc(products.createdAt));
-        const rows = (limit && !isNaN(parseInt(limit))) ? await ordered.limit(parseInt(limit)).offset(offsetNum) : await ordered.offset(offsetNum);
+        let productQuery = Product.find(query).sort({ createdAt: -1 }).skip(offsetNum);
+        if (limit && !isNaN(parseInt(limit))) {
+            productQuery = productQuery.limit(parseInt(limit));
+        }
+        
+        const rows = await productQuery.lean();
 
         // attach category / subcategory objects for list responses
         try {
             const catIds = Array.from(new Set(rows.map((r: any) => r.category_id).filter(Boolean)));
             const subIds = Array.from(new Set(rows.map((r: any) => r.subcategory_id).filter(Boolean)));
             if (catIds.length || subIds.length) {
-                const { serviceCategories, serviceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                const cats = catIds.length ? await db.select().from(serviceCategories).where(inArray(serviceCategories.id, catIds)) : [];
-                const subs = subIds.length ? await db.select().from(serviceSubcategories).where(inArray(serviceSubcategories.id, subIds)) : [];
-                const catMap: Record<number, any> = {};
-                const subMap: Record<number, any> = {};
-                cats.forEach((c: any) => { catMap[c.id] = { id: c.id, name: c.name, slug: c.slug }; });
-                subs.forEach((s: any) => { subMap[s.id] = { id: s.id, name: s.name, slug: s.slug }; });
+                const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                const cats = catIds.length ? await ServiceCategories.find({ _id: { $in: catIds } }).lean() : [];
+                const subs = subIds.length ? await ServiceSubcategories.find({ _id: { $in: subIds } }).lean() : [];
+                const catMap: Record<string, any> = {};
+                const subMap: Record<string, any> = {};
+                cats.forEach((c: any) => { catMap[String(c._id)] = { id: c._id, name: c.name, slug: c.slug }; });
+                subs.forEach((s: any) => { subMap[String(s._id)] = { id: s._id, name: s.name, slug: s.slug }; });
                 rows.forEach((r: any) => {
-                    if (r.category_id && catMap[r.category_id]) r.category = catMap[r.category_id];
-                    if (r.subcategory_id && subMap[r.subcategory_id]) r.subcategory = subMap[r.subcategory_id];
+                    if (r.category_id && catMap[String(r.category_id)]) r.category = catMap[String(r.category_id)];
+                    if (r.subcategory_id && subMap[String(r.subcategory_id)]) r.subcategory = subMap[String(r.subcategory_id)];
                 });
             }
         } catch (e) {
@@ -269,30 +270,37 @@ export async function GET(request: NextRequest) {
 
         // attach aggregated reviews info for listed products
         try {
-            const ids = rows.map((r: any) => r.id).filter((id: any) => !!id);
+            const ids = rows.map((r: any) => r._id).filter((id: any) => !!id);
             if (ids.length) {
-                const revRows = await db.select({ testimonial: reviewTestimonials, mapping: reviewTestimonialProducts })
-                    .from(reviewTestimonialProducts)
-                    .leftJoin(reviewTestimonials, eq(reviewTestimonials.id, reviewTestimonialProducts.testimonialId))
-                    .where(inArray(reviewTestimonialProducts.productId, ids));
+                const reviewMappings = await ReviewTestimonialProducts.find({ productId: { $in: ids } }).lean();
+                const testimonialIds = reviewMappings.map((m: any) => m.testimonialId);
+                const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
 
-                const agg: Record<number, { count: number, sum: number, breakdown: Record<number, number> }> = {};
-                revRows.forEach((row: any) => {
-                    const pid = row.mapping?.productId ?? row.productId ?? null;
-                    const t = row.testimonial ?? row;
-                    if (!pid) return;
-                    if (!agg[pid]) agg[pid] = { count: 0, sum: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
-                    const r = Number(t?.rating || 0);
-                    if (r >= 1 && r <= 5) {
-                        agg[pid].count += 1;
-                        agg[pid].sum += r;
-                        agg[pid].breakdown[r] = (agg[pid].breakdown[r] || 0) + 1;
-                    }
+                // Create a mapping of productId to testimonials
+                const productTestimonials: Record<string, any[]> = {};
+                reviewMappings.forEach((mapping: any) => {
+                    const pid = String(mapping.productId);
+                    if (!productTestimonials[pid]) productTestimonials[pid] = [];
+                    const testimonial = testimonials.find((t: any) => String(t._id) === String(mapping.testimonialId));
+                    if (testimonial) productTestimonials[pid].push(testimonial);
+                });
+
+                const agg: Record<string, { count: number, sum: number, breakdown: Record<number, number> }> = {};
+                Object.keys(productTestimonials).forEach(pid => {
+                    agg[pid] = { count: 0, sum: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
+                    productTestimonials[pid].forEach((t: any) => {
+                        const r = Number(t?.rating || 0);
+                        if (r >= 1 && r <= 5) {
+                            agg[pid].count += 1;
+                            agg[pid].sum += r;
+                            agg[pid].breakdown[r] = (agg[pid].breakdown[r] || 0) + 1;
+                        }
+                    });
                 });
 
                 // attach aggregates to rows
                 rows.forEach((r: any) => {
-                    const a = agg[r.id];
+                    const a = agg[String(r._id)];
                     if (a) {
                         r.reviews_count = a.count;
                         r.rating = a.count ? Number((a.sum / a.count).toFixed(1)) : 0;
@@ -314,6 +322,8 @@ export async function GET(request: NextRequest) {
 // POST - Create product
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
+        
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
         const authorId = getUserIdFromToken(token);
@@ -358,7 +368,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Required fields: slug, title, statusId' }, { status: 400 });
         }
 
-        const result = await db.insert(products).values({
+        const productData: any = {
             slug,
             title,
             excerpt: excerpt || '',
@@ -388,9 +398,10 @@ export async function POST(request: NextRequest) {
             rating: (typeof rating !== 'undefined' && rating !== null) ? rating : '0',
             meta_title: metaTitle || null,
             meta_description: metaDescription || null,
-        });
+        };
 
-        const insertId = result?.[0]?.insertId;
+        const newProduct = await Product.create(productData);
+        const insertId = newProduct._id;
 
         if (images && Array.isArray(images) && insertId) {
             const imageInserts = images.map((img: any) => ({
@@ -401,7 +412,7 @@ export async function POST(request: NextRequest) {
                 display_order: img.display_order ? img.display_order : 0,
             }));
             try {
-                await db.insert(productImages).values(imageInserts);
+                await ProductImage.insertMany(imageInserts);
             } catch (err) {
                 // ignore image insert failures but log
                 console.error('Failed to insert product images:', err);
@@ -413,10 +424,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, message: 'Product created successfully', id: insertId }, { status: 201 });
     } catch (error: any) {
         console.error('Error creating product:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 11000) {
             return NextResponse.json({ error: 'A product with this slug already exists. Please use a different slug.' }, { status: 409 });
         }
-        if (error.code === 'ER_NO_REFERENCED_ROW_2' || error.code === 'ER_NO_REFERENCED_ROW') {
+        if (error.name === 'ValidationError') {
             return NextResponse.json({ error: 'Invalid category or subcategory ID' }, { status: 400 });
         }
         return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
@@ -426,6 +437,8 @@ export async function POST(request: NextRequest) {
 // PUT - Update product
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
+        
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - No token provided' }, { status: 401 });
         const authorId = getUserIdFromToken(token);
@@ -500,12 +513,12 @@ export async function PUT(request: NextRequest) {
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;
         if (metaDescription !== undefined) updateData.meta_description = metaDescription;
 
-        await db.update(products).set(updateData).where(eq(products.id, id));
+        await Product.findByIdAndUpdate(id, updateData, { new: true });
 
         // handle images - if images array provided, replace existing images
         if (images && Array.isArray(images)) {
             try {
-                await db.delete(productImages).where(eq(productImages.product_id, id));
+                await ProductImage.deleteMany({ product_id: id });
                 const imageInserts = images.map((img: any) => ({
                     product_id: id,
                     url: img.url,
@@ -513,7 +526,7 @@ export async function PUT(request: NextRequest) {
                     is_primary: img.is_primary ? 1 : 0,
                     display_order: img.display_order ? img.display_order : 0,
                 }));
-                if (imageInserts.length) await db.insert(productImages).values(imageInserts);
+                if (imageInserts.length) await ProductImage.insertMany(imageInserts);
             } catch (err) {
                 console.error('Failed to replace product images:', err);
             }
@@ -532,6 +545,8 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete product
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
+        
         const token = request.cookies.get('admin_auth')?.value;
         if (!token) return NextResponse.json({ error: 'Unauthorized - missing token' }, { status: 401 });
         const userId = getUserIdFromToken(token);
@@ -555,26 +570,26 @@ export async function DELETE(request: NextRequest) {
 
         if (!id && !slug) return NextResponse.json({ error: 'ID or slug is required' }, { status: 400 });
 
-        let productId = id ? parseInt(id) : null;
+        let productId = id ? id : null;
         if (!productId && slug) {
-            const rows = await db.select().from(products).where(eq(products.slug, slug)).limit(1);
-            if (!rows || rows.length === 0) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-            productId = rows[0].id;
+            const product = await Product.findOne({ slug }).lean();
+            if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+            productId = String(product._id);
         }
 
         if (!productId) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
 
-        const existing = await db.select().from(products).where(eq(products.id, productId)).limit(1);
-        if (!existing || existing.length === 0) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        const existing = await Product.findById(productId).lean();
+        if (!existing) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
         try {
-            await db.delete(productImages).where(eq(productImages.product_id, productId as number));
+            await ProductImage.deleteMany({ product_id: productId });
         } catch (err) {
             // ignore
         }
 
         try {
-            await db.delete(products).where(eq(products.id, productId as number));
+            await Product.findByIdAndDelete(productId);
         } catch (err: any) {
             console.error('Deletion failed:', err);
             return NextResponse.json({ error: 'Failed to delete product', details: err.message || String(err) }, { status: 500 });

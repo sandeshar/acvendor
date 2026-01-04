@@ -25,32 +25,33 @@ export default function HomePageUI() {
     const [deletedExpertiseItems, setDeletedExpertiseItems] = useState<number[]>([]);
 
     // --- Fetch Data ---
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes] = await Promise.all([
+                fetch('/api/pages/homepage/hero'),
+                fetch('/api/pages/homepage/trust-section'),
+                fetch('/api/pages/homepage/trust-logos'),
+                fetch('/api/pages/homepage/expertise-section'),
+                fetch('/api/pages/homepage/expertise-items'),
+                fetch('/api/pages/homepage/contact-section'),
+            ]);
+
+            if (heroRes.ok) setHeroData(await heroRes.json());
+            if (trustSecRes.ok) setTrustSection(await trustSecRes.json());
+            if (trustLogosRes.ok) setTrustLogos(await trustLogosRes.json());
+            if (expSecRes.ok) setExpertiseSection(await expSecRes.json());
+            if (expItemsRes.ok) setExpertiseItems(await expItemsRes.json());
+            if (contactRes.ok) setContactData(await contactRes.json());
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes] = await Promise.all([
-                    fetch('/api/pages/homepage/hero'),
-                    fetch('/api/pages/homepage/trust-section'),
-                    fetch('/api/pages/homepage/trust-logos'),
-                    fetch('/api/pages/homepage/expertise-section'),
-                    fetch('/api/pages/homepage/expertise-items'),
-                    fetch('/api/pages/homepage/contact-section'),
-                ]);
-
-                if (heroRes.ok) setHeroData(await heroRes.json());
-                if (trustSecRes.ok) setTrustSection(await trustSecRes.json());
-                if (trustLogosRes.ok) setTrustLogos(await trustLogosRes.json());
-                if (expSecRes.ok) setExpertiseSection(await expSecRes.json());
-                if (expItemsRes.ok) setExpertiseItems(await expItemsRes.json());
-                if (contactRes.ok) setContactData(await contactRes.json());
-
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
     }, []);
 
@@ -59,16 +60,18 @@ export default function HomePageUI() {
         setSaving(true);
         try {
             const saveSection = async (url: string, data: any) => {
-                // Skip saving if data is empty (no fields filled)
-                const hasContent = Object.keys(data).some(key =>
+                // Determine entity id from either id or _id
+                const entityId = data?.id ?? data?._id ?? null;
+                // Skip saving if data is empty (no fields filled) and no id/_id present
+                const hasContent = Object.keys(data || {}).some(key =>
                     key !== 'id' && key !== 'is_active' && data[key] !== '' && data[key] !== null && data[key] !== undefined
                 );
-                if (!hasContent && !data.id) {
-                    return; // Skip empty sections without id
+                if (!hasContent && !entityId) {
+                    return null; // Skip empty sections without id
                 }
 
                 // If saving homepage hero ensure colored_word is present in title when set
-                if (url === '/api/pages/homepage/hero' && data.colored_word) {
+                if (url === '/api/pages/homepage/hero' && data && data.colored_word) {
                     const title = data.title || '';
                     if (title && title.indexOf(data.colored_word) === -1) {
                         // Prevent saving inconsistent state and ask user to autofill or fix
@@ -76,29 +79,38 @@ export default function HomePageUI() {
                     }
                 }
 
-                const method = data.id ? 'PUT' : 'POST';
+                const method = entityId ? 'PUT' : 'POST';
+                const bodyData = entityId ? { ...data, id: entityId } : { ...data };
+
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(bodyData),
                 });
                 if (!res.ok) {
                     const errorData = await res.json();
                     const details = errorData.details ? ` - ${errorData.details}` : '';
                     throw new Error(`Failed to save ${url}: ${errorData.error || res.statusText}${details}`);
                 }
-                return res.json();
+                const json = await res.json();
+                return { json, url, bodyData };
             };
 
-            const saveList = async (url: string, items: any[], deletedIds: number[]) => {
+            const saveList = async (url: string, items: any[], deletedIds: any[]) => {
+                // Ensure deletedIds contain proper id strings
                 for (const id of deletedIds) {
-                    await fetch(`${url}?id=${id}`, { method: 'DELETE' });
+                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    if (!delId) continue;
+                    await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }
-                for (const item of items) {
+                // Save or update each item
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
                     await saveSection(url, item);
                 }
             };
 
+            // Execute saves
             await Promise.all([
                 saveSection('/api/pages/homepage/hero', heroData),
                 saveSection('/api/pages/homepage/trust-section', trustSection),
@@ -112,7 +124,8 @@ export default function HomePageUI() {
             setDeletedExpertiseItems([]);
 
             showToast("Settings saved successfully!", { type: 'success' });
-            window.location.reload();
+            // Re-fetch fresh data instead of full reload so UI shows exact current state
+            await fetchData();
         } catch (error) {
             console.error("Error saving settings:", error);
             showToast(`Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`, { type: 'error' });
@@ -334,7 +347,8 @@ export default function HomePageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (logo.id) setDeletedTrustLogos([...deletedTrustLogos, logo.id]);
+                                                        const idToDelete = logo.id ?? logo._id ?? null;
+                                                        if (idToDelete) setDeletedTrustLogos([...deletedTrustLogos, idToDelete]);
                                                         setTrustLogos(trustLogos.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -398,7 +412,8 @@ export default function HomePageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (item.id) setDeletedExpertiseItems([...deletedExpertiseItems, item.id]);
+                                                        const idToDelete = item.id ?? item._id ?? null;
+                                                        if (idToDelete) setDeletedExpertiseItems([...deletedExpertiseItems, idToDelete]);
                                                         setExpertiseItems(expertiseItems.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"

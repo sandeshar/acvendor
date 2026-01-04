@@ -1,153 +1,198 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // About Page Hero Section
-export const aboutPageHero = mysqlTable("about_page_hero", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 512 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    button1_text: varchar("button1_text", { length: 100 }).notNull(),
-    button1_link: varchar("button1_link", { length: 512 }).notNull(),
-    button2_text: varchar("button2_text", { length: 100 }).notNull(),
-    button2_link: varchar("button2_link", { length: 512 }).notNull(),
-    hero_image: varchar("hero_image", { length: 512 }).notNull(),
-    hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull(),
-    badge_text: varchar("badge_text", { length: 128 }).notNull().default(''),
-    highlight_text: varchar("highlight_text", { length: 256 }).notNull().default(''),
-    // Floating UI element - top card
-    float_top_enabled: int("float_top_enabled").default(1).notNull(),
-    float_top_icon: varchar("float_top_icon", { length: 100 }).notNull().default('trending_up'),
-    float_top_title: varchar("float_top_title", { length: 128 }).notNull().default('Traffic Growth'),
-    float_top_value: varchar("float_top_value", { length: 64 }).notNull().default('+145%'),
-    // Floating UI element - bottom card
-    float_bottom_enabled: int("float_bottom_enabled").default(1).notNull(),
-    float_bottom_icon: varchar("float_bottom_icon", { length: 100 }).notNull().default('article'),
-    float_bottom_title: varchar("float_bottom_title", { length: 128 }).notNull().default('Content Pieces'),
-    float_bottom_value: varchar("float_bottom_value", { length: 64 }).notNull().default('5k+'),
-    rating_text: varchar("rating_text", { length: 128 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const aboutPageHeroSchema = new Schema({
+    title: { type: String, required: true, maxlength: 512 },
+    description: { type: String, required: true, maxlength: 1024 },
+    button1_text: { type: String, required: true, maxlength: 100 },
+    button1_link: { type: String, required: true, maxlength: 512 },
+    button2_text: { type: String, required: true, maxlength: 100 },
+    button2_link: { type: String, required: true, maxlength: 512 },
+    hero_image: { type: String, required: true, maxlength: 512 },
+    hero_image_alt: { type: String, required: true, maxlength: 256 },
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
+    float_top_enabled: { type: Number, default: 1, required: true },
+    float_top_icon: { type: String, required: true, default: 'trending_up', maxlength: 100 },
+    float_top_title: { type: String, required: true, default: 'Traffic Growth', maxlength: 128 },
+    float_top_value: { type: String, required: true, default: '+145%', maxlength: 64 },
+    float_bottom_enabled: { type: Number, default: 1, required: true },
+    float_bottom_icon: { type: String, required: true, default: 'article', maxlength: 100 },
+    float_bottom_title: { type: String, required: true, default: 'Content Pieces', maxlength: 128 },
+    float_bottom_value: { type: String, required: true, default: '5k+', maxlength: 64 },
+    rating_text: { type: String, required: true, default: '', maxlength: 128 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_hero'
 });
+
+export const AboutPageHero = models.AboutPageHero || model('AboutPageHero', aboutPageHeroSchema);
 
 // About Page Journey Section
-export const aboutPageJourney = mysqlTable("about_page_journey", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    paragraph1: varchar("paragraph1", { length: 1024 }).notNull(),
-    paragraph2: varchar("paragraph2", { length: 1024 }).notNull(),
-    thinking_box_title: varchar("thinking_box_title", { length: 256 }).notNull(),
-    thinking_box_content: varchar("thinking_box_content", { length: 1024 }).notNull(),
-    highlights: varchar("highlights", { length: 1024 }).notNull().default('[]'),
-    // Section image
-    hero_image: varchar("hero_image", { length: 512 }).notNull().default(''),
-    hero_image_alt: varchar("hero_image_alt", { length: 256 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const aboutPageJourneySchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    paragraph1: { type: String, required: true, maxlength: 1024 },
+    paragraph2: { type: String, required: true, maxlength: 1024 },
+    thinking_box_title: { type: String, required: true, maxlength: 256 },
+    thinking_box_content: { type: String, required: true, maxlength: 1024 },
+    highlights: { type: String, required: true, default: '[]', maxlength: 1024 },
+    hero_image: { type: String, required: true, default: '', maxlength: 512 },
+    hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_journey'
 });
 
-export const aboutPageStats = mysqlTable("about_page_stats", {
-    id: int("id").primaryKey().autoincrement(),
-    label: varchar("label", { length: 100 }).notNull(),
-    value: varchar("value", { length: 50 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageJourney = models.AboutPageJourney || model('AboutPageJourney', aboutPageJourneySchema);
+
+// About Page Stats
+const aboutPageStatsSchema = new Schema({
+    label: { type: String, required: true, maxlength: 100 },
+    value: { type: String, required: true, maxlength: 50 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_stats'
 });
 
-export const aboutPageFeatures = mysqlTable("about_page_features", {
-    id: int("id").primaryKey().autoincrement(),
-    icon: varchar("icon", { length: 128 }).notNull().default(''),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageStats = models.AboutPageStats || model('AboutPageStats', aboutPageStatsSchema);
+
+// About Page Features
+const aboutPageFeaturesSchema = new Schema({
+    icon: { type: String, required: true, default: '', maxlength: 128 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_features'
 });
 
-// About Page Certifications (clients / partners)
-export const aboutPageCertifications = mysqlTable("about_page_certifications", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    logo: varchar("logo", { length: 512 }).notNull().default(''),
-    link: varchar("link", { length: 512 }).notNull().default(''),
-    display_order: int("display_order").notNull().default(0),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageFeatures = models.AboutPageFeatures || model('AboutPageFeatures', aboutPageFeaturesSchema);
+
+// About Page Certifications
+const aboutPageCertificationsSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    logo: { type: String, required: true, default: '', maxlength: 512 },
+    link: { type: String, required: true, default: '', maxlength: 512 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_certifications'
 });
 
-// Certifications Section metadata (title/subtitle)
-export const aboutPageCertificationsSection = mysqlTable("about_page_certifications_section", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull().default(''),
-    subtitle: varchar("subtitle", { length: 512 }).notNull().default(''),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageCertifications = models.AboutPageCertifications || model('AboutPageCertifications', aboutPageCertificationsSchema);
+
+// Certifications Section metadata
+const aboutPageCertificationsSectionSchema = new Schema({
+    title: { type: String, required: true, default: '', maxlength: 256 },
+    subtitle: { type: String, required: true, default: '', maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_certifications_section'
 });
 
-// About Page Badges (manufacturers/partner logos shown elsewhere)
-export const aboutPageBadges = mysqlTable("about_page_badges", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    logo: varchar("logo", { length: 512 }).notNull().default(''),
-    link: varchar("link", { length: 512 }).notNull().default(''),
-    display_order: int("display_order").notNull().default(0),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageCertificationsSection = models.AboutPageCertificationsSection || model('AboutPageCertificationsSection', aboutPageCertificationsSectionSchema);
+
+// About Page Badges
+const aboutPageBadgesSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    logo: { type: String, required: true, default: '', maxlength: 512 },
+    link: { type: String, required: true, default: '', maxlength: 512 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_badges'
 });
+
+export const AboutPageBadges = models.AboutPageBadges || model('AboutPageBadges', aboutPageBadgesSchema);
 
 // About Page Philosophy Section
-export const aboutPagePhilosophy = mysqlTable("about_page_philosophy", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const aboutPagePhilosophySchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_philosophy'
 });
 
-export const aboutPagePrinciples = mysqlTable("about_page_principles", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPagePhilosophy = models.AboutPagePhilosophy || model('AboutPagePhilosophy', aboutPagePhilosophySchema);
+
+// About Page Principles
+const aboutPagePrinciplesSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_principles'
 });
+
+export const AboutPagePrinciples = models.AboutPagePrinciples || model('AboutPagePrinciples', aboutPagePrinciplesSchema);
 
 // About Page Team Section
-export const aboutPageTeamSection = mysqlTable("about_page_team_section", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const aboutPageTeamSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_team_section'
 });
 
-export const aboutPageTeamMembers = mysqlTable("about_page_team_members", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    role: varchar("role", { length: 256 }).notNull(),
-    description: varchar("description", { length: 1024 }).notNull(),
-    image: varchar("image", { length: 512 }).notNull(),
-    image_alt: varchar("image_alt", { length: 256 }).notNull(),
-    display_order: int("display_order").notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const AboutPageTeamSection = models.AboutPageTeamSection || model('AboutPageTeamSection', aboutPageTeamSectionSchema);
+
+// About Page Team Members
+const aboutPageTeamMembersSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    role: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    image: { type: String, required: true, maxlength: 512 },
+    image_alt: { type: String, required: true, maxlength: 256 },
+    display_order: { type: Number, required: true },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: true,
+    collection: 'about_page_team_members'
 });
+
+export const AboutPageTeamMembers = models.AboutPageTeamMembers || model('AboutPageTeamMembers', aboutPageTeamMembersSchema);
 
 // About Page CTA Section
-export const aboutPageCTA = mysqlTable("about_page_cta", {
-    id: int("id").primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    description: varchar("description", { length: 512 }).notNull(),
-    primary_button_text: varchar("primary_button_text", { length: 100 }).notNull(),
-    primary_button_link: varchar("primary_button_link", { length: 512 }).notNull(),
-    secondary_button_text: varchar("secondary_button_text", { length: 100 }).notNull(),
-    secondary_button_link: varchar("secondary_button_link", { length: 512 }).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const aboutPageCTASchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 512 },
+    primary_button_text: { type: String, required: true, maxlength: 100 },
+    primary_button_link: { type: String, required: true, maxlength: 512 },
+    secondary_button_text: { type: String, required: true, maxlength: 100 },
+    secondary_button_link: { type: String, required: true, maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'about_page_cta'
 });
+
+export const AboutPageCTA = models.AboutPageCTA || model('AboutPageCTA', aboutPageCTASchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const aboutPageHero = AboutPageHero;
+export const aboutPageJourney = AboutPageJourney;
+export const aboutPageStats = AboutPageStats;
+export const aboutPageFeatures = AboutPageFeatures;
+export const aboutPageCertifications = AboutPageCertifications;
+export const aboutPageCertificationsSection = AboutPageCertificationsSection;
+export const aboutPageBadges = AboutPageBadges;
+export const aboutPagePhilosophy = AboutPagePhilosophy;
+export const aboutPagePrinciples = AboutPagePrinciples;
+export const aboutPageTeamSection = AboutPageTeamSection;
+export const aboutPageTeamMembers = AboutPageTeamMembers;
+export const aboutPageCTA = AboutPageCTA;

@@ -1,12 +1,13 @@
-import { db } from "@/db";
-import { reviewTestimonials } from "@/db/reviewSchema";
-import { reviewTestimonialServices } from "@/db/reviewTestimonialServicesSchema";
-import { reviewTestimonialProducts } from "@/db/reviewTestimonialProductsSchema";
-import { desc, eq, inArray } from "drizzle-orm";
+import { connectDB } from "@/db";
+import { ReviewTestimonials } from "@/db/reviewSchema";
+import { ReviewTestimonialServices } from "@/db/reviewTestimonialServicesSchema";
+import { ReviewTestimonialProducts } from "@/db/reviewTestimonialProductsSchema";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from 'next/cache';
 
 export async function GET(request: NextRequest) {
+    await connectDB();
+    
     const searchParams = request.nextUrl.searchParams;
     const service = parseInt(searchParams.get('service') || '0');
     const product = parseInt(searchParams.get('product') || '0');
@@ -15,57 +16,53 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '0');
 
     if (homepage === '1' || homepage === 'true') {
-        const response = await db.select().from(reviewTestimonials).orderBy(desc(reviewTestimonials.date)).limit(limit || 3);
+        const response = await ReviewTestimonials.find().sort({ date: -1 }).limit(limit || 3).lean();
         return NextResponse.json(response);
     }
 
     if (id) {
-        const one = await db.select().from(reviewTestimonials).where(eq(reviewTestimonials.id, id)).limit(1);
-        const withIds = await attachRelationIds(one);
+        const one = await ReviewTestimonials.findById(id).lean();
+        const withIds = await attachRelationIds(one ? [one] : []);
         return NextResponse.json(withIds);
     }
 
     if (service) {
-        const rows = await db
-            .select({ testimonial: reviewTestimonials })
-            .from(reviewTestimonials)
-            .leftJoin(
-                reviewTestimonialServices,
-                eq(reviewTestimonialServices.testimonialId, reviewTestimonials.id)
-            )
-            .where(eq(reviewTestimonialServices.serviceId, service))
-            .orderBy(desc(reviewTestimonials.date))
-            .limit(limit || 10);
+        // Get testimonial IDs from service mapping
+        const serviceMappings = await ReviewTestimonialServices.find({ serviceId: service }).lean();
+        const testimonialIds = serviceMappings.map(m => m.testimonialId);
+        
+        const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } })
+            .sort({ date: -1 })
+            .limit(limit || 10)
+            .lean();
 
-        const testimonials = rows.map((r) => r.testimonial);
         const withIds = await attachRelationIds(testimonials);
         return NextResponse.json(withIds);
     }
 
     if (product) {
-        const rows = await db
-            .select({ testimonial: reviewTestimonials })
-            .from(reviewTestimonials)
-            .leftJoin(
-                reviewTestimonialProducts,
-                eq(reviewTestimonialProducts.testimonialId, reviewTestimonials.id)
-            )
-            .where(eq(reviewTestimonialProducts.productId, product))
-            .orderBy(desc(reviewTestimonials.date))
-            .limit(limit || 10);
+        // Get testimonial IDs from product mapping
+        const productMappings = await ReviewTestimonialProducts.find({ productId: product }).lean();
+        const testimonialIds = productMappings.map(m => m.testimonialId);
+        
+        const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } })
+            .sort({ date: -1 })
+            .limit(limit || 10)
+            .lean();
 
-        const testimonials = rows.map((r) => r.testimonial);
         const withIds = await attachRelationIds(testimonials);
         return NextResponse.json(withIds);
     }
 
     // Return all testimonials if no specific filter
-    const all = await db.select().from(reviewTestimonials).orderBy(desc(reviewTestimonials.date));
+    const all = await ReviewTestimonials.find().sort({ date: -1 }).lean();
     const withIds = await attachRelationIds(all);
     return NextResponse.json(withIds);
 }
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
+        
         const { name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
@@ -77,7 +74,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
 
-        const result = await db.insert(reviewTestimonials).values({
+        const newTestimonial = await ReviewTestimonials.create({
             name,
             url,
             role,
@@ -87,19 +84,19 @@ export async function POST(request: NextRequest) {
             link: link || 'homepage'
         });
 
-        const testimonialId = result[0].insertId;
+        const testimonialId = newTestimonial._id;
 
         if (serviceIdArray.length) {
             // Validate services exist
-            const { servicePosts } = await import('@/db/servicePostsSchema');
-            const existingServices = await db.select().from(servicePosts).where(inArray(servicePosts.id, serviceIdArray));
-            const existingIds = new Set(existingServices.map((s: any) => s.id));
-            const invalidServices = serviceIdArray.filter((id: number) => !existingIds.has(id));
+            const { ServicePosts } = await import('@/db/servicePostsSchema');
+            const existingServices = await ServicePosts.find({ _id: { $in: serviceIdArray } }).lean();
+            const existingIds = new Set(existingServices.map((s: any) => s._id.toString()));
+            const invalidServices = serviceIdArray.filter((id: number) => !existingIds.has(id.toString()));
             if (invalidServices.length) {
                 return NextResponse.json({ error: `Invalid service IDs: ${invalidServices.join(', ')}` }, { status: 400 });
             }
 
-            await db.insert(reviewTestimonialServices).values(
+            await ReviewTestimonialServices.insertMany(
                 serviceIdArray.map((serviceId: number) => ({ testimonialId, serviceId }))
             );
         }
@@ -111,14 +108,14 @@ export async function POST(request: NextRequest) {
         if (productIdArray.length) {
             // Validate products exist
             const { products } = await import('@/db/productsSchema');
-            const existingProducts = await db.select().from(products).where(inArray(products.id, productIdArray));
-            const existingProductIds = new Set(existingProducts.map((p: any) => p.id));
-            const invalidProducts = productIdArray.filter((id: number) => !existingProductIds.has(id));
+            const existingProducts = await products.find({ _id: { $in: productIdArray } }).lean();
+            const existingProductIds = new Set(existingProducts.map((p: any) => p._id.toString()));
+            const invalidProducts = productIdArray.filter((id: number) => !existingProductIds.has(id.toString()));
             if (invalidProducts.length) {
                 return NextResponse.json({ error: `Invalid product IDs: ${invalidProducts.join(', ')}` }, { status: 400 });
             }
 
-            await db.insert(reviewTestimonialProducts).values(
+            await ReviewTestimonialProducts.insertMany(
                 productIdArray.map((productId: number) => ({ testimonialId, productId }))
             );
 
@@ -135,6 +132,8 @@ export async function POST(request: NextRequest) {
 }
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
+        
         const { id, name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
         const serviceIdArray = Array.isArray(serviceIds)
@@ -155,28 +154,28 @@ export async function PUT(request: NextRequest) {
         if (serviceIdArray.length) updateData.service = serviceIdArray[0];
         if (link) updateData.link = link;
 
-        const result = await db.update(reviewTestimonials).set(updateData).where(eq(reviewTestimonials.id, id));
+        const result = await ReviewTestimonials.findByIdAndUpdate(id, updateData, { new: true });
 
         // Replace service mappings
-        await db.delete(reviewTestimonialServices).where(eq(reviewTestimonialServices.testimonialId, id));
+        await ReviewTestimonialServices.deleteMany({ testimonialId: id });
         if (serviceIdArray.length) {
-            await db.insert(reviewTestimonialServices).values(
+            await ReviewTestimonialServices.insertMany(
                 serviceIdArray.map((serviceId: number) => ({ testimonialId: id, serviceId }))
             );
         }
 
         // Replace product mappings
-        await db.delete(reviewTestimonialProducts).where(eq(reviewTestimonialProducts.testimonialId, id));
+        await ReviewTestimonialProducts.deleteMany({ testimonialId: id });
         const productIdArray = Array.isArray(productIds)
             ? productIds.map((pid: any) => parseInt(pid)).filter((pid) => !Number.isNaN(pid))
             : [];
         if (productIdArray.length) {
-            await db.insert(reviewTestimonialProducts).values(
+            await ReviewTestimonialProducts.insertMany(
                 productIdArray.map((productId: number) => ({ testimonialId: id, productId }))
             );
         }
 
-        return NextResponse.json({ success: true, id: result[0].insertId });
+        return NextResponse.json({ success: true, id: result?._id });
     } catch (error: any) {
         try { const payload = await request.json(); console.error('Update testimonial payload:', payload); } catch (e) { /* ignore */ }
         console.error('Error updating testimonial:', error);
@@ -184,6 +183,8 @@ export async function PUT(request: NextRequest) {
     }
 }
 export async function DELETE(request: NextRequest) {
+    await connectDB();
+    
     const token = request.cookies.get('admin_auth')?.value;
     const id = request.nextUrl.searchParams.get('id');
     if (!token) {
@@ -193,8 +194,8 @@ export async function DELETE(request: NextRequest) {
         );
     }
     try {
-        const result = await db.delete(reviewTestimonials).where(eq(reviewTestimonials.id, parseInt(id!)));
-        return NextResponse.json({ success: true, id: result[0].insertId });
+        const result = await ReviewTestimonials.findByIdAndDelete(parseInt(id!));
+        return NextResponse.json({ success: true, id: result?._id });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to delete testimonial' }, { status: 500 });
     }
@@ -202,31 +203,33 @@ export async function DELETE(request: NextRequest) {
 
 async function attachRelationIds(testimonials: any[]) {
     if (!testimonials.length) return testimonials;
-    const ids = testimonials.map((t) => t.id);
+    const ids = testimonials.map((t) => t._id);
 
-    const serviceMappings = await db
-        .select({ testimonialId: reviewTestimonialServices.testimonialId, serviceId: reviewTestimonialServices.serviceId })
-        .from(reviewTestimonialServices)
-        .where(inArray(reviewTestimonialServices.testimonialId, ids));
+    const serviceMappings = await ReviewTestimonialServices.find({ testimonialId: { $in: ids } }).lean();
+    const productMappings = await ReviewTestimonialProducts.find({ testimonialId: { $in: ids } }).lean();
 
-    const productMappings = await db
-        .select({ testimonialId: reviewTestimonialProducts.testimonialId, productId: reviewTestimonialProducts.productId })
-        .from(reviewTestimonialProducts)
-        .where(inArray(reviewTestimonialProducts.testimonialId, ids));
-
-    const serviceMap = new Map<number, number[]>();
-    serviceMappings.forEach((m) => {
-        const arr = serviceMap.get(m.testimonialId) ?? [];
+    const serviceMap = new Map<string, number[]>();
+    serviceMappings.forEach((m: any) => {
+        const testimonialIdStr = m.testimonialId.toString();
+        const arr = serviceMap.get(testimonialIdStr) ?? [];
         arr.push(m.serviceId);
-        serviceMap.set(m.testimonialId, arr);
+        serviceMap.set(testimonialIdStr, arr);
     });
 
-    const productMap = new Map<number, number[]>();
-    productMappings.forEach((m) => {
-        const arr = productMap.get(m.testimonialId) ?? [];
+    const productMap = new Map<string, number[]>();
+    productMappings.forEach((m: any) => {
+        const testimonialIdStr = m.testimonialId.toString();
+        const arr = productMap.get(testimonialIdStr) ?? [];
         arr.push(m.productId);
-        productMap.set(m.testimonialId, arr);
+        productMap.set(testimonialIdStr, arr);
     });
 
-    return testimonials.map((t) => ({ ...t, serviceIds: serviceMap.get(t.id) ?? [], productIds: productMap.get(t.id) ?? [] }));
+    return testimonials.map((t) => {
+        const idStr = t._id.toString();
+        return { 
+            ...t, 
+            serviceIds: serviceMap.get(idStr) ?? [], 
+            productIds: productMap.get(idStr) ?? [] 
+        };
+    });
 }

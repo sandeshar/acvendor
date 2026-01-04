@@ -1,49 +1,48 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { connectDB } from '@/db';
 import {
-    homepageHero,
-    homepageTrustLogos,
-    homepageTrustSection,
-    homepageExpertiseSection,
-    homepageExpertiseItems,
-    homepageContactSection,
+    HomepageHero,
+    HomepageTrustLogos,
+    HomepageTrustSection,
+    HomepageExpertiseSection,
+    HomepageExpertiseItems,
+    HomepageContactSection,
 } from '@/db/homepageSchema';
 import {
-    aboutPageHero,
-    aboutPageJourney,
-    aboutPageStats,
-    aboutPageFeatures,
-    aboutPagePhilosophy,
-    aboutPagePrinciples,
-    aboutPageTeamSection,
-    aboutPageTeamMembers,
-    aboutPageCTA
+    AboutPageHero,
+    AboutPageJourney,
+    AboutPageStats,
+    AboutPageFeatures,
+    AboutPagePhilosophy,
+    AboutPagePrinciples,
+    AboutPageTeamSection,
+    AboutPageTeamMembers,
+    AboutPageCTA
 } from '@/db/aboutPageSchema';
 import {
-    servicesPageHero,
-    servicesPageDetails,
-    servicesPageProcessSection,
-    servicesPageProcessSteps,
-    servicesPageCTA
+    ServicesPageHero,
+    ServicesPageDetails,
+    ServicesPageProcessSection,
+    ServicesPageProcessSteps,
+    ServicesPageCTA
 } from '@/db/servicesPageSchema';
-import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
+import { ServiceCategories, ServiceSubcategories } from '@/db/serviceCategoriesSchema';
 import {
-    contactPageHero,
-    contactPageInfo,
-    contactPageFormConfig,
+    ContactPageHero,
+    ContactPageInfo,
+    ContactPageFormConfig,
 } from '@/db/contactPageSchema';
 import {
-    faqPageHeader,
-    faqCategories,
-    faqItems,
-    faqPageCTA,
+    FAQPageHeader,
+    FAQCategories,
+    FAQItems,
+    FAQPageCTA,
 } from '@/db/faqPageSchema';
-import { termsPageHeader, termsPageSections } from '@/db/termsPageSchema';
-import { blogPageHero, blogPageCTA } from '@/db/blogPageSchema';
-import { blogPosts, users, status, footerSections, footerLinks, storeSettings } from '@/db/schema';
-import { servicePosts } from '@/db/servicePostsSchema';
-import { reviewTestimonials } from '@/db/reviewSchema';
-import { eq } from 'drizzle-orm';
+import { TermsPageHeader, TermsPageSections } from '@/db/termsPageSchema';
+import { BlogPageHero, BlogPageCTA } from '@/db/blogPageSchema';
+import { BlogPost, User, Status, FooterSection, FooterLink, StoreSettings } from '@/db/schema';
+import { ServicePosts } from '@/db/servicePostsSchema';
+import { ReviewTestimonials } from '@/db/reviewSchema';
 
 function logDbError(e: any, context = '') {
     try {
@@ -60,6 +59,8 @@ function logDbError(e: any, context = '') {
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
+
         const body = await request.json().catch(() => ({} as any));
         const forwardedBrand = body?.brand || undefined;
         const forwardedClean = body?.clean === true || body?.clean === '1' || body?.clean === 1;
@@ -101,9 +102,9 @@ export async function POST(request: Request) {
 
         // Ensure Store Settings exist
         try {
-            const existing = await db.select().from(storeSettings).limit(1);
-            if (!existing || existing.length === 0) {
-                await db.insert(storeSettings).values({
+            const existing = await StoreSettings.findOne().lean();
+            if (!existing) {
+                await StoreSettings.create({
                     store_name: 'AC Vendor',
                     store_description: 'Your trusted source for air conditioners, parts, and installation services.',
                     store_logo: '/logo.png',
@@ -129,7 +130,7 @@ export async function POST(request: Request) {
 
         // Delegate to individual seeders where possible and return early (fallback to inline if delegation fails)
         try {
-            const delegateKeys = ['status', 'users', 'homepage', 'about', 'services', 'products', 'contact', 'faq', 'terms', 'blog', 'navbar', 'footer'];
+            const delegateKeys = ['status', 'users', 'homepage', 'about', 'services', 'products', 'contact', 'faq', 'terms', 'blog', 'testimonials', 'navbar', 'footer'];
             for (const key of delegateKeys) {
                 try {
                     const params = new URLSearchParams();
@@ -151,14 +152,14 @@ export async function POST(request: Request) {
 
         // 3. Seed Homepage
         try {
-            await db.delete(homepageHero);
-            await db.delete(homepageTrustLogos);
-            await db.delete(homepageTrustSection);
-            await db.delete(homepageExpertiseSection);
-            await db.delete(homepageExpertiseItems);
-            await db.delete(homepageContactSection);
+            await HomepageHero.deleteMany({});
+            await HomepageTrustLogos.deleteMany({});
+            await HomepageTrustSection.deleteMany({});
+            await HomepageExpertiseSection.deleteMany({});
+            await HomepageExpertiseItems.deleteMany({});
+            await HomepageContactSection.deleteMany({});
 
-            await db.insert(homepageHero).values({
+            await HomepageHero.create({
                 title: 'AC Vendor — Trusted Air Conditioners & Parts',
                 subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
                 cta_text: 'Shop Now',
@@ -182,7 +183,7 @@ export async function POST(request: Request) {
                 is_active: 1,
             });
 
-            await db.insert(homepageTrustSection).values({
+            await HomepageTrustSection.create({
                 heading: 'TRUSTED BY INDUSTRY LEADERS',
                 is_active: 1,
             });
@@ -233,10 +234,10 @@ export async function POST(request: Request) {
             ];
 
             for (const logo of trustLogos) {
-                await db.insert(homepageTrustLogos).values(logo);
+                await HomepageTrustLogos.create(logo);
             }
 
-            await db.insert(homepageExpertiseSection).values({
+            await HomepageExpertiseSection.create({
                 title: 'Why Shop With Us',
                 description: 'Quality AC units, professional installation, and trusted after-sales service tailored for homes and businesses.',
                 is_active: 1,
@@ -274,10 +275,10 @@ export async function POST(request: Request) {
             ];
 
             for (const item of expertiseItems) {
-                await db.insert(homepageExpertiseItems).values(item);
+                await HomepageExpertiseItems.create(item);
             }
 
-            await db.insert(homepageContactSection).values({
+            await HomepageContactSection.create({
                 title: 'Need Help Choosing?',
                 description: "Our support team can help you pick the right AC and schedule installation. Fill out the form and we'll respond within 24 hours.",
                 name_placeholder: 'Your Name',
@@ -305,27 +306,27 @@ export async function POST(request: Request) {
 
         // 5. Seed Services
         try {
-            const [firstUser] = await db.select().from(users).limit(1);
-            const statusRows = await db.select().from(status);
+            const firstUser = await User.findOne().lean();
+            const statusRows = await Status.find().lean();
             const publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
 
             // Clean up services
             try {
-                await db.delete(servicePosts);
-                await db.delete(serviceSubcategories);
-                await db.delete(serviceCategories);
-                await db.delete(servicesPageHero);
-                await db.delete(servicesPageDetails);
-                await db.delete(servicesPageProcessSection);
-                await db.delete(servicesPageProcessSteps);
-                await db.delete(servicesPageCTA);
+                await ServicePosts.deleteMany({});
+                await ServiceSubcategories.deleteMany({});
+                await ServiceCategories.deleteMany({});
+                await ServicesPageHero.deleteMany({});
+                await ServicesPageDetails.deleteMany({});
+                await ServicesPageProcessSection.deleteMany({});
+                await ServicesPageProcessSteps.deleteMany({});
+                await ServicesPageCTA.deleteMany({});
             } catch (e) {
                 // Some tables might not exist, that's ok
             }
 
             // Only seed if we have a user and status
             if (firstUser && publishedStatus) {
-                await db.insert(servicesPageHero).values({
+                await ServicesPageHero.create({
                     tagline: 'Our Products',
                     title: 'Quality Air Conditioners & Parts',
                     description: 'Explore a wide range of AC units, parts, and installation services from trusted brands.',
@@ -347,14 +348,10 @@ export async function POST(request: Request) {
 
                 const categorySlug = 'ac-products';
                 // Ensure idempotent insert/update to avoid unique key errors
-                const [existingCategory] = await db
-                    .select()
-                    .from(serviceCategories)
-                    .where(eq(serviceCategories.slug, categorySlug))
-                    .limit(1);
+                const existingCategory = await ServiceCategories.findOne({ slug: categorySlug }).lean();
 
                 if (!existingCategory) {
-                    await db.insert(serviceCategories).values({
+                    await ServiceCategories.create({
                         name: 'AC Products',
                         slug: categorySlug,
                         description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
@@ -367,7 +364,7 @@ export async function POST(request: Request) {
                     });
                 } else {
                     // Update fields if the category already exists (best-effort)
-                    await db.update(serviceCategories).set({
+                    await ServiceCategories.findByIdAndUpdate(existingCategory._id, {
                         name: 'AC Products',
                         description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
                         icon: 'ac_unit',
@@ -376,14 +373,10 @@ export async function POST(request: Request) {
                         is_active: 1,
                         meta_title: 'AC Products',
                         meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
-                    }).where(eq(serviceCategories.id, existingCategory.id));
+                    });
                 }
 
-                const [category] = await db
-                    .select()
-                    .from(serviceCategories)
-                    .where(eq(serviceCategories.slug, categorySlug))
-                    .limit(1);
+                const category = await ServiceCategories.findOne({ slug: categorySlug }).lean();
 
                 const serviceData = [
                     {
@@ -429,14 +422,14 @@ export async function POST(request: Request) {
                     },
                 ];
 
-                const subcategoryMap: Record<string, number> = {};
+                const subcategoryMap: Record<string, any> = {};
 
                 for (const s of serviceData) {
                     try {
-                        const [existingSub] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.slug, s.key)).limit(1);
+                        const existingSub = await ServiceSubcategories.findOne({ slug: s.key }).lean();
                         if (!existingSub) {
-                            await db.insert(serviceSubcategories).values({
-                                category_id: category?.id as number,
+                            await ServiceSubcategories.create({
+                                category_id: category?._id,
                                 name: s.title,
                                 ac_type: null,
                                 slug: s.key,
@@ -448,16 +441,12 @@ export async function POST(request: Request) {
                                 meta_title: s.title,
                                 meta_description: s.description,
                             });
-                            const [subcat] = await db
-                                .select()
-                                .from(serviceSubcategories)
-                                .where(eq(serviceSubcategories.slug, s.key))
-                                .limit(1);
-                            if (subcat) subcategoryMap[s.key] = subcat.id as number;
+                            const subcat = await ServiceSubcategories.findOne({ slug: s.key }).lean();
+                            if (subcat) subcategoryMap[s.key] = subcat._id;
                         } else {
                             // Update existing to keep data current
-                            await db.update(serviceSubcategories).set({
-                                category_id: category?.id as number,
+                            await ServiceSubcategories.findByIdAndUpdate(existingSub._id, {
+                                category_id: category?._id,
                                 name: s.title,
                                 ac_type: null,
                                 description: s.description,
@@ -468,8 +457,8 @@ export async function POST(request: Request) {
                                 meta_title: s.title,
                                 meta_description: s.description,
                                 updatedAt: new Date(),
-                            }).where(eq(serviceSubcategories.id, existingSub.id));
-                            subcategoryMap[s.key] = existingSub.id as number;
+                            });
+                            subcategoryMap[s.key] = existingSub._id;
                         }
                     } catch (e) {
                         logDbError(e, `insert/update subcategory ${s.key}`);
@@ -478,7 +467,7 @@ export async function POST(request: Request) {
                 }
 
                 for (const [index, s] of serviceData.entries()) {
-                    await db.insert(servicesPageDetails).values({
+                    await ServicesPageDetails.create({
                         key: s.key,
                         icon: s.icon,
                         title: s.title,
@@ -536,7 +525,7 @@ export async function POST(request: Request) {
                             ? generateLongContentForService(`${s.title} — ${variant.suffix}`, variant.paragraphs)
                             : generateLongContentForService(`${s.title} — ${variant.suffix}`, variant.paragraphs);
 
-                        await db.insert(servicePosts).values({
+                        await ServicePosts.create({
                             slug: `${s.key}-${variant.suffix}`,
                             title: `${s.title} — ${variant.suffix.replace(/-/g, ' ')}`,
                             excerpt: s.description,
@@ -544,15 +533,15 @@ export async function POST(request: Request) {
                             thumbnail: s.image,
                             icon: s.icon,
                             featured: index === 0 && vIndex === 0 ? 1 : 0,
-                            category_id: category?.id,
+                            category_id: category?._id,
                             subcategory_id: subcategoryMap[s.key],
                             price: s.price || '499.00',
                             price_type: 'fixed',
                             price_label: 'Price',
                             price_description: (s as any).price_description || s.description || 'See product details.',
                             currency: 'USD',
-                            authorId: firstUser.id,
-                            statusId: publishedStatus.id,
+                            authorId: firstUser._id,
+                            statusId: publishedStatus._id,
                             meta_title: `${s.title} — ${variant.suffix.replace(/-/g, ' ')}`,
                             meta_description: `High-quality ${s.title.toLowerCase()}`,
                         });
@@ -562,7 +551,7 @@ export async function POST(request: Request) {
                     const baseContent = contentMap[s.key]
                         ? generateLongContentForService(s.title, 28)
                         : generateLongContentForService(s.title, 28);
-                    await db.insert(servicePosts).values({
+                    await ServicePosts.create({
                         slug: s.key,
                         title: s.title,
                         excerpt: s.description,
@@ -570,21 +559,21 @@ export async function POST(request: Request) {
                         thumbnail: s.image,
                         icon: s.icon,
                         featured: index === 0 ? 1 : 0,
-                        category_id: category?.id,
+                        category_id: category?._id,
                         subcategory_id: subcategoryMap[s.key],
                         price: s.price || '499.00',
                         price_type: 'fixed',
                         price_label: 'Price',
                         price_description: (s as any).price_description || s.description || 'See product details.',
                         currency: 'USD',
-                        authorId: firstUser.id,
-                        statusId: publishedStatus.id,
+                        authorId: firstUser._id,
+                        statusId: publishedStatus._id,
                         meta_title: s.title,
                         meta_description: `High-quality ${s.title.toLowerCase()}`,
                     });
                 }
 
-                await db.insert(servicesPageProcessSection).values({
+                await ServicesPageProcessSection.create({
                     title: 'Installation Process',
                     description: 'Professional installation with transparent pricing and safety checks.',
                     is_active: 1,
@@ -598,13 +587,13 @@ export async function POST(request: Request) {
                 ];
 
                 for (const step of processSteps) {
-                    await db.insert(servicesPageProcessSteps).values({
+                    await ServicesPageProcessSteps.create({
                         ...step,
                         is_active: 1,
                     });
                 }
 
-                await db.insert(servicesPageCTA).values({
+                await ServicesPageCTA.create({
                     title: 'Ready to Install?',
                     description: "Request an installation visit or a quote for your preferred unit.",
                     button_text: 'Request Installation',
@@ -638,18 +627,18 @@ export async function POST(request: Request) {
 
         // 6. Seed Contact
         try {
-            await db.delete(contactPageHero);
-            await db.delete(contactPageInfo);
-            await db.delete(contactPageFormConfig);
+            await ContactPageHero.deleteMany({});
+            await ContactPageInfo.deleteMany({});
+            await ContactPageFormConfig.deleteMany({});
 
-            await db.insert(contactPageHero).values({
+            await ContactPageHero.create({
                 tagline: 'CONTACT US',
                 title: "Get In Touch with AC Vendor",
                 description: "Sales, installation, and support — reach out and our team will respond promptly.",
                 is_active: 1,
             });
 
-            await db.insert(contactPageInfo).values({
+            await ContactPageInfo.create({
                 office_location: 'Kathmandu, Nepal',
                 phone: '+977 9800000000',
                 email: 'support@acvendor.com',
@@ -667,7 +656,7 @@ export async function POST(request: Request) {
                 is_active: 1,
             });
 
-            await db.insert(contactPageFormConfig).values({
+            await ContactPageFormConfig.create({
                 name_placeholder: 'Your Name',
                 email_placeholder: 'Your Email',
                 phone_placeholder: 'Phone (optional)',
@@ -686,12 +675,12 @@ export async function POST(request: Request) {
 
         // 7. Seed FAQ
         try {
-            await db.delete(faqItems);
-            await db.delete(faqCategories);
-            await db.delete(faqPageHeader);
-            await db.delete(faqPageCTA);
+            await FAQItems.deleteMany({});
+            await FAQCategories.deleteMany({});
+            await FAQPageHeader.deleteMany({});
+            await FAQPageCTA.deleteMany({});
 
-            await db.insert(faqPageHeader).values({
+            await FAQPageHeader.create({
                 title: 'Frequently Asked Questions',
                 description: "Answers to common questions about our content marketing services. Find what you're looking for or get in touch with our team.",
                 search_placeholder: 'Search for a question...',
@@ -705,11 +694,10 @@ export async function POST(request: Request) {
                 { name: 'Process', display_order: 4, is_active: 1 },
             ];
 
-            const categoryIds: number[] = [];
+            const categoryIds: any[] = [];
             for (const category of categories) {
-                const result = await db.insert(faqCategories).values(category);
-                // drizzle returns insertId on MySQL drivers
-                categoryIds.push(result[0].insertId);
+                const result = await FAQCategories.create(category);
+                categoryIds.push(result._id);
             }
 
             const faqItemsData = [
@@ -758,10 +746,10 @@ export async function POST(request: Request) {
             ];
 
             for (const item of faqItemsData) {
-                await db.insert(faqItems).values(item);
+                await FAQItems.create(item);
             }
 
-            await db.insert(faqPageCTA).values({
+            await FAQPageCTA.create({
                 title: 'Still have questions?',
                 description: "Can't find the answer you're looking for? Please chat to our friendly team.",
                 button_text: 'Get in Touch',
@@ -776,10 +764,10 @@ export async function POST(request: Request) {
 
         // 8. Seed Terms
         try {
-            await db.delete(termsPageSections);
-            await db.delete(termsPageHeader);
+            await TermsPageSections.deleteMany({});
+            await TermsPageHeader.deleteMany({});
 
-            await db.insert(termsPageHeader).values({
+            await TermsPageHeader.create({
                 title: 'Terms & Conditions',
                 last_updated: 'October 26, 2023',
                 is_active: 1,
@@ -838,7 +826,7 @@ export async function POST(request: Request) {
             ];
 
             for (const section of terms) {
-                await db.insert(termsPageSections).values(section);
+                await TermsPageSections.create(section);
             }
 
             results.terms = { success: true, message: 'Terms seeded successfully' };
@@ -848,20 +836,20 @@ export async function POST(request: Request) {
 
         // 9. Seed Blog
         try {
-            await db.delete(blogPageHero);
-            await db.delete(blogPageCTA);
-            await db.delete(blogPosts);
-            const [firstUser] = await db.select().from(users).limit(1);
-            const statusRows = await db.select().from(status);
+            await BlogPageHero.deleteMany({});
+            await BlogPageCTA.deleteMany({});
+            await BlogPost.deleteMany({});
+            const firstUser = await User.findOne().lean();
+            const statusRows = await Status.find().lean();
             const publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
 
-            await db.insert(blogPageHero).values({
+            await BlogPageHero.create({
                 title: 'The Content Solution Blog',
                 subtitle: 'Expert insights, trends, and strategies in content marketing for Nepali businesses.',
                 background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBP7wRSP6PNVQerc44qHCLRoYYd7gD0XXulRDkuPttKz8c2wm7R80QfOir0XcMWFKjBGgyJ5pcMWrIKbPt6SCgNWruICSXdJlao0ovxqmc5rLvSBMdY5X6oZLjHPx9qPTGkgNMIYnTzo9hXeQxzkwUbhDDc7WVvEd49h17mKa6w8QfB2EIEDD7W8XIG5RncWJ-n5n8nCSqHu4E6zkNP0BsMHsoIQz9Vpi8C5qNBL4Po-ca4mAAVTciZ-3q8TREYwunoIejOppPSO_k'
             });
 
-            await db.insert(blogPageCTA).values({
+            await BlogPageCTA.create({
                 title: 'Stay Ahead of the Curve',
                 description: 'Get the latest content marketing tips delivered to your inbox.',
                 button_text: 'Subscribe'
@@ -899,8 +887,8 @@ export async function POST(request: Request) {
                         thumbnail: 'https://images.unsplash.com/photo-1528426776029-6f72c03bd0d7?auto=format&fit=crop&w=1400&q=80',
                         metaTitle: 'Content Marketing Strategy for Nepali Businesses',
                         metaDescription: 'Learn how to craft a content strategy that works in Nepal with audience research, pillar pages, and execution tips.',
-                        authorId: firstUser.id,
-                        status: publishedStatus.id,
+                        authorId: firstUser._id,
+                        status: publishedStatus._id,
                     },
                     {
                         slug: 'long-form-seo-best-practices',
@@ -920,8 +908,8 @@ export async function POST(request: Request) {
                         thumbnail: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=1400&q=80',
                         metaTitle: 'Long-Form SEO Best Practices',
                         metaDescription: 'A guide to creating long-form content that ranks and converts.',
-                        authorId: firstUser.id,
-                        status: publishedStatus.id,
+                        authorId: firstUser._id,
+                        status: publishedStatus._id,
                     },
                     {
                         slug: 'case-study-pillar-page-growth',
@@ -934,8 +922,8 @@ export async function POST(request: Request) {
                         thumbnail: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80',
                         metaTitle: 'Pillar Page Case Study',
                         metaDescription: 'Learn how consolidating content into pillar pages can grow organic traffic and rankings.',
-                        authorId: firstUser.id,
-                        status: publishedStatus.id,
+                        authorId: firstUser._id,
+                        status: publishedStatus._id,
                     },
                 ];
 
@@ -959,7 +947,7 @@ export async function POST(request: Request) {
                 }
 
                 for (const p of posts) {
-                    await db.insert(blogPosts).values(p as any);
+                    await BlogPost.create(p as any);
                 }
             }
             results.blog = { success: true, message: 'Blog seeded successfully' };
@@ -970,20 +958,20 @@ export async function POST(request: Request) {
         // 10. Seed Testimonials
         try {
             try {
-                await db.delete(reviewTestimonials);
+                await ReviewTestimonials.deleteMany({});
             } catch (e) {
                 // Table might not exist yet
             }
 
-            const [firstService] = await db.select().from(servicePosts).limit(1);
+            const firstService = await ServicePosts.findOne().lean();
             if (firstService) {
-                await db.insert(reviewTestimonials).values({
+                await ReviewTestimonials.create({
                     name: 'Ram Shrestha',
                     role: 'Homeowner',
                     content: 'Great AC and quick installation — technicians were professional and helpful!',
                     url: 'https://via.placeholder.com/150',
                     rating: 5,
-                    service: firstService.id,
+                    service: firstService._id,
                     link: 'homepage',
                 });
             }
@@ -994,24 +982,24 @@ export async function POST(request: Request) {
 
         // 10. Seed Navbar
         try {
-            const { navbarItems } = await import('@/db/navbarSchema');
-            const existingNavItems = await db.select().from(navbarItems).limit(1);
+            const { NavbarItems } = await import('@/db/navbarSchema');
+            const existingNavItems = await NavbarItems.findOne().lean();
 
-            if (existingNavItems.length === 0) {
+            if (!existingNavItems) {
                 // Get first service category for services dropdown
-                const categories = await db.select().from(serviceCategories).limit(5);
+                const categories = await ServiceCategories.find().limit(5).lean();
 
                 // Seed main navbar items
-                const homeResult = await db.insert(navbarItems).values({ label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 });
-                const servicesResult = await db.insert(navbarItems).values({ label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 });
+                const homeResult = await NavbarItems.create({ label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 });
+                const servicesResult = await NavbarItems.create({ label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 });
 
                 // Add service categories as dropdown items (parent_id = services item id)
                 if (categories.length > 0) {
-                    const servicesId = servicesResult[0].insertId;
+                    const servicesId = servicesResult._id;
                     for (let i = 0; i < categories.length; i++) {
-                        const [catSubs] = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.category_id, categories[i].id)).limit(1);
+                        const catSubs = await ServiceSubcategories.findOne({ category_id: categories[i]._id }).lean();
                         const isDropdown = !!catSubs ? 1 : 0;
-                        await db.insert(navbarItems).values({
+                        await NavbarItems.create({
                             label: categories[i].name,
                             href: `/services/category/${categories[i].slug}`,
                             order: i,
@@ -1024,11 +1012,11 @@ export async function POST(request: Request) {
                 }
 
                 // Other main nav items
-                await db.insert(navbarItems).values({ label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Products', href: '/products', order: 3, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 });
-                await db.insert(navbarItems).values({ label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 });
+                await NavbarItems.create({ label: 'About Us', href: '/about', order: 2, is_button: 0, is_active: 1 });
+                await NavbarItems.create({ label: 'Products', href: '/products', order: 3, is_button: 0, is_active: 1 });
+                await NavbarItems.create({ label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 });
+                await NavbarItems.create({ label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 });
+                await NavbarItems.create({ label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 });
             }
             results.navbar = { success: true, message: 'Navbar seeded successfully' };
         } catch (error) {
@@ -1038,8 +1026,8 @@ export async function POST(request: Request) {
         // 11. Seed Footer
         try {
             // Remove old footer data
-            await db.delete(footerLinks);
-            await db.delete(footerSections);
+            await FooterLink.deleteMany({});
+            await FooterSection.deleteMany({});
 
             const defaultSections = [
                 {
@@ -1062,23 +1050,22 @@ export async function POST(request: Request) {
                 },
             ];
 
-            const storeRow = await db.select().from(storeSettings).limit(1);
-            const store = storeRow[0];
+            const store = await StoreSettings.findOne().lean();
             if (!store) {
                 results.footer = { success: false, message: 'No store settings found to attach footer to' };
             } else {
                 for (const [sIdx, sec] of defaultSections.entries()) {
-                    const secRes: any = await db.insert(footerSections).values({ store_id: store.id, title: sec.title || '', order: sIdx });
-                    const newSecId = Array.isArray(secRes) ? secRes[0]?.insertId : (secRes as any)?.insertId;
+                    const secRes = await FooterSection.create({ store_id: store._id, title: sec.title || '', order: sIdx });
+                    const newSecId = secRes._id;
                     if (sec.links && sec.links.length) {
                         for (const [lIdx, link] of sec.links.entries()) {
-                            await db.insert(footerLinks).values({ section_id: newSecId, label: link.label, href: link.href, is_external: 0, order: lIdx });
+                            await FooterLink.create({ section_id: newSecId, label: link.label, href: link.href, is_external: 0, order: lIdx });
                         }
                     }
                 }
 
                 if (!store.footer_text) {
-                    await db.update(storeSettings).set({ footer_text: '© ' + new Date().getFullYear() + ' ' + (store.store_name || 'Your Store') + '. All rights reserved.' }).where(eq(storeSettings.id, store.id));
+                    await StoreSettings.findByIdAndUpdate(store._id, { footer_text: '© ' + new Date().getFullYear() + ' ' + (store.store_name || 'Your Store') + '. All rights reserved.' });
                 }
 
                 results.footer = { success: true, message: 'Footer seeded successfully' };

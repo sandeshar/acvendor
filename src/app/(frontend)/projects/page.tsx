@@ -1,19 +1,19 @@
-import { db } from '@/db';
-import { projects, projectsSection } from '@/db/projectsSchema';
-import { eq, asc } from 'drizzle-orm';
+import { connectDB, Projects, ProjectsSection } from '@/db';
 import ProjectsClient from '@/components/projects/ProjectsClient';
 
 export const dynamic = 'force-dynamic';
 
 async function getProjectsData() {
     try {
+        await connectDB();
+        
         const [sectionData, allProjects] = await Promise.all([
-            db.select().from(projectsSection).limit(1),
-            db.select().from(projects).where(eq(projects.is_active, true)).orderBy(asc(projects.display_order))
+            ProjectsSection.findOne().lean(),
+            Projects.find({ is_active: true }).sort({ display_order: 1 }).lean()
         ]);
 
         return {
-            section: sectionData[0] || null,
+            section: sectionData || null,
             projects: allProjects
         };
     } catch (error) {

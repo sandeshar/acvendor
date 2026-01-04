@@ -1,38 +1,44 @@
-import { int, mysqlTable, timestamp, varchar, text } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Service Categories (Parent)
-export const serviceCategories = mysqlTable("service_categories", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    // Optional brand slug (e.g., 'midea', 'lg') to support brand-scoped categories
-    brand: varchar("brand", { length: 128 }),
-    description: text("description"),
-    icon: varchar("icon", { length: 100 }), // Material icon name
-    thumbnail: varchar("thumbnail", { length: 512 }), // Category image
-    display_order: int("display_order").default(0).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    meta_title: varchar("meta_title", { length: 256 }),
-    meta_description: varchar("meta_description", { length: 512 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const serviceCategoriesSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    slug: { type: String, required: true, unique: true, maxlength: 256 },
+    brand: { type: String, maxlength: 128, default: '' },
+    description: { type: String, default: '' },
+    icon: { type: String, maxlength: 100, default: '' },
+    thumbnail: { type: String, maxlength: 512, default: '' },
+    display_order: { type: Number, default: 0, required: true },
+    is_active: { type: Number, default: 1, required: true },
+    meta_title: { type: String, maxlength: 256, default: '' },
+    meta_description: { type: String, maxlength: 512, default: '' },
+}, { 
+    timestamps: true,
+    collection: 'service_categories'
 });
 
+export const ServiceCategories = models.ServiceCategories || model('ServiceCategories', serviceCategoriesSchema);
+
 // Service Subcategories (Child of Categories)
-export const serviceSubcategories = mysqlTable("service_subcategories", {
-    id: int("id").primaryKey().autoincrement(),
-    category_id: int("category_id").references(() => serviceCategories.id).notNull(),
-    name: varchar("name", { length: 256 }).notNull(),
-    // Optional AC type (e.g., 'Inverter', 'Window', 'Split') to further categorize subcategories
-    ac_type: varchar("ac_type", { length: 128 }),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    description: text("description"),
-    icon: varchar("icon", { length: 100 }), // Material icon name
-    thumbnail: varchar("thumbnail", { length: 512 }), // Subcategory image
-    display_order: int("display_order").default(0).notNull(),
-    is_active: int("is_active").default(1).notNull(),
-    meta_title: varchar("meta_title", { length: 256 }),
-    meta_description: varchar("meta_description", { length: 512 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+const serviceSubcategoriesSchema = new Schema({
+    category_id: { type: Schema.Types.ObjectId, ref: 'ServiceCategories', required: true },
+    name: { type: String, required: true, maxlength: 256 },
+    ac_type: { type: String, maxlength: 128, default: '' },
+    slug: { type: String, required: true, unique: true, maxlength: 256 },
+    description: { type: String, default: '' },
+    icon: { type: String, maxlength: 100, default: '' },
+    thumbnail: { type: String, maxlength: 512, default: '' },
+    display_order: { type: Number, default: 0, required: true },
+    is_active: { type: Number, default: 1, required: true },
+    meta_title: { type: String, maxlength: 256, default: '' },
+    meta_description: { type: String, maxlength: 512, default: '' },
+}, { 
+    timestamps: true,
+    collection: 'service_subcategories'
 });
+
+export const ServiceSubcategories = models.ServiceSubcategories || model('ServiceSubcategories', serviceSubcategoriesSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const serviceCategories = ServiceCategories;
+export const serviceSubcategories = ServiceSubcategories;

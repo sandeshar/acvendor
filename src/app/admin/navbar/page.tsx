@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { showToast } from '@/components/Toast';
 
 type NavbarItem = {
-    id?: number;
+    id?: string | number;
+    _id?: string;
     label: string;
     href: string;
     order: number;
-    parent_id?: number | null;
+    parent_id?: string | number | null;
     is_button: number;
     is_active: number;
     is_dropdown?: number;
@@ -34,13 +35,22 @@ export default function NavbarManagerPage() {
         fetchData();
     }, []);
 
+    const getId = (item: any) => String(item?._id ?? item?.id ?? '');
+
     const fetchData = async () => {
         setLoading(true);
         try {
             const response = await fetch('/api/navbar');
             if (response.ok) {
                 const items = await response.json();
-                setNavbarItems(items);
+                // Normalize items: ensure id is string of _id, and parent_id is string or null
+                const normalized = items.map((it: any) => ({
+                    ...it,
+                    _id: it._id ? String(it._id) : undefined,
+                    id: getId(it),
+                    parent_id: it.parent_id ? String(it.parent_id) : null,
+                }));
+                setNavbarItems(normalized);
             }
         } catch (error) {
             console.error('Error fetching navbar items:', error);
@@ -148,16 +158,16 @@ export default function NavbarManagerPage() {
         }
         setManageChildrenId(id);
         const data = await fetchCategories();
-        const defaults: Record<number, boolean> = {};
+        const defaults: Record<string, boolean> = {};
         for (const cat of data) {
-            const exists = navbarItems.some(n => n.href === `/services/category/${cat.slug}` && n.parent_id === id);
-            defaults[cat.id] = exists;
+            const exists = navbarItems.some(n => n.href === `/services/category/${cat.slug}` && String(n.parent_id) === String(id));
+            defaults[String(cat.id)] = exists;
         }
         setSelectedCategories(defaults);
     };
 
-    const addSelectedCategories = async (parentId: number) => {
-        const selected = categories.filter((c: any) => selectedCategories[c.id]);
+    const addSelectedCategories = async (parentId: string | number) => {
+        const selected = categories.filter((c: any) => selectedCategories[String(c.id)]);
         if (selected.length === 0) return;
         try {
             // For each category, create a navbar item and then create nav items for subcategories under it (if any)
@@ -165,18 +175,18 @@ export default function NavbarManagerPage() {
                 // Prevent duplicates: reuse existing category nav item under parent if present
                 const existingCat = navbarItems.find(n => n.href === `/services/category/${cat.slug}` && n.parent_id === parentId);
                 let newNavId: number | undefined;
-                if (existingCat && existingCat.id) {
-                    newNavId = existingCat.id;
+                if (existing && (existing.id || existing._id)) {
+                    newNavId = existing.id ?? existing._id;
                     // If this existing category should be a dropdown but isn't, update it
                     const catHasSub = subcategories.some(s => s.category_id === cat.id);
-                    if (catHasSub && existingCat.is_dropdown !== 1) {
+                    if (catHasSub && existing.is_dropdown !== 1) {
                         await fetch('/api/navbar', {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ...existingCat, is_dropdown: 1 }),
+                            body: JSON.stringify({ ...existing, id: existing.id ?? existing._id, is_dropdown: 1 }),
                         });
                         // Update local state for this existing category
-                        setNavbarItems(prev => prev.map(n => n.id === existingCat.id ? { ...n, is_dropdown: 1 } : n));
+                        setNavbarItems(prev => prev.map(n => (String(n.id) === String(existing.id ?? existing._id)) ? { ...n, is_dropdown: 1 } : n));
                     }
                 } else {
                     const childrenUnderParent = navbarItems.filter(n => n.parent_id === parentId);
@@ -271,14 +281,14 @@ export default function NavbarManagerPage() {
         if (!confirm('Are you sure you want to remove all child nav items under this dropdown? This cannot be undone.')) return;
         setSaving(true);
         try {
-            const children = navbarItems.filter(n => n.parent_id === parentId);
+            const children = navbarItems.filter(n => String(n.parent_id) === String(parentId));
             for (const child of children) {
                 // delete grandchildren first
-                const grandchildren = navbarItems.filter(gc => gc.parent_id === child.id);
+                const grandchildren = navbarItems.filter(gc => String(gc.parent_id) === String(child.id));
                 for (const g of grandchildren) {
-                    await fetch('/api/navbar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: g.id }) });
+                    await fetch('/api/navbar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: g.id ?? g._id }) });
                 }
-                await fetch('/api/navbar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: child.id }) });
+                await fetch('/api/navbar', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: child.id ?? child._id }) });
             }
             showToast('All children removed', { type: 'success' });
             fetchData();
@@ -291,8 +301,9 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const moveItem = async (id: number, direction: 'up' | 'down') => {
-        const index = navbarItems.findIndex(item => item.id === id);
+    const moveItem = async (id: string | number, direction: 'up' | 'down') => {
+        const idStr = String(id);
+        const index = navbarItems.findIndex(item => String(item.id) === idStr);
         if (index === -1) return;
         if (direction === 'up' && index === 0) return;
         if (direction === 'down' && index === navbarItems.length - 1) return;
@@ -326,9 +337,9 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const moveChildItem = async (parentId: number, childId: number, direction: 'up' | 'down') => {
-        const children = navbarItems.filter(n => n.parent_id === parentId).sort((a, b) => a.order - b.order);
-        const index = children.findIndex(c => c.id === childId);
+    const moveChildItem = async (parentId: string | number, childId: string | number, direction: 'up' | 'down') => {
+        const children = navbarItems.filter(n => String(n.parent_id) === String(parentId)).sort((a, b) => a.order - b.order);
+        const index = children.findIndex(c => String(c.id) === String(childId));
         if (index === -1) return;
         if (direction === 'up' && index === 0) return;
         if (direction === 'down' && index === children.length - 1) return;
@@ -349,7 +360,7 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const rootItems = navbarItems.filter(item => !item.parent_id);
+    const rootItems = navbarItems.filter(item => !item.parent_id || String(item.parent_id) === 'null');
 
     const filteredItems = rootItems.filter(root => {
         const q = searchQuery.toLowerCase();
@@ -358,8 +369,8 @@ export default function NavbarManagerPage() {
 
         if (!q) return true;
         if (itemMatches(root)) return true;
-        // if any child matches, include this root
-        return navbarItems.some(n => n.parent_id === root.id && itemMatches(n));
+        // if any child matches, include this root (compare parent_id as strings)
+        return navbarItems.some(n => String(n.parent_id) === String(root.id) && itemMatches(n));
     });
 
     if (loading) {
@@ -426,7 +437,7 @@ export default function NavbarManagerPage() {
                         <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-200">
                             {filteredItems.map((item, index) => (
                                 <div
-                                    key={item.id}
+                                    key={String(item.id ?? item._id)}
                                     className={`p-4 hover:bg-slate-50 transition-colors ${item.is_active === 0 ? 'opacity-50' : ''
                                         }`}
                                 >
@@ -434,14 +445,14 @@ export default function NavbarManagerPage() {
                                         {/* Reorder Buttons */}
                                         <div className="flex flex-col gap-1">
                                             <button
-                                                onClick={() => item.id && moveItem(item.id, 'up')}
+                                                onClick={() => (item.id ?? item._id) && moveItem(item.id ?? item._id, 'up')}
                                                 disabled={index === 0}
                                                 className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
                                             </button>
                                             <button
-                                                onClick={() => item.id && moveItem(item.id, 'down')}
+                                                onClick={() => (item.id ?? item._id) && moveItem(item.id ?? item._id, 'down')}
                                                 disabled={index === filteredItems.length - 1}
                                                 className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                             >
@@ -484,14 +495,14 @@ export default function NavbarManagerPage() {
                                                 <span className="material-symbols-outlined text-[18px]">edit</span>
                                             </button>
                                             <button
-                                                onClick={() => item.id && deleteItem(item.id)}
+                                                onClick={() => (item.id ?? item._id) && deleteItem(item.id ?? item._id)}
                                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">delete</span>
                                             </button>
                                             {item.is_dropdown === 1 && (
                                                 <button
-                                                    onClick={() => toggleManageChildren(item.id as number)}
+                                                    onClick={() => toggleManageChildren(item.id ?? item._id)}
                                                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                                                     title="Manage dropdown children"
                                                 >
@@ -500,7 +511,7 @@ export default function NavbarManagerPage() {
                                             )}
                                         </div>
                                     </div>
-                                    {manageChildrenId === item.id && (
+                                    {manageChildrenId === (item.id ?? item._id) && (
                                         <div className="p-4 border-t border-slate-100 bg-slate-50">
                                             <div className="flex items-center justify-between mb-3 gap-3">
                                                 <div className="text-sm font-semibold">Add categories as dropdown items</div>
@@ -527,39 +538,39 @@ export default function NavbarManagerPage() {
                                                 }}>Select all</button>
                                                 <button className="text-sm text-slate-500 hover:underline" onClick={() => setSelectedCategories({})}>Clear</button>
                                             </div>
-                                            <div className="mb-3 text-sm">Existing children ({navbarItems.filter(n => n.parent_id === item.id).length})</div>
+                                            <div className="mb-3 text-sm">Existing children ({navbarItems.filter(n => String(n.parent_id) === String(item.id ?? item._id)).length})</div>
                                             <div className="grid grid-cols-1 gap-2 mb-3">
-                                                {navbarItems.filter(n => n.parent_id === item.id).map(child => (
+                                                {navbarItems.filter(n => String(n.parent_id) === String(item.id ?? item._id)).map(child => (
                                                     <div key={child.id} className="bg-white border border-slate-200 rounded">
                                                         <div className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
                                                             <div className="truncate">{child.label} <span className="text-xs text-slate-400">{child.href}</span></div>
                                                             <div className="flex gap-2">
                                                                 <button
-                                                                    onClick={() => item.id && child.id && moveChildItem(item.id, child.id, 'up')}
+                                                                    onClick={() => (item.id ?? item._id) && child.id && moveChildItem(item.id ?? item._id, child.id)}
                                                                     className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => item.id && child.id && moveChildItem(item.id, child.id, 'down')}
+                                                                    onClick={() => (item.id ?? item._id) && child.id && moveChildItem(item.id ?? item._id, child.id, 'down')
                                                                     className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => child.id && deleteItem(child.id)}
+                                                                    onClick={() => (child.id ?? child._id) && deleteItem(child.id ?? child._id)}
                                                                     className="text-red-600 hover:bg-red-50 p-1 rounded"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">delete</span>
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                        {navbarItems.filter(gc => gc.parent_id === child.id).length > 0 && (
+                                                        {navbarItems.filter(gc => String(gc.parent_id) === String(child.id)).length > 0 && (
                                                             <div className="pl-3 pr-3 pb-3 pt-1 border-t border-slate-100">
                                                                 <div className="text-xs text-slate-500 mb-2">Subcategories</div>
                                                                 <div className="space-y-2">
                                                                     {navbarItems.filter(gc => gc.parent_id === child.id).map(gc => (
-                                                                        <div key={gc.id} className="flex items-center justify-between gap-2 text-sm px-2 py-1 rounded bg-slate-50">
+                                                                        <div key={String(gc.id ?? gc._id)} className="flex items-center justify-between gap-2 text-sm px-2 py-1 rounded bg-slate-50">
                                                                             <div className="truncate">{gc.label} <span className="text-xs text-slate-400">{gc.href}</span></div>
                                                                             <div className="flex items-center gap-1">
                                                                                 <button
@@ -607,9 +618,9 @@ export default function NavbarManagerPage() {
                                                             <span>{cat.name}</span>
                                                         </label>
                                                         <div className="flex items-center gap-2">
-                                                            {item.id && (() => {
-                                                                const existing = navbarItems.filter(n => n.parent_id === item.id).find(n => n.href === `/services/category/${cat.slug}`);
-                                                                if (existing && existing.id) {
+                                                            {(item.id ?? item._id) && (() => {
+                                                                const existing = navbarItems.filter(n => String(n.parent_id) === String(item.id ?? item._id)).find(n => n.href === `/services/category/${cat.slug}`);
+                                                                if (existing && (existing.id ?? existing._id)) {
                                                                     return (
                                                                         <div className="flex gap-2 items-center text-sm">
                                                                             <span className="text-xs text-slate-400">Order: {existing.order}</span>
@@ -620,7 +631,7 @@ export default function NavbarManagerPage() {
                                                                                 Edit
                                                                             </button>
                                                                             <button
-                                                                                onClick={() => existing.id && deleteItem(existing.id)}
+                                                                                onClick={() => (existing.id ?? existing._id) && deleteItem(existing.id ?? existing._id)}
                                                                                 className="text-red-600 hover:underline"
                                                                             >
                                                                                 Remove
@@ -636,14 +647,14 @@ export default function NavbarManagerPage() {
                                             </div>
                                             <div className="mt-3 flex gap-2">
                                                 <button
-                                                    onClick={() => item.id && addSelectedCategories(item.id)}
+                                                    onClick={() => (item.id ?? item._id) && addSelectedCategories(item.id ?? item._id)}
                                                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                                                 >
                                                     <span>Attach selected</span>
                                                     <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{Object.values(selectedCategories).filter(Boolean).length}</span>
                                                 </button>
                                                 <button
-                                                    onClick={() => item.id && removeAllChildren(item.id)}
+                                                    onClick={() => (item.id ?? item._id) && removeAllChildren(item.id ?? item._id)}
                                                     className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded text-sm border border-red-100"
                                                 >
                                                     Remove all children

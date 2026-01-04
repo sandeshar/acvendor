@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import { showToast } from '@/components/Toast';
+import { formatPrice } from '@/utils/formatPrice';
 
 type ProductPost = {
     id: number;
@@ -222,7 +223,7 @@ export default function AdminProductsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 font-bold text-gray-900">
-                                                {p.price ? `NRS ${p.price}` : '--'}
+                                                {p.price ? `NRS ${formatPrice(p.price)}` : '--'}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">

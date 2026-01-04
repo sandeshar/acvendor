@@ -1,33 +1,33 @@
-import { int, mysqlTable, timestamp, varchar, decimal, text } from "drizzle-orm/mysql-core";
-import { users, status } from "./schema";
-import { serviceCategories, serviceSubcategories } from "./serviceCategoriesSchema";
+import mongoose, { Schema, model, models } from 'mongoose';
 
 // Individual Service Posts (like blog posts)
-export const servicePosts = mysqlTable("service_posts", {
-    id: int("id").primaryKey().autoincrement(),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    title: varchar("title", { length: 512 }).notNull(),
-    excerpt: varchar("excerpt", { length: 512 }).notNull(),
-    content: varchar("content", { length: 65535 }).notNull(),
-    thumbnail: varchar("thumbnail", { length: 512 }),
-    icon: varchar("icon", { length: 100 }), // Material icon name for service
-    featured: int("featured").default(0).notNull(), // Show on homepage/services page
-
+const servicePostsSchema = new Schema({
+    slug: { type: String, required: true, unique: true, maxlength: 256 },
+    title: { type: String, required: true, maxlength: 512 },
+    excerpt: { type: String, required: true, maxlength: 512 },
+    content: { type: String, required: true, maxlength: 65535 },
+    thumbnail: { type: String, maxlength: 512, default: '' },
+    icon: { type: String, maxlength: 100, default: '' },
+    featured: { type: Number, default: 0, required: true },
     // Category relationships
-    category_id: int("category_id").references(() => serviceCategories.id),
-    subcategory_id: int("subcategory_id").references(() => serviceSubcategories.id),
-
+    category_id: { type: Schema.Types.ObjectId, ref: 'ServiceCategories' },
+    subcategory_id: { type: Schema.Types.ObjectId, ref: 'ServiceSubcategories' },
     // Pricing fields
-    price: decimal("price", { precision: 10, scale: 2 }), // Base price
-    price_type: varchar("price_type", { length: 50 }).default("fixed"), // fixed, hourly, monthly, custom
-    price_label: varchar("price_label", { length: 100 }), // e.g., "Starting at", "From", "Per hour"
-    price_description: text("price_description"), // Additional pricing details
-    currency: varchar("currency", { length: 10 }).default("USD"), // Currency code like USD, EUR, GBP
-
-    authorId: int("author_id").references(() => users.id).notNull(),
-    statusId: int("status_id").references(() => status.id).notNull(),
-    meta_title: varchar("meta_title", { length: 256 }),
-    meta_description: varchar("meta_description", { length: 512 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+    price: { type: mongoose.Schema.Types.Decimal128, default: null },
+    price_type: { type: String, default: 'fixed', maxlength: 50 },
+    price_label: { type: String, maxlength: 100, default: '' },
+    price_description: { type: String, default: '' },
+    currency: { type: String, default: 'USD', maxlength: 10 },
+    authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    statusId: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
+    meta_title: { type: String, maxlength: 256, default: '' },
+    meta_description: { type: String, maxlength: 512, default: '' },
+}, { 
+    timestamps: true,
+    collection: 'service_posts'
 });
+
+export const ServicePosts = models.ServicePosts || model('ServicePosts', servicePostsSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const servicePosts = ServicePosts;

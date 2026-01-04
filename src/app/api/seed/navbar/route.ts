@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { navbarItems } from "@/db/navbarSchema";
-import { serviceCategories, serviceSubcategories } from '@/db/serviceCategoriesSchema';
-import { eq, and } from 'drizzle-orm';
+import { connectDB } from "@/db";
+import { NavbarItems } from "@/db/navbarSchema";
+import { ServiceCategories, ServiceSubcategories } from '@/db/serviceCategoriesSchema';
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
+
         // Always clean the navbar items before seeding
-        await db.delete(navbarItems);
+        await NavbarItems.deleteMany({});
 
         // Seed default navbar items
         const defaultItems = [
@@ -23,18 +24,34 @@ export async function POST(request: Request) {
         // Insert defaults
         for (let i = 0; i < defaultItems.length; i++) {
             const item = defaultItems[i];
-            await db.insert(navbarItems).values({ ...item, order: i });
+            await NavbarItems.create({ ...item, order: i });
         }
 
         // Attach service categories as dropdown children under Services.
-        const categories = await db.select().from(serviceCategories);
+        let categories = await ServiceCategories.find().lean();
         if (!categories || categories.length === 0) {
-            return NextResponse.json({ message: 'No product categories found. Run /api/seed/services first' }, { status: 200 });
+            // If no categories exist, create a minimal default category so navbar seeding can proceed
+            try {
+                const created = await ServiceCategories.create({
+                    name: 'AC Products',
+                    slug: 'ac-products',
+                    description: 'Split, window, inverter, and commercial AC units plus spare parts and accessories.',
+                    icon: 'ac_unit',
+                    thumbnail: '',
+                    display_order: 1,
+                    is_active: 1,
+                    meta_title: 'AC Products',
+                    meta_description: 'Shop air conditioners, parts, and installation services from trusted brands.',
+                });
+                categories = [created];
+            } catch (e) {
+                return NextResponse.json({ message: 'No product categories found. Run /api/seed/services first' }, { status: 200 });
+            }
         }
 
         // Get the Products main nav ID
-        const productNavRow = await db.select().from(navbarItems).where(eq(navbarItems.href, '/midea-ac')).limit(1);
-        const productsId = productNavRow[0]?.id;
+        const productNavRow = await NavbarItems.findOne({ href: '/midea-ac' }).lean();
+        const productsId = productNavRow?._id;
         if (!productsId) {
             return NextResponse.json({ error: 'Products nav item not found' }, { status: 500 });
         }
@@ -42,13 +59,26 @@ export async function POST(request: Request) {
         // Insert each category under Products
         for (let i = 0; i < categories.length; i++) {
             const cat = categories[i];
-            const subs = await db.select().from(serviceSubcategories).where(eq(serviceSubcategories.category_id, cat.id));
+            const subs = await ServiceSubcategories.find({ category_id: cat._id }).lean();
             const catHasSub = Array.isArray(subs) && subs.length > 0;
 
-            const [existingChild] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
-            let catNavId = undefined as number | undefined;
+            // Defensive lookup for existing child (catch casting errors when matching ObjectId parent)
+            let existingChild: any = null;
+            try {
+                existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: productsId }).lean();
+            } catch (err: any) {
+                console.error('Navbar seeder: cast error finding child by parent_id', { err: err?.message || err, catSlug: cat.slug, productsId });
+                try {
+                    existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: String(productsId) }).lean();
+                } catch (err2: any) {
+                    console.error('Navbar seeder fallback find by string parent_id failed', err2?.message || err2);
+                    existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}` }).lean();
+                }
+            }
+
+            let catNavId = undefined as any;
             if (!existingChild) {
-                await db.insert(navbarItems).values({
+                const created = await NavbarItems.create({
                     label: cat.name,
                     href: `/services/category/${cat.slug}`,
                     order: i,
@@ -57,13 +87,12 @@ export async function POST(request: Request) {
                     is_active: 1,
                     is_dropdown: catHasSub ? 1 : 0,
                 });
-                const created = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}`), eq(navbarItems.parent_id, productsId))).limit(1);
-                catNavId = created[0]?.id;
+                catNavId = created._id;
             } else {
-                catNavId = existingChild.id;
+                catNavId = existingChild._id;
                 // Update dropdown flag if it has subs
                 if (catHasSub && existingChild.is_dropdown !== 1) {
-                    await db.update(navbarItems).set({ is_dropdown: 1 }).where(eq(navbarItems.id, existingChild.id));
+                    await NavbarItems.findByIdAndUpdate(existingChild._id, { is_dropdown: 1 });
                 }
             }
 
@@ -71,9 +100,21 @@ export async function POST(request: Request) {
                 const subsList = subs;
                 for (let si = 0; si < subsList.length; si++) {
                     const sub = subsList[si];
-                    const [existingSub] = await db.select().from(navbarItems).where(and(eq(navbarItems.href, `/services/category/${cat.slug}/${sub.slug}`), eq(navbarItems.parent_id, catNavId))).limit(1);
+                    let existingSub: any = null;
+                    try {
+                        existingSub = await NavbarItems.findOne({ href: `/services/category/${cat.slug}/${sub.slug}`, parent_id: catNavId }).lean();
+                    } catch (err: any) {
+                        console.error('Navbar seeder: cast error finding subchild', { err: err?.message || err, catSlug: cat.slug, subSlug: sub.slug, catNavId });
+                        try {
+                            existingSub = await NavbarItems.findOne({ href: `/services/category/${cat.slug}/${sub.slug}`, parent_id: String(catNavId) }).lean();
+                        } catch (err2: any) {
+                            console.error('Navbar seeder fallback for sub failed', err2?.message || err2);
+                            existingSub = await NavbarItems.findOne({ href: `/services/category/${cat.slug}/${sub.slug}` }).lean();
+                        }
+                    }
+
                     if (!existingSub) {
-                        await db.insert(navbarItems).values({
+                        await NavbarItems.create({
                             label: sub.name,
                             href: `/services/category/${cat.slug}/${sub.slug}`,
                             order: si,

@@ -1,50 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { servicesPageDetails } from '@/db/servicesPageSchema';
+import { connectDB } from '@/db';
+import { ServicesPageDetails } from '@/db/servicesPageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch service details
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const key = searchParams.get('key');
         const slug = searchParams.get('slug');
 
         if (id) {
-            const service = await db.select().from(servicesPageDetails).where(eq(servicesPageDetails.id, parseInt(id))).limit(1);
+            const service = await ServicesPageDetails.findById(id).lean();
 
-            if (service.length === 0) {
+            if (!service) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service[0]);
+            return NextResponse.json(service);
         }
 
         if (key) {
-            const service = await db.select().from(servicesPageDetails).where(eq(servicesPageDetails.key, key)).limit(1);
+            const service = await ServicesPageDetails.findOne({ key }).lean();
 
-            if (service.length === 0) {
+            if (!service) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service[0]);
+            return NextResponse.json(service);
         }
 
         if (slug) {
-            const service = await db.select().from(servicesPageDetails).where(eq(servicesPageDetails.slug, slug)).limit(1);
+            const service = await ServicesPageDetails.findOne({ slug }).lean();
 
-            if (service.length === 0) {
+            if (!service) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service[0]);
+            return NextResponse.json(service);
         }
 
-        const services = await db.select().from(servicesPageDetails)
-            .where(eq(servicesPageDetails.is_active, 1))
-            .orderBy(asc(servicesPageDetails.display_order));
+        const services = await ServicesPageDetails.find({ is_active: 1 })
+            .sort({ display_order: 1 })
+            .lean();
 
         return NextResponse.json(services);
     } catch (error) {
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     let body: any = undefined;
     try {
+        await connectDB();
         body = await request.json();
         const { key, slug, icon, title, description, bullets, image, image_alt, display_order, is_active = 1 } = body;
 
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
             features,
         } = body;
 
-        const result = await db.insert(servicesPageDetails).values({
+        const result = await ServicesPageDetails.create({
             key,
             slug: slug || null,
             icon,
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('services-details', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Service detail created successfully', id: result[0].insertId },
+            { success: true, message: 'Service detail created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error: any) {
@@ -147,6 +148,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     let body: any = undefined;
     try {
+        await connectDB();
         body = await request.json();
         const { id, key, slug, icon, title, description, bullets, image, image_alt, display_order, is_active } = body;
 
@@ -211,7 +213,7 @@ export async function PUT(request: NextRequest) {
         if (meta_description !== undefined) updateData.meta_description = meta_description;
         if (content !== undefined) updateData.content = content;
 
-        await db.update(servicesPageDetails).set(updateData).where(eq(servicesPageDetails.id, id));
+        await ServicesPageDetails.findByIdAndUpdate(id, updateData, { new: true });
 
         revalidateTag('services-details', 'max');
 
@@ -232,6 +234,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete service detail
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -239,7 +242,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(servicesPageDetails).where(eq(servicesPageDetails.id, parseInt(id)));
+        await ServicesPageDetails.findByIdAndDelete(id);
 
         revalidateTag('services-details', 'max');
 

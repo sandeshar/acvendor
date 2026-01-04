@@ -1,33 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { homepageTrustSection } from '@/db/homepageSchema';
+import { connectDB } from '@/db';
+import { HomepageTrustSection } from '@/db/homepageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch trust section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const section = await db.select().from(homepageTrustSection).where(eq(homepageTrustSection.id, parseInt(id))).limit(1);
+            const section = await HomepageTrustSection.findById(id).lean();
 
-            if (section.length === 0) {
+            if (!section) {
                 return NextResponse.json({ error: 'Trust section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(section[0]);
+            return NextResponse.json(section);
         }
 
-        const section = await db.select().from(homepageTrustSection).where(eq(homepageTrustSection.is_active, 1)).limit(1);
+        const section = await HomepageTrustSection.findOne({ is_active: 1 }).lean();
 
-        if (section.length === 0) {
+        if (!section) {
             // Return empty object to allow admin UI to create new entry
             return NextResponse.json({});
         }
 
-        return NextResponse.json(section[0]);
+        return NextResponse.json(section);
     } catch (error) {
         console.error('Error fetching trust section:', error);
         return NextResponse.json({ error: 'Failed to fetch trust section' }, { status: 500 });
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
 // POST - Create trust section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { heading, is_active = 1 } = body;
 
@@ -44,10 +45,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Heading is required' }, { status: 400 });
         }
 
-        const result = await db.insert(homepageTrustSection).values({ heading, is_active });
+        const result = await HomepageTrustSection.create({ heading, is_active });
         revalidateTag('homepage-trust-section', 'max');
         return NextResponse.json(
-            { success: true, message: 'Trust section created successfully', id: result[0].insertId },
+            { success: true, message: 'Trust section created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update trust section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, heading, is_active } = body;
 
@@ -70,7 +72,7 @@ export async function PUT(request: NextRequest) {
         if (heading !== undefined) updateData.heading = heading;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(homepageTrustSection).set(updateData).where(eq(homepageTrustSection.id, id));
+        await HomepageTrustSection.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('homepage-trust-section', 'max');
 
         return NextResponse.json({ success: true, message: 'Trust section updated successfully' });
@@ -83,6 +85,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete trust section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -90,7 +93,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(homepageTrustSection).where(eq(homepageTrustSection.id, parseInt(id)));
+        await HomepageTrustSection.findByIdAndDelete(id);
         revalidateTag('homepage-trust-section', 'max');
 
         return NextResponse.json({ success: true, message: 'Trust section deleted successfully' });

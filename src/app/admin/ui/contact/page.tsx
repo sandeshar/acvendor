@@ -43,11 +43,13 @@ export default function ContactPageUI() {
         setSaving(true);
         try {
             const saveSection = async (url: string, data: any) => {
-                const method = data.id ? 'PUT' : 'POST';
+                const entityId = data?.id ?? data?._id ?? null;
+                const method = entityId ? 'PUT' : 'POST';
+                const bodyData = entityId ? { ...data, id: entityId } : { ...data };
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(bodyData),
                 });
                 if (!res.ok) throw new Error(`Failed to save ${url}`);
                 return res.json();
@@ -60,7 +62,7 @@ export default function ContactPageUI() {
             ]);
 
             showToast("Settings saved successfully!", { type: 'success' });
-            window.location.reload();
+            await fetchData();
         } catch (error) {
             console.error("Error saving settings:", error);
             showToast("Failed to save settings. Please try again.", { type: 'error' });

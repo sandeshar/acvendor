@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ProductsListClient from '@/components/products/ProductsListClientWrapper';
 import ProductsPagination from '@/components/products/ProductsPagination';
+import { formatPrice } from '@/utils/formatPrice';
 import dynamicImport from 'next/dynamic';
 
 const CompareAddButton = dynamicImport(() => import('@/components/products/CompareAddButton'));
@@ -202,8 +203,8 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                             </Link>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {(brandProductsMap[slug] || []).length ? (brandProductsMap[slug] || []).map((p: any) => (
-                                <div key={p.id} className="group bg-surface-light rounded-xl border border-[#f0f2f4] overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
+                            {(brandProductsMap[slug] || []).length ? (brandProductsMap[slug] || []).map((p: any, pIdx: number) => (
+                                <div key={`${p._id ?? p.id ?? p.slug ?? pIdx}`} className="group bg-surface-light rounded-xl border border-[#f0f2f4] overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
                                     <Link href={`/products/${p.slug || p.id}`} className="block">
                                         <div className="relative aspect-square overflow-hidden bg-gray-50">
                                             <div className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url('${p.thumbnail || '/placeholder-product.png'}')` }} />
@@ -220,7 +221,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                         </div>
                                     </Link>
                                     <div className="p-4 border-t border-[#f0f2f4] flex items-center justify-between">
-                                        <span className="text-primary font-bold text-lg">{p.price || 'NPR 0'}</span>
+                                        <span className="text-primary font-bold text-lg">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</span>
                                         {/* Compare add button (client) */}
                                         <div className="relative z-10">
                                             <CompareAddButton product={p} />

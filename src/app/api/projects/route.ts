@@ -1,7 +1,6 @@
-import { db } from '@/db';
-import { projects } from '@/db/projectsSchema';
+import { connectDB } from '@/db';
+import { Projects } from '@/db/projectsSchema';
 import { NextResponse } from 'next/server';
-import { eq, and, asc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -9,19 +8,17 @@ export async function GET(request: Request) {
     const admin = searchParams.get('admin');
 
     try {
-        const conditions = [];
+        await connectDB();
+        const query: any = {};
         if (!admin) {
-            conditions.push(eq(projects.is_active, true));
+            query.is_active = true;
         }
 
         if (category && category !== 'All Projects') {
-            conditions.push(eq(projects.category, category));
+            query.category = category;
         }
 
-        const data = await db.select()
-            .from(projects)
-            .where(conditions.length > 0 ? (conditions.length > 1 ? and(...conditions) : conditions[0]) : undefined)
-            .orderBy(asc(projects.display_order));
+        const data = await Projects.find(query).sort({ display_order: 1 }).lean();
 
         return NextResponse.json(data);
     } catch (error) {
@@ -31,9 +28,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        await connectDB();
         const body = await request.json();
-        const result = await db.insert(projects).values(body);
-        return NextResponse.json({ success: true, id: result[0].insertId });
+        const result = await Projects.create(body);
+        return NextResponse.json({ success: true, id: result._id });
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
@@ -41,11 +39,12 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, ...updateData } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        await db.update(projects).set(updateData).where(eq(projects.id, id));
+        await Projects.findByIdAndUpdate(id, updateData, { new: true });
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
@@ -54,11 +53,12 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
+        await connectDB();
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        await db.delete(projects).where(eq(projects.id, parseInt(id)));
+        await Projects.findByIdAndDelete(id);
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });

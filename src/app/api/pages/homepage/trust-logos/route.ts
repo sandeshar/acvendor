@@ -1,29 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq, asc } from 'drizzle-orm';
-import { db } from '@/db';
-import { homepageTrustLogos } from '@/db/homepageSchema';
+import { connectDB } from '@/db';
+import { HomepageTrustLogos } from '@/db/homepageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch trust logos
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const logo = await db.select().from(homepageTrustLogos).where(eq(homepageTrustLogos.id, parseInt(id))).limit(1);
+            const logo = await HomepageTrustLogos.findById(id).lean();
 
-            if (logo.length === 0) {
+            if (!logo) {
                 return NextResponse.json({ error: 'Logo not found' }, { status: 404 });
             }
 
-            return NextResponse.json(logo[0]);
+            return NextResponse.json(logo);
         }
 
         // Get all active logos ordered by display_order
-        const logos = await db.select().from(homepageTrustLogos)
-            .where(eq(homepageTrustLogos.is_active, 1))
-            .orderBy(asc(homepageTrustLogos.display_order));
+        const logos = await HomepageTrustLogos.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
 
         return NextResponse.json(logos);
     } catch (error) {
@@ -35,6 +33,7 @@ export async function GET(request: NextRequest) {
 // POST - Create trust logo
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { alt_text, logo_url, invert = 0, display_order, is_active = 1 } = body;
 
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await db.insert(homepageTrustLogos).values({
+        const result = await HomepageTrustLogos.create({
             alt_text,
             logo_url,
             invert,
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('homepage-trust-logos', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Trust logo created successfully', id: result[0].insertId },
+            { success: true, message: 'Trust logo created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -67,6 +66,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update trust logo
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const { id, alt_text, logo_url, invert, display_order, is_active } = body;
 
@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await db.update(homepageTrustLogos).set(updateData).where(eq(homepageTrustLogos.id, id));
+        await HomepageTrustLogos.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('homepage-trust-logos', 'max');
 
         return NextResponse.json({ success: true, message: 'Trust logo updated successfully' });
@@ -94,6 +94,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete trust logo
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -101,7 +102,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(homepageTrustLogos).where(eq(homepageTrustLogos.id, parseInt(id)));
+        await HomepageTrustLogos.findByIdAndDelete(id);
         revalidateTag('homepage-trust-logos', 'max');
 
         return NextResponse.json({ success: true, message: 'Trust logo deleted successfully' });

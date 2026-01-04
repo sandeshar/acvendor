@@ -56,7 +56,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
 
     useEffect(() => {
         if (initialData) {
-            setProduct(prev => ({ ...prev, ...initialData }));
+            setProduct((prev: any) => ({ ...prev, ...initialData }));
             if (editor && initialData.content) {
                 editor.commands.setContent(initialData.content);
             }

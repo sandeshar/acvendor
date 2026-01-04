@@ -1,83 +1,112 @@
-import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import mongoose, { Schema, model, models } from 'mongoose';
 
-export const users = mysqlTable("users", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }).notNull(),
-    email: varchar("email", { length: 256 }).notNull().unique(),
-    password: varchar("password", { length: 512 }).notNull(),
-    role: varchar("role", { length: 50 }).notNull().default("admin"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+// Users Schema
+const userSchema = new Schema({
+    name: { type: String, required: true, maxlength: 256 },
+    email: { type: String, required: true, unique: true, maxlength: 256 },
+    password: { type: String, required: true, maxlength: 512 },
+    role: { type: String, required: true, default: 'admin', maxlength: 50 },
+}, { 
+    timestamps: true,
+    collection: 'users'
 });
 
-export const blogPosts = mysqlTable("blog_posts", {
-    id: int("id").primaryKey().autoincrement(),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    title: varchar("title", { length: 512 }).notNull(),
-    content: varchar("content", { length: 65535 }).notNull(),
-    tags: varchar("tags", { length: 512 }),
-    thumbnail: varchar("thumbnail", { length: 512 }),
-    metaTitle: varchar("meta_title", { length: 256 }),
-    metaDescription: varchar("meta_description", { length: 512 }),
-    authorId: int("author_id").references(() => users.id).notNull(),
-    status: int("status").references(() => status.id).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const User = models.User || model('User', userSchema);
+
+// Status Schema
+const statusSchema = new Schema({
+    name: { type: String, required: true, unique: true, maxlength: 50 },
+}, { 
+    timestamps: true,
+    collection: 'status'
 });
 
-export const status = mysqlTable("status", {
-    id: int("id").primaryKey().autoincrement(),
-    name: varchar("name", { length: 50 }).notNull().unique(),
+export const Status = models.Status || model('Status', statusSchema);
+
+// Blog Posts Schema
+const blogPostSchema = new Schema({
+    slug: { type: String, required: true, unique: true, maxlength: 256 },
+    title: { type: String, required: true, maxlength: 512 },
+    content: { type: String, required: true, maxlength: 65535 },
+    tags: { type: String, maxlength: 512, default: '' },
+    thumbnail: { type: String, maxlength: 512, default: '' },
+    metaTitle: { type: String, maxlength: 256, default: '' },
+    metaDescription: { type: String, maxlength: 512, default: '' },
+    authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
+}, { 
+    timestamps: true,
+    collection: 'blog_posts'
 });
 
-export const storeSettings = mysqlTable("store_settings", {
-    id: int("id").primaryKey().autoincrement(),
-    store_name: varchar("store_name", { length: 256 }).notNull(),
-    store_description: varchar("store_description", { length: 1024 }).notNull(),
-    store_logo: varchar("store_logo", { length: 512 }).notNull(),
-    favicon: varchar("favicon", { length: 512 }).notNull(),
-    contact_email: varchar("contact_email", { length: 256 }).notNull(),
-    contact_phone: varchar("contact_phone", { length: 50 }).notNull(),
-    address: varchar("address", { length: 512 }).notNull(),
+export const BlogPost = models.BlogPost || model('BlogPost', blogPostSchema);
+
+// Store Settings Schema
+const storeSettingsSchema = new Schema({
+    store_name: { type: String, required: true, maxlength: 256 },
+    store_description: { type: String, required: true, maxlength: 1024 },
+    store_logo: { type: String, required: true, maxlength: 512 },
+    favicon: { type: String, required: true, maxlength: 512 },
+    contact_email: { type: String, required: true, maxlength: 256 },
+    contact_phone: { type: String, required: true, maxlength: 50 },
+    address: { type: String, required: true, maxlength: 512 },
     // PAN (tax id) for corporate documents
-    pan: varchar("pan", { length: 128 }).notNull().default(''),
+    pan: { type: String, required: true, default: '', maxlength: 128 },
     // Authorized signatory name for printed documents
-    authorized_person: varchar("authorized_person", { length: 256 }).notNull().default(''),
-    facebook: varchar("facebook", { length: 512 }).notNull(),
-    twitter: varchar("twitter", { length: 512 }).notNull(),
-    instagram: varchar("instagram", { length: 512 }).notNull(),
-    linkedin: varchar("linkedin", { length: 512 }).notNull(),
-    meta_title: varchar("meta_title", { length: 256 }).notNull(),
-    meta_description: varchar("meta_description", { length: 512 }).notNull(),
-    meta_keywords: varchar("meta_keywords", { length: 512 }).notNull(),
-    footer_text: varchar("footer_text", { length: 512 }).notNull(),
+    authorized_person: { type: String, required: true, default: '', maxlength: 256 },
+    facebook: { type: String, required: true, maxlength: 512 },
+    twitter: { type: String, required: true, maxlength: 512 },
+    instagram: { type: String, required: true, maxlength: 512 },
+    linkedin: { type: String, required: true, maxlength: 512 },
+    meta_title: { type: String, required: true, maxlength: 256 },
+    meta_description: { type: String, required: true, maxlength: 512 },
+    meta_keywords: { type: String, required: true, maxlength: 512 },
+    footer_text: { type: String, required: true, maxlength: 512 },
     // Theme selection for the site (e.g., light, dark, ocean, corporate)
-    theme: varchar("theme", { length: 100 }).notNull().default('light'),
+    theme: { type: String, required: true, default: 'light', maxlength: 100 },
     // Optional featured brand identifier used by the storefront (e.g., 'midea')
-    featured_brand: varchar("featured_brand", { length: 128 }).notNull().default(''),
+    featured_brand: { type: String, required: true, default: '', maxlength: 128 },
     // Whether to remove the site name entirely (all screens)
-    hide_site_name: int("hide_site_name").default(0).notNull(),
+    hide_site_name: { type: Number, default: 0, required: true },
     // Whether to hide the site name on small screens (mobile)
-    hide_site_name_on_mobile: int("hide_site_name_on_mobile").default(0).notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+    hide_site_name_on_mobile: { type: Number, default: 0, required: true },
+}, { 
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'store_settings'
 });
 
-export const footerSections = mysqlTable("footer_sections", {
-    id: int("id").primaryKey().autoincrement(),
-    store_id: int("store_id").references(() => storeSettings.id),
-    title: varchar("title", { length: 128 }).notNull(),
-    order: int("order").default(0).notNull(),
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+export const StoreSettings = models.StoreSettings || model('StoreSettings', storeSettingsSchema);
+
+// Footer Sections Schema
+const footerSectionSchema = new Schema({
+    store_id: { type: Schema.Types.ObjectId, ref: 'StoreSettings' },
+    title: { type: String, required: true, maxlength: 128 },
+    order: { type: Number, default: 0, required: true },
+}, { 
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+    collection: 'footer_sections'
 });
 
-export const footerLinks = mysqlTable("footer_links", {
-    id: int("id").primaryKey().autoincrement(),
-    section_id: int("section_id").references(() => footerSections.id).notNull(),
-    label: varchar("label", { length: 256 }).notNull(),
-    href: varchar("href", { length: 512 }).notNull(),
-    is_external: int("is_external").default(0).notNull(),
-    order: int("order").default(0).notNull(),
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    updated_at: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
-}); 
+export const FooterSection = models.FooterSection || model('FooterSection', footerSectionSchema);
+
+// Footer Links Schema
+const footerLinkSchema = new Schema({
+    section_id: { type: Schema.Types.ObjectId, ref: 'FooterSection', required: true },
+    label: { type: String, required: true, maxlength: 256 },
+    href: { type: String, required: true, maxlength: 512 },
+    is_external: { type: Number, default: 0, required: true },
+    order: { type: Number, default: 0, required: true },
+}, { 
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+    collection: 'footer_links'
+});
+
+export const FooterLink = models.FooterLink || model('FooterLink', footerLinkSchema);
+
+// Backward compatibility exports (camelCase for existing API code)
+export const users = User;
+export const status = Status;
+export const blogPosts = BlogPost;
+export const storeSettings = StoreSettings;
+export const footerSections = FooterSection;
+export const footerLinks = FooterLink;

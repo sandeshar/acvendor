@@ -1,12 +1,13 @@
-import { db } from "@/db";
-import { blogPageHero } from "@/db/blogPageSchema";
+import { connectDB } from "@/db";
+import { BlogPageHero } from "@/db/blogPageSchema";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const hero = await db.select().from(blogPageHero).limit(1);
+        await connectDB();
+        const hero = await BlogPageHero.findOne().lean();
 
-        if (!hero.length) {
+        if (!hero) {
             return NextResponse.json({
                 title: "The Content Solution Blog",
                 subtitle: "Expert insights, trends, and strategies in content marketing for Nepali businesses.",
@@ -14,7 +15,7 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(hero[0]);
+        return NextResponse.json(hero);
     } catch (error) {
         console.error("Error fetching blog page hero:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

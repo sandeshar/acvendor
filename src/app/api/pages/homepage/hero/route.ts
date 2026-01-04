@@ -1,34 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { homepageHero } from '@/db/homepageSchema';
+import { connectDB } from '@/db';
+import { HomepageHero } from '@/db/homepageSchema';
 import { revalidateTag } from 'next/cache';
 
 // GET - Fetch hero section
 export async function GET(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
         if (id) {
-            const hero = await db.select().from(homepageHero).where(eq(homepageHero.id, parseInt(id))).limit(1);
+            const hero = await HomepageHero.findById(id).lean();
 
-            if (hero.length === 0) {
+            if (!hero) {
                 return NextResponse.json({ error: 'Hero section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(hero[0]);
+            return NextResponse.json(hero);
         }
 
         // Get active hero section
-        const hero = await db.select().from(homepageHero).where(eq(homepageHero.is_active, 1)).limit(1);
+        const hero = await HomepageHero.findOne({ is_active: 1 }).lean();
 
-        if (hero.length === 0) {
+        if (!hero) {
             // Return empty object to allow admin UI to create new entry
             return NextResponse.json({});
         }
 
-        return NextResponse.json(hero[0]);
+        return NextResponse.json(hero);
     } catch (error) {
         console.error('Error fetching hero section:', error);
         return NextResponse.json({ error: 'Failed to fetch hero section' }, { status: 500 });
@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
 // POST - Create hero section
 export async function POST(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const {
             title,
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = await db.insert(homepageHero).values({
+        const result = await HomepageHero.create({
             title,
             subtitle,
             cta_text,
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('homepage-hero', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Hero section created successfully', id: result[0].insertId },
+            { success: true, message: 'Hero section created successfully', id: result._id },
             { status: 201 }
         );
     } catch (error) {
@@ -110,6 +111,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update hero section
 export async function PUT(request: NextRequest) {
     try {
+        await connectDB();
         const body = await request.json();
         const {
             id,
@@ -140,12 +142,6 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        // Ensure numeric id for the DB query
-        const idNum = typeof id === 'string' ? parseInt(id, 10) : id;
-        if (!idNum || isNaN(Number(idNum))) {
-            return NextResponse.json({ error: 'ID must be a number' }, { status: 400 });
-        }
-
         const updateData: any = {};
         if (title !== undefined) updateData.title = title;
         if (subtitle !== undefined) updateData.subtitle = subtitle;
@@ -174,7 +170,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ success: true, message: 'No changes to update' });
         }
 
-        await db.update(homepageHero).set(updateData).where(eq(homepageHero.id, Number(idNum)));
+        await HomepageHero.findByIdAndUpdate(id, updateData, { new: true });
         revalidateTag('homepage-hero', 'max');
         return NextResponse.json({ success: true, message: 'Hero section updated successfully' });
     } catch (error) {
@@ -186,6 +182,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete hero section
 export async function DELETE(request: NextRequest) {
     try {
+        await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 
@@ -193,7 +190,7 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
-        await db.delete(homepageHero).where(eq(homepageHero.id, parseInt(id)));
+        await HomepageHero.findByIdAndDelete(id);
         revalidateTag("homepage-hero", 'max');
         return NextResponse.json({ success: true, message: 'Hero section deleted successfully' });
     } catch (error) {
