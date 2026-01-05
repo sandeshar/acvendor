@@ -898,7 +898,7 @@ export default function ServicesManagerPage() {
                                 <InputGroup label="Quote Author" value={trustData.quote_author || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_author: v })} />
                                 <InputGroup label="Quote Role" value={trustData.quote_role || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_role: v })} />
                                 <ImageUploader label="Quote Image" value={trustData.quote_image || ''} onChange={(url: string) => setTrustData({ ...trustData, quote_image: url })} folder="services/trust" />
-                                
+
                                 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                                     <div className="space-y-3">
                                         <InputGroup label="Stat 1 Value" value={trustData.stat1_value || ''} onChange={(v: string) => setTrustData({ ...trustData, stat1_value: v })} />

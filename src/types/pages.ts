@@ -53,7 +53,7 @@ export interface ShopHeroData {
     hero_image_alt?: string;
     brand?: string;
     is_active: number;
-} 
+}
 
 export interface ContactInfoData {
     office_location: string;
