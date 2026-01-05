@@ -6,7 +6,13 @@ export async function GET() {
     try {
         await connectDB();
         const section = await ProjectsSection.findOne().lean();
-        return NextResponse.json(section || null);
+        if (section) {
+            return NextResponse.json({
+                ...section,
+                id: section._id.toString()
+            });
+        }
+        return NextResponse.json(null);
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }

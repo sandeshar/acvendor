@@ -13,8 +13,8 @@ async function getProjectsData() {
         ]);
 
         return {
-            section: sectionData || null,
-            projects: allProjects
+            section: sectionData ? JSON.parse(JSON.stringify(sectionData)) : null,
+            projects: JSON.parse(JSON.stringify(allProjects))
         };
     } catch (error) {
         console.error('Error fetching projects data:', error);

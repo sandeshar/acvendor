@@ -38,6 +38,8 @@ const SeedRunner = () => {
         { key: "faq", label: "FAQ" },
         { key: "terms", label: "Terms" },
         { key: "blog", label: "Blog" },
+        { key: "projects", label: "Projects" },
+        { key: "testimonials", label: "Testimonials" },
         { key: "navbar", label: "Navbar" },
         { key: "footer", label: "Footer" },
     ];

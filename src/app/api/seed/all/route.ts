@@ -77,6 +77,7 @@ export async function POST(request: Request) {
             faq: { success: false, message: '' },
             terms: { success: false, message: '' },
             blog: { success: false, message: '' },
+            projects: { success: false, message: '' },
             testimonials: { success: false, message: '' },
             navbar: { success: false, message: '' },
             footer: { success: false, message: '' },
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
 
         // Delegate to individual seeders where possible and return early (fallback to inline if delegation fails)
         try {
-            const delegateKeys = ['status', 'users', 'homepage', 'about', 'services', 'products', 'contact', 'faq', 'terms', 'blog', 'testimonials', 'navbar', 'footer'];
+            const delegateKeys = ['status', 'users', 'homepage', 'about', 'services', 'products', 'contact', 'faq', 'terms', 'blog', 'projects', 'testimonials', 'navbar', 'footer'];
             for (const key of delegateKeys) {
                 try {
                     const params = new URLSearchParams();
