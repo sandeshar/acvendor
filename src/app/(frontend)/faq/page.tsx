@@ -41,14 +41,36 @@ export default async function FAQPage() {
     const data = await getFAQData();
     const { header, categories, items, cta } = data;
 
+    const renderTitle = (title: string, highlight?: string) => {
+        if (!highlight || !title.includes(highlight)) {
+            return title;
+        }
+
+        const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+        return parts.map((part, i) =>
+            part.toLowerCase() === highlight.toLowerCase() ? (
+                <span key={i} className="text-primary">
+                    {part}
+                </span>
+            ) : (
+                part
+            )
+        );
+    };
+
     return (
         <main className="flex flex-col items-center page-bg">
             <div className="flex flex-col w-full max-w-7xl py-5">
                 <div className="flex flex-col items-center text-center gap-3 p-4 mb-8">
                     {header ? (
                         <>
+                            {header.badge_text && (
+                                <span className="inline-block py-1 px-3 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-2">
+                                    {header.badge_text}
+                                </span>
+                            )}
                             <p className="text-slate-900 text-4xl sm:text-5xl font-black leading-tight tracking-[-0.033em]">
-                                {header.title}
+                                {renderTitle(header.title)}
                             </p>
                             <p className="text-slate-500 text-lg font-normal leading-normal max-w-2xl">
                                 {header.description}

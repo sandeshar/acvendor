@@ -6,12 +6,12 @@ interface FooterProps {
 
 const footerLinks = [
     {
-        title: 'Solutions',
+        title: 'Services',
         links: [
-            { label: 'Content Strategy', href: '/services' },
-            { label: 'SEO Writing', href: '/services' },
-            { label: 'Copywriting', href: '/services' },
-            { label: 'Social Media', href: '/services' },
+            { label: 'AC Installation', href: '/services' },
+            { label: 'AC Repair', href: '/services' },
+            { label: 'Maintenance', href: '/services' },
+            { label: 'Gas Refilling', href: '/services' },
         ],
     },
     {

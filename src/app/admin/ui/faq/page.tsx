@@ -164,7 +164,9 @@ export default function FAQPageUI() {
                                     Header Configuration
                                 </h2>
                                 <div className="space-y-5">
+                                    <InputGroup label="Badge Text" value={headerData.badge_text || ''} onChange={(v) => setHeaderData({ ...headerData, badge_text: v })} />
                                     <InputGroup label="Title" value={headerData.title || ''} onChange={(v) => setHeaderData({ ...headerData, title: v })} />
+                                    <InputGroup label="Highlight Text" value={headerData.highlight_text || ''} onChange={(v) => setHeaderData({ ...headerData, highlight_text: v })} />
                                     <TextAreaGroup label="Description" value={headerData.description || ''} onChange={(v) => setHeaderData({ ...headerData, description: v })} />
                                     <InputGroup label="Search Placeholder" value={headerData.search_placeholder || ''} onChange={(v) => setHeaderData({ ...headerData, search_placeholder: v })} />
 

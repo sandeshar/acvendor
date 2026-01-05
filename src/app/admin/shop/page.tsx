@@ -6,8 +6,10 @@ import { showToast } from '@/components/Toast';
 
 interface HeroData {
     id?: number;
+    badge_text: string;
     tagline: string;
     title: string;
+    highlight_text: string;
     subtitle: string;
     description: string;
     cta_text: string;
@@ -19,7 +21,6 @@ interface HeroData {
 
 interface BrandHeroData extends HeroData {
     brand_slug: string;
-    badge_text: string;
     display_order: number;
 }
 
@@ -31,8 +32,10 @@ export default function AdminShopPage() {
 
     // Global Hero State
     const [globalHero, setGlobalHero] = useState<HeroData>({
+        badge_text: '',
         tagline: '',
         title: '',
+        highlight_text: '',
         subtitle: '',
         description: '',
         cta_text: '',
@@ -48,6 +51,7 @@ export default function AdminShopPage() {
         badge_text: '',
         tagline: '',
         title: '',
+        highlight_text: '',
         subtitle: '',
         description: '',
         cta_text: '',
@@ -215,6 +219,16 @@ export default function AdminShopPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Official Distributor"
+                                value={globalHero.badge_text}
+                                onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                            />
+                        </div>
+                        <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Tagline</label>
                             <input
                                 type="text"
@@ -232,6 +246,16 @@ export default function AdminShopPage() {
                                 value={globalHero.title}
                                 onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                            <input
+                                type="text"
+                                placeholder="Substring to highlight"
+                                value={globalHero.highlight_text}
+                                onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
                         </div>
                         <div>
@@ -349,6 +373,15 @@ export default function AdminShopPage() {
                                     value={brandHero.title}
                                     onChange={e => setBrandHero({ ...brandHero, title: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                                <input
+                                    type="text"
+                                    value={brandHero.highlight_text}
+                                    onChange={e => setBrandHero({ ...brandHero, highlight_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
                             </div>
                             <div>

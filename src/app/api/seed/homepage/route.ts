@@ -30,7 +30,6 @@ export async function POST() {
             background_image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80',
             hero_image_alt: 'Modern air conditioning units in a showroom',
             badge_text: 'Free installation on select models',
-            highlight_text: 'Reliable Cooling',
             colored_word: 'Cooling',
             float_top_enabled: 1,
             float_top_icon: 'local_shipping',

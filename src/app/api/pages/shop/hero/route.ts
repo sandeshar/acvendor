@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { tagline = '', title = '', subtitle = '', description = '', cta_text = '', cta_link = '', background_image = '', hero_image_alt = '', is_active = 1 } = body;
-        const res = await ShopPageHero.create({ tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active });
-        revalidateTag('shop-hero', 'max');
+        const { badge_text = '', tagline = '', title = '', highlight_text = '', subtitle = '', description = '', cta_text = '', cta_link = '', background_image = '', hero_image_alt = '', is_active = 1 } = body;
+        const res = await ShopPageHero.create({ badge_text, tagline, title, highlight_text, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active });
+        revalidateTag('shop-hero');
         return NextResponse.json({ success: true, id: res._id }, { status: 201 });
     } catch (error) {
         console.error('Error creating shop hero:', error);
@@ -42,9 +42,9 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['tagline', 'title', 'subtitle', 'description', 'cta_text', 'cta_link', 'background_image', 'hero_image_alt', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['badge_text', 'tagline', 'title', 'highlight_text', 'subtitle', 'description', 'cta_text', 'cta_link', 'background_image', 'hero_image_alt', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
         await ShopPageHero.findByIdAndUpdate(id, update, { new: true });
-        revalidateTag('shop-hero', 'max');
+        revalidateTag('shop-hero');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error updating shop hero:', error);

@@ -2,6 +2,7 @@ import mongoose, { Schema, model, models } from 'mongoose';
 
 // FAQ Page Header Section
 const faqPageHeaderSchema = new Schema({
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
     search_placeholder: { type: String, required: true, maxlength: 256 },

@@ -657,23 +657,6 @@ export default function ServicesManagerPage() {
                             <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" />
                             <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v: string) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
-                            <div className="grid gap-5">
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 1 Value" value={heroData.stat1_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_value: v })} />
-                                    <InputGroup label="Stat 1 Label" value={heroData.stat1_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat1_label: v })} />
-                                </div>
-
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 2 Value" value={heroData.stat2_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_value: v })} />
-                                    <InputGroup label="Stat 2 Label" value={heroData.stat2_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat2_label: v })} />
-                                </div>
-
-                                <div className="space-y-3 flex space-x-5">
-                                    <InputGroup label="Stat 3 Value" value={heroData.stat3_value || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_value: v })} />
-                                    <InputGroup label="Stat 3 Label" value={heroData.stat3_label || ''} onChange={(v: string) => setHeroData({ ...heroData, stat3_label: v })} />
-                                </div>
-                            </div>
-
                             <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                 <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                 <Toggle checked={heroData.is_active === 1} onChange={(c: boolean) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
@@ -915,6 +898,25 @@ export default function ServicesManagerPage() {
                                 <InputGroup label="Quote Author" value={trustData.quote_author || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_author: v })} />
                                 <InputGroup label="Quote Role" value={trustData.quote_role || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_role: v })} />
                                 <ImageUploader label="Quote Image" value={trustData.quote_image || ''} onChange={(url: string) => setTrustData({ ...trustData, quote_image: url })} folder="services/trust" />
+                                
+                                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                                    <div className="space-y-3">
+                                        <InputGroup label="Stat 1 Value" value={trustData.stat1_value || ''} onChange={(v: string) => setTrustData({ ...trustData, stat1_value: v })} />
+                                        <InputGroup label="Stat 1 Label" value={trustData.stat1_label || ''} onChange={(v: string) => setTrustData({ ...trustData, stat1_label: v })} />
+                                        <InputGroup label="Stat 1 Sublabel" value={trustData.stat1_sublabel || ''} onChange={(v: string) => setTrustData({ ...trustData, stat1_sublabel: v })} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <InputGroup label="Stat 2 Value" value={trustData.stat2_value || ''} onChange={(v: string) => setTrustData({ ...trustData, stat2_value: v })} />
+                                        <InputGroup label="Stat 2 Label" value={trustData.stat2_label || ''} onChange={(v: string) => setTrustData({ ...trustData, stat2_label: v })} />
+                                        <InputGroup label="Stat 2 Sublabel" value={trustData.stat2_sublabel || ''} onChange={(v: string) => setTrustData({ ...trustData, stat2_sublabel: v })} />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <InputGroup label="Stat 3 Value" value={trustData.stat3_value || ''} onChange={(v: string) => setTrustData({ ...trustData, stat3_value: v })} />
+                                        <InputGroup label="Stat 3 Label" value={trustData.stat3_label || ''} onChange={(v: string) => setTrustData({ ...trustData, stat3_label: v })} />
+                                        <InputGroup label="Stat 3 Sublabel" value={trustData.stat3_sublabel || ''} onChange={(v: string) => setTrustData({ ...trustData, stat3_sublabel: v })} />
+                                    </div>
+                                </div>
+
                                 <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                     <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                     <Toggle checked={trustData.is_active === 1} onChange={(c: boolean) => setTrustData({ ...trustData, is_active: c ? 1 : 0 })} />

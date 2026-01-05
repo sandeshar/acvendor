@@ -129,32 +129,57 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
         } catch (e) { brandProductsMap[slug] = []; }
     }));
 
+    const renderTitle = (title: string, highlight?: string) => {
+        if (!highlight || !title.includes(highlight)) {
+            return title;
+        }
+
+        const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+        return parts.map((part, i) =>
+            part.toLowerCase() === highlight.toLowerCase() ? (
+                <span key={i} className="text-primary">
+                    {part}
+                </span>
+            ) : (
+                part
+            )
+        );
+    };
+
     return (
         <main className="flex-1">
             <section className="relative bg-surface-light py-8 lg:py-16 overflow-hidden">
                 <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
                     <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
                         <div className="flex-1 flex flex-col gap-6 text-left z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit">
-                                <span className="material-symbols-outlined text-primary text-sm">verified</span>
-                                <span className="text-primary text-xs font-bold uppercase tracking-wide">Official Distributor</span>
-                            </div>
+                            {hero?.badge_text && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit">
+                                    <span className="material-symbols-outlined text-primary text-sm">verified</span>
+                                    <span className="text-primary text-xs font-bold uppercase tracking-wide">{hero.badge_text}</span>
+                                </div>
+                            )}
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
-                                {hero?.title || 'Shop By Brand'}<br /><span className="text-primary">{hero?.subtitle || 'Find trusted AC brands'}</span>
+                                {renderTitle(hero?.title || '')}
+                                {hero?.subtitle && (
+                                    <>
+                                        <br />
+                                        <span className="text-primary">{hero.subtitle}</span>
+                                    </>
+                                )}
                             </h1>
                             <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">
-                                {hero?.description || 'Compare features and prices across multiple brands to find the right cooling solution for your space.'}
+                                {hero?.description}
                             </p>
                         </div>
 
                         <div className="flex-1 w-full relative group perspective-1000">
                             <div className="relative z-10 w-full aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gray-100">
-                                <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-700 group-hover:scale-105" data-alt={hero?.hero_image_alt || 'Shop hero image'} style={{ backgroundImage: `url('${hero?.background_image || 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80'}')` }} />
+                                <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-700 group-hover:scale-105" data-alt={hero?.hero_image_alt || ''} style={{ backgroundImage: `url('${hero?.background_image || ''}')` }} />
                                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-60"></div>
                                 <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex justify-between items-center">
                                     <div>
-                                        <p className="font-bold text-lg">{hero?.tagline || 'Compare Brands'}</p>
-                                        <p className="text-sm opacity-80">{hero?.description || 'Browse featured models and latest series from top manufacturers'}</p>
+                                        <p className="font-bold text-lg">{hero?.tagline}</p>
+                                        <p className="text-sm opacity-80">{hero?.description}</p>
                                     </div>
                                     {hero?.cta_text ? (
                                         <Link href={hero?.cta_link || '/shop'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">

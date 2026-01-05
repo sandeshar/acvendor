@@ -131,9 +131,13 @@ export default function ContactPageUI() {
                                     Hero Configuration
                                 </h2>
                                 <div className="space-y-5">
+                                    <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v) => setHeroData({ ...heroData, badge_text: v })} />
                                     <InputGroup label="Tagline" value={heroData.tagline || ''} onChange={(v) => setHeroData({ ...heroData, tagline: v })} />
                                     <InputGroup label="Title" value={heroData.title || ''} onChange={(v) => setHeroData({ ...heroData, title: v })} />
+                                    <InputGroup label="Highlight Text" value={heroData.highlight_text || ''} onChange={(v) => setHeroData({ ...heroData, highlight_text: v })} />
                                     <TextAreaGroup label="Description" value={heroData.description || ''} onChange={(v) => setHeroData({ ...heroData, description: v })} />
+                                    <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(v) => setHeroData({ ...heroData, background_image: v })} folder="contact" />
+                                    <InputGroup label="Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>

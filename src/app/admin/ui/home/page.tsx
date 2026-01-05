@@ -209,7 +209,7 @@ export default function HomePageUI() {
                                     <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v) => setHeroData({ ...heroData, badge_text: v })} />
                                     <InputGroup label="Title" value={heroData.title || ''} onChange={(v) => setHeroData({ ...heroData, title: v })} />
                                     <TextAreaGroup label="Subtitle" value={heroData.subtitle || ''} onChange={(v) => setHeroData({ ...heroData, subtitle: v })} />
-                                    <InputGroup label="Highlight Text (substring to emphasize)" value={heroData.highlight_text || ''} onChange={(v) => setHeroData({ ...heroData, highlight_text: v })} />
+
                                     <div>
                                         <InputGroup label="Colored Word (single word to color)" value={heroData.colored_word || ''} onChange={(v) => setHeroData({ ...heroData, colored_word: v })} />
                                         {heroData.colored_word && heroData.title && heroData.title.indexOf(heroData.colored_word) === -1 && (
@@ -235,7 +235,7 @@ export default function HomePageUI() {
                                             <div className="text-2xl font-black leading-tight">
                                                 {(() => {
                                                     const t = heroData.title || 'Example Title';
-                                                    const cw = (heroData.colored_word || heroData.highlight_text || '').trim();
+                                                    const cw = (heroData.colored_word || '').trim();
                                                     if (!t) return <span className="text-gray-400">No title set</span>;
                                                     return t.split('\n').map((line: string, i: number) => {
                                                         const word = cw;
@@ -280,33 +280,29 @@ export default function HomePageUI() {
                                     <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="home" />
                                     <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
-                                    {/* Floating UI Elements */}
+                                    {/* Trust Badges */}
                                     <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-100">
-                                        <h4 className="text-sm font-semibold mb-3">Floating UI Elements</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <h4 className="text-sm font-semibold mb-3">Trust Badges (Bottom of Hero)</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <div className="p-3 bg-white rounded border border-gray-100">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="text-sm font-medium">Top Floating Card</div>
-                                                    <Toggle checked={heroData.float_top_enabled === 1} onChange={(c) => setHeroData({ ...heroData, float_top_enabled: c ? 1 : 0 })} />
-                                                </div>
-                                                <InputGroup label="Icon (Material Symbol)" value={heroData.float_top_icon || ''} onChange={(v) => setHeroData({ ...heroData, float_top_icon: v })} />
-                                                <InputGroup label="Title" value={heroData.float_top_title || ''} onChange={(v) => setHeroData({ ...heroData, float_top_title: v })} />
-                                                <InputGroup label="Value" value={heroData.float_top_value || ''} onChange={(v) => setHeroData({ ...heroData, float_top_value: v })} />
+                                                <div className="text-sm font-medium mb-2">Badge 1</div>
+                                                <InputGroup label="Icon" value={heroData.trust_badge1_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge1_icon: v })} />
+                                                <InputGroup label="Text" value={heroData.trust_badge1_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge1_text: v })} />
                                             </div>
 
                                             <div className="p-3 bg-white rounded border border-gray-100">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="text-sm font-medium">Bottom Floating Card</div>
-                                                    <Toggle checked={heroData.float_bottom_enabled === 1} onChange={(c) => setHeroData({ ...heroData, float_bottom_enabled: c ? 1 : 0 })} />
-                                                </div>
-                                                <InputGroup label="Icon (Material Symbol)" value={heroData.float_bottom_icon || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_icon: v })} />
-                                                <InputGroup label="Title" value={heroData.float_bottom_title || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_title: v })} />
-                                                <InputGroup label="Value" value={heroData.float_bottom_value || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_value: v })} />
+                                                <div className="text-sm font-medium mb-2">Badge 2</div>
+                                                <InputGroup label="Icon" value={heroData.trust_badge2_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge2_icon: v })} />
+                                                <InputGroup label="Text" value={heroData.trust_badge2_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge2_text: v })} />
+                                            </div>
+
+                                            <div className="p-3 bg-white rounded border border-gray-100">
+                                                <div className="text-sm font-medium mb-2">Badge 3</div>
+                                                <InputGroup label="Icon" value={heroData.trust_badge3_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge3_icon: v })} />
+                                                <InputGroup label="Text" value={heroData.trust_badge3_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge3_text: v })} />
                                             </div>
                                         </div>
                                     </div>
-
-                                    <InputGroup label="Rating / Trust Text" value={heroData.rating_text || ''} onChange={(v) => setHeroData({ ...heroData, rating_text: v })} />
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>

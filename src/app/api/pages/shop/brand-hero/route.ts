@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { brand_slug, badge_text, tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
+        const { brand_slug, badge_text, tagline, title, highlight_text, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
         if (!brand_slug) return NextResponse.json({ error: 'brand_slug is required' }, { status: 400 });
 
-        const res = await ShopPageBrandHero.create({ brand_slug, badge_text: badge_text || '', tagline: tagline || '', title: title || '', subtitle: subtitle || '', description: description || '', cta_text: cta_text || '', cta_link: cta_link || '', background_image: background_image || '', hero_image_alt: hero_image_alt || '', is_active: typeof is_active === 'number' ? is_active : 1, display_order: display_order || 0 });
-        try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
+        const res = await ShopPageBrandHero.create({ brand_slug, badge_text: badge_text || '', tagline: tagline || '', title: title || '', highlight_text: highlight_text || '', subtitle: subtitle || '', description: description || '', cta_text: cta_text || '', cta_link: cta_link || '', background_image: background_image || '', hero_image_alt: hero_image_alt || '', is_active: typeof is_active === 'number' ? is_active : 1, display_order: display_order || 0 });
+        try { revalidateTag('shop-brand-hero'); } catch (e) { }
         return NextResponse.json({ success: true, id: res._id });
     } catch (error) {
         console.error('Error creating brand hero:', error);
@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, brand_slug, badge_text, tagline, title, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
+        const { id, brand_slug, badge_text, tagline, title, highlight_text, subtitle, description, cta_text, cta_link, background_image, hero_image_alt, is_active, display_order } = body;
         if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
         const updateData: any = {};
@@ -51,6 +51,7 @@ export async function PUT(request: NextRequest) {
         if (badge_text !== undefined) updateData.badge_text = badge_text;
         if (tagline !== undefined) updateData.tagline = tagline;
         if (title !== undefined) updateData.title = title;
+        if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
         if (subtitle !== undefined) updateData.subtitle = subtitle;
         if (description !== undefined) updateData.description = description;
         if (cta_text !== undefined) updateData.cta_text = cta_text;
@@ -61,7 +62,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
 
         await ShopPageBrandHero.findByIdAndUpdate(id, updateData, { new: true });
-        try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
+        try { revalidateTag('shop-brand-hero'); } catch (e) { }
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error updating brand hero:', error);

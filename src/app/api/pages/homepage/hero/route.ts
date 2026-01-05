@@ -48,20 +48,16 @@ export async function POST(request: NextRequest) {
             background_image,
             hero_image_alt = '',
             badge_text = '',
-            highlight_text = '',
             colored_word = '',
-            // Floating UI defaults
-            float_top_enabled = 1,
-            float_top_icon = 'trending_up',
-            float_top_title = 'Growth',
-            float_top_value = '+240% ROI',
-            float_bottom_enabled = 1,
-            float_bottom_icon = 'check_circle',
-            float_bottom_title = 'Ranking',
-            float_bottom_value = '#1 Result',
+            // Trust Badges
+            trust_badge1_text = 'Certified Techs',
+            trust_badge1_icon = 'engineering',
+            trust_badge2_text = '1 Year Warranty',
+            trust_badge2_icon = 'verified_user',
+            trust_badge3_text = 'Same Day Service',
+            trust_badge3_icon = 'schedule',
             secondary_cta_text = '',
             secondary_cta_link = '',
-            rating_text = '',
             is_active = 1,
         } = body;
 
@@ -82,17 +78,14 @@ export async function POST(request: NextRequest) {
             badge_text,
             highlight_text,
             colored_word,
-            float_top_enabled,
-            float_top_icon,
-            float_top_title,
-            float_top_value,
-            float_bottom_enabled,
-            float_bottom_icon,
-            float_bottom_title,
-            float_bottom_value,
+            trust_badge1_text,
+            trust_badge1_icon,
+            trust_badge2_text,
+            trust_badge2_icon,
+            trust_badge3_text,
+            trust_badge3_icon,
             secondary_cta_text,
             secondary_cta_link,
-            rating_text,
             is_active,
         });
 
@@ -124,17 +117,14 @@ export async function PUT(request: NextRequest) {
             badge_text,
             highlight_text,
             colored_word,
-            float_top_enabled,
-            float_top_icon,
-            float_top_title,
-            float_top_value,
-            float_bottom_enabled,
-            float_bottom_icon,
-            float_bottom_title,
-            float_bottom_value,
+            trust_badge1_text,
+            trust_badge1_icon,
+            trust_badge2_text,
+            trust_badge2_icon,
+            trust_badge3_text,
+            trust_badge3_icon,
             secondary_cta_text,
             secondary_cta_link,
-            rating_text,
             is_active,
         } = body;
 
@@ -150,19 +140,15 @@ export async function PUT(request: NextRequest) {
         if (background_image !== undefined) updateData.background_image = background_image;
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (badge_text !== undefined) updateData.badge_text = badge_text;
-        if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
         if (colored_word !== undefined) updateData.colored_word = colored_word;
-        if (float_top_enabled !== undefined) updateData.float_top_enabled = float_top_enabled;
-        if (float_top_icon !== undefined) updateData.float_top_icon = float_top_icon;
-        if (float_top_title !== undefined) updateData.float_top_title = float_top_title;
-        if (float_top_value !== undefined) updateData.float_top_value = float_top_value;
-        if (float_bottom_enabled !== undefined) updateData.float_bottom_enabled = float_bottom_enabled;
-        if (float_bottom_icon !== undefined) updateData.float_bottom_icon = float_bottom_icon;
-        if (float_bottom_title !== undefined) updateData.float_bottom_title = float_bottom_title;
-        if (float_bottom_value !== undefined) updateData.float_bottom_value = float_bottom_value;
+        if (trust_badge1_text !== undefined) updateData.trust_badge1_text = trust_badge1_text;
+        if (trust_badge1_icon !== undefined) updateData.trust_badge1_icon = trust_badge1_icon;
+        if (trust_badge2_text !== undefined) updateData.trust_badge2_text = trust_badge2_text;
+        if (trust_badge2_icon !== undefined) updateData.trust_badge2_icon = trust_badge2_icon;
+        if (trust_badge3_text !== undefined) updateData.trust_badge3_text = trust_badge3_text;
+        if (trust_badge3_icon !== undefined) updateData.trust_badge3_icon = trust_badge3_icon;
         if (secondary_cta_text !== undefined) updateData.secondary_cta_text = secondary_cta_text;
         if (secondary_cta_link !== undefined) updateData.secondary_cta_link = secondary_cta_link;
-        if (rating_text !== undefined) updateData.rating_text = rating_text;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         // If there's nothing to update, return early to avoid DB errors

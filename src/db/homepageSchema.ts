@@ -9,21 +9,16 @@ const homepageHeroSchema = new Schema({
     background_image: { type: String, required: true, maxlength: 512 },
     hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
     badge_text: { type: String, required: true, default: '', maxlength: 128 },
-    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
     colored_word: { type: String, required: true, default: '', maxlength: 256 },
-    // Floating UI element - top card
-    float_top_enabled: { type: Number, default: 1, required: true },
-    float_top_icon: { type: String, required: true, default: 'trending_up', maxlength: 100 },
-    float_top_title: { type: String, required: true, default: 'Growth', maxlength: 128 },
-    float_top_value: { type: String, required: true, default: '+240% ROI', maxlength: 64 },
-    // Floating UI element - bottom card
-    float_bottom_enabled: { type: Number, default: 1, required: true },
-    float_bottom_icon: { type: String, required: true, default: 'check_circle', maxlength: 100 },
-    float_bottom_title: { type: String, required: true, default: 'Ranking', maxlength: 128 },
-    float_bottom_value: { type: String, required: true, default: '#1 Result', maxlength: 64 },
+    // Trust Badges
+    trust_badge1_text: { type: String, required: true, default: 'Certified Techs', maxlength: 128 },
+    trust_badge1_icon: { type: String, required: true, default: 'engineering', maxlength: 100 },
+    trust_badge2_text: { type: String, required: true, default: '1 Year Warranty', maxlength: 128 },
+    trust_badge2_icon: { type: String, required: true, default: 'verified_user', maxlength: 100 },
+    trust_badge3_text: { type: String, required: true, default: 'Same Day Service', maxlength: 128 },
+    trust_badge3_icon: { type: String, required: true, default: 'schedule', maxlength: 100 },
     secondary_cta_text: { type: String, required: true, default: '', maxlength: 128 },
     secondary_cta_link: { type: String, required: true, default: '', maxlength: 512 },
-    rating_text: { type: String, required: true, default: '', maxlength: 128 },
     is_active: { type: Number, default: 1, required: true },
 }, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },

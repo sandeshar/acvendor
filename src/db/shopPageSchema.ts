@@ -2,8 +2,10 @@ import mongoose, { Schema, model, models } from 'mongoose';
 
 // Shop Page Hero
 const shopPageHeroSchema = new Schema({
+    badge_text: { type: String, required: true, default: '', maxlength: 128 },
     tagline: { type: String, required: true, default: '', maxlength: 128 },
     title: { type: String, required: true, default: '', maxlength: 256 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
     subtitle: { type: String, required: true, default: '', maxlength: 512 },
     description: { type: String, required: true, default: '' },
     cta_text: { type: String, required: true, default: '', maxlength: 128 },
@@ -24,6 +26,7 @@ const shopPageBrandHeroSchema = new Schema({
     badge_text: { type: String, required: true, default: '', maxlength: 128 },
     tagline: { type: String, required: true, default: '', maxlength: 128 },
     title: { type: String, required: true, default: '', maxlength: 256 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
     subtitle: { type: String, required: true, default: '', maxlength: 512 },
     description: { type: String, required: true, default: '' },
     cta_text: { type: String, required: true, default: '', maxlength: 128 },

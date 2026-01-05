@@ -13,7 +13,12 @@ interface HeroData {
     colored_word?: string;
     secondary_cta_text?: string;
     secondary_cta_link?: string;
-    rating_text?: string;
+    trust_badge1_text?: string;
+    trust_badge1_icon?: string;
+    trust_badge2_text?: string;
+    trust_badge2_icon?: string;
+    trust_badge3_text?: string;
+    trust_badge3_icon?: string;
     is_active: number;
 }
 
@@ -54,7 +59,24 @@ const Hero = ({ data }: HeroProps) => {
                         </div>
 
                         <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-6xl">
-                            {data.title || 'Complete Air Conditioning Solutions in Nepal'}
+                            {(() => {
+                                const t = data.title || 'Complete Air Conditioning Solutions in Nepal';
+                                const highlight = (data.colored_word || '').trim();
+                                if (!highlight) return t;
+
+                                const idx = t.indexOf(highlight);
+                                if (idx === -1) return t;
+
+                                return (
+                                    <>
+                                        {t.substring(0, idx)}
+                                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-400 to-indigo-400">
+                                            {highlight}
+                                        </span>
+                                        {t.substring(idx + highlight.length)}
+                                    </>
+                                );
+                            })()}
                         </h1>
 
                         <h2 className="text-gray-200 text-lg font-normal leading-relaxed max-w-none">
@@ -73,18 +95,18 @@ const Hero = ({ data }: HeroProps) => {
                     </div>
 
                     {/* Trust Badges */}
-                    <div className="flex gap-6 mt-8 pt-8 border-t border-white/10">
+                    <div className="flex flex-wrap gap-6 mt-8 pt-8 border-t border-white/10">
                         <div className="flex items-center gap-2 text-white/80">
-                            <span className="material-symbols-outlined text-primary">engineering</span>
-                            <span className="text-sm font-medium">Certified Techs</span>
+                            <span className="material-symbols-outlined text-primary">{data.trust_badge1_icon || 'engineering'}</span>
+                            <span className="text-sm font-medium">{data.trust_badge1_text || 'Certified Techs'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-white/80">
-                            <span className="material-symbols-outlined text-primary">verified_user</span>
-                            <span className="text-sm font-medium">1 Year Warranty</span>
+                            <span className="material-symbols-outlined text-primary">{data.trust_badge2_icon || 'verified_user'}</span>
+                            <span className="text-sm font-medium">{data.trust_badge2_text || '1 Year Warranty'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-white/80">
-                            <span className="material-symbols-outlined text-primary">schedule</span>
-                            <span className="text-sm font-medium">Same Day Service</span>
+                            <span className="material-symbols-outlined text-primary">{data.trust_badge3_icon || 'schedule'}</span>
+                            <span className="text-sm font-medium">{data.trust_badge3_text || 'Same Day Service'}</span>
                         </div>
                     </div>
                 </div>

@@ -111,6 +111,22 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         if (res.ok) shopHero = await res.json();
     } catch (e) { /* ignore */ }
 
+    const renderTitle = (title: string, highlight?: string) => {
+        if (!highlight || !title.includes(highlight)) {
+            return title;
+        }
+
+        const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+        return parts.map((part, i) =>
+            part.toLowerCase() === highlight.toLowerCase() ? (
+                <span key={i} className="text-primary">
+                    {part}
+                </span>
+            ) : (
+                part
+            )
+        );
+    };
 
     return (
         <div className="layout-container flex flex-col md:flex-row grow max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 gap-6">
@@ -142,21 +158,25 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     {(() => {
                         const h = brandHero && Object.keys(brandHero).length ? brandHero : (shopHero && Object.keys(shopHero).length ? shopHero : null);
                         const bg = h?.background_image || '';
-                        const badge = h?.badge_text || (brand ? `Official ${brand.charAt(0).toUpperCase() + brand.slice(1)} Distributor` : 'Official Distributor');
-                        const title = h?.title || (brand ? `${brand.charAt(0).toUpperCase() + brand.slice(1)} Xtreme Series` : 'Brand Series');
-                        const subtitle = h?.subtitle || (brand ? `${brand.charAt(0).toUpperCase() + brand.slice(1)} energy-efficient models.` : 'Energy-efficient models.');
-                        const cta = h?.cta_text || 'Explore Series';
+                        const badge = h?.badge_text || '';
+                        const title = h?.title || '';
+                        const subtitle = h?.subtitle || '';
+                        const cta = h?.cta_text || '';
 
                         return (
                             <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || ''}")` }}>
                                 <div className="flex flex-col gap-2 text-left max-w-lg">
-                                    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">{badge}</span>
-                                    <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">{title}</h1>
+                                    {badge && <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">{badge}</span>}
+                                    <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">
+                                        {renderTitle(title)}
+                                    </h1>
                                     <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">{subtitle}</h2>
                                 </div>
-                                <div className="flex gap-3">
-                                    <a href={h?.cta_link || '/midea-ac'} className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">{cta}</a>
-                                </div>
+                                {cta && (
+                                    <div className="flex gap-3">
+                                        <a href={h?.cta_link || '/midea-ac'} className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">{cta}</a>
+                                    </div>
+                                )}
                             </div>
                         );
                     })()}

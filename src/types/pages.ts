@@ -1,38 +1,59 @@
 export interface ContactHeroData {
-    tagline: string;
+    id?: string;
     title: string;
     description: string;
+    badge_text?: string;
+    background_image?: string;
+    is_active?: number;
 }
 
 // Homepage types
-export interface HomepageHeroFloat {
-    id?: number;
-    icon: string;
-    label: string;
-    stat_text: string;
-    position: string;
-    display_order: number;
+export interface HomepageHeroData {
+    id?: string;
+    title: string;
+    description: string;
+    badge_text?: string;
+    primary_cta_text?: string;
+    primary_cta_link?: string;
+    secondary_cta_text?: string;
+    secondary_cta_link?: string;
+    background_image: string;
+    hero_image_alt?: string;
+    colored_word?: string;
+    is_active: number;
+    updatedAt?: string | Date;
+}
+
+// About page types
+export interface AboutHeroData {
+    id?: string;
+    title: string;
+    description: string;
+    badge_text?: string;
+    primary_cta_text?: string;
+    primary_cta_link?: string;
+    secondary_cta_text?: string;
+    secondary_cta_link?: string;
+    background_image: string;
+    hero_image_alt?: string;
     is_active: number;
 }
 
-export interface HomepageHeroData {
-    id?: number;
+// Shop page types
+export interface ShopHeroData {
+    id?: string;
     title: string;
-    subtitle: string;
-    cta_text: string;
-    cta_link: string;
-    background_image: string;
-    hero_image_alt?: string;
+    description: string;
     badge_text?: string;
-    highlight_text?: string;
-    colored_word?: string;
+    primary_cta_text?: string;
+    primary_cta_link?: string;
     secondary_cta_text?: string;
     secondary_cta_link?: string;
-    rating_text?: string;
+    background_image: string;
+    hero_image_alt?: string;
+    brand?: string;
     is_active: number;
-    updatedAt?: string | Date;
-    floats?: HomepageHeroFloat[];
-}
+} 
 
 export interface ContactInfoData {
     office_location: string;
@@ -71,7 +92,7 @@ export interface TermsHeaderData {
 }
 
 export interface TermsSectionData {
-    id: number;
+    id: string;
     title: string;
     content: string;
     has_email: number;
@@ -79,19 +100,23 @@ export interface TermsSectionData {
 
 // FAQ page types
 export interface FAQHeaderData {
+    id?: string;
     title: string;
     description: string;
-    search_placeholder: string;
+    badge_text?: string;
+    highlight_text?: string;
+    background_image?: string;
+    is_active?: number;
 }
 
 export interface FAQCategory {
-    id: number;
+    id: string;
     name: string;
 }
 
 export interface FAQItem {
-    id: number;
-    category_id: number;
+    id: string;
+    category_id: string;
     question: string;
     answer: string;
 }
@@ -104,8 +129,44 @@ export interface FAQCTAData {
 }
 
 // Service page types
+export interface ServicesHeroData {
+    id?: string;
+    tagline?: string;
+    title: string;
+    description: string;
+    badge_text?: string;
+    highlight_text?: string;
+    primary_cta_text?: string;
+    primary_cta_link?: string;
+    secondary_cta_text?: string;
+    secondary_cta_link?: string;
+    background_image: string;
+    hero_image_alt?: string;
+    is_active: number;
+}
+
+export interface ServicesTrustData {
+    id?: string;
+    title: string;
+    description: string;
+    stat1_value?: string;
+    stat1_label?: string;
+    stat1_sublabel?: string;
+    stat2_value?: string;
+    stat2_label?: string;
+    stat2_sublabel?: string;
+    stat3_value?: string;
+    stat3_label?: string;
+    stat3_sublabel?: string;
+    testimonial_text?: string;
+    testimonial_author?: string;
+    testimonial_role?: string;
+    testimonial_image?: string;
+    is_active: number;
+}
+
 export type ServiceRecord = {
-    id?: number;
+    id?: string;
     slug: string;
     title: string;
     excerpt: string;

@@ -13,15 +13,6 @@ interface AboutHeroData {
     hero_image_alt: string;
     badge_text?: string;
     highlight_text?: string;
-    float_top_enabled?: number;
-    float_top_icon?: string;
-    float_top_title?: string;
-    float_top_value?: string;
-    float_bottom_enabled?: number;
-    float_bottom_icon?: string;
-    float_bottom_title?: string;
-    float_bottom_value?: string;
-    rating_text?: string;
     is_active: number;
     updatedAt: Date;
 }
@@ -39,9 +30,13 @@ const AboutHero = ({ data }: AboutHeroProps) => {
         <section className="w-full">
             <div className="relative flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-4" data-alt={data.hero_image_alt || ''} style={{ backgroundImage: bgUrl ? `linear-gradient(rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%), url("${bgUrl}")` : undefined }}>
                 <div className="flex flex-col gap-4 text-center max-w-[800px]">
-                    <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-5xl lg:text-6xl">
-                        {data.title}
-                    </h1>
+                    {data.badge_text && (
+                        <div className="inline-flex w-fit mx-auto items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+                            <span className="material-symbols-outlined text-sm">verified</span>
+                            {data.badge_text}
+                        </div>
+                    )}
+                    <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-5xl lg:text-6xl">{data.title}</h1>
                     {data.description ? (
                         <h2 className="text-gray-200 text-base font-normal leading-normal md:text-lg max-w-2xl mx-auto">
                             {data.description}

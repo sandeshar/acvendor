@@ -38,9 +38,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, button1_text, button1_link, button2_text, button2_link, hero_image, hero_image_alt, badge_text = '', highlight_text = '', rating_text = '',
-            float_top_enabled = 1, float_top_icon = 'trending_up', float_top_title = 'Traffic Growth', float_top_value = '+145%',
-            float_bottom_enabled = 1, float_bottom_icon = 'article', float_bottom_title = 'Content Pieces', float_bottom_value = '5k+',
+        const { title, description, button1_text, button1_link, button2_text, button2_link, hero_image, hero_image_alt, badge_text = '', highlight_text = '',
             is_active = 1 } = body;
 
         if (!title || !description || !button1_text || !button1_link || !button2_text || !button2_link || !hero_image || !hero_image_alt) {
@@ -58,15 +56,6 @@ export async function POST(request: NextRequest) {
             hero_image_alt,
             badge_text,
             highlight_text,
-            rating_text,
-            float_top_enabled,
-            float_top_icon,
-            float_top_title,
-            float_top_value,
-            float_bottom_enabled,
-            float_bottom_icon,
-            float_bottom_title,
-            float_bottom_value,
             is_active,
         });
 
@@ -87,9 +76,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, title, description, button1_text, button1_link, button2_text, button2_link, badge_text, highlight_text, rating_text, hero_image, hero_image_alt,
-            float_top_enabled, float_top_icon, float_top_title, float_top_value,
-            float_bottom_enabled, float_bottom_icon, float_bottom_title, float_bottom_value,
+        const { id, title, description, button1_text, button1_link, button2_text, button2_link, badge_text, highlight_text, hero_image, hero_image_alt,
             is_active } = body;
 
         if (!id) {
@@ -105,15 +92,6 @@ export async function PUT(request: NextRequest) {
         if (button2_link !== undefined) updateData.button2_link = button2_link;
         if (badge_text !== undefined) updateData.badge_text = badge_text;
         if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
-        if (rating_text !== undefined) updateData.rating_text = rating_text;
-        if (float_top_enabled !== undefined) updateData.float_top_enabled = float_top_enabled;
-        if (float_top_icon !== undefined) updateData.float_top_icon = float_top_icon;
-        if (float_top_title !== undefined) updateData.float_top_title = float_top_title;
-        if (float_top_value !== undefined) updateData.float_top_value = float_top_value;
-        if (float_bottom_enabled !== undefined) updateData.float_bottom_enabled = float_bottom_enabled;
-        if (float_bottom_icon !== undefined) updateData.float_bottom_icon = float_bottom_icon;
-        if (float_bottom_title !== undefined) updateData.float_bottom_title = float_bottom_title;
-        if (float_bottom_value !== undefined) updateData.float_bottom_value = float_bottom_value;
         if (hero_image !== undefined) updateData.hero_image = hero_image;
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;

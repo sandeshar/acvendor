@@ -298,34 +298,6 @@ export default function AboutPageUI() {
                                     <ImageUploader label="Hero Image" value={heroData.hero_image || ''} onChange={(v) => setHeroData({ ...heroData, hero_image: v })} folder="about" />
                                     <InputGroup label="Hero Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
-                                    {/* Floating UI Elements */}
-                                    <div className="mt-4 p-4 bg-gray-50 rounded border border-gray-100">
-                                        <h4 className="text-sm font-semibold mb-3">Floating UI Elements</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="p-3 bg-white rounded border border-gray-100">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="text-sm font-medium">Top Floating Card</div>
-                                                    <Toggle checked={heroData.float_top_enabled === 1} onChange={(c) => setHeroData({ ...heroData, float_top_enabled: c ? 1 : 0 })} />
-                                                </div>
-                                                <InputGroup label="Icon (Material Symbol)" value={heroData.float_top_icon || ''} onChange={(v) => setHeroData({ ...heroData, float_top_icon: v })} />
-                                                <InputGroup label="Title" value={heroData.float_top_title || ''} onChange={(v) => setHeroData({ ...heroData, float_top_title: v })} />
-                                                <InputGroup label="Value" value={heroData.float_top_value || ''} onChange={(v) => setHeroData({ ...heroData, float_top_value: v })} />
-                                            </div>
-
-                                            <div className="p-3 bg-white rounded border border-gray-100">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="text-sm font-medium">Bottom Floating Card</div>
-                                                    <Toggle checked={heroData.float_bottom_enabled === 1} onChange={(c) => setHeroData({ ...heroData, float_bottom_enabled: c ? 1 : 0 })} />
-                                                </div>
-                                                <InputGroup label="Icon (Material Symbol)" value={heroData.float_bottom_icon || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_icon: v })} />
-                                                <InputGroup label="Title" value={heroData.float_bottom_title || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_title: v })} />
-                                                <InputGroup label="Value" value={heroData.float_bottom_value || ''} onChange={(v) => setHeroData({ ...heroData, float_bottom_value: v })} />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <InputGroup label="Rating / Trust Text" value={heroData.rating_text || ''} onChange={(v) => setHeroData({ ...heroData, rating_text: v })} />
-
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                         <Toggle checked={heroData.is_active === 1} onChange={(c) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />

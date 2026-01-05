@@ -43,7 +43,7 @@ const ProductShowcase = ({ products, brand }: Props) => {
                                     <h4 className="text-sm font-semibold text-body mb-1 truncate">{p.title}</h4>
                                     <div className="text-sm text-subtext mb-3">{p.excerpt}</div>
                                     <div className="flex items-center justify-between">
-                                        <div className="text-base font-bold">{p.price ? `$${formatPrice(p.price)}` : ''}</div>
+                                        <div className="text-base font-bold">{p.price ? `NPR ${formatPrice(p.price)}` : ''}</div>
                                         <div className="text-right">
                                             <span className="text-xs text-subtext">Starting at</span>
                                         </div>

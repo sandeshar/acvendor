@@ -39,15 +39,15 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { tagline, title, description, is_active = 1 } = body;
+        const { badge_text = '', tagline, title, highlight_text = '', description, background_image = '', hero_image_alt = '', is_active = 1 } = body;
 
         if (!tagline || !title || !description) {
             return NextResponse.json({ error: 'Tagline, title, and description are required' }, { status: 400 });
         }
 
-        const newHero = await ContactPageHero.create({ tagline, title, description, is_active });
+        const newHero = await ContactPageHero.create({ badge_text, tagline, title, highlight_text, description, background_image, hero_image_alt, is_active });
 
-        revalidateTag('contact-hero', 'max');
+        revalidateTag('contact-hero');
 
         return NextResponse.json(
             { success: true, message: 'Hero section created successfully', id: newHero._id },
@@ -64,21 +64,25 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, tagline, title, description, is_active } = body;
+        const { id, badge_text, tagline, title, highlight_text, description, background_image, hero_image_alt, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
         const updateData: any = {};
+        if (badge_text !== undefined) updateData.badge_text = badge_text;
         if (tagline !== undefined) updateData.tagline = tagline;
         if (title !== undefined) updateData.title = title;
+        if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
         if (description !== undefined) updateData.description = description;
+        if (background_image !== undefined) updateData.background_image = background_image;
+        if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await ContactPageHero.findByIdAndUpdate(id, updateData, { new: true });
 
-        revalidateTag('contact-hero', 'max');
+        revalidateTag('contact-hero');
 
         return NextResponse.json({ success: true, message: 'Hero section updated successfully' });
     } catch (error) {

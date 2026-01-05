@@ -38,15 +38,15 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, search_placeholder, is_active = 1 } = body;
+        const { badge_text = '', title, highlight_text = '', description, search_placeholder, is_active = 1 } = body;
 
         if (!title || !description || !search_placeholder) {
             return NextResponse.json({ error: 'Title, description, and search_placeholder are required' }, { status: 400 });
         }
 
-        const result = await FAQPageHeader.create({ title, description, search_placeholder, is_active });
+        const result = await FAQPageHeader.create({ badge_text, title, highlight_text, description, search_placeholder, is_active });
 
-        revalidateTag('faq-header', 'max');
+        revalidateTag('faq-header');
 
         return NextResponse.json(
             { success: true, message: 'Header section created successfully', id: result._id },
@@ -63,21 +63,23 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, title, description, search_placeholder, is_active } = body;
+        const { id, badge_text, title, highlight_text, description, search_placeholder, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
         const updateData: any = {};
+        if (badge_text !== undefined) updateData.badge_text = badge_text;
         if (title !== undefined) updateData.title = title;
+        if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
         if (description !== undefined) updateData.description = description;
         if (search_placeholder !== undefined) updateData.search_placeholder = search_placeholder;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await FAQPageHeader.findByIdAndUpdate(id, updateData, { new: true });
 
-        revalidateTag('faq-header', 'max');
+        revalidateTag('faq-header');
 
         return NextResponse.json({ success: true, message: 'Header section updated successfully' });
     } catch (error) {
