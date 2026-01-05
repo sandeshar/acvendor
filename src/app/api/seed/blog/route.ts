@@ -14,15 +14,15 @@ export async function POST() {
 
         // Seed Hero
         await BlogPageHero.create({
-            title: "The Content Solution Blog",
-            subtitle: "Expert insights, trends, and strategies in content marketing for Nepali businesses.",
+            title: "The AC Vendor Blog",
+            subtitle: "Expert insights, maintenance tips, and cooling strategies for homes and businesses in Nepal.",
             background_image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBP7wRSP6PNVQerc44qHCLRoYYd7gD0XXulRDkuPttKz8c2wm7R80QfOir0XcMWFKjBGgyJ5pcMWrIKbPt6SCgNWruICSXdJlao0ovxqmc5rLvSBMdY5X6oZLjHPx9qPTGkgNMIYnTzo9hXeQxzkwUbhDDc7WVvEd49h17mKa6w8QfB2EIEDD7W8XIG5RncWJ-n5n8nCSqHu4E6zkNP0BsMHsoIQz9Vpi8C5qNBL4Po-ca4mAAVTciZ-3q8TREYwunoIejOppPSO_k"
         });
 
         // Seed CTA
         await BlogPageCTA.create({
-            title: "Stay Ahead of the Curve",
-            description: "Get the latest content marketing tips delivered to your inbox.",
+            title: "Stay Cool and Informed",
+            description: "Get the latest AC maintenance tips and energy-saving advice delivered to your inbox.",
             button_text: "Subscribe"
         });
 
@@ -32,7 +32,7 @@ export async function POST() {
             const { hashPassword } = await import('@/utils/authHelper');
             await User.create({
                 name: 'Super Admin',
-                email: 'admin@contentsolution.np',
+                email: 'admin@acvendor.com',
                 password: await hashPassword('password123'),
                 role: 'superadmin',
             });

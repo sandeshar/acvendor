@@ -20,7 +20,7 @@ export async function POST() {
             badge_text: 'Contact us',
             tagline: 'CONTACT US',
             title: "Let's Start a Conversation",
-            description: "We're here to help you with your content needs. Reach out to us, and we'll get back to you as soon as possible.",
+            description: "We're here to help you with your cooling needs. Reach out to us, and we'll get back to you as soon as possible.",
             background_image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1400&q=80',
             hero_image_alt: 'Contact our support team',
             is_active: 1,
@@ -29,8 +29,8 @@ export async function POST() {
         // Seed Contact Info
         await ContactPageInfo.create({
             office_location: 'Kathmandu, Nepal',
-            phone: '+977 9876543210',
-            email: 'hello@contentsolution.np',
+            phone: '+977 9800000000',
+            email: 'support@acvendor.com',
             map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.5769816700773!2d85.3206!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQzJzAyLjAiTiA4NcKwMTknMjIuMiJF!5e0!3m2!1sen!2snp!4v',
             info_title: 'Contact Information',
             info_description: "Reaching out for a repair, new installation, or general inquiry? We're just a call away.",

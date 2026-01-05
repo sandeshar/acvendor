@@ -27,7 +27,12 @@ export async function GET(request: Request) {
 
         const data = await dbQuery.lean();
 
-        return NextResponse.json(data);
+        const formattedData = data.map((item: any) => ({
+            ...item,
+            id: item._id.toString()
+        }));
+
+        return NextResponse.json(formattedData);
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }

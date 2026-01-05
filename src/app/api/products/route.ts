@@ -22,97 +22,19 @@ export async function GET(request: NextRequest) {
         const featured = searchParams.get('featured');
 
         if (id) {
-            // Accept numeric IDs or slugs passed in the `id` parameter
-            const idNum = parseInt(id);
-            if (!isNaN(idNum)) {
-                const product = await Product.findById(idNum).lean();
-                if (product) {
-                    const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
-
-                    // attach category/subcategory objects when available
-                    try {
-                        const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                        if (product.category_id) {
-                            const cat = await ServiceCategories.findById(product.category_id).lean();
-                            if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
-                        }
-                        if (product.subcategory_id) {
-                            const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
-                            if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
-                        }
-                    } catch (e) {
-                        // ignore if category schema missing
-                    }
-
-                    // compute reviews and rating from testimonials if available
-                    try {
-                        const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
-                        const testimonialIds = reviewMappings.map(m => m.testimonialId);
-                        const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
-
-                        const reviews_count = testimonials.length;
-                        const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
-
-                        // compute star breakdown counts
-                        const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-                        testimonials.forEach((t: any) => {
-                            const r = Number(t.rating || 0);
-                            if (r >= 1 && r <= 5) breakdown[r] = (breakdown[r] || 0) + 1;
-                        });
-
-                        return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
-                    } catch (e) {
-                        return NextResponse.json({ ...product, images });
-                    }
-                }
-            } else {
-                // treat `id` as a slug
-                const product = await Product.findOne({ slug: id }).lean();
-                if (product) {
-                    const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
-
-                    // attach category/subcategory objects when available
-                    try {
-                        const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                        if (product.category_id) {
-                            const cat = await ServiceCategories.findById(product.category_id).lean();
-                            if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
-                        }
-                        if (product.subcategory_id) {
-                            const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
-                            if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
-                        }
-                    } catch (e) {
-                        // ignore if category schema missing
-                    }
-
-                    return NextResponse.json({ ...product, images });
-                }
-
-                // Fallback: check servicePosts by slug
-                try {
-                    const { ServicePosts } = await import('@/db/servicePostsSchema');
-                    const servicePost = await ServicePosts.findOne({ slug: id }).lean();
-                    if (servicePost) return NextResponse.json(servicePost);
-                } catch (e) {
-                    // ignore
-                }
-            }
-
-            // Fallback: check servicePosts table by numeric ID if we had a numeric id but it wasn't found
+            // Try to find by ID first (ObjectId)
+            let product = null;
             try {
-                const { ServicePosts } = await import('@/db/servicePostsSchema');
-                const servicePost = await ServicePosts.findById(isNaN(idNum) ? null : idNum).lean();
-                if (servicePost) return NextResponse.json(servicePost);
+                product = await Product.findById(id).lean();
             } catch (e) {
-                // ignore if servicePosts schema not present
+                // If not a valid ObjectId, it might be a slug
             }
 
-            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-        }
+            if (!product) {
+                // treat `id` as a slug
+                product = await Product.findOne({ slug: id }).lean();
+            }
 
-        if (slug) {
-            const product = await Product.findOne({ slug }).lean();
             if (product) {
                 const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
 
@@ -121,11 +43,11 @@ export async function GET(request: NextRequest) {
                     const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
                     if (product.category_id) {
                         const cat = await ServiceCategories.findById(product.category_id).lean();
-                        if (cat) (product as any).category = { id: cat._id, name: cat.name, slug: cat.slug };
+                        if (cat) (product as any).category = { id: cat._id.toString(), name: cat.name, slug: cat.slug };
                     }
                     if (product.subcategory_id) {
                         const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
-                        if (sub) (product as any).subcategory = { id: sub._id, name: sub.name, slug: sub.slug };
+                        if (sub) (product as any).subcategory = { id: sub._id.toString(), name: sub.name, slug: sub.slug };
                     }
                 } catch (e) {
                     // ignore if category schema missing
@@ -147,9 +69,85 @@ export async function GET(request: NextRequest) {
                         if (r >= 1 && r <= 5) breakdown[r] = (breakdown[r] || 0) + 1;
                     });
 
-                    return NextResponse.json({ ...product, images, rating: Number(rating.toFixed(1)), reviews_count, reviews_breakdown: breakdown });
+                    return NextResponse.json({
+                        ...product,
+                        id: product._id.toString(),
+                        images,
+                        rating: Number(rating.toFixed(1)),
+                        reviews_count,
+                        reviews_breakdown: breakdown
+                    });
                 } catch (e) {
-                    return NextResponse.json({ ...product, images });
+                    return NextResponse.json({ ...product, id: product._id.toString(), images });
+                }
+            }
+
+            // Fallback: check servicePosts by slug or ID
+            try {
+                const { ServicePosts } = await import('@/db/servicePostsSchema');
+                let servicePost = null;
+                try {
+                    servicePost = await ServicePosts.findById(id).lean();
+                } catch (e) { }
+
+                if (!servicePost) {
+                    servicePost = await ServicePosts.findOne({ slug: id }).lean();
+                }
+
+                if (servicePost) return NextResponse.json({ ...servicePost, id: servicePost._id.toString() });
+            } catch (e) {
+                // ignore
+            }
+
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        if (slug) {
+            const product = await Product.findOne({ slug }).lean();
+            if (product) {
+                const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
+
+                // attach category/subcategory objects when available
+                try {
+                    const { ServiceCategories, ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                    if (product.category_id) {
+                        const cat = await ServiceCategories.findById(product.category_id).lean();
+                        if (cat) (product as any).category = { id: cat._id.toString(), name: cat.name, slug: cat.slug };
+                    }
+                    if (product.subcategory_id) {
+                        const sub = await ServiceSubcategories.findById(product.subcategory_id).lean();
+                        if (sub) (product as any).subcategory = { id: sub._id.toString(), name: sub.name, slug: sub.slug };
+                    }
+                } catch (e) {
+                    // ignore if category schema missing
+                }
+
+                // compute reviews and rating from testimonials if available
+                try {
+                    const reviewMappings = await ReviewTestimonialProducts.find({ productId: product._id }).lean();
+                    const testimonialIds = reviewMappings.map(m => m.testimonialId);
+                    const testimonials = await ReviewTestimonials.find({ _id: { $in: testimonialIds } }).lean();
+
+                    const reviews_count = testimonials.length;
+                    const rating = reviews_count ? testimonials.reduce((s: number, t: any) => s + Number(t.rating || 0), 0) / reviews_count : 0;
+
+                    // compute star breakdown counts
+                    const breakdown: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+                    testimonials.forEach((t: any) => {
+                        const r = Number(t.rating || 0);
+                        if (r >= 1 && r <= 5) breakdown[r] = (breakdown[r] || 0) + 1;
+                    });
+
+                    return NextResponse.json({
+                        ...product,
+                        id: product._id.toString(),
+                        images,
+                        rating: Number(rating.toFixed(1)),
+                        reviews_count,
+                        reviews_breakdown: breakdown
+                    });
+                } catch (e) {
+                    return NextResponse.json({ ...product, id: product._id.toString(), images });
                 }
             }
 
@@ -157,7 +155,7 @@ export async function GET(request: NextRequest) {
             try {
                 const { ServicePosts } = await import('@/db/servicePostsSchema');
                 const servicePost = await ServicePosts.findOne({ slug }).lean();
-                if (servicePost) return NextResponse.json(servicePost);
+                if (servicePost) return NextResponse.json({ ...servicePost, id: servicePost._id.toString() });
             } catch (e) {
                 // ignore if not available
             }
@@ -174,20 +172,11 @@ export async function GET(request: NextRequest) {
             const parts = String(idsParam).split(',').map(s => s.trim()).filter(Boolean);
             if (!parts.length) return NextResponse.json([]);
 
-            const numericIds = parts.map(s => Number(s)).filter((n, i) => !isNaN(n) && String(n) === parts[i]);
-            const stringIds = parts.filter(s => !/^\d+$/.test(s));
-
-            // Build $in array containing numeric ids and string ids (Mongoose will cast strings to ObjectId when appropriate)
-            const idsForQuery: any[] = [];
-            if (numericIds.length) idsForQuery.push(...numericIds);
-            if (stringIds.length) idsForQuery.push(...stringIds);
-
-            if (!idsForQuery.length) return NextResponse.json([]);
-            query._id = { $in: idsForQuery };
+            query._id = { $in: parts };
         }
 
         if (status) {
-            query.statusId = parseInt(status);
+            query.statusId = status;
         }
 
         if (featured === '1' || featured === 'true') {
@@ -195,14 +184,23 @@ export async function GET(request: NextRequest) {
         }
 
         if (category) {
-            const catId = parseInt(category);
-            if (!isNaN(catId)) {
-                query.category_id = catId;
-            } else {
-                // if category slug provided, try to resolve via serviceCategories in other schema
+            // Try to use category as ID first, then as slug
+            try {
                 const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
-                const cat = await ServiceCategories.findOne({ slug: category }).lean();
-                if (cat) query.category_id = cat._id;
+                let cat = null;
+                try {
+                    cat = await ServiceCategories.findById(category).lean();
+                } catch (e) { }
+
+                if (!cat) {
+                    cat = await ServiceCategories.findOne({ slug: category }).lean();
+                }
+
+                if (cat) {
+                    query.category_id = cat._id;
+                }
+            } catch (e) {
+                // ignore
             }
         }
 
@@ -225,13 +223,22 @@ export async function GET(request: NextRequest) {
         }
 
         if (subcategory) {
-            const subId = parseInt(subcategory);
-            if (!isNaN(subId)) {
-                query.subcategory_id = subId;
-            } else {
+            try {
                 const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                const sub = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
-                if (sub) query.subcategory_id = sub._id;
+                let sub = null;
+                try {
+                    sub = await ServiceSubcategories.findById(subcategory).lean();
+                } catch (e) { }
+
+                if (!sub) {
+                    sub = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
+                }
+
+                if (sub) {
+                    query.subcategory_id = sub._id;
+                }
+            } catch (e) {
+                // ignore
             }
         }
 
@@ -332,7 +339,7 @@ export async function GET(request: NextRequest) {
             // ignore aggregation errors
         }
 
-        return NextResponse.json(rows);
+        return NextResponse.json(rows.map((r: any) => ({ ...r, id: r._id.toString() })));
     } catch (error) {
         console.error('Error fetching products:', error);
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
@@ -441,7 +448,7 @@ export async function POST(request: NextRequest) {
 
         try { revalidateTag('products', 'max'); } catch (e) { /* ignore */ }
 
-        return NextResponse.json({ success: true, message: 'Product created successfully', id: insertId }, { status: 201 });
+        return NextResponse.json({ success: true, message: 'Product created successfully', id: insertId.toString() }, { status: 201 });
     } catch (error: any) {
         console.error('Error creating product:', error);
         if (error.code === 11000) {

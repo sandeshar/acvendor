@@ -12,13 +12,13 @@ export async function POST() {
         if (existing) {
             await ProjectsSection.findByIdAndUpdate(existing._id, {
                 title: 'Our Engineering Excellence',
-                description: 'Cooling Nepal, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
+                description: 'AC Vendor, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
                 background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
             });
         } else {
             await ProjectsSection.create({
                 title: 'Our Engineering Excellence',
-                description: 'Cooling Nepal, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
+                description: 'AC Vendor, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
                 background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
                 badge_text: 'Portfolio',
                 cta_title: 'Ready to upgrade your climate control?',

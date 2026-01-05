@@ -9,15 +9,16 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const searchParams = request.nextUrl.searchParams;
-    const service = parseInt(searchParams.get('service') || '0');
-    const product = parseInt(searchParams.get('product') || '0');
-    const id = parseInt(searchParams.get('id') || '0');
+    const service = searchParams.get('service');
+    const product = searchParams.get('product');
+    const id = searchParams.get('id');
     const homepage = searchParams.get('homepage');
     const limit = parseInt(searchParams.get('limit') || '0');
 
     if (homepage === '1' || homepage === 'true') {
         const response = await ReviewTestimonials.find().sort({ date: -1 }).limit(limit || 3).lean();
-        return NextResponse.json(response);
+        const formatted = response.map((t: any) => ({ ...t, id: t._id.toString() }));
+        return NextResponse.json(formatted);
     }
 
     if (id) {
@@ -65,9 +66,8 @@ export async function POST(request: NextRequest) {
 
         const { name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
-        const serviceIdArray = Array.isArray(serviceIds)
-            ? serviceIds.map((id: any) => parseInt(id)).filter((id) => !Number.isNaN(id))
-            : [];
+        const serviceIdArray = Array.isArray(serviceIds) ? serviceIds : [];
+        const productIdArray = Array.isArray(productIds) ? productIds : [];
 
         // Basic validation
         if (!name || !url || !role || !content || !rating) {
@@ -91,32 +91,28 @@ export async function POST(request: NextRequest) {
             const { ServicePosts } = await import('@/db/servicePostsSchema');
             const existingServices = await ServicePosts.find({ _id: { $in: serviceIdArray } }).lean();
             const existingIds = new Set(existingServices.map((s: any) => s._id.toString()));
-            const invalidServices = serviceIdArray.filter((id: number) => !existingIds.has(id.toString()));
+            const invalidServices = serviceIdArray.filter((id: string) => !existingIds.has(id));
             if (invalidServices.length) {
                 return NextResponse.json({ error: `Invalid service IDs: ${invalidServices.join(', ')}` }, { status: 400 });
             }
 
             await ReviewTestimonialServices.insertMany(
-                serviceIdArray.map((serviceId: number) => ({ testimonialId, serviceId }))
+                serviceIdArray.map((serviceId: string) => ({ testimonialId, serviceId }))
             );
         }
 
-        const productIdArray = Array.isArray(productIds)
-            ? productIds.map((id: any) => parseInt(id)).filter((id) => !Number.isNaN(id))
-            : [];
-
         if (productIdArray.length) {
             // Validate products exist
-            const { products } = await import('@/db/productsSchema');
-            const existingProducts = await products.find({ _id: { $in: productIdArray } }).lean();
+            const { Product } = await import('@/db/productsSchema');
+            const existingProducts = await Product.find({ _id: { $in: productIdArray } }).lean();
             const existingProductIds = new Set(existingProducts.map((p: any) => p._id.toString()));
-            const invalidProducts = productIdArray.filter((id: number) => !existingProductIds.has(id.toString()));
+            const invalidProducts = productIdArray.filter((id: string) => !existingProductIds.has(id));
             if (invalidProducts.length) {
                 return NextResponse.json({ error: `Invalid product IDs: ${invalidProducts.join(', ')}` }, { status: 400 });
             }
 
             await ReviewTestimonialProducts.insertMany(
-                productIdArray.map((productId: number) => ({ testimonialId, productId }))
+                productIdArray.map((productId: string) => ({ testimonialId, productId }))
             );
 
             // trigger revalidation for product pages so aggregated ratings/counts update
@@ -125,7 +121,6 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ success: true, id: testimonialId });
     } catch (error: any) {
-        try { const payload = await request.json(); console.error('Create testimonial payload:', payload); } catch (e) { /* ignore */ }
         console.error('Error creating testimonial:', error);
         return NextResponse.json({ error: error?.message || 'Failed to create testimonial' }, { status: 500 });
     }
@@ -136,13 +131,12 @@ export async function PUT(request: NextRequest) {
 
         const { id, name, url, role, content, rating, serviceIds, productIds, link } = await request.json();
 
-        const serviceIdArray = Array.isArray(serviceIds)
-            ? serviceIds.map((sid: any) => parseInt(sid)).filter((sid) => !Number.isNaN(sid))
-            : [];
+        const serviceIdArray = Array.isArray(serviceIds) ? serviceIds : [];
+        const productIdArray = Array.isArray(productIds) ? productIds : [];
 
         // Basic validation
         if (!id) {
-            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+            return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
 
         const updateData: any = {};
@@ -160,24 +154,20 @@ export async function PUT(request: NextRequest) {
         await ReviewTestimonialServices.deleteMany({ testimonialId: id });
         if (serviceIdArray.length) {
             await ReviewTestimonialServices.insertMany(
-                serviceIdArray.map((serviceId: number) => ({ testimonialId: id, serviceId }))
+                serviceIdArray.map((serviceId: string) => ({ testimonialId: id, serviceId }))
             );
         }
 
         // Replace product mappings
         await ReviewTestimonialProducts.deleteMany({ testimonialId: id });
-        const productIdArray = Array.isArray(productIds)
-            ? productIds.map((pid: any) => parseInt(pid)).filter((pid) => !Number.isNaN(pid))
-            : [];
         if (productIdArray.length) {
             await ReviewTestimonialProducts.insertMany(
-                productIdArray.map((productId: number) => ({ testimonialId: id, productId }))
+                productIdArray.map((productId: string) => ({ testimonialId: id, productId }))
             );
         }
 
         return NextResponse.json({ success: true, id: result?._id });
     } catch (error: any) {
-        try { const payload = await request.json(); console.error('Update testimonial payload:', payload); } catch (e) { /* ignore */ }
         console.error('Error updating testimonial:', error);
         return NextResponse.json({ error: error?.message || 'Failed to update testimonial' }, { status: 500 });
     }
@@ -185,16 +175,12 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     await connectDB();
 
-    const token = request.cookies.get('admin_auth')?.value;
     const id = request.nextUrl.searchParams.get('id');
-    if (!token) {
-        return NextResponse.json(
-            { error: 'Unauthorized - No token provided' },
-            { status: 401 }
-        );
+    if (!id) {
+        return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
     try {
-        const result = await ReviewTestimonials.findByIdAndDelete(parseInt(id!));
+        const result = await ReviewTestimonials.findByIdAndDelete(id);
         return NextResponse.json({ success: true, id: result?._id });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to delete testimonial' }, { status: 500 });
@@ -208,19 +194,19 @@ async function attachRelationIds(testimonials: any[]) {
     const serviceMappings = await ReviewTestimonialServices.find({ testimonialId: { $in: ids } }).lean();
     const productMappings = await ReviewTestimonialProducts.find({ testimonialId: { $in: ids } }).lean();
 
-    const serviceMap = new Map<string, number[]>();
+    const serviceMap = new Map<string, string[]>();
     serviceMappings.forEach((m: any) => {
         const testimonialIdStr = m.testimonialId.toString();
         const arr = serviceMap.get(testimonialIdStr) ?? [];
-        arr.push(m.serviceId);
+        arr.push(m.serviceId.toString());
         serviceMap.set(testimonialIdStr, arr);
     });
 
-    const productMap = new Map<string, number[]>();
+    const productMap = new Map<string, string[]>();
     productMappings.forEach((m: any) => {
         const testimonialIdStr = m.testimonialId.toString();
         const arr = productMap.get(testimonialIdStr) ?? [];
-        arr.push(m.productId);
+        arr.push(m.productId.toString());
         productMap.set(testimonialIdStr, arr);
     });
 
@@ -228,6 +214,7 @@ async function attachRelationIds(testimonials: any[]) {
         const idStr = t._id.toString();
         return {
             ...t,
+            id: idStr,
             serviceIds: serviceMap.get(idStr) ?? [],
             productIds: productMap.get(idStr) ?? []
         };
