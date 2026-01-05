@@ -53,10 +53,11 @@ export async function PUT(request: Request) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, ...updateData } = body;
-        if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+        const { id, _id, ...updateData } = body;
+        const targetId = id || _id;
+        if (!targetId) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        await Projects.findByIdAndUpdate(id, updateData, { new: true });
+        await Projects.findByIdAndUpdate(targetId, updateData, { new: true });
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });

@@ -5,7 +5,7 @@ import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 
 interface Project {
-    id?: number;
+    id?: string;
     title: string;
     category: string;
     location: string;
@@ -17,7 +17,7 @@ interface Project {
 }
 
 interface ProjectSection {
-    id?: number;
+    id?: string;
     badge_text?: string;
     title?: string;
     description?: string;
@@ -35,7 +35,7 @@ export default function AdminProjectsPage() {
     const [saving, setSaving] = useState(false);
 
     // Project Form State
-    const [editingProject, setEditingProject] = useState<number | 'new' | null>(null);
+    const [editingProject, setEditingProject] = useState<string | 'new' | null>(null);
     const [projectForm, setProjectForm] = useState<Project>({
         title: '',
         category: 'Commercial',
@@ -59,13 +59,22 @@ export default function AdminProjectsPage() {
                 fetch('/api/projects?admin=true')
             ]);
 
-            const s = await sectionRes.json();
-            const p = await projectsRes.json();
+            if (!sectionRes.ok || !projectsRes.ok) {
+                console.error('Fetch failed:', sectionRes.status, projectsRes.status);
+            }
 
-            setSection(s || {});
+            const s = await sectionRes.json().catch(() => ({}));
+            const p = await projectsRes.json().catch(() => ([]));
+
+            setSection(s && !s.error ? s : {});
             setProjects(Array.isArray(p) ? p : []);
+
+            if (p && p.error) {
+                showToast(p.error, { type: 'error' });
+            }
         } catch (e) {
             console.error('Failed to fetch projects data', e);
+            showToast('Failed to load projects', { type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -124,7 +133,7 @@ export default function AdminProjectsPage() {
         }
     };
 
-    const handleDeleteProject = async (id: number) => {
+    const handleDeleteProject = async (id: string) => {
         if (!confirm('Are you sure?')) return;
         try {
             const res = await fetch(`/api/projects?id=${id}`, { method: 'DELETE' });
@@ -380,46 +389,50 @@ export default function AdminProjectsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {projects.map((p) => (
-                                <tr key={p.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden border">
-                                            <img src={p.image} className="w-full h-full object-cover" alt="" />
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <p className="font-bold text-gray-800">{p.title}</p>
-                                        <p className="text-xs text-gray-400">{p.system}</p>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium">{p.category}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{p.location}</td>
-                                    <td className="px-6 py-4 text-sm font-mono">{p.display_order}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                            {p.is_active ? 'Active' : 'Hidden'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right space-x-2">
-                                        <button
-                                            onClick={() => {
-                                                setProjectForm(p);
-                                                setEditingProject(p.id!);
-                                            }}
-                                            className="text-blue-600 hover:text-blue-800 text-sm font-bold"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteProject(p.id!)}
-                                            className="text-red-500 hover:text-red-700 text-sm font-bold"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {projects.map((p) => {
+                                const pId = p.id || (p as any)._id;
+                                return (
+                                    <tr key={pId} className="hover:bg-gray-50/50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="w-16 h-10 bg-gray-100 rounded overflow-hidden border">
+                                                <img src={p.image} className="w-full h-full object-cover" alt="" />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="font-bold text-gray-800">{p.title}</p>
+                                            <p className="text-xs text-gray-400">{p.system}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium">{p.category}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{p.location}</td>
+                                        <td className="px-6 py-4 text-sm font-mono">{p.display_order}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-full ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {p.is_active ? 'Active' : 'Hidden'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right space-x-2">
+                                            <button
+                                                onClick={() => {
+                                                    const pWithId = { ...p, id: p.id || (p as any)._id };
+                                                    setProjectForm(pWithId);
+                                                    setEditingProject(pId);
+                                                }}
+                                                className="text-blue-600 hover:text-blue-800 text-sm font-bold"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteProject(pId)}
+                                                className="text-red-500 hover:text-red-700 text-sm font-bold"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
