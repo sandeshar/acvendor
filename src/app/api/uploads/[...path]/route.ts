@@ -26,10 +26,11 @@ function getContentType(filePath: string): string {
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { path: string[] } }
+    { params }: { params: Promise<{ path: string[] }> }
 ) {
     try {
-        const pathSegments = params.path || []
+        const resolvedParams = await params
+        const pathSegments = resolvedParams.path || []
 
         if (pathSegments.length === 0) {
             return NextResponse.json({ error: 'No file path provided' }, { status: 400 })
