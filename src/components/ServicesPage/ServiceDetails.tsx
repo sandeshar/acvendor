@@ -1,5 +1,5 @@
 interface ServiceDetailData {
-    id: number;
+    id: string | number;
     key: string;
     slug?: string;
     icon: string;

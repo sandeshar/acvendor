@@ -1,7 +1,7 @@
 // TypeScript types for Service Categories and Subcategories
 
 export interface ServiceCategory {
-    id?: number;
+    id?: string | number;
     name: string;
     slug: string;
     description?: string | null;
@@ -16,8 +16,8 @@ export interface ServiceCategory {
 }
 
 export interface ServiceSubcategory {
-    id?: number;
-    category_id: number;
+    id?: string | number;
+    category_id: string | number;
     name: string;
     slug: string;
     description?: string | null;
@@ -32,7 +32,7 @@ export interface ServiceSubcategory {
 }
 
 export interface ServicePostWithPricing {
-    id?: number;
+    id?: string | number;
     slug: string;
     title: string;
     excerpt: string;
@@ -40,15 +40,15 @@ export interface ServicePostWithPricing {
     thumbnail?: string | null;
     icon?: string | null;
     featured: number;
-    category_id?: number | null;
-    subcategory_id?: number | null;
+    category_id?: string | number | null;
+    subcategory_id?: string | number | null;
     price?: string | null; // Decimal stored as string
     price_type?: string; // 'fixed', 'hourly', 'monthly', 'custom'
     price_label?: string | null; // 'Starting at', 'From', 'Per hour'
     price_description?: string | null;
     currency?: string | null; // Currency code like USD, EUR, GBP
-    authorId: number;
-    statusId: number;
+    authorId: string | number;
+    statusId: string | number;
     meta_title?: string | null;
     meta_description?: string | null;
     createdAt?: Date;

@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
         const brand = request.nextUrl.searchParams.get('brand');
         // Include both brand-specific categories and global (empty-brand) categories so brand pages show shared categories too
         const categories = brand ? await ServiceCategories.find({ $or: [{ brand: brand }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
-        return NextResponse.json(categories);
+        const formatted = categories.map((c: any) => ({ ...c, id: c._id.toString() }));
+        return NextResponse.json(formatted);
     } catch (error) {
         console.error("Error fetching service categories:", error);
         return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });

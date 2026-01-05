@@ -227,12 +227,6 @@ export async function POST(request: Request) {
                 secondary_cta_link: '/contact',
                 background_image: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1400&q=80',
                 hero_image_alt: 'Assortment of air conditioners in a store',
-                stat1_value: '20+',
-                stat1_label: 'Brands',
-                stat2_value: '8k+',
-                stat2_label: 'Installations',
-                stat3_value: '10k+',
-                stat3_label: 'Satisfied Customers',
                 is_active: 1,
             });
         }
@@ -260,10 +254,14 @@ export async function POST(request: Request) {
             { key: 'seo', icon: 'search', title: 'SEO', description: 'Search-optimized articles and landing pages.', bullets: ['Keyword research', 'On-page SEO', 'Long-form content'], image: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1400&q=80', image_alt: 'Content strategist reviewing SEO metrics on a laptop' },
             { key: 'social', icon: 'thumb_up', title: 'Social', description: 'Platform posts and short-form video content.', bullets: ['Content calendars', 'Short video hooks', 'Design kits'], image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1400&q=80', image_alt: 'Team planning social content with phones and laptops' },
             { key: 'copy', icon: 'language', title: 'Copy', description: 'Conversion-focused website copy and microcopy.', bullets: ['Value prop', 'Landing pages', 'Microcopy'], image: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1400&q=80', image_alt: 'Copywriter drafting website copy next to design mockups' },
+            { key: 'installation', icon: 'build', title: 'Installation', description: 'Professional AC installation for homes and offices.', bullets: ['Expert technicians', 'Same-day service', 'Warranty included'], image: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?auto=format&fit=crop&w=1400&q=80', image_alt: 'Technician installing an air conditioner' },
+            { key: 'maintenance', icon: 'settings', title: 'Maintenance', description: 'Regular maintenance to keep your AC running smoothly.', bullets: ['Filter cleaning', 'Gas refilling', 'Performance check'], image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1400&q=80', image_alt: 'Technician performing maintenance on an AC unit' },
+            { key: 'repair', icon: 'handyman', title: 'Repair', description: 'Quick and reliable repair services for all AC brands.', bullets: ['Genuine parts', 'Expert diagnosis', 'Affordable rates'], image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=1400&q=80', image_alt: 'Technician repairing an AC unit' },
         ];
 
         const subcategoryMap: Record<string, any> = {};
-        for (const [index, s] of serviceData.entries()) {
+        for (let i = 0; i < serviceData.length; i++) {
+            const s = serviceData[i];
             const existingSub = await ServiceSubcategories.findOne({ slug: s.key }).lean();
             if (!existingSub) {
                 await ServiceSubcategories.create({
@@ -273,7 +271,7 @@ export async function POST(request: Request) {
                     description: s.description,
                     icon: s.icon,
                     thumbnail: s.image,
-                    display_order: index + 1,
+                    display_order: i + 1,
                     is_active: 1,
                     meta_title: s.title,
                     meta_description: s.description,
@@ -285,38 +283,28 @@ export async function POST(request: Request) {
             }
         }
 
-        for (const [index, s] of serviceData.entries()) {
-            const existingDetail = await ServicesPageDetails.findOne({ key: s.key }).lean();
+        for (let i = 0; i < serviceData.length; i++) {
+            const s = serviceData[i];
+            let existingDetail = await ServicesPageDetails.findOne({ key: s.key }).lean();
             if (!existingDetail) {
-                await ServicesPageDetails.create({
-                    key: s.key,
-                    icon: s.icon,
-                    title: s.title,
-                    description: s.description,
-                    bullets: JSON.stringify(s.bullets),
-                    image: s.image,
-                    image_alt: s.image_alt || '',
-                    display_order: index + 1,
-                    is_active: 1,
-                });
-
                 const variantContent = (() => {
                     let out = `<h1>${s.title}</h1>`;
-                    for (let i = 1; i <= 4; i++) out += `<h2>Section ${i}</h2><p>${s.title} paragraph ${i} with practical advice and examples.</p>`;
+                    for (let j = 1; j <= 4; j++) out += `<h2>Section ${j}</h2><p>${s.title} paragraph ${j} with practical advice and examples.</p>`;
                     out += `<h2>Conclusion</h2><p>Summary and next steps.</p>`;
                     return out;
                 })();
 
+                let postId: any = null;
                 const existingPost = await ServicePosts.findOne({ slug: `${s.key}-guide` }).lean();
                 if (!existingPost) {
-                    await ServicePosts.create({
+                    const newPost = await ServicePosts.create({
                         slug: `${s.key}-guide`,
                         title: `${s.title} — guide`,
                         excerpt: s.description,
                         content: variantContent,
                         thumbnail: s.image,
                         icon: s.icon,
-                        featured: index === 0 ? 1 : 0,
+                        featured: i === 0 ? 1 : 0,
                         category_id: category?._id,
                         subcategory_id: subcategoryMap[s.key],
                         price: '499.00',
@@ -329,7 +317,23 @@ export async function POST(request: Request) {
                         meta_title: `${s.title} — guide`,
                         meta_description: `Professional ${s.title.toLowerCase()} services`,
                     });
+                    postId = newPost._id.toString();
+                } else {
+                    postId = existingPost._id.toString();
                 }
+
+                await ServicesPageDetails.create({
+                    key: s.key,
+                    icon: s.icon,
+                    title: s.title,
+                    description: s.description,
+                    bullets: JSON.stringify(s.bullets),
+                    image: s.image,
+                    image_alt: s.image_alt || '',
+                    display_order: i + 1,
+                    is_active: 1,
+                    postId: postId,
+                });
 
                 const existingBase = await ServicePosts.findOne({ slug: s.key }).lean();
                 if (!existingBase) {
@@ -337,10 +341,10 @@ export async function POST(request: Request) {
                         slug: s.key,
                         title: s.title,
                         excerpt: s.description,
-                        content: (() => { let out = `<h1>${s.title}</h1>`; for (let i = 1; i <= 6; i++) out += `<h2>Section ${i}</h2><p>${s.title} paragraph ${i} with practical advice and examples.</p>`; return out; })(),
+                        content: (() => { let out = `<h1>${s.title}</h1>`; for (let j = 1; j <= 6; j++) out += `<h2>Section ${j}</h2><p>${s.title} paragraph ${j} with practical advice and examples.</p>`; return out; })(),
                         thumbnail: s.image,
                         icon: s.icon,
-                        featured: index === 0 ? 1 : 0,
+                        featured: i === 0 ? 1 : 0,
                         category_id: category?._id,
                         subcategory_id: subcategoryMap[s.key],
                         price: '499.00',
@@ -423,6 +427,91 @@ export async function POST(request: Request) {
                 }
             }
         } catch (e) { logDbError(e, 'seeding products'); }
+
+        // Seed Process Section
+        try {
+            const processSection = await ServicesPageProcessSection.findOne().lean();
+            if (!processSection) {
+                await ServicesPageProcessSection.create({
+                    title: 'Our Working Process',
+                    description: 'We follow a streamlined process to ensure the best quality service for our customers.',
+                    is_active: 1,
+                });
+            }
+        } catch (e) { logDbError(e, 'seeding process section'); }
+
+        // Seed Process Steps
+        try {
+            const stepsCount = await ServicesPageProcessSteps.countDocuments();
+            if (stepsCount === 0) {
+                await ServicesPageProcessSteps.create([
+                    { step_number: 1, title: 'Consultation', description: 'We discuss your requirements and provide a free estimate.', display_order: 1, is_active: 1 },
+                    { step_number: 2, title: 'Planning', description: 'Our experts create a detailed plan for installation or repair.', display_order: 2, is_active: 1 },
+                    { step_number: 3, title: 'Execution', description: 'We perform the work with precision and care.', display_order: 3, is_active: 1 },
+                    { step_number: 4, title: 'Support', description: 'We provide ongoing maintenance and support.', display_order: 4, is_active: 1 },
+                ]);
+            }
+        } catch (e) { logDbError(e, 'seeding process steps'); }
+
+        // Seed CTA Section
+        try {
+            const cta = await ServicesPageCTA.findOne().lean();
+            if (!cta) {
+                await ServicesPageCTA.create({
+                    title: 'Ready to get started?',
+                    description: 'Contact us today for a free consultation and quote.',
+                    button_text: 'Contact Us',
+                    button_link: '/contact',
+                    is_active: 1,
+                });
+            }
+        } catch (e) { logDbError(e, 'seeding cta section'); }
+
+        // Seed Brands
+        try {
+            const brandsCount = await ServicesPageBrands.countDocuments();
+            if (brandsCount === 0) {
+                await ServicesPageBrands.create([
+                    { name: 'Midea', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Midea_logo.svg/1200px-Midea_logo.svg.png', link: 'https://www.midea.com', display_order: 1, is_active: 1 },
+                    { name: 'LG', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/LG_logo_%282015%29.svg/1200px-LG_logo_%282015%29.svg.png', link: 'https://www.lg.com', display_order: 2, is_active: 1 },
+                    { name: 'Samsung', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/1200px-Samsung_Logo.svg.png', link: 'https://www.samsung.com', display_order: 3, is_active: 1 },
+                ]);
+            }
+        } catch (e) { logDbError(e, 'seeding brands'); }
+
+        // Seed Trust Section
+        try {
+            const trust = await ServicesPageTrust.findOne().lean();
+            if (!trust) {
+                await ServicesPageTrust.create({
+                    title: 'Why Trust Us?',
+                    description: 'We have years of experience in providing top-notch AC services.',
+                    quote_text: 'The best service I have ever received. Highly recommended!',
+                    quote_author: 'John Doe',
+                    quote_role: 'Homeowner',
+                    quote_image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+                    stat1_value: '10+',
+                    stat1_label: 'Years Experience',
+                    stat2_value: '5000+',
+                    stat2_label: 'Happy Clients',
+                    stat3_value: '100%',
+                    stat3_label: 'Satisfaction',
+                    is_active: 1,
+                });
+            }
+        } catch (e) { logDbError(e, 'seeding trust section'); }
+
+        // Seed Features
+        try {
+            const featuresCount = await ServicesPageFeatures.countDocuments();
+            if (featuresCount === 0) {
+                await ServicesPageFeatures.create([
+                    { icon: 'verified', title: 'Certified Experts', description: 'Our technicians are fully certified and experienced.', display_order: 1, is_active: 1 },
+                    { icon: 'schedule', title: 'Quick Response', description: 'We respond to all inquiries within 24 hours.', display_order: 2, is_active: 1 },
+                    { icon: 'payments', title: 'Affordable Pricing', description: 'We offer competitive rates without compromising quality.', display_order: 3, is_active: 1 },
+                ]);
+            }
+        } catch (e) { logDbError(e, 'seeding features'); }
 
         return NextResponse.json({ success: true, message: 'Services seeded successfully' }, { status: 201 });
     } catch (error) {

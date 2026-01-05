@@ -31,7 +31,7 @@ const servicesPageDetailsSchema = new Schema({
     bullets: { type: String, required: true, default: '[]' }, // JSON array
     image: { type: String, required: true, maxlength: 512 },
     image_alt: { type: String, required: true, maxlength: 256 },
-    postId: { type: Number, default: null },
+    postId: { type: String, default: null },
     locations: { type: String, default: '[]' }, // JSON array
     inventory_status: { type: String, default: 'in_stock', maxlength: 64 },
     images: { type: String, default: '[]' }, // JSON array

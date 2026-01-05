@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service);
+            return NextResponse.json({ ...service, id: service._id.toString() });
         }
 
         if (key) {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service);
+            return NextResponse.json({ ...service, id: service._id.toString() });
         }
 
         if (slug) {
@@ -39,14 +39,24 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Service not found' }, { status: 404 });
             }
 
-            return NextResponse.json(service);
+            return NextResponse.json({ ...service, id: service._id.toString() });
         }
 
-        const services = await ServicesPageDetails.find({ is_active: 1 })
+        const filter: any = {};
+        if (searchParams.get('all') !== 'true') {
+            filter.is_active = 1;
+        }
+
+        const services = await ServicesPageDetails.find(filter)
             .sort({ display_order: 1 })
             .lean();
 
-        return NextResponse.json(services);
+        const formattedServices = services.map((s: any) => ({
+            ...s,
+            id: s._id.toString(),
+        }));
+
+        return NextResponse.json(formattedServices);
     } catch (error) {
         console.error('Error fetching service details:', error);
         return NextResponse.json({ error: 'Failed to fetch service details' }, { status: 500 });
@@ -128,7 +138,7 @@ export async function POST(request: NextRequest) {
         revalidateTag('services-details', 'max');
 
         return NextResponse.json(
-            { success: true, message: 'Service detail created successfully', id: result._id },
+            { success: true, message: 'Service detail created successfully', id: result._id.toString() },
             { status: 201 }
         );
     } catch (error: any) {

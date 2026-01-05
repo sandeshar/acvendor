@@ -12,13 +12,15 @@ export async function GET(request: NextRequest) {
             const catIds = cats.map((c: any) => c._id).filter(Boolean);
             if (catIds.length) {
                 const subs = await ServiceSubcategories.find({ category_id: { $in: catIds } }).lean();
-                return NextResponse.json(subs);
+                const formatted = subs.map((s: any) => ({ ...s, id: s._id.toString(), category_id: s.category_id?.toString() }));
+                return NextResponse.json(formatted);
             }
             return NextResponse.json([]);
         }
 
         const subcategories = await ServiceSubcategories.find().lean();
-        return NextResponse.json(subcategories);
+        const formatted = subcategories.map((s: any) => ({ ...s, id: s._id.toString(), category_id: s.category_id?.toString() }));
+        return NextResponse.json(formatted);
     } catch (error) {
         console.error("Error fetching service subcategories:", error);
         return NextResponse.json({ error: "Failed to fetch subcategories" }, { status: 500 });

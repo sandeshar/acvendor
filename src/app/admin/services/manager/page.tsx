@@ -12,7 +12,7 @@ import LinkExtension from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 
 type ServicePost = {
-    id: number;
+    id: string;
     slug: string;
     title: string;
     excerpt: string;
@@ -72,7 +72,7 @@ export default function ServicesManagerPage() {
             const [postsRes, heroRes, servicesRes, procSecRes, procStepsRes, ctaRes, categoriesRes, subcategoriesRes, brandsRes, trustRes, featuresRes] = await Promise.all([
                 fetch('/api/services'),
                 fetch('/api/pages/services/hero'),
-                fetch('/api/pages/services/details'),
+                fetch('/api/pages/services/details?all=true'),
                 fetch('/api/pages/services/process-section'),
                 fetch('/api/pages/services/process-steps'),
                 fetch('/api/pages/services/cta'),
@@ -1014,8 +1014,9 @@ export default function ServicesManagerPage() {
                                                             onChange={(e) => updateItem('statusId', Number(e.target.value))}
                                                             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                         >
-                                                            <option value={1}>Published</option>
-                                                            <option value={3}>Hidden</option>
+                                                            <option value={1}>Draft</option>
+                                                            <option value={2}>Published</option>
+                                                            <option value={3}>In Review</option>
                                                         </select>
                                                     </div>
 
@@ -1047,7 +1048,7 @@ export default function ServicesManagerPage() {
                                                         <select
                                                             value={selectedService.category_id?.toString() || ''}
                                                             onChange={(e) => {
-                                                                const val = e.target.value ? Number(e.target.value) : null;
+                                                                const val = e.target.value || null;
                                                                 console.log('Category changed to:', val);
                                                                 setSelectedService({ ...selectedService, category_id: val, subcategory_id: null });
                                                             }}
@@ -1066,7 +1067,7 @@ export default function ServicesManagerPage() {
                                                         <select
                                                             value={selectedService.subcategory_id?.toString() || ''}
                                                             onChange={(e) => {
-                                                                const val = e.target.value ? Number(e.target.value) : null;
+                                                                const val = e.target.value || null;
                                                                 setSelectedService({ ...selectedService, subcategory_id: val });
                                                             }}
                                                             disabled={!selectedService.category_id}

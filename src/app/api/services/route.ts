@@ -3,8 +3,25 @@ import { connectDB } from '@/db';
 import { ServicePosts } from '@/db/servicePostsSchema';
 import { ReviewTestimonialServices } from '@/db/reviewTestimonialServicesSchema';
 import { ReviewTestimonials } from '@/db/reviewSchema';
+import { Status } from '@/db/schema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { revalidateTag } from 'next/cache';
+
+async function resolveStatusId(statusId: any) {
+    if (!statusId) return null;
+    if (typeof statusId === 'string' && statusId.length === 24) return statusId;
+
+    let statusName = '';
+    if (statusId === 1 || statusId === '1') statusName = 'Published';
+    else if (statusId === 2 || statusId === '2') statusName = 'Published';
+    else if (statusId === 3 || statusId === '3') statusName = 'Draft';
+
+    if (statusName) {
+        const s = await Status.findOne({ name: new RegExp(statusName, 'i') }).lean();
+        if (s) return s._id;
+    }
+    return statusId;
+}
 
 // GET - Fetch service posts
 export async function GET(request: NextRequest) {
@@ -20,23 +37,45 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get('status');
 
         if (id) {
-            const post = await ServicePosts.findById(parseInt(id)).lean();
+            const post = await ServicePosts.findById(id).populate('statusId').lean();
 
             if (!post) {
                 return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
             }
 
-            return NextResponse.json(post);
+            const sName = post.statusId?.name || '';
+            let numericStatusId = 1;
+            if (sName.toLowerCase() === 'published') numericStatusId = 2;
+            else if (sName.toLowerCase() === 'draft') numericStatusId = 1;
+            
+            return NextResponse.json({ 
+                ...post, 
+                id: post._id.toString(),
+                statusId: numericStatusId,
+                category_id: post.category_id?.toString(),
+                subcategory_id: post.subcategory_id?.toString(),
+            });
         }
 
         if (slug) {
-            const post = await ServicePosts.findOne({ slug }).lean();
+            const post = await ServicePosts.findOne({ slug }).populate('statusId').lean();
 
             if (!post) {
                 return NextResponse.json({ error: 'Service post not found' }, { status: 404 });
             }
 
-            return NextResponse.json(post);
+            const sName = post.statusId?.name || '';
+            let numericStatusId = 1;
+            if (sName.toLowerCase() === 'published') numericStatusId = 2;
+            else if (sName.toLowerCase() === 'draft') numericStatusId = 1;
+
+            return NextResponse.json({ 
+                ...post, 
+                id: post._id.toString(),
+                statusId: numericStatusId,
+                category_id: post.category_id?.toString(),
+                subcategory_id: post.subcategory_id?.toString(),
+            });
         }
 
         const filter: any = {};
@@ -46,14 +85,13 @@ export async function GET(request: NextRequest) {
         }
 
         if (status) {
-            filter.statusId = parseInt(status);
+            filter.statusId = await resolveStatusId(status);
         }
 
         // Filter by category slug or id
         if (category) {
-            const catId = parseInt(category);
-            if (!isNaN(catId)) {
-                filter.category_id = catId;
+            if (category.length === 24) {
+                filter.category_id = category;
             } else {
                 // If category is a slug, find id by slug
                 const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
@@ -64,9 +102,8 @@ export async function GET(request: NextRequest) {
 
         // Filter by subcategory slug or id
         if (subcategory) {
-            const subId = parseInt(subcategory);
-            if (!isNaN(subId)) {
-                filter.subcategory_id = subId;
+            if (subcategory.length === 24) {
+                filter.subcategory_id = subcategory;
             } else {
                 const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
                 const subRow = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
@@ -74,10 +111,34 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        let query = ServicePosts.find(filter).sort({ createdAt: -1 }).lean();
+        let query = ServicePosts.find(filter)
+            .populate('statusId')
+            .sort({ createdAt: -1 })
+            .lean();
         const posts = limit && !isNaN(parseInt(limit)) ? await query.limit(parseInt(limit)) : await query;
 
-        return NextResponse.json(posts);
+        const formattedPosts = posts.map((p: any) => {
+            const sId = p.statusId?._id ? p.statusId._id.toString() : p.statusId?.toString();
+            const sName = p.statusId?.name || '';
+            
+            // Map status name back to numeric ID for the admin UI if needed
+            let numericStatusId = 1; // Default to Draft
+            if (sName.toLowerCase() === 'published') numericStatusId = 2;
+            else if (sName.toLowerCase() === 'draft') numericStatusId = 1;
+            else if (sName.toLowerCase() === 'in review') numericStatusId = 3;
+
+            return {
+                ...p,
+                id: p._id.toString(),
+                statusId: numericStatusId, // Use numeric ID for admin UI compatibility
+                realStatusId: sId,
+                statusName: sName,
+                category_id: p.category_id?.toString(),
+                subcategory_id: p.subcategory_id?.toString(),
+            };
+        });
+
+        return NextResponse.json(formattedPosts);
     } catch (error) {
         console.error('Error fetching service posts:', error);
         return NextResponse.json({ error: 'Failed to fetch service posts' }, { status: 500 });
@@ -113,6 +174,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Required fields: slug, title, excerpt, content, statusId' }, { status: 400 });
         }
 
+        const finalStatusId = await resolveStatusId(statusId);
+
         const newPost = await ServicePosts.create({
             slug,
             title,
@@ -128,7 +191,7 @@ export async function POST(request: NextRequest) {
             price_label: price_label || null,
             price_description: price_description || null,
             authorId,
-            statusId,
+            statusId: finalStatusId,
             meta_title: metaTitle || null,
             meta_description: metaDescription || null,
         });
@@ -136,7 +199,7 @@ export async function POST(request: NextRequest) {
         try { revalidateTag('services', 'max'); } catch (e) { /* ignore */ }
 
         return NextResponse.json(
-            { success: true, message: 'Service post created successfully', id: newPost._id },
+            { success: true, message: 'Service post created successfully', id: newPost._id.toString() },
             { status: 201 }
         );
     } catch (error: any) {
@@ -182,9 +245,9 @@ export async function PUT(request: NextRequest) {
         if (price_type !== undefined) updateData.price_type = price_type;
         if (price_label !== undefined) updateData.price_label = price_label;
         if (price_description !== undefined) updateData.price_description = price_description;
-        if (statusId !== undefined) updateData.statusId = statusId;
-        if (metaTitle !== undefined) updateData.metaTitle = metaTitle;
-        if (metaDescription !== undefined) updateData.metaDescription = metaDescription;
+        if (statusId !== undefined) updateData.statusId = await resolveStatusId(statusId);
+        if (metaTitle !== undefined) updateData.meta_title = metaTitle;
+        if (metaDescription !== undefined) updateData.meta_description = metaDescription;
 
         await ServicePosts.findByIdAndUpdate(id, updateData, { new: true });
 
@@ -234,7 +297,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Resolve slug to id if necessary
-        let postId = id ? parseInt(id) : null;
+        let postId: any = id || null;
         if (!postId && slug) {
             const postRow = await ServicePosts.findOne({ slug }).lean();
             if (!postRow) {
@@ -255,18 +318,18 @@ export async function DELETE(request: NextRequest) {
 
         // Attempts to delete dependent rows first to avoid FK issues (be defensive)
         try {
-            await ReviewTestimonialServices.deleteMany({ serviceId: postId as number });
+            await ReviewTestimonialServices.deleteMany({ serviceId: postId });
         } catch (err) {
             // ignore
         }
         try {
-            await ReviewTestimonials.deleteMany({ service: postId as number });
+            await ReviewTestimonials.deleteMany({ service: postId });
         } catch (err) {
             // ignore
         }
 
         try {
-            await ServicePosts.findByIdAndDelete(postId as number);
+            await ServicePosts.findByIdAndDelete(postId);
         } catch (err: any) {
             console.error('Deletion failed:', err);
             return NextResponse.json({ error: 'Failed to delete service post', details: err.message || String(err) }, { status: 500 });
