@@ -47,9 +47,9 @@ export async function GET(request: NextRequest) {
             let numericStatusId = 1;
             if (sName.toLowerCase() === 'published') numericStatusId = 2;
             else if (sName.toLowerCase() === 'draft') numericStatusId = 1;
-            
-            return NextResponse.json({ 
-                ...post, 
+
+            return NextResponse.json({
+                ...post,
                 id: post._id.toString(),
                 statusId: numericStatusId,
                 category_id: post.category_id?.toString(),
@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
             if (sName.toLowerCase() === 'published') numericStatusId = 2;
             else if (sName.toLowerCase() === 'draft') numericStatusId = 1;
 
-            return NextResponse.json({ 
-                ...post, 
+            return NextResponse.json({
+                ...post,
                 id: post._id.toString(),
                 statusId: numericStatusId,
                 category_id: post.category_id?.toString(),
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
         const formattedPosts = posts.map((p: any) => {
             const sId = p.statusId?._id ? p.statusId._id.toString() : p.statusId?.toString();
             const sName = p.statusId?.name || '';
-            
+
             // Map status name back to numeric ID for the admin UI if needed
             let numericStatusId = 1; // Default to Draft
             if (sName.toLowerCase() === 'published') numericStatusId = 2;
