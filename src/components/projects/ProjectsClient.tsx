@@ -36,8 +36,8 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={`flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-6 transition-all ${selectedCategory === cat
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                                    : 'bg-white border border-gray-200 hover:border-gray-300 text-[#111418] hover:shadow-md'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                                : 'bg-white border border-gray-200 hover:border-gray-300 text-[#111418] hover:shadow-md'
                                 }`}
                         >
                             <p className="text-sm font-bold leading-normal">{cat}</p>
