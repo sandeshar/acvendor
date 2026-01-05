@@ -66,10 +66,10 @@ export async function POST(request: Request) {
         const forwardedClean = body?.clean === true || body?.clean === '1' || body?.clean === 1;
         const origin = new URL(request.url).origin;
 
-        const results: Record<string, { success: boolean; message: string }> = {
-            status: { success: false, message: '' },
-            users: { success: false, message: '' },
-            homepage: { success: false, message: '' },
+        const results: Record<string, { success: boolean; message: string; details?: string }> = {
+            status: { success: false, message: '', details: undefined },
+            users: { success: false, message: '', details: undefined },
+            homepage: { success: false, message: '', details: undefined },
             about: { success: false, message: '' },
             services: { success: false, message: '' },
             products: { success: false, message: '' },
@@ -86,18 +86,20 @@ export async function POST(request: Request) {
         try {
             const res = await fetch(`${origin}/api/seed/status`, { method: 'POST' });
             const data = await res.json().catch(() => ({}));
-            results.status = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Status seeded' : 'Failed to seed status') };
+            results.status = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Status seeded' : 'Failed to seed status'), details: (data as any)?.details };
         } catch (error) {
             results.status.message = error instanceof Error ? error.message : 'Failed to seed status';
+            results.status.details = error instanceof Error ? (error.message || String(error)) : String(error);
         }
 
         // 2. Seed Users (delegated)
         try {
             const res = await fetch(`${origin}/api/seed/users`, { method: 'POST' });
             const data = await res.json().catch(() => ({}));
-            results.users = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Users seeded' : 'Failed to seed users') };
+            results.users = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Users seeded' : 'Failed to seed users'), details: (data as any)?.details };
         } catch (error) {
             results.users.message = error instanceof Error ? error.message : 'Failed to seed users';
+            results.users.details = error instanceof Error ? (error.message || String(error)) : String(error);
         }
 
         // Ensure Store Settings exist
@@ -139,13 +141,16 @@ export async function POST(request: Request) {
                     const url = `${origin}/api/seed/${key}${params.toString() ? `?${params.toString()}` : ''}`;
                     const res = await fetch(url, { method: 'POST' });
                     const data = await res.json().catch(() => ({}));
-                    results[key] = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Seeded' : 'Failed') };
+                    results[key] = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'Seeded' : 'Failed'), details: (data as any)?.details };
                 } catch (err) {
-                    results[key] = { success: false, message: err instanceof Error ? err.message : String(err) };
+                    results[key] = { success: false, message: err instanceof Error ? err.message : String(err), details: err instanceof Error ? (err.message || String(err)) : String(err) };
                 }
             }
 
-            return NextResponse.json({ success: true, message: 'All individual seeders executed', results }, { status: 200 });
+            const failedEntries = Object.entries(results).filter(([_, v]) => !v.success);
+            const failedCount = failedEntries.length;
+            const details = failedEntries.map(([k, v]) => `${k}: ${v.details || v.message}`).join('; ');
+            return NextResponse.json({ success: failedCount === 0, message: failedCount === 0 ? 'All individual seeders executed' : `${failedCount} seeders failed`, details: failedCount > 0 ? details : undefined, results }, { status: 200 });
         } catch (err) {
             console.error('Delegated master seeder failed, falling back to inline seeding', err);
         }

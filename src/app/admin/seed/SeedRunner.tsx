@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 
-type SeedResults = Record<string, { success: boolean; message: string }>;
+type SeedResults = Record<string, { success: boolean; message?: string; details?: string }>;
 
 type SeedResponse = {
     success?: boolean;
     message?: string;
     results?: SeedResults;
     error?: string;
+    details?: string;
 };
 
 const SeedRunner = () => {
@@ -47,11 +48,12 @@ const SeedRunner = () => {
         setResponse(null);
         try {
             const res = await fetch("/api/seed/all", { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brand: selectedBrand || undefined }) });
-            const data: SeedResponse = await res.json();
-            if (!res.ok) {
-                throw new Error(data.error || data.message || "Seeding failed");
-            }
+            const data: SeedResponse = await res.json().catch(() => ({} as SeedResponse));
+            // Always set the response so the UI can show per-seeder results and details
             setResponse(data);
+            if (!res.ok) {
+                setError(data.error || data.message || "Seeding failed — check results for details");
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unable to run seed");
         } finally {
@@ -71,12 +73,17 @@ const SeedRunner = () => {
             const query = params.toString() ? `?${params.toString()}` : '';
             const url = `/api/seed/${key}${query}`;
             const res = await fetch(url, { method: "POST" });
-            const data: SeedResponse = await res.json();
+            const data: SeedResponse = await res.json().catch(() => ({} as SeedResponse));
             const success = res.ok;
-            const message = data.message || data.error || (success ? "Seeded successfully" : "Seeding failed");
+            let message = data.message || data.error || (success ? "Seeded successfully" : "Seeding failed");
+            // Attach details if provided by the API
+            const details = (data as any).details;
+            if (details) {
+                message = `${message} — ${details}`;
+            }
             setIndividualResults((prev) => ({
                 ...prev,
-                [key]: { success, message },
+                [key]: { success, message, details },
             }));
         } catch (err) {
             setIndividualResults((prev) => ({
@@ -114,7 +121,10 @@ const SeedRunner = () => {
             {response && (
                 <div className="flex flex-col gap-3">
                     <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
-                        {response.message || "Seed completed."}
+                        {response.message || response.error || "Seed completed."}
+                        {response.details && (
+                            <div className="text-xs mt-1 text-amber-700">{response.details}</div>
+                        )}
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {response.results &&
@@ -127,7 +137,12 @@ const SeedRunner = () => {
                                         }`}
                                 >
                                     <div className="font-semibold capitalize">{key}</div>
-                                    <div>{value.message}</div>
+                                    <div>
+                                        {value.message}
+                                        {value.details && (
+                                            <div className="text-xs mt-1 text-amber-700">{value.details}</div>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                     </div>

@@ -19,6 +19,7 @@ export async function POST() {
 
         // Seed Header Section
         await FAQPageHeader.create({
+            badge_text: 'Help & Support',
             title: 'Frequently Asked Questions',
             description: "Answers to common questions about products, shipping, installation, and warranty. If you don't find your answer, contact our support team.",
             search_placeholder: 'Search for a question...',

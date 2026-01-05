@@ -17,9 +17,12 @@ export async function POST() {
 
         // Seed Hero Section
         await ContactPageHero.create({
+            badge_text: 'Contact us',
             tagline: 'CONTACT US',
             title: "Let's Start a Conversation",
             description: "We're here to help you with your content needs. Reach out to us, and we'll get back to you as soon as possible.",
+            background_image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1400&q=80',
+            hero_image_alt: 'Contact our support team',
             is_active: 1,
         });
 
