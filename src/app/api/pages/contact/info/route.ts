@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Info section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(info);
+            return NextResponse.json({ ...info, id: info._id.toString() });
         }
 
         const info = await ContactPageInfo.findOne({ is_active: 1 }).lean();
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No active info section found' }, { status: 404 });
         }
 
-        return NextResponse.json(info);
+        return NextResponse.json({ ...info, id: info._id.toString() });
         await connectDB();
         const body = await request.json();
         const {

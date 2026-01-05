@@ -48,7 +48,7 @@ export const DEFAULT_STATS: StatDefault[] = [
 ];
 
 export const DEFAULT_JOURNEY_TITLE = 'Bringing Comfort to Every Nepali Home & Business';
-export const DEFAULT_THINKING_BOX_TITLE = 'Why Choose Nepal AC Solutions?';
+export const DEFAULT_THINKING_BOX_TITLE = 'Why Choose AC Vendor?';
 export const DEFAULT_THINKING_BOX_CONTENT = 'We combine international quality standards with deep local knowledge to deliver superior cooling solutions.';
 
 export interface CertificationDefault {

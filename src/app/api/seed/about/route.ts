@@ -50,25 +50,15 @@ export async function POST() {
         // Seed Hero Section
         try {
             await AboutPageHero.create({
-                title: "We Don't Just Write. We Build Worlds with Words.",
-                description: "Welcome to Content Solution Nepal. We're a team of storytellers, strategists, and digital artisans dedicated to crafting narratives that resonate, engage, and drive growth. Your brand has a story. Let's tell it together.",
+                title: "Your Trusted Partner for Cooling Solutions in Nepal",
+                description: "Welcome to AC Vendor. We are a team of dedicated professionals committed to providing high-quality air conditioning products and services. From sales to installation and maintenance, we ensure your comfort all year round.",
                 button1_text: 'Meet the Team',
                 button1_link: '#team',
                 button2_text: 'Our Story',
                 button2_link: '#story',
                 hero_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBTGNaIxV2yP8yow4vP4sY-zbc2rGNflWrmYA6XGpOKuy0LiNEdcuCLu0m9b1WbTFpw3v3-d-OgpGVH8wbsGNshWs2GFVT-zZTMpF7UJ9ykyyLa1PyF_vfQSbW6f2fveOmmpTQ66uhhM5w8bJLYOOoULMgIWwePl-eTFMrzCfXWjVvUTejB5cJEZ0b5tqEM7RSy-eO-CklDZypw8e5SRxq2IFJ_7PtJNqm5ij0ilfaT66A_WIGoPSQrH8kiHzxAp7tHrL-vjB3sBNo',
-                float_top_enabled: 1,
-                float_top_icon: 'trending_up',
-                float_top_title: 'Traffic Growth',
-                float_top_value: '+145%',
-                float_bottom_enabled: 1,
-                float_bottom_icon: 'article',
-                float_bottom_title: 'Content Pieces',
-                float_bottom_value: '5k+',
-                badge_text: 'Creative Team',
-                highlight_text: 'Build Worlds',
-                rating_text: 'Trusted by modern teams',
-                hero_image_alt: 'Creative team collaborating in a modern office space',
+                badge_text: 'Expert Team',
+                hero_image_alt: 'AC Vendor team collaborating in a modern office space',
                 is_active: 1,
             });
         } catch (err) {
@@ -80,8 +70,8 @@ export async function POST() {
         try {
             await AboutPageJourney.create({
                 title: DEFAULT_JOURNEY_TITLE,
-                paragraph1: 'Content Solution Nepal was born from a simple belief: that every business, big or small, deserves a voice that truly represents who they are and what they stand for. We started as a small team of writers who were tired of seeing generic, cookie-cutter content flooding the digital world.',
-                paragraph2: 'We envisioned something better—content that tells stories, sparks emotions, and builds genuine connections. Today, we work with businesses across industries to create content strategies that not only attract attention but also inspire action and loyalty.',
+                paragraph1: 'AC Vendor was born from a simple belief: that every home and business in Nepal deserves reliable and efficient cooling solutions. We started as a small team of technicians who were passionate about providing quality service and genuine products.',
+                paragraph2: 'We envisioned something better—a one-stop shop for all air conditioning needs, where customers can find the best brands and expert support. Today, we are proud to be a leading provider of AC solutions, serving thousands of satisfied customers across the country.',
                 thinking_box_title: DEFAULT_THINKING_BOX_TITLE,
                 thinking_box_content: DEFAULT_THINKING_BOX_CONTENT,
                 highlights: JSON.stringify(DEFAULT_HIGHLIGHTS),

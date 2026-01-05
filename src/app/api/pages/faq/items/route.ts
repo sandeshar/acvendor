@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'FAQ item not found' }, { status: 404 });
             }
 
-            return NextResponse.json(item);
+            return NextResponse.json({ ...item, id: item._id.toString() });
         }
 
         let items;
@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
             items = await FAQItems.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
         }
 
-        return NextResponse.json(items);
+        const formattedItems = items.map((item: any) => ({
+            ...item,
+            id: item._id.toString()
+        }));
+
+        return NextResponse.json(formattedItems);
     } catch (error) {
         console.error('Error fetching FAQ items:', error);
         return NextResponse.json({ error: 'Failed to fetch FAQ items' }, { status: 500 });

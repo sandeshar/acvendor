@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Category not found' }, { status: 404 });
             }
 
-            return NextResponse.json(category);
+            return NextResponse.json({ ...category, id: category._id.toString() });
         }
 
         if (name) {
@@ -28,12 +28,17 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Category not found' }, { status: 404 });
             }
 
-            return NextResponse.json(category);
+            return NextResponse.json({ ...category, id: category._id.toString() });
         }
 
         const categories = await FAQCategories.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
 
-        return NextResponse.json(categories);
+        const formattedCategories = categories.map((cat: any) => ({
+            ...cat,
+            id: cat._id.toString()
+        }));
+
+        return NextResponse.json(formattedCategories);
     } catch (error) {
         console.error('Error fetching categories:', error);
         return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });

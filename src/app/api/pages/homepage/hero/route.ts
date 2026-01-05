@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Hero section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(hero);
+            return NextResponse.json({ ...hero, id: hero._id.toString() });
         }
 
         // Get active hero section
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({});
         }
 
-        return NextResponse.json(hero);
+        return NextResponse.json({ ...hero, id: hero._id.toString() });
     } catch (error) {
         console.error('Error fetching hero section:', error);
         return NextResponse.json({ error: 'Failed to fetch hero section' }, { status: 500 });

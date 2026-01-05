@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Form config not found' }, { status: 404 });
             }
 
-            return NextResponse.json(config);
+            return NextResponse.json({ ...config, id: config._id.toString() });
         }
 
         const config = await ContactPageFormConfig.findOne({ is_active: 1 }).lean();
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No active form config found' }, { status: 404 });
         }
 
-        return NextResponse.json(config);
+        return NextResponse.json({ ...config, id: config._id.toString() });
     } catch (error) {
         console.error('Error fetching form config:', error);
         return NextResponse.json({ error: 'Failed to fetch form config' }, { status: 500 });

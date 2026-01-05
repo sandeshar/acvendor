@@ -7,7 +7,8 @@ export async function GET() {
     try {
         await connectDB();
         const row = await ShopPageHero.findOne().lean();
-        return NextResponse.json(row || {});
+        if (!row) return NextResponse.json({});
+        return NextResponse.json({ ...row, id: row._id.toString() });
     } catch (error) {
         console.error('Error fetching shop hero:', error);
         const e: any = error;

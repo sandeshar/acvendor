@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Header section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(header);
+            return NextResponse.json({ ...header, id: header._id.toString() });
         }
 
         const header = await TermsPageHeader.findOne({ is_active: 1 }).lean();
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No active header section found' }, { status: 404 });
         }
 
-        return NextResponse.json(header);
+        return NextResponse.json({ ...header, id: header._id.toString() });
     } catch (error) {
         console.error('Error fetching header section:', error);
         return NextResponse.json({ error: 'Failed to fetch header section' }, { status: 500 });

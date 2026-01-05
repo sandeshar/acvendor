@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
         const row = await ShopPageBrandHero.findOne({ brand_slug: brand }).lean();
         if (!row) return NextResponse.json({}, { status: 200 });
-        return NextResponse.json(row);
+        return NextResponse.json({ ...row, id: row._id.toString() });
     } catch (error) {
         console.error('Error fetching brand hero:', error);
         // If table not present or other DB issue, return empty object (non-fatal)

@@ -17,14 +17,19 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(section);
+            return NextResponse.json({ ...section, id: section._id.toString() });
         }
 
         const sections = await TermsPageSections.find({ is_active: 1 })
             .sort({ display_order: 1 })
             .lean();
 
-        return NextResponse.json(sections);
+        const formattedSections = sections.map((sec: any) => ({
+            ...sec,
+            id: sec._id.toString()
+        }));
+
+        return NextResponse.json(formattedSections);
     } catch (error) {
         console.error('Error fetching sections:', error);
         return NextResponse.json({ error: 'Failed to fetch sections' }, { status: 500 });
