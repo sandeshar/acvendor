@@ -53,7 +53,7 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
                         key={project.id}
                         className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:-translate-y-1"
                     >
-                        <div className="relative overflow-hidden aspect-[4/3]">
+                        <div className="relative overflow-hidden aspect-4/3">
                             <div
                                 className="w-full h-full bg-center bg-no-repeat bg-cover transform group-hover:scale-105 transition-transform duration-700"
                                 style={{ backgroundImage: `url("${project.image}")` }}

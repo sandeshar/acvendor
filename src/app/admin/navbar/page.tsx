@@ -23,10 +23,10 @@ export default function NavbarManagerPage() {
     const [navbarItems, setNavbarItems] = useState<NavbarItem[]>([]);
     const [selectedItem, setSelectedItem] = useState<NavbarItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [manageChildrenId, setManageChildrenId] = useState<number | null>(null);
+    const [manageChildrenId, setManageChildrenId] = useState<string | number | null>(null);
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
-    const [selectedCategories, setSelectedCategories] = useState<Record<number, boolean>>({});
+    const [selectedCategories, setSelectedCategories] = useState<Record<string, boolean>>({});
     const [includeSubcategories, setIncludeSubcategories] = useState(true);
     const [manageSearch, setManageSearch] = useState('');
     const [searchQuery, setSearchQuery] = useState("");
@@ -107,7 +107,7 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const deleteItem = async (id: number) => {
+    const deleteItem = async (id: string | number) => {
         if (!confirm('Are you sure you want to delete this navbar item?')) return;
 
         setSaving(true);
@@ -151,7 +151,7 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const toggleManageChildren = async (id: number) => {
+    const toggleManageChildren = async (id: string | number) => {
         if (manageChildrenId === id) {
             setManageChildrenId(null);
             return;
@@ -174,19 +174,19 @@ export default function NavbarManagerPage() {
             for (const [selIndex, cat] of selected.entries()) {
                 // Prevent duplicates: reuse existing category nav item under parent if present
                 const existingCat = navbarItems.find(n => n.href === `/services/category/${cat.slug}` && n.parent_id === parentId);
-                let newNavId: number | undefined;
-                if (existing && (existing.id || existing._id)) {
-                    newNavId = existing.id ?? existing._id;
+                let newNavId: string | number | undefined;
+                if (existingCat && (existingCat.id || existingCat._id)) {
+                    newNavId = existingCat.id ?? existingCat._id;
                     // If this existing category should be a dropdown but isn't, update it
                     const catHasSub = subcategories.some(s => s.category_id === cat.id);
-                    if (catHasSub && existing.is_dropdown !== 1) {
+                    if (catHasSub && existingCat.is_dropdown !== 1) {
                         await fetch('/api/navbar', {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ ...existing, id: existing.id ?? existing._id, is_dropdown: 1 }),
+                            body: JSON.stringify({ ...existingCat, id: existingCat.id ?? existingCat._id, is_dropdown: 1 }),
                         });
                         // Update local state for this existing category
-                        setNavbarItems(prev => prev.map(n => (String(n.id) === String(existing.id ?? existing._id)) ? { ...n, is_dropdown: 1 } : n));
+                        setNavbarItems(prev => prev.map(n => (String(n.id) === String(existingCat.id ?? existingCat._id)) ? { ...n, is_dropdown: 1 } : n));
                     }
                 } else {
                     const childrenUnderParent = navbarItems.filter(n => n.parent_id === parentId);
@@ -277,7 +277,7 @@ export default function NavbarManagerPage() {
         }
     };
 
-    const removeAllChildren = async (parentId: number) => {
+    const removeAllChildren = async (parentId: string | number) => {
         if (!confirm('Are you sure you want to remove all child nav items under this dropdown? This cannot be undone.')) return;
         setSaving(true);
         try {
@@ -445,14 +445,14 @@ export default function NavbarManagerPage() {
                                         {/* Reorder Buttons */}
                                         <div className="flex flex-col gap-1">
                                             <button
-                                                onClick={() => (item.id ?? item._id) && moveItem(item.id ?? item._id, 'up')}
+                                                onClick={() => { const iid = item.id ?? item._id; if (iid) moveItem(iid as string | number, 'up'); }}
                                                 disabled={index === 0}
                                                 className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
                                             </button>
                                             <button
-                                                onClick={() => (item.id ?? item._id) && moveItem(item.id ?? item._id, 'down')}
+                                                onClick={() => { const iid = item.id ?? item._id; if (iid) moveItem(iid as string | number, 'down'); }}
                                                 disabled={index === filteredItems.length - 1}
                                                 className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                             >
@@ -495,14 +495,14 @@ export default function NavbarManagerPage() {
                                                 <span className="material-symbols-outlined text-[18px]">edit</span>
                                             </button>
                                             <button
-                                                onClick={() => (item.id ?? item._id) && deleteItem(item.id ?? item._id)}
+                                                onClick={() => { const iid = item.id ?? item._id; if (iid) deleteItem(iid as string | number); }}
                                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">delete</span>
                                             </button>
                                             {item.is_dropdown === 1 && (
                                                 <button
-                                                    onClick={() => toggleManageChildren(item.id ?? item._id)}
+                                                    onClick={() => { const iid = item.id ?? item._id; if (iid) toggleManageChildren(iid as string | number); }}
                                                     className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
                                                     title="Manage dropdown children"
                                                 >
@@ -546,19 +546,19 @@ export default function NavbarManagerPage() {
                                                             <div className="truncate">{child.label} <span className="text-xs text-slate-400">{child.href}</span></div>
                                                             <div className="flex gap-2">
                                                                 <button
-                                                                    onClick={() => (item.id ?? item._id) && child.id && moveChildItem(item.id ?? item._id, child.id)}
+                                                                    onClick={() => { const iid = item.id ?? item._id; if (iid && child.id) moveChildItem(iid as string | number, child.id as string | number, 'up') }}
                                                                     className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => (item.id ?? item._id) && child.id && moveChildItem(item.id ?? item._id, child.id, 'down')
+                                                                    onClick={() => { const iid = item.id ?? item._id; if (iid && child.id) moveChildItem(iid as string | number, child.id as string | number, 'down') }}
                                                                     className="p-1 text-slate-600 hover:bg-slate-200 rounded disabled:opacity-30"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => (child.id ?? child._id) && deleteItem(child.id ?? child._id)}
+                                                                    onClick={() => { const cid = child.id ?? child._id; if (cid) deleteItem(cid as string | number); }}
                                                                     className="text-red-600 hover:bg-red-50 p-1 rounded"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -631,7 +631,7 @@ export default function NavbarManagerPage() {
                                                                                 Edit
                                                                             </button>
                                                                             <button
-                                                                                onClick={() => (existing.id ?? existing._id) && deleteItem(existing.id ?? existing._id)}
+                                                                                onClick={() => { const iid = existing.id ?? existing._id; if (iid) deleteItem(iid as string | number); }}
                                                                                 className="text-red-600 hover:underline"
                                                                             >
                                                                                 Remove
@@ -647,14 +647,14 @@ export default function NavbarManagerPage() {
                                             </div>
                                             <div className="mt-3 flex gap-2">
                                                 <button
-                                                    onClick={() => (item.id ?? item._id) && addSelectedCategories(item.id ?? item._id)}
+                                                    onClick={() => { const iid = item.id ?? item._id; if (iid) addSelectedCategories(iid as string | number); }}
                                                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                                                 >
                                                     <span>Attach selected</span>
                                                     <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{Object.values(selectedCategories).filter(Boolean).length}</span>
                                                 </button>
                                                 <button
-                                                    onClick={() => (item.id ?? item._id) && removeAllChildren(item.id ?? item._id)}
+                                                    onClick={() => { const iid = item.id ?? item._id; if (iid) removeAllChildren(iid as string | number); }}
                                                     className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded text-sm border border-red-100"
                                                 >
                                                     Remove all children

@@ -27,6 +27,7 @@ export function formatPrice(value: any, opts?: { minimumFractionDigits?: number,
     const n = parsePriceNumber(value);
     if (!isFinite(n)) return String(value);
     const isInt = n % 1 === 0;
-    if (isInt) return n.toLocaleString();
-    return n.toLocaleString(undefined, { minimumFractionDigits: opts?.minimumFractionDigits ?? 2, maximumFractionDigits: opts?.maximumFractionDigits ?? 2 });
+    // Use a consistent locale to avoid server/client formatting mismatches during hydration
+    if (isInt) return n.toLocaleString('en-US');
+    return n.toLocaleString('en-US', { minimumFractionDigits: opts?.minimumFractionDigits ?? 2, maximumFractionDigits: opts?.maximumFractionDigits ?? 2 });
 }

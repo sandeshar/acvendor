@@ -31,7 +31,7 @@ const Expertise = ({ section, items = [] }: ExpertiseProps) => {
     return (
         <div className="w-full bg-background-light py-20" id="services">
             <div className="layout-container flex justify-center px-4 md:px-10">
-                <div className="flex flex-col w-full max-w-[1280px] gap-12">
+                <div className="flex flex-col w-full max-w-7xl gap-12">
                     <div className="flex flex-col gap-4 text-center md:text-left">
                         <h2 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight">
                             {section.title || 'Our Expertise'}

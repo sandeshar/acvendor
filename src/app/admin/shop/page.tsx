@@ -14,6 +14,8 @@ interface HeroData {
     description: string;
     cta_text: string;
     cta_link: string;
+    cta2_text?: string;
+    cta2_link?: string;
     background_image: string;
     hero_image_alt: string;
     is_active: number;
@@ -40,6 +42,8 @@ export default function AdminShopPage() {
         description: '',
         cta_text: '',
         cta_link: '',
+        cta2_text: '',
+        cta2_link: '',
         background_image: '',
         hero_image_alt: '',
         is_active: 1
@@ -56,6 +60,8 @@ export default function AdminShopPage() {
         description: '',
         cta_text: '',
         cta_link: '',
+        cta2_text: '',
+        cta2_link: '',
         background_image: '',
         hero_image_alt: '',
         display_order: 0,
@@ -140,8 +146,8 @@ export default function AdminShopPage() {
                     subtitle: globalHero.subtitle || '',
                     description: globalHero.description || '',
                     cta_text: globalHero.cta_text || '',
-                    cta_link: globalHero.cta_link || '',
-                    background_image: globalHero.background_image || '',
+                    cta_link: globalHero.cta_link || '', cta2_text: globalHero.cta2_text || '',
+                    cta2_link: globalHero.cta2_link || '', background_image: globalHero.background_image || '',
                     hero_image_alt: `${brandName} Hero Image`,
                     display_order: 0,
                     is_active: 1
@@ -282,7 +288,7 @@ export default function AdminShopPage() {
                             <h3 className="text-sm font-semibold mb-3">Call to Action</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">CTA Text</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
                                     <input
                                         type="text"
                                         placeholder="e.g. Shop Gree Series"
@@ -292,12 +298,35 @@ export default function AdminShopPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">CTA Link</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
                                     <input
                                         type="text"
                                         placeholder="e.g. /shop?brand=gree or external URL"
                                         value={globalHero.cta_link}
                                         onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. View Catalog"
+                                        value={globalHero.cta2_text}
+                                        onChange={e => setGlobalHero({ ...globalHero, cta2_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. /catalog.pdf or external URL"
+                                        value={globalHero.cta2_link}
+                                        onChange={e => setGlobalHero({ ...globalHero, cta2_link: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
@@ -434,6 +463,48 @@ export default function AdminShopPage() {
                                     onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.cta_text}
+                                        onChange={e => setBrandHero({ ...brandHero, cta_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.cta_link}
+                                        onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.cta2_text}
+                                        onChange={e => setBrandHero({ ...brandHero, cta2_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.cta2_link}
+                                        onChange={e => setBrandHero({ ...brandHero, cta2_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="space-y-4">

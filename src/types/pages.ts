@@ -13,6 +13,7 @@ export interface HomepageHeroData {
     title: string;
     description: string;
     badge_text?: string;
+    highlight_text?: string;
     primary_cta_text?: string;
     primary_cta_link?: string;
     secondary_cta_text?: string;

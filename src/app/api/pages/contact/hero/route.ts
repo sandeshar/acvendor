@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
         const newHero = await ContactPageHero.create({ badge_text, tagline, title, highlight_text, description, background_image, hero_image_alt, is_active });
 
-        revalidateTag('contact-hero');
+        revalidateTag('contact-hero', 'max');
 
         return NextResponse.json(
             { success: true, message: 'Hero section created successfully', id: newHero._id },
@@ -82,7 +82,7 @@ export async function PUT(request: NextRequest) {
 
         await ContactPageHero.findByIdAndUpdate(id, updateData, { new: true });
 
-        revalidateTag('contact-hero');
+        revalidateTag('contact-hero', 'max');
 
         return NextResponse.json({ success: true, message: 'Hero section updated successfully' });
     } catch (error) {

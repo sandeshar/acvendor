@@ -99,7 +99,9 @@ export default function HomePageUI() {
             const saveList = async (url: string, items: any[], deletedIds: any[]) => {
                 // Ensure deletedIds contain proper id strings
                 for (const id of deletedIds) {
-                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    let delId: string | number | undefined;
+                    if (id && typeof id === 'object') delId = (id as any).id ?? (id as any)._id ?? undefined;
+                    else delId = id as any;
                     if (!delId) continue;
                     await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }
@@ -207,6 +209,7 @@ export default function HomePageUI() {
                                 </h2>
                                 <div className="space-y-5">
                                     <InputGroup label="Badge Text" value={heroData.badge_text || ''} onChange={(v) => setHeroData({ ...heroData, badge_text: v })} />
+                                    <InputGroup label="Highlight Text (substring to emphasize)" value={heroData.highlight_text || ''} onChange={(v) => setHeroData({ ...heroData, highlight_text: v })} />
                                     <InputGroup label="Title" value={heroData.title || ''} onChange={(v) => setHeroData({ ...heroData, title: v })} />
                                     <TextAreaGroup label="Subtitle" value={heroData.subtitle || ''} onChange={(v) => setHeroData({ ...heroData, subtitle: v })} />
 

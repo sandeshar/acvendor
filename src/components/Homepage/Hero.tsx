@@ -47,11 +47,11 @@ const Hero = ({ data }: HeroProps) => {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img src={bgUrl} alt={data.hero_image_alt || 'Modern living room with air conditioner'} className="w-full h-full object-cover object-center" loading="eager" decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30"></div>
+                <div className="absolute inset-0 bg-linear-to-r from-black/80 to-black/30"></div>
             </div>
 
             <div className="layout-container relative z-10 flex justify-center px-4 md:px-10 py-20">
-                <div className="flex w-full max-w-[1280px] flex-col gap-6 md:gap-8">
+                <div className="flex w-full max-w-7xl flex-col gap-6 md:gap-8">
                     <div className="flex flex-col gap-4 max-w-[700px]">
                         <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
                             <span className="material-symbols-outlined text-sm">verified</span>
@@ -61,7 +61,7 @@ const Hero = ({ data }: HeroProps) => {
                         <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-6xl">
                             {(() => {
                                 const t = data.title || 'Complete Air Conditioning Solutions in Nepal';
-                                const highlight = (data.colored_word || '').trim();
+                                const highlight = (data.highlight_text || data.colored_word || '').trim();
                                 if (!highlight) return t;
 
                                 const idx = t.indexOf(highlight);
@@ -70,7 +70,7 @@ const Hero = ({ data }: HeroProps) => {
                                 return (
                                     <>
                                         {t.substring(0, idx)}
-                                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-400 to-indigo-400">
+                                        <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-blue-400 to-indigo-400">
                                             {highlight}
                                         </span>
                                         {t.substring(idx + highlight.length)}
@@ -85,10 +85,10 @@ const Hero = ({ data }: HeroProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-4">
-                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-[160px] items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-blue-600 transition-all hover:scale-105">
+                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-blue-600 transition-all hover:scale-105">
                             {data.cta_text || 'Get a Free Quote'}
                         </a>
-                        <a href={data.secondary_cta_link || '#'} aria-label={data.secondary_cta_text || 'WhatsApp Us'} className="flex h-12 min-w-[160px] items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-white text-base font-bold hover:bg-white/20 transition-all">
+                        <a href={data.secondary_cta_link || '#'} aria-label={data.secondary_cta_text || 'WhatsApp Us'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-white text-base font-bold hover:bg-white/20 transition-all">
                             <span className="material-symbols-outlined mr-2">chat</span>
                             {data.secondary_cta_text || 'WhatsApp Us'}
                         </a>

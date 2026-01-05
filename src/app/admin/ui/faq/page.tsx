@@ -63,7 +63,9 @@ export default function FAQPageUI() {
 
             const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 for (const id of deletedIds) {
-                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    let delId: string | number | undefined;
+                    if (id && typeof id === 'object') delId = (id as any).id ?? (id as any)._id ?? undefined;
+                    else delId = id as any;
                     if (!delId) continue;
                     await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }

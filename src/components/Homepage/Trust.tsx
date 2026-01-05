@@ -30,7 +30,7 @@ const Trust = ({ section, logos = [] }: TrustProps) => {
     return (
         <div className="w-full bg-white py-12 border-b border-[#f0f2f4]">
             <div className="layout-container flex justify-center px-4 md:px-10">
-                <div className="flex flex-col items-center w-full max-w-[1280px] gap-8">
+                <div className="flex flex-col items-center w-full max-w-7xl gap-8">
                     <p className="text-center text-sm font-bold uppercase tracking-wider text-gray-400">
                         {section.heading || 'Authorized Dealer For Top Brands'}
                     </p>

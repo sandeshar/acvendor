@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
             const parts = String(idsParam).split(',').map(s => s.trim()).filter(Boolean);
             if (!parts.length) return NextResponse.json([]);
 
-            const numericIds = parts.map(s => Number(s)).filter(n => !isNaN(n) && String(n) === s);
+            const numericIds = parts.map(s => Number(s)).filter((n, i) => !isNaN(n) && String(n) === parts[i]);
             const stringIds = parts.filter(s => !/^\d+$/.test(s));
 
             // Build $in array containing numeric ids and string ids (Mongoose will cast strings to ObjectId when appropriate)

@@ -36,7 +36,7 @@ const ProductShowcase = ({ products, brand }: Props) => {
     return (
         <div className="w-full bg-white py-20" id="products">
             <div className="layout-container flex justify-center px-4 md:px-10">
-                <div className="flex flex-col w-full max-w-[1280px] gap-12">
+                <div className="flex flex-col w-full max-w-7xl gap-12">
                     <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                         <div className="flex flex-col gap-4">
                             <h2 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight">
@@ -58,7 +58,7 @@ const ProductShowcase = ({ products, brand }: Props) => {
                                 className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
                             >
                                 <div
-                                    className="aspect-[4/3] w-full bg-cover bg-center"
+                                    className="aspect-4/3 w-full bg-cover bg-center"
                                     style={{ backgroundImage: `url(${p.thumbnail || defaultImages[i % defaultImages.length]})` }}
                                     role="img"
                                     aria-label={p.title}

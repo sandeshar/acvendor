@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
             background_image,
             hero_image_alt = '',
             badge_text = '',
+            highlight_text = '',
             colored_word = '',
             // Trust Badges
             trust_badge1_text = 'Certified Techs',
@@ -140,6 +141,7 @@ export async function PUT(request: NextRequest) {
         if (background_image !== undefined) updateData.background_image = background_image;
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (badge_text !== undefined) updateData.badge_text = badge_text;
+        if (highlight_text !== undefined) updateData.highlight_text = highlight_text;
         if (colored_word !== undefined) updateData.colored_word = colored_word;
         if (trust_badge1_text !== undefined) updateData.trust_badge1_text = trust_badge1_text;
         if (trust_badge1_icon !== undefined) updateData.trust_badge1_icon = trust_badge1_icon;

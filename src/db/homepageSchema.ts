@@ -9,6 +9,7 @@ const homepageHeroSchema = new Schema({
     background_image: { type: String, required: true, maxlength: 512 },
     hero_image_alt: { type: String, required: true, default: '', maxlength: 256 },
     badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    highlight_text: { type: String, required: true, default: '', maxlength: 256 },
     colored_word: { type: String, required: true, default: '', maxlength: 256 },
     // Trust Badges
     trust_badge1_text: { type: String, required: true, default: 'Certified Techs', maxlength: 128 },

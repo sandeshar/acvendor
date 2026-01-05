@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
             is_active,
         });
 
-        revalidateTag('services-hero');
+        revalidateTag('services-hero', 'max');
 
         return NextResponse.json(
             { success: true, message: 'Hero section created successfully', id: result._id },
@@ -125,7 +125,7 @@ export async function PUT(request: NextRequest) {
 
         await ServicesPageHero.findByIdAndUpdate(id, updateData, { new: true });
 
-        revalidateTag('services-hero');
+        revalidateTag('services-hero', 'max');
 
         return NextResponse.json({ success: true, message: 'Hero section updated successfully' });
     } catch (error) {

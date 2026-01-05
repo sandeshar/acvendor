@@ -52,7 +52,7 @@ const ProjectGallery = ({ projects, section }: ProjectGalleryProps) => {
     return (
         <div className="w-full bg-background-light py-20" id="projects">
             <div className="layout-container flex justify-center px-4 md:px-10">
-                <div className="flex flex-col w-full max-w-[1280px] gap-12">
+                <div className="flex flex-col w-full max-w-7xl gap-12">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="flex flex-col gap-4 max-w-2xl">
                             <h2 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight">
@@ -76,7 +76,7 @@ const ProjectGallery = ({ projects, section }: ProjectGalleryProps) => {
                                     className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
                                     style={{ backgroundImage: `url("${project.image}")` }}
                                 ></div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+                                <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
                                     <h3 className="text-white font-bold text-xl">{project.title}</h3>
                                     <p className="text-white/80 text-sm">{project.description}</p>
                                 </div>

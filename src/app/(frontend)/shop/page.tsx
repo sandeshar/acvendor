@@ -161,7 +161,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                     <span className="text-primary text-xs font-bold uppercase tracking-wide">{hero.badge_text}</span>
                                 </div>
                             )}
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
+                            <h1 data-hero-title={hero?.title} data-hero-highlight={hero?.highlight_text} className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
                                 {renderTitle(hero?.title || '', hero?.highlight_text || '')}
                                 {hero?.subtitle && (
                                     <>
@@ -170,9 +170,26 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                     </>
                                 )}
                             </h1>
+
                             <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">
                                 {hero?.description}
                             </p>
+
+                            {/* CTAs */}
+                            <div className="flex flex-wrap gap-4 pt-4">
+                                {hero?.cta_text && (
+                                    <a href={hero.cta_link || '#'} className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-600 text-white font-bold text-base transition-all shadow-lg flex items-center gap-2">
+                                        <span>{hero.cta_text}</span>
+                                        <span className="material-symbols-outlined">arrow_forward</span>
+                                    </a>
+                                )}
+                                {hero?.cta2_text && (
+                                    <a href={hero.cta2_link || '#'} className="h-12 px-6 rounded-lg bg-background-light hover:bg-gray-200 text-text-main-light font-bold text-base transition-all flex items-center gap-2">
+                                        <span className="material-symbols-outlined">grid_view</span>
+                                        <span>{hero.cta2_text}</span>
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex-1 w-full relative group perspective-1000">

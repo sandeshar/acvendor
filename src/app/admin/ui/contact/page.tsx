@@ -15,28 +15,27 @@ export default function ContactPageUI() {
     const [formConfig, setFormConfig] = useState<any>({});
 
     // --- Fetch Data ---
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [heroRes, infoRes, formRes] = await Promise.all([
-                    fetch('/api/pages/contact/hero'),
-                    fetch('/api/pages/contact/info'),
-                    fetch('/api/pages/contact/form-config'),
-                ]);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [heroRes, infoRes, formRes] = await Promise.all([
+                fetch('/api/pages/contact/hero'),
+                fetch('/api/pages/contact/info'),
+                fetch('/api/pages/contact/form-config'),
+            ]);
 
-                if (heroRes.ok) setHeroData(await heroRes.json());
-                if (infoRes.ok) setContactInfo(await infoRes.json());
-                if (formRes.ok) setFormConfig(await formRes.json());
+            if (heroRes.ok) setHeroData(await heroRes.json());
+            if (infoRes.ok) setContactInfo(await infoRes.json());
+            if (formRes.ok) setFormConfig(await formRes.json());
 
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     // --- Handlers ---
     const handleSave = async () => {

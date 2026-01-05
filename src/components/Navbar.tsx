@@ -35,8 +35,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [navLinks, setNavLinks] = useState<NavbarItem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-    const [openChildDropdown, setOpenChildDropdown] = useState<number | null>(null);
+    const [openDropdown, setOpenDropdown] = useState<string | number | null>(null);
+    const [openChildDropdown, setOpenChildDropdown] = useState<string | number | null>(null);
 
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const childCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,8 +57,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         }
     };
 
-    const [mobileOpenDropdown, setMobileOpenDropdown] = useState<number | null>(null);
-    const [mobileOpenChild, setMobileOpenChild] = useState<number | null>(null);
+    const [mobileOpenDropdown, setMobileOpenDropdown] = useState<string | number | null>(null);
+    const [mobileOpenChild, setMobileOpenChild] = useState<string | number | null>(null);
     const [subServices, setSubServices] = useState<Record<string, any[]>>({});
     const [hoveredSubSlug, setHoveredSubSlug] = useState<string | null>(null);
 
@@ -129,11 +129,15 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     }, [openDropdown]);
 
     // Helpers
-    const getChildren = (parentId: number) => {
-        return navLinks.filter((item) => Number(item.parent_id ?? 0) === parentId && item.is_button === 0);
+    const getChildren = (parentId?: string | number) => {
+        if (parentId === undefined || parentId === null) return [] as NavbarItem[];
+        return navLinks.filter((item) => String(item.parent_id ?? '') === String(parentId) && item.is_button === 0);
     };
 
-    const hasChildren = (itemId: number) => navLinks.some((item) => Number(item.parent_id ?? 0) === itemId);
+    const hasChildren = (itemId?: string | number) => {
+        if (itemId === undefined || itemId === null) return false;
+        return navLinks.some((item) => String(item.parent_id ?? '') === String(itemId));
+    };
 
     const safeParseSubcategoryFromHref = (href: string): string | null => {
         try {
@@ -171,7 +175,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
             return;
         }
 
-        setOpenChildDropdown(firstChild.id);
+        if (firstChild.id !== undefined) setOpenChildDropdown(firstChild.id);
 
         const grandchildren = getChildren(firstChild.id);
         const firstSubSlug = grandchildren.map((gc) => safeParseSubcategoryFromHref(gc.href)).find(Boolean) ?? null;
@@ -221,7 +225,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                 if (openDropdown !== link.id) {
                                                     initDesktopRightPanels(children);
                                                 }
-                                                setOpenDropdown(link.id);
+                                                if (link.id !== undefined) setOpenDropdown(link.id);
                                             }
                                         }}
                                         onMouseLeave={() => {
@@ -242,7 +246,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                 className="absolute top-full left-0 right-0 w-full bg-card shadow-lg border-b border-muted py-2 z-60 pointer-events-auto"
                                                 onMouseEnter={() => {
                                                     clearAllCloseTimers();
-                                                    setOpenDropdown(link.id);
+                                                    if (link.id !== undefined) setOpenDropdown(link.id);
                                                 }}
                                                 onMouseLeave={() => {
                                                     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -265,7 +269,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                         key={`col-${colIdx}`}
                                                                         className="flex flex-1 flex-col p-1 gap-0"
                                                                         style={{ minWidth: `${CHILD_COLUMN_WIDTH}px` }}
-                                                                        onMouseEnter={() => { clearAllCloseTimers(); setOpenDropdown(link.id); }}
+                                                                        onMouseEnter={() => { clearAllCloseTimers(); if (link.id !== undefined) setOpenDropdown(link.id); }}
                                                                     >
                                                                         {col.map((child, childIdx) => {
                                                                             const grandchildren = getChildren(child.id);
@@ -276,8 +280,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                     className="relative"
                                                                                     onMouseEnter={() => {
                                                                                         clearAllCloseTimers();
-                                                                                        setOpenChildDropdown(child.id);
-                                                                                        setOpenDropdown(link.id);
+                                                                                        if (child.id !== undefined) setOpenChildDropdown(child.id);
+                                                                                        if (link.id !== undefined) setOpenDropdown(link.id);
                                                                                     }}
                                                                                     onMouseLeave={() => {
                                                                                         if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
@@ -289,8 +293,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                         className="px-4 py-2 text-sm text-subtext hover-bg-card hover-text-primary transition-colors flex items-center justify-between"
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
-                                                                                            setOpenDropdown(link.id);
-                                                                                            setOpenChildDropdown(child.id);
+                                                                                            if (link.id !== undefined) setOpenDropdown(link.id);
+                                                                                            if (child.id !== undefined) setOpenChildDropdown(child.id);
                                                                                             const sub = safeParseSubcategoryFromHref(child.href);
                                                                                             if (sub) {
                                                                                                 setHoveredSubSlug(sub);
@@ -314,7 +318,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             style={{ width: `${GRANDCHILD_COLUMN_WIDTH}px` }}
                                                             onMouseEnter={() => {
                                                                 clearAllCloseTimers();
-                                                                setOpenDropdown(link.id);
+                                                                if (link.id !== undefined) setOpenDropdown(link.id);
                                                             }}
                                                             onMouseLeave={() => {
                                                                 if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
@@ -327,7 +331,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                 return (
                                                                     <div
                                                                         key={`col-${child.id}`}
-                                                                        onMouseEnter={() => setOpenChildDropdown(child.id)}
+                                                                        onMouseEnter={() => { if (child.id !== undefined) setOpenChildDropdown(child.id); }}
                                                                         className={`py-1 ${openChildDropdown === child.id ? 'block' : 'hidden'}`}
                                                                     >
                                                                         {grandchildren.map((gc, gcIdx) => {
@@ -339,8 +343,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                         className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary transition-colors"
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
-                                                                                            setOpenDropdown(link.id);
-                                                                                            setOpenChildDropdown(child.id);
+                                                                                            if (link.id !== undefined) setOpenDropdown(link.id);
+                                                                                            if (child.id !== undefined) setOpenChildDropdown(child.id);
                                                                                             if (subSlug) {
                                                                                                 setHoveredSubSlug(subSlug);
                                                                                                 fetchSubServicesIfNeeded(subSlug);
@@ -366,7 +370,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             style={{ width: `${SERVICE_COLUMN_WIDTH}px` }}
                                                             onMouseEnter={() => {
                                                                 clearAllCloseTimers();
-                                                                setOpenDropdown(link.id);
+                                                                if (link.id !== undefined) setOpenDropdown(link.id);
                                                             }}
                                                             onMouseLeave={() => {
                                                                 if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
@@ -454,7 +458,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                             {link.label}
                                         </a>
                                         {hasDropdown && (
-                                            <button onClick={() => setMobileOpenDropdown(isExpanded ? null : link.id)} className="px-2 py-3 text-slate-700 hover:text-primary">
+                                            <button onClick={() => setMobileOpenDropdown(isExpanded ? null : (link.id ?? null))} className="px-2 py-3 text-slate-700 hover:text-primary">
                                                 <span className="material-symbols-outlined text-sm">{isExpanded ? 'expand_less' : 'expand_more'}</span>
                                             </button>
                                         )}
@@ -476,7 +480,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                 {child.label}
                                                             </a>
                                                             {grandchildren.length > 0 && (
-                                                                <button onClick={() => setMobileOpenChild(childOpen ? null : child.id)} className="px-2 py-2 text-slate-700 hover:text-primary">
+                                                                <button onClick={() => setMobileOpenChild(childOpen ? null : (child.id ?? null))} className="px-2 py-2 text-slate-700 hover:text-primary">
                                                                     <span className="material-symbols-outlined text-sm">{childOpen ? 'expand_less' : 'expand_more'}</span>
                                                                 </button>
                                                             )}

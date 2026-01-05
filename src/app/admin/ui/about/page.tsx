@@ -32,59 +32,58 @@ export default function AboutPageUI() {
     const [deletedBadges, setDeletedBadges] = useState<Array<string | number>>([]);
 
     // --- Fetch Data ---
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [
-                    heroRes,
-                    journeyRes,
-                    statsRes,
-                    featuresRes,
-                    badgesRes,
-                    certSectionRes,
-                    certificationsRes,
-                    philosophyRes,
-                    principlesRes,
-                    teamSectionRes,
-                    teamMembersRes,
-                    ctaRes
-                ] = await Promise.all([
-                    fetch('/api/pages/about/hero'),
-                    fetch('/api/pages/about/journey'),
-                    fetch('/api/pages/about/stats'),
-                    fetch('/api/pages/about/features'),
-                    fetch('/api/pages/about/badges'),
-                    fetch('/api/pages/about/certifications-section'),
-                    fetch('/api/pages/about/certifications'),
-                    fetch('/api/pages/about/philosophy'),
-                    fetch('/api/pages/about/principles'),
-                    fetch('/api/pages/about/team-section'),
-                    fetch('/api/pages/about/team-members'),
-                    fetch('/api/pages/about/cta'),
-                ]);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [
+                heroRes,
+                journeyRes,
+                statsRes,
+                featuresRes,
+                badgesRes,
+                certSectionRes,
+                certificationsRes,
+                philosophyRes,
+                principlesRes,
+                teamSectionRes,
+                teamMembersRes,
+                ctaRes
+            ] = await Promise.all([
+                fetch('/api/pages/about/hero'),
+                fetch('/api/pages/about/journey'),
+                fetch('/api/pages/about/stats'),
+                fetch('/api/pages/about/features'),
+                fetch('/api/pages/about/badges'),
+                fetch('/api/pages/about/certifications-section'),
+                fetch('/api/pages/about/certifications'),
+                fetch('/api/pages/about/philosophy'),
+                fetch('/api/pages/about/principles'),
+                fetch('/api/pages/about/team-section'),
+                fetch('/api/pages/about/team-members'),
+                fetch('/api/pages/about/cta'),
+            ]);
 
-                if (heroRes.ok) setHeroData(await heroRes.json());
-                if (journeyRes.ok) setJourneyData(await journeyRes.json());
-                if (statsRes.ok) setStats(await statsRes.json());
-                if (featuresRes.ok) setFeatures(await featuresRes.json());
-                if (badgesRes.ok) setBadges(await badgesRes.json());
-                if (certSectionRes.ok) setCertificationsSectionData(await certSectionRes.json());
-                if (certificationsRes.ok) setCertifications(await certificationsRes.json());
-                if (philosophyRes.ok) setPhilosophyData(await philosophyRes.json());
-                if (principlesRes.ok) setPrinciples(await principlesRes.json());
-                if (teamSectionRes.ok) setTeamSectionData(await teamSectionRes.json());
-                if (teamMembersRes.ok) setTeamMembers(await teamMembersRes.json());
-                if (ctaRes.ok) setCtaData(await ctaRes.json());
+            if (heroRes.ok) setHeroData(await heroRes.json());
+            if (journeyRes.ok) setJourneyData(await journeyRes.json());
+            if (statsRes.ok) setStats(await statsRes.json());
+            if (featuresRes.ok) setFeatures(await featuresRes.json());
+            if (badgesRes.ok) setBadges(await badgesRes.json());
+            if (certSectionRes.ok) setCertificationsSectionData(await certSectionRes.json());
+            if (certificationsRes.ok) setCertifications(await certificationsRes.json());
+            if (philosophyRes.ok) setPhilosophyData(await philosophyRes.json());
+            if (principlesRes.ok) setPrinciples(await principlesRes.json());
+            if (teamSectionRes.ok) setTeamSectionData(await teamSectionRes.json());
+            if (teamMembersRes.ok) setTeamMembers(await teamMembersRes.json());
+            if (ctaRes.ok) setCtaData(await ctaRes.json());
 
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     // --- Handlers ---
 
@@ -109,7 +108,9 @@ export default function AboutPageUI() {
             const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 // Delete removed items
                 for (const id of deletedIds) {
-                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    let delId: string | number | undefined;
+                    if (id && typeof id === 'object') delId = (id as any).id ?? (id as any)._id ?? undefined;
+                    else delId = id as any;
                     if (!delId) continue;
                     await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }

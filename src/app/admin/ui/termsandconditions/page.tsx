@@ -16,26 +16,25 @@ export default function TermsPageUI() {
     const [deletedSections, setDeletedSections] = useState<Array<string | number>>([]);
 
     // --- Fetch Data ---
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [headerRes, sectionsRes] = await Promise.all([
-                    fetch('/api/pages/terms/header'),
-                    fetch('/api/pages/terms/sections'),
-                ]);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [headerRes, sectionsRes] = await Promise.all([
+                fetch('/api/pages/terms/header'),
+                fetch('/api/pages/terms/sections'),
+            ]);
 
-                if (headerRes.ok) setHeaderData(await headerRes.json());
-                if (sectionsRes.ok) setSections(await sectionsRes.json());
+            if (headerRes.ok) setHeaderData(await headerRes.json());
+            if (sectionsRes.ok) setSections(await sectionsRes.json());
 
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchData();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
     // --- Handlers ---
     const handleSave = async () => {
@@ -56,7 +55,9 @@ export default function TermsPageUI() {
 
             const saveList = async (url: string, items: any[], deletedIds: Array<string | number>) => {
                 for (const id of deletedIds) {
-                    const delId = id?.id ?? id ?? id?._id ?? id;
+                    let delId: string | number | undefined;
+                    if (id && typeof id === 'object') delId = (id as any).id ?? (id as any)._id ?? undefined;
+                    else delId = id as any;
                     if (!delId) continue;
                     await fetch(`${url}?id=${delId}`, { method: 'DELETE' });
                 }

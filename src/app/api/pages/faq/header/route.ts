@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
         const result = await FAQPageHeader.create({ badge_text, title, highlight_text, description, search_placeholder, is_active });
 
-        revalidateTag('faq-header');
+        revalidateTag('faq-header', 'max');
 
         return NextResponse.json(
             { success: true, message: 'Header section created successfully', id: result._id },
@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest) {
 
         await FAQPageHeader.findByIdAndUpdate(id, updateData, { new: true });
 
-        revalidateTag('faq-header');
+        revalidateTag('faq-header', 'max');
 
         return NextResponse.json({ success: true, message: 'Header section updated successfully' });
     } catch (error) {

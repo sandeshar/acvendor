@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         const numericStatus = status === 'published' ? 2 : 1;
         const statusId = await resolveStatusId(numericStatus);
 
-        n        // Insert blog post
+        // Insert blog post
         const newPost = await BlogPost.create({
             title,
             slug,
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
                 statusName = s?.name || null;
             } else if (typeof post.status === 'number') {
                 const sName = Object.values(STATUS_MAP as any)[post.status - 1];
-                statusName = sName || null;
+                statusName = (sName as string) || null;
             }
             return {
                 ...post,
