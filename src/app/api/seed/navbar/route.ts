@@ -13,12 +13,13 @@ export async function POST(request: Request) {
         // Seed default navbar items
         const defaultItems = [
             { label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-            { label: 'Midea AC', href: '/midea-ac', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
+            { label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
             { label: 'Shop', href: '/shop', order: 2, is_button: 0, is_active: 1 },
-            { label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
-            { label: 'FAQ', href: '/faq', order: 4, is_button: 0, is_active: 1 },
-            { label: 'Contact', href: '/contact', order: 5, is_button: 0, is_active: 1 },
-            { label: 'Cart', href: '/cart', order: 6, is_button: 1, is_active: 1 },
+            { label: 'Midea AC', href: '/midea-ac', order: 3, is_button: 0, is_active: 1 },
+            { label: 'About Us', href: '/about', order: 4, is_button: 0, is_active: 1 },
+            { label: 'FAQ', href: '/faq', order: 5, is_button: 0, is_active: 1 },
+            { label: 'Contact', href: '/contact', order: 6, is_button: 0, is_active: 1 },
+            { label: 'Cart', href: '/cart', order: 7, is_button: 1, is_active: 1 },
         ];
 
         // Insert defaults
@@ -49,14 +50,14 @@ export async function POST(request: Request) {
             }
         }
 
-        // Get the Products main nav ID
-        const productNavRow = await NavbarItems.findOne({ href: '/midea-ac' }).lean();
-        const productsId = productNavRow?._id;
-        if (!productsId) {
-            return NextResponse.json({ error: 'Products nav item not found' }, { status: 500 });
+        // Get the Services main nav ID
+        const servicesNavRow = await NavbarItems.findOne({ href: '/services' }).lean();
+        const servicesId = servicesNavRow?._id;
+        if (!servicesId) {
+            return NextResponse.json({ error: 'Services nav item not found' }, { status: 500 });
         }
 
-        // Insert each category under Products
+        // Insert each category under Services
         for (let i = 0; i < categories.length; i++) {
             const cat = categories[i];
             const subs = await ServiceSubcategories.find({ category_id: cat._id }).lean();
@@ -65,11 +66,11 @@ export async function POST(request: Request) {
             // Defensive lookup for existing child (catch casting errors when matching ObjectId parent)
             let existingChild: any = null;
             try {
-                existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: productsId }).lean();
+                existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: servicesId }).lean();
             } catch (err: any) {
-                console.error('Navbar seeder: cast error finding child by parent_id', { err: err?.message || err, catSlug: cat.slug, productsId });
+                console.error('Navbar seeder: cast error finding child by parent_id', { err: err?.message || err, catSlug: cat.slug, servicesId });
                 try {
-                    existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: String(productsId) }).lean();
+                    existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}`, parent_id: String(servicesId) }).lean();
                 } catch (err2: any) {
                     console.error('Navbar seeder fallback find by string parent_id failed', err2?.message || err2);
                     existingChild = await NavbarItems.findOne({ href: `/services/category/${cat.slug}` }).lean();
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
                     label: cat.name,
                     href: `/services/category/${cat.slug}`,
                     order: i,
-                    parent_id: productsId,
+                    parent_id: servicesId,
                     is_button: 0,
                     is_active: 1,
                     is_dropdown: catHasSub ? 1 : 0,

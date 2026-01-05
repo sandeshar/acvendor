@@ -219,6 +219,7 @@ export async function POST(request: Request) {
                 title: 'Quality Air Conditioners & Parts',
                 description: 'Explore a wide range of AC units, parts, and installation services from trusted brands.',
                 badge_text: 'Free Installation Offer',
+                highlight_text: 'Expert installation & support',
 
                 primary_cta_text: 'Shop Products',
                 primary_cta_link: '/midea-ac',
