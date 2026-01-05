@@ -88,25 +88,18 @@ async function saveOne(file: File, folder: string) {
         }
     }
 
-    const baseUrl = getBaseUrl()
-    let publicPath = ''
-    const uploadsRootNormalized = uploadsRoot.replace(/\\/g, '/')
-    const isUnderPublic = uploadsRootNormalized.includes('/public/') || uploadsRootNormalized.endsWith('/public')
+    // Return API URL for serving images
     const folderClean = folder.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')
     const relative = `${folderClean ? folderClean + '/' : ''}${filename}`
-    if (baseUrl) {
-        publicPath = `${baseUrl}/${relative}`.replace(/([^:]\/\/)\//, '$1/')
-    } else if (isUnderPublic) {
-        const idx = uploadsRootNormalized.lastIndexOf('/public')
-        const afterPublic = idx >= 0 ? uploadsRootNormalized.substring(idx + '/public'.length) : '/uploads'
-        const basePath = afterPublic || '/uploads'
-        publicPath = `${basePath}/${relative}`.replace(/\/\/+/g, '/')
-    } else {
-        publicPath = `file://${targetPath}`
-    }
+    const publicPath = `/api/uploads/${relative}`
 
     // Prefer returning the generated .ico URL for favicons when available
     if (folder === 'favicons' && icoPublicPath) {
+        // Also convert .ico to API URL
+        const icoRelative = icoPublicPath.split('/uploads/').pop()
+        if (icoRelative) {
+            return `/api/uploads/${icoRelative}`
+        }
         return icoPublicPath
     }
 
