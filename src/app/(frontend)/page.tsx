@@ -3,6 +3,7 @@ import Expertise from "@/components/Homepage/Expertise";
 import Hero from "@/components/Homepage/Hero";
 import Trust from "@/components/Homepage/Trust";
 import ProductShowcase from '@/components/Homepage/ProductShowcase';
+import ProjectGallery from "@/components/Homepage/ProjectGallery";
 import TestimonialSlider from "@/components/shared/TestimonialSlider";
 
 
@@ -10,7 +11,7 @@ async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
-        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes] = await Promise.all([
+        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, projectsRes, projectsSectionRes] = await Promise.all([
             fetch(`${baseUrl}/api/pages/homepage/hero`, { next: { tags: ['homepage-hero'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-section`, { next: { tags: ['homepage-trust-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-logos`, { next: { tags: ['homepage-trust-logos'] } }),
@@ -19,15 +20,19 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/pages/homepage/contact-section`, { next: { tags: ['homepage-contact-section'] } }),
             // Request featured products for the Midea brand
             fetch(`${baseUrl}/api/products?featured=1&limit=4&brand=midea`, { next: { tags: ['products'] } }),
+            fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),
+            fetch(`${baseUrl}/api/pages/projects/section`, { next: { tags: ['projects-section'] } }),
         ]);
 
-        const hero = heroRes.ok ? await heroRes.json() : {};
-        const trustSection = trustSectionRes.ok ? await trustSectionRes.json() : {};
-        const trustLogos = trustLogosRes.ok ? await trustLogosRes.json() : [];
-        const expertiseSection = expertiseSectionRes.ok ? await expertiseSectionRes.json() : {};
-        const expertiseItems = expertiseItemsRes.ok ? await expertiseItemsRes.json() : [];
-        const contactSection = contactSectionRes.ok ? await contactSectionRes.json() : {};
-        const featuredProducts = featuredRes.ok ? await featuredRes.json() : [];
+        const hero = heroRes.ok ? (await heroRes.json() || {}) : {};
+        const trustSection = trustSectionRes.ok ? (await trustSectionRes.json() || {}) : {};
+        const trustLogos = trustLogosRes.ok ? (await trustLogosRes.json() || []) : [];
+        const expertiseSection = expertiseSectionRes.ok ? (await expertiseSectionRes.json() || {}) : {};
+        const expertiseItems = expertiseItemsRes.ok ? (await expertiseItemsRes.json() || []) : [];
+        const contactSection = contactSectionRes.ok ? (await contactSectionRes.json() || {}) : {};
+        const featuredProducts = featuredRes.ok ? (await featuredRes.json() || []) : [];
+        const projects = projectsRes.ok ? (await projectsRes.json() || []) : [];
+        const projectsSection = projectsSectionRes.ok ? (await projectsSectionRes.json() || {}) : {};
 
         return {
             hero: Object.keys(hero).length ? hero : null,
@@ -37,6 +42,8 @@ async function getHomepageData() {
             expertiseItems,
             contactSection: Object.keys(contactSection).length ? contactSection : null,
             products: featuredProducts,
+            projects,
+            projectsSection: Object.keys(projectsSection).length ? projectsSection : null,
         };
     } catch (error) {
         console.error('Error fetching homepage data:', error);
@@ -48,6 +55,8 @@ async function getHomepageData() {
             expertiseItems: [],
             contactSection: null,
             products: [],
+            projects: [],
+            projectsSection: null,
         };
     }
 }
@@ -63,6 +72,7 @@ export default async function Home() {
                 {/* Product showcase (featured products) */}
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
                 <ProductShowcase products={data.products || []} brand="midea" />
+                <ProjectGallery projects={data.projects || []} section={data.projectsSection} />
                 <TestimonialSlider filter="homepage" />
                 <Contact data={data.contactSection} />
             </div>

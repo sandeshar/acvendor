@@ -5,7 +5,7 @@ import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
 
 interface HeroData {
-    id?: number;
+    id?: number | string;
     badge_text: string;
     tagline: string;
     title: string;
@@ -77,11 +77,17 @@ export default function AdminShopPage() {
             const heroData = await heroRes.json();
             const brandsData = await brandsRes.json();
 
-            if (heroData?.id) setGlobalHero(heroData);
-            setBrands(brandsData || []);
+            if (heroData?._id || heroData?.id) setGlobalHero({ ...heroData, id: heroData.id ?? heroData._id });
+            
+            let finalBrands = brandsData || [];
+            // Ensure 'midea' is available for management as it has a dedicated page
+            if (!finalBrands.find((b: any) => b.slug === 'midea')) {
+                finalBrands.push({ id: 'midea-manual', name: 'Midea (Dedicated Page)', slug: 'midea' });
+            }
+            setBrands(finalBrands);
 
             // Default to 'midea' if it exists
-            const midea = (brandsData || []).find((b: any) => b.slug === 'midea');
+            const midea = finalBrands.find((b: any) => b.slug === 'midea');
             if (midea) {
                 setSelectedBrand('midea');
                 fetchBrandHero('midea');
@@ -101,6 +107,7 @@ export default function AdminShopPage() {
                 badge_text: '',
                 tagline: '',
                 title: '',
+                highlight_text: '',
                 subtitle: '',
                 description: '',
                 cta_text: '',
@@ -116,20 +123,26 @@ export default function AdminShopPage() {
         try {
             const res = await fetch(`/api/pages/shop/brand-hero?brand=${slug}`);
             const data = await res.json();
-            if (data?.id) {
-                setBrandHero(data);
+            if (data?._id || data?.id) {
+                setBrandHero({ ...data, id: data.id ?? data._id });
             } else {
+                // Find brand name from the brands list
+                const brandObj = brands.find(b => b.slug === slug);
+                const brandName = brandObj?.name || slug.toUpperCase();
+
+                // Autofill with global hero data as a starting point if no brand-specific data exists
                 setBrandHero({
                     brand_slug: slug,
-                    badge_text: '',
-                    tagline: '',
-                    title: '',
-                    subtitle: '',
-                    description: '',
-                    cta_text: '',
-                    cta_link: '',
-                    background_image: '',
-                    hero_image_alt: '',
+                    badge_text: globalHero.badge_text || '',
+                    tagline: globalHero.tagline || '',
+                    title: `${brandName} Air Conditioning`,
+                    highlight_text: brandName,
+                    subtitle: globalHero.subtitle || '',
+                    description: globalHero.description || '',
+                    cta_text: globalHero.cta_text || '',
+                    cta_link: globalHero.cta_link || '',
+                    background_image: globalHero.background_image || '',
+                    hero_image_alt: `${brandName} Hero Image`,
                     display_order: 0,
                     is_active: 1
                 });
@@ -217,94 +230,123 @@ export default function AdminShopPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
+                    <div className="space-y-6">
+                        {/* Badge & Tagline */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold mb-3">Badge & Tagline</h3>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Badge Text</label>
                             <input
                                 type="text"
-                                placeholder="e.g. Official Distributor"
+                                placeholder="e.g. Official Distributor — short label shown above the title"
                                 value={globalHero.badge_text}
                                 onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Tagline</label>
+                            <p className="text-xs text-slate-400 mt-2">Short, eye-catching label shown above the main headline.</p>
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
                             <input
                                 type="text"
-                                placeholder="e.g. Premium Air Conditioning"
+                                placeholder="e.g. Premium Air Conditioning — short supporting phrase"
                                 value={globalHero.tagline}
                                 onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
+
+                        {/* Headline */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold mb-3">Headline</h3>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Title</label>
                             <input
                                 type="text"
-                                placeholder="Hero Title"
+                                placeholder="Main headline (e.g., Gree Air Conditioners: Nepal's #1 Choice)"
                                 value={globalHero.title}
                                 onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
                             />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                            <p className="text-xs text-slate-400 mt-2">Use <strong>Highlight Text</strong> to emphasize a substring of the title.</p>
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Highlight Text</label>
                             <input
                                 type="text"
-                                placeholder="Substring to highlight"
+                                placeholder="Substring to highlight (case-insensitive)"
                                 value={globalHero.highlight_text}
                                 onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
+
+                        {/* CTA */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold mb-3">Call to Action</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">CTA Text</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Shop Gree Series"
+                                        value={globalHero.cta_text}
+                                        onChange={e => setGlobalHero({ ...globalHero, cta_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">CTA Link</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. /shop?brand=gree or external URL"
+                                        value={globalHero.cta_link}
+                                        onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-2">Keep CTAs short and action-oriented.</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* Content */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold mb-3">Content</h3>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
                             <input
                                 type="text"
-                                placeholder="Hero Subtitle"
+                                placeholder="Short supporting subtitle"
                                 value={globalHero.subtitle}
                                 onChange={e => setGlobalHero({ ...globalHero, subtitle: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Text</label>
-                                <input
-                                    type="text"
-                                    value={globalHero.cta_text}
-                                    onChange={e => setGlobalHero({ ...globalHero, cta_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Link</label>
-                                <input
-                                    type="text"
-                                    value={globalHero.cta_link}
-                                    onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
                             <textarea
                                 value={globalHero.description}
                                 onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
-                                placeholder="Enter hero description..."
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
+                                placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
                             />
                         </div>
-                        <ImageUploader
-                            value={globalHero.background_image}
-                            onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
-                            folder="shop"
-                            label="Background Image"
-                        />
+
+                        {/* Image & accessibility */}
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold mb-3">Image & Accessibility</h3>
+                            <ImageUploader
+                                value={globalHero.background_image}
+                                onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
+                                folder="shop"
+                                label="Background Image"
+                            />
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Alt Text</label>
+                            <input
+                                type="text"
+                                placeholder="Alt text for the hero image (accessibility)"
+                                value={globalHero.hero_image_alt}
+                                onChange={e => setGlobalHero({ ...globalHero, hero_image_alt: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                            />
+                        </div>
                     </div>
                 </div>
             </section>
@@ -313,8 +355,8 @@ export default function AdminShopPage() {
             <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-bold text-slate-800">midea-ac Hero Section</h2>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage branding for the /midea-ac page</p>
+                        <h2 className="text-lg font-bold text-slate-800">{selectedBrand ? `${selectedBrand.toUpperCase()} Hero Section` : 'Brand Hero Section'}</h2>
+                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage branding for {selectedBrand ? `/${selectedBrand}-ac` : 'brand-specific'} pages</p>
                         <div className="flex items-center gap-3 mt-3">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Brand:</label>
                             <select

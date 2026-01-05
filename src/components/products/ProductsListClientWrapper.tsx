@@ -35,9 +35,10 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
         const subcategory = searchParams?.get('subcategory');
         const page = searchParams?.get('page');
         const brand = searchParams?.get('brand');
+        const sort = searchParams?.get('sort');
 
-        // If no filters and no page and no brand, keep initial products
-        if (!category && !subcategory && !page && !brand) {
+        // If no filters and no page and no brand and no sort, keep initial products
+        if (!category && !subcategory && !page && !brand && !sort) {
             setProducts(initialProducts);
             return;
         }
@@ -50,6 +51,7 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
                 if (category) q.set('category', category);
                 if (subcategory) q.set('subcategory', subcategory);
                 if (brand) q.set('brand', brand);
+                if (sort) q.set('sort', sort);
                 if (page) {
                     const pNum = Math.max(1, parseInt(page) || 1);
                     const offset = (pNum - 1) * 12;

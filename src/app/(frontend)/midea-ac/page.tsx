@@ -3,19 +3,21 @@ import ProductsListClient from '@/components/products/ProductsListClientWrapper'
 import CategoriesList from '@/components/products/CategoriesList';
 import CategoriesPills from '@/components/products/CategoriesPills';
 import ProductsPagination from '@/components/products/ProductsPagination';
+import SortDropdown from '@/components/products/SortDropdown';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1) {
+async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1, sort?: string) {
     try {
         const q = new URLSearchParams();
         if (limit) q.set('limit', String(limit));
         if (brand) q.set('brand', brand);
         if (category) q.set('category', category);
         if (subcategory) q.set('subcategory', subcategory);
+        if (sort) q.set('sort', sort);
         const offset = (Math.max(1, page) - 1) * (limit || 12);
         if (offset) q.set('offset', String(offset));
         const res = await fetch(`${API_BASE}/api/products?${q.toString()}`, { cache: 'no-store', next: { tags: ['products'] } });
@@ -27,7 +29,7 @@ async function getProducts(limit = 12, brand?: string, category?: string, subcat
     }
 }
 
-export default async function MideaPage({ searchParams }: { searchParams?: { subcategory?: string, page?: string, category?: string } }) {
+export default async function MideaPage({ searchParams }: { searchParams?: { subcategory?: string, page?: string, category?: string, sort?: string } }) {
     // Force brand to 'midea' for this page
     const brand = 'midea';
 
@@ -35,6 +37,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
     let category: string = '';
     let subcategory: string | undefined = undefined;
     let page: number = 1;
+    let sort: string = '';
     try {
         // If searchParams is a Promise, try to await it
         let sp: any = searchParams;
@@ -66,6 +69,8 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     subcategory = sc == null ? undefined : String(sc);
                     const p = (sp as any).get('page');
                     page = p ? parseInt(String(p)) || 1 : 1;
+                    const s = (sp as any).get('sort');
+                    sort = s == null ? '' : String(s);
                 } else {
                     const rawC = (sp as any)['category'];
                     category = rawC == null ? '' : String(rawC);
@@ -73,6 +78,8 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     subcategory = rawSC == null ? undefined : String(rawSC);
                     const rawP = (sp as any)['page'];
                     page = rawP ? parseInt(String(rawP)) || 1 : 1;
+                    const rawS = (sp as any)['sort'];
+                    sort = rawS == null ? '' : String(rawS);
                 }
             } catch (innerErr) {
                 // eslint-disable-next-line no-console
@@ -84,7 +91,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         console.error('MideaPage: failed to inspect searchParams', err, { searchParams });
     }
 
-    const products = await getProducts(12, brand, category || undefined, subcategory, page);
+    const products = await getProducts(12, brand, category || undefined, subcategory, page, sort);
 
     const hasMore = (products || []).length === 12;
 
@@ -92,6 +99,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         const params = new URLSearchParams();
         if (category) params.set('category', category);
         if (subcategory) params.set('subcategory', subcategory);
+        if (sort) params.set('sort', sort);
         if (newPage && newPage > 1) params.set('page', String(newPage));
         const qs = params.toString();
         return `/midea-ac${qs ? `?${qs}` : ''}`;
@@ -111,17 +119,20 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         if (res.ok) shopHero = await res.json();
     } catch (e) { /* ignore */ }
 
-    const renderTitle = (title: string, highlight?: string) => {
-        if (!highlight || !title.includes(highlight)) {
-            return title;
-        }
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+    const renderTitle = (title: string, highlight?: string) => {
+        const t = String(title || '');
+        const hRaw = String(highlight || '').trim();
+        if (!hRaw) return t;
+        const h = hRaw.toLowerCase();
+        if (!t.toLowerCase().includes(h)) return t;
+
+        const escaped = escapeRegExp(hRaw);
+        const parts = t.split(new RegExp(`(${escaped})`, 'gi'));
         return parts.map((part, i) =>
-            part.toLowerCase() === highlight.toLowerCase() ? (
-                <span key={i} className="text-primary">
-                    {part}
-                </span>
+            part.toLowerCase() === h ? (
+                <span key={i} className="text-primary">{part}</span>
             ) : (
                 part
             )
@@ -164,11 +175,11 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                         const cta = h?.cta_text || '';
 
                         return (
-                            <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || ''}")` }}>
+                            <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k'}")` }}>
                                 <div className="flex flex-col gap-2 text-left max-w-lg">
                                     {badge && <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">{badge}</span>}
                                     <h1 className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">
-                                        {renderTitle(title)}
+                                        {renderTitle(title, h?.highlight_text || '')}
                                     </h1>
                                     <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">{subtitle}</h2>
                                 </div>
@@ -189,12 +200,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
                     <h2 className="text-xl font-bold text-[#111418]">Featured {brand ? brand.toUpperCase() : 'Brand'} Products</h2>
                     <div className="flex gap-2">
-                        <select className="h-9 rounded-lg border-gray-200 text-sm bg-white text-[#111418] focus:ring-primary focus:border-primary">
-                            <option>Sort by: Recommended</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
-                            <option>Capacity: Low to High</option>
-                        </select>
+                        <SortDropdown currentSort={sort} />
                     </div>
                 </div>
 

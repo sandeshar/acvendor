@@ -29,31 +29,36 @@ const Expertise = ({ section, items = [] }: ExpertiseProps) => {
     }
 
     return (
-        <section className="flex flex-col gap-10 px-4 md:px-10 py-20 sm:py-32 @container">
-            <div className="flex flex-col gap-4 text-center items-center">
-                <h1
-                    className="text-body tracking-light text-3xl font-bold leading-tight @[480px]:text-4xl @[480px]:font-black max-w-2xl">
-                    {section.title}
-                </h1>
-                <p className="text-subtext text-base font-normal leading-normal max-w-2xl">
-                    {section.description}
-                </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-0">
-                {items.map((item, i) => (
-                    <div
-                        key={item._id ?? item.id ?? item.title ?? i}
-                        className="flex flex-1 gap-4 rounded-xl border border-muted bg-card p-6 flex-col"
-                    >
-                        <span className="material-symbols-outlined text-primary-var text-3xl">{item.icon}</span>
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-body text-lg font-bold leading-tight">{item.title}</h2>
-                            <p className="text-subtext text-sm font-normal leading-normal">{item.description}</p>
-                        </div>
+        <div className="w-full bg-background-light py-20" id="services">
+            <div className="layout-container flex justify-center px-4 md:px-10">
+                <div className="flex flex-col w-full max-w-[1280px] gap-12">
+                    <div className="flex flex-col gap-4 text-center md:text-left">
+                        <h2 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight">
+                            {section.title || 'Our Expertise'}
+                        </h2>
+                        <p className="text-[#617589] text-lg max-w-[720px]">
+                            {section.description || 'Comprehensive cooling services for homes and businesses across Kathmandu Valley. We handle everything from setup to maintenance.'}
+                        </p>
                     </div>
-                ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {items.map((item, i) => (
+                            <div
+                                key={item._id ?? item.id ?? item.title ?? i}
+                                className="group flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+                            >
+                                <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary bg-blue-100 text-blue-500 transition-colors">
+                                    <span className="material-symbols-outlined">{item.icon}</span>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <h3 className="text-lg font-bold text-[#111418]">{item.title}</h3>
+                                    <p className="text-sm text-[#617589] leading-relaxed">{item.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
     );
 };
 

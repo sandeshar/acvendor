@@ -76,30 +76,34 @@ export default function ProductsListClient({ products, productPathPrefix, search
 
     // helpers for inline price compare buttons
     function containsButtonIcon(p: any) {
-        return p?.id && contains(p.id) ? 'check' : 'add';
+        const pid = p?._id ?? p?.id;
+        return pid && contains(pid) ? 'check' : 'add';
     }
     function containsButtonClass(p: any) {
-        return p?.id && contains(p.id) ? 'bg-primary/10 border-primary text-primary' : 'border-[#e5e7eb] text-[#111418] hover:bg-gray-50';
+        const pid = p?._id ?? p?.id;
+        return pid && contains(pid) ? 'bg-primary/10 border-primary text-primary' : 'border-[#e5e7eb] text-[#111418] hover:bg-gray-50';
     }
     function containsButtonAria(p: any) {
-        return p?.id && contains(p.id) ? 'Remove from compare' : 'Add to compare';
+        const pid = p?._id ?? p?.id;
+        return pid && contains(pid) ? 'Remove from compare' : 'Add to compare';
     }
     function onCompareClick(e: any, product: any) {
         e.preventDefault();
-        if (!product?.id) return;
-        if (contains(product.id)) removeItem(product.id);
-        else addItem({ id: product.id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
+        const pid = product?._id ?? product?.id;
+        if (!pid) return;
+        if (contains(pid)) removeItem(pid);
+        else addItem({ _id: product._id, id: product.id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
     }
 
     // Compare button component (uses local compare hook)
     function CompareButton({ product }: { product: any }) {
-        const id = product?.id;
-        const selected = id ? contains(id) : false;
+        const pid = product?._id ?? product?.id;
+        const selected = pid ? contains(pid) : false;
         const onClick = (e: any) => {
             e.preventDefault();
-            if (!id) return;
-            if (selected) removeItem(id);
-            else addItem({ id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
+            if (!pid) return;
+            if (selected) removeItem(pid);
+            else addItem({ _id: product._id, id: product.id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
         };
         return (
             <button onClick={onClick} className={`h-9 w-9 flex items-center justify-center rounded-lg border ${selected ? 'bg-primary/10 border-primary text-primary' : 'border-[#e5e7eb] text-[#111418] hover:bg-gray-50'} transition-colors`}>
@@ -127,7 +131,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
             ) : view === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {displayedProducts.map((p: any) => (
-                        <article key={p.id || p.slug} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
+                        <article key={p.id ?? p._id ?? p.slug} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
                             <div className="relative h-48 w-full bg-[#f3f6f9] flex items-center justify-center p-4">
                                 {p.inventory_status === 'in_stock' && (
                                     <div className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded">IN STOCK</div>
@@ -184,7 +188,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                         </thead>
                         <tbody>
                             {displayedProducts.map((p: any) => (
-                                <tr key={p.id || p.slug} className="border-t hover:bg-gray-50 transition-colors">
+                                <tr key={p.id ?? p._id ?? p.slug} className="border-t hover:bg-gray-50 transition-colors">
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-4">
                                             <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="h-16 w-28 object-contain rounded" />

@@ -167,12 +167,23 @@ export async function GET(request: NextRequest) {
 
         let query: any = {};
 
-        // Support fetching by explicit ids list: ?ids=1,2,3
+        // Support fetching by explicit ids list: ?ids=1,2,3 or ?ids=hexid1,hexid2
         const idsParam = searchParams.get('ids');
         if (idsParam) {
-            const parsed = String(idsParam).split(',').map(s => parseInt(s)).filter(n => !isNaN(n));
-            if (!parsed.length) return NextResponse.json([]);
-            query._id = { $in: parsed };
+            // Split tokens; accept numeric ids and string ObjectId-like ids
+            const parts = String(idsParam).split(',').map(s => s.trim()).filter(Boolean);
+            if (!parts.length) return NextResponse.json([]);
+
+            const numericIds = parts.map(s => Number(s)).filter(n => !isNaN(n) && String(n) === s);
+            const stringIds = parts.filter(s => !/^\d+$/.test(s));
+
+            // Build $in array containing numeric ids and string ids (Mongoose will cast strings to ObjectId when appropriate)
+            const idsForQuery: any[] = [];
+            if (numericIds.length) idsForQuery.push(...numericIds);
+            if (stringIds.length) idsForQuery.push(...stringIds);
+
+            if (!idsForQuery.length) return NextResponse.json([]);
+            query._id = { $in: idsForQuery };
         }
 
         if (status) {
@@ -240,7 +251,16 @@ export async function GET(request: NextRequest) {
         const offset = searchParams.get('offset');
         const offsetNum = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
 
-        let productQuery = Product.find(query).sort({ createdAt: -1 }).skip(offsetNum);
+        const sortParam = searchParams.get('sort');
+        let sort: any = { createdAt: -1 };
+
+        if (sortParam === 'price_asc') sort = { price: 1 };
+        else if (sortParam === 'price_desc') sort = { price: -1 };
+        else if (sortParam === 'capacity_asc') sort = { capacity: 1 };
+        else if (sortParam === 'capacity_desc') sort = { capacity: -1 };
+        else if (sortParam === 'featured') sort = { featured: -1, createdAt: -1 };
+
+        let productQuery = Product.find(query).sort(sort).skip(offsetNum);
         if (limit && !isNaN(parseInt(limit))) {
             productQuery = productQuery.limit(parseInt(limit));
         }

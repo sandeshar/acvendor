@@ -6,6 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const admin = searchParams.get('admin');
+    const limit = searchParams.get('limit');
 
     try {
         await connectDB();
@@ -18,7 +19,13 @@ export async function GET(request: Request) {
             query.category = category;
         }
 
-        const data = await Projects.find(query).sort({ display_order: 1 }).lean();
+        let dbQuery = Projects.find(query).sort({ display_order: 1 });
+        
+        if (limit) {
+            dbQuery = dbQuery.limit(parseInt(limit));
+        }
+
+        const data = await dbQuery.lean();
 
         return NextResponse.json(data);
     } catch (error) {

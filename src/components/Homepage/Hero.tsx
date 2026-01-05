@@ -43,16 +43,16 @@ const Hero = ({ data }: HeroProps) => {
     const bgUrl = isValidUrl(data.background_image) ? String(data.background_image).trim() : defaultBg;
 
     return (
-        <div className="relative flex min-h-[calc(100vh-60px)] flex-col justify-center overflow-hidden">
-            {/* Background Image with Overlay (use <img> to ensure loading and avoid CSS url parsing issues) */}
+        <div className="relative flex min-h-[600px] flex-col justify-center overflow-hidden">
+            {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img src={bgUrl} alt={data.hero_image_alt || 'Modern living room with air conditioner'} className="w-full h-full object-cover object-center" loading="eager" decoding="async" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30"></div>
             </div>
 
-            <div className="layout-container relative z-10 flex justify-center px-4 md:px-10 py-0">
-                <div className="flex w-full flex-col gap-6 md:gap-8">
-                    <div className="flex flex-col gap-4 w-full md:w-3/4 lg:w-2/3">
+            <div className="layout-container relative z-10 flex justify-center px-4 md:px-10 py-20">
+                <div className="flex w-full max-w-[1280px] flex-col gap-6 md:gap-8">
+                    <div className="flex flex-col gap-4 max-w-[700px]">
                         <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
                             <span className="material-symbols-outlined text-sm">verified</span>
                             {data.badge_text || '#1 AC Service Provider in Kathmandu'}
@@ -79,7 +79,7 @@ const Hero = ({ data }: HeroProps) => {
                             })()}
                         </h1>
 
-                        <h2 className="text-gray-200 text-lg font-normal leading-relaxed max-w-none">
+                        <h2 className="text-gray-200 text-lg font-normal leading-relaxed max-w-[600px]">
                             {data.subtitle || 'Authorized sales, professional installation, and expert repair for residential and commercial spaces. Stay cool and comfortable all year round.'}
                         </h2>
                     </div>
@@ -95,7 +95,7 @@ const Hero = ({ data }: HeroProps) => {
                     </div>
 
                     {/* Trust Badges */}
-                    <div className="flex flex-wrap gap-6 mt-8 pt-8 border-t border-white/10">
+                    <div className="flex gap-6 mt-8 pt-8 border-t border-white/10">
                         <div className="flex items-center gap-2 text-white/80">
                             <span className="material-symbols-outlined text-primary">{data.trust_badge1_icon || 'engineering'}</span>
                             <span className="text-sm font-medium">{data.trust_badge1_text || 'Certified Techs'}</span>

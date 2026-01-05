@@ -15,7 +15,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
     // Fetch Shop hero content, brands and categories
     const [heroRes, brandsRes, categoriesRes] = await Promise.all([
-        fetch(`${API_BASE}/api/pages/shop/hero`, { cache: 'no-store' }),
+        fetch(`${API_BASE}/api/pages/shop/hero`, { cache: 'no-store', next: { tags: ['shop-hero'] } }),
         fetch(`${API_BASE}/api/pages/services/brands`, { cache: 'no-store' }),
         fetch(`${API_BASE}/api/pages/services/categories`, { cache: 'no-store' }),
     ]);
@@ -129,17 +129,20 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
         } catch (e) { brandProductsMap[slug] = []; }
     }));
 
-    const renderTitle = (title: string, highlight?: string) => {
-        if (!highlight || !title.includes(highlight)) {
-            return title;
-        }
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
+    const renderTitle = (title: string, highlight?: string) => {
+        const t = String(title || '');
+        const hRaw = String(highlight || '').trim();
+        if (!hRaw) return t;
+        const h = hRaw.toLowerCase();
+        if (!t.toLowerCase().includes(h)) return t;
+
+        const escaped = escapeRegExp(hRaw);
+        const parts = t.split(new RegExp(`(${escaped})`, 'gi'));
         return parts.map((part, i) =>
-            part.toLowerCase() === highlight.toLowerCase() ? (
-                <span key={i} className="text-primary">
-                    {part}
-                </span>
+            part.toLowerCase() === h ? (
+                <span key={i} className="text-primary">{part}</span>
             ) : (
                 part
             )
@@ -153,13 +156,13 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                     <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
                         <div className="flex-1 flex flex-col gap-6 text-left z-10">
                             {hero?.badge_text && (
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit bg-blue-100 text-blue-500">
                                     <span className="material-symbols-outlined text-primary text-sm">verified</span>
                                     <span className="text-primary text-xs font-bold uppercase tracking-wide">{hero.badge_text}</span>
                                 </div>
                             )}
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
-                                {renderTitle(hero?.title || '')}
+                                {renderTitle(hero?.title || '', hero?.highlight_text || '')}
                                 {hero?.subtitle && (
                                     <>
                                         <br />
@@ -216,10 +219,10 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                     <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
                         <div className="flex items-end justify-between mb-8">
                             <div>
-                                <div className="flex items-center gap-2 text-primary mb-2">
+                                {/* <div className="flex items-center gap-2 text-primary mb-2">
                                     <span className="material-symbols-outlined">star</span>
                                     <span className="font-bold text-sm tracking-widest uppercase">Featured Brand</span>
-                                </div>
+                                </div> */}
                                 <h2 className="text-3xl font-bold text-text-main-light">{(slug || '').toUpperCase()} Series</h2>
                                 <p className="text-text-sub-light mt-1">Explore popular models and best sellers</p>
                             </div>
