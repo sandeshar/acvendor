@@ -30,7 +30,7 @@ export async function GET(
 ) {
     try {
         const pathSegments = params.path || []
-        
+
         if (pathSegments.length === 0) {
             return NextResponse.json({ error: 'No file path provided' }, { status: 400 })
         }
@@ -39,14 +39,14 @@ export async function GET(
         const sanitizedPath = pathSegments
             .map(segment => segment.replace(/\.\./g, ''))
             .join('/')
-        
+
         const uploadsRoot = getEnvUploadDir()
         const filePath = path.join(uploadsRoot, sanitizedPath)
 
         // Ensure the resolved path is still under uploads directory
         const normalizedFilePath = path.resolve(filePath)
         const normalizedUploadsRoot = path.resolve(uploadsRoot)
-        
+
         if (!normalizedFilePath.startsWith(normalizedUploadsRoot)) {
             return NextResponse.json({ error: 'Invalid file path' }, { status: 403 })
         }
