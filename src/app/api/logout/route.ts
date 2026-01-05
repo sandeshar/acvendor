@@ -6,10 +6,13 @@ export async function POST() {
         { status: 200 }
     );
 
-    // Clear the admin_auth cookie
+    // Clear the admin_auth cookie. Detect protocol so clearing matches how it was set.
+    const forwardedProto = response.headers.get?.('x-forwarded-proto') || '';
+    const isSecure = forwardedProto.split(',')[0] === 'https';
+
     response.cookies.set('admin_auth', '', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isSecure,
         sameSite: 'lax',
         path: '/',
         maxAge: 0, // Expire immediately

@@ -24,10 +24,16 @@ export async function POST(request: Request) {
                 },
                 { status: 200 }
             );
+            // Determine if the incoming request is over HTTPS (supports proxies via x-forwarded-proto)
+            const forwardedProto = request.headers.get('x-forwarded-proto');
+            const isSecure = (forwardedProto && forwardedProto.split(',')[0] === 'https') || new URL(request.url).protocol === 'https:';
+
             response.cookies.set('admin_auth', jwtoken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax'
+                secure: isSecure,
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 7 * 24 * 60 * 60, // 7 days
             });
             return response;
         }
