@@ -20,7 +20,7 @@ export default function SortDropdown({ currentSort }: { currentSort: string }) {
     };
 
     return (
-        <select 
+        <select
             value={currentSort}
             onChange={handleSortChange}
             className="h-9 rounded-lg border-gray-200 text-sm bg-white text-[#111418] focus:ring-primary focus:border-primary"

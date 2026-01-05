@@ -20,7 +20,7 @@ export async function GET(request: Request) {
         }
 
         let dbQuery = Projects.find(query).sort({ display_order: 1 });
-        
+
         if (limit) {
             dbQuery = dbQuery.limit(parseInt(limit));
         }

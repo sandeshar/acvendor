@@ -7,12 +7,13 @@
     --color-primary-200: #b3d2ff;
     --color-primary-300: #80b6ff;
     --color-primary-400: #4d9bff;
-    --color-primary: #135bec; /* base */
+    --color-primary: #135bec;
+    /* base */
     --color-primary-600: #0d47b8;
     --color-primary-700: #093a8e;
     --color-primary-800: #062c64;
     --color-primary-900: #041a3a;
-    --color-primary-10: rgba(19,91,236,0.1);
+    --color-primary-10: rgba(19, 91, 236, 0.1);
 
     --color-background: #f8fafc;
     --color-card: #ffffff;
@@ -23,7 +24,7 @@
     --color-border: #e2e8f0;
 
     --font-family-display: Inter, sans-serif;
-} 
+}
 
 /* =========================================================
    THEMES (BACKGROUND ≠ CARD IN ALL CASES)
@@ -135,28 +136,63 @@
 }
 
 /* Accent helpers */
-.bg-primary { background-color: var(--color-primary); }
-.text-primary { color: var(--color-primary); }
-.hover-text-primary:hover { color: var(--color-primary); }
+.bg-primary {
+    background-color: var(--color-primary);
+}
+
+.text-primary {
+    color: var(--color-primary);
+}
+
+.hover-text-primary:hover {
+    color: var(--color-primary);
+}
 
 /* Subtle background shades */
-.bg-primary-50 { background-color: var(--color-primary-50); }
-.bg-primary-100 { background-color: var(--color-primary-100); }
-.bg-primary-200 { background-color: var(--color-primary-200); }
-.bg-primary-10 { background-color: var(--color-primary-10); }
+.bg-primary-50 {
+    background-color: var(--color-primary-50);
+}
+
+.bg-primary-100 {
+    background-color: var(--color-primary-100);
+}
+
+.bg-primary-200 {
+    background-color: var(--color-primary-200);
+}
+
+.bg-primary-10 {
+    background-color: var(--color-primary-10);
+}
 
 /* Backward compatible opacity helper */
-.bg-primary-20 { background-color: var(--color-primary); opacity: 0.2; }
+.bg-primary-20 {
+    background-color: var(--color-primary);
+    opacity: 0.2;
+}
 
-.border-primary { border-color: var(--color-primary); }
+.border-primary {
+    border-color: var(--color-primary);
+}
 
 /* Button-like helpers */
-.btn-primary { background-color: var(--color-primary); color: white; }
-.btn-primary:hover { background-color: var(--color-primary-600); }
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-600);
+}
 
 /* Use CSS variables for utility links */
-.link-primary { color: var(--color-primary); }
-.link-primary:hover { color: var(--color-primary-700); }
+.link-primary {
+    color: var(--color-primary);
+}
+
+.link-primary:hover {
+    color: var(--color-primary-700);
+}
 
 /* Contact page pattern background utility */
 .contact-pattern {

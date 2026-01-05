@@ -78,7 +78,7 @@ export default function AdminShopPage() {
             const brandsData = await brandsRes.json();
 
             if (heroData?._id || heroData?.id) setGlobalHero({ ...heroData, id: heroData.id ?? heroData._id });
-            
+
             let finalBrands = brandsData || [];
             // Ensure 'midea' is available for management as it has a dedicated page
             if (!finalBrands.find((b: any) => b.slug === 'midea')) {
