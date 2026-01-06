@@ -52,6 +52,11 @@ export interface ShopHeroData {
     secondary_cta_link?: string;
     background_image: string;
     hero_image_alt?: string;
+    /** Short text shown inside the image card overlay on the /shop hero */
+    card_overlay_text?: string;
+    /** Optional CTA specific to the image card overlay */
+    card_cta_text?: string;
+    card_cta_link?: string;
     brand?: string;
     is_active: number;
 }

@@ -175,7 +175,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                         const cta = h?.cta_text || '';
 
                         return (
-                            <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k'}")` }}>
+                            <div className="flex min-h-[280px] sm:min-h-80 flex-col gap-6 bg-cover bg-center bg-no-repeat items-start justify-end px-6 py-8 sm:px-10 relative" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url("${bg || 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2Tz9Tfqhk4mbHJCHiu0oDVp0NoXhq3FZ4FWT4t4oDgBFElAQqkLaNHkgOgYoVOjKiBbaVk4_2Z46NME9AfESb3afunhjert5tbwt2krROCRsTP9Ssqtqrki6QQeOl7CUyVEehH4okoN8LNauFDea_eB75lRLxkyNTB6XkInLUTMDAFO4f3S2vYllrBQ7AQveBrZbVOdB_7IP7nyivJ35_FSeVmR1Wr-oP_OHeGZUqfpGdK6-WYiXL_W139SClaNhVh78ewkn9X9k'}")` }}>
                                 <div className="flex flex-col gap-2 text-left max-w-lg">
                                     {badge && <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">{badge}</span>}
                                     <h1 data-hero-title={title} data-hero-highlight={h?.highlight_text} className="text-white text-3xl sm:text-4xl font-black leading-tight tracking-[-0.033em]">
@@ -183,6 +183,20 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                                     </h1>
                                     <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">{subtitle}</h2>
                                 </div>
+
+                                {/* Image Card Overlay (uses card fields with fallbacks) */}
+                                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex justify-between items-center">
+                                    <div>
+                                        <p className="font-bold text-lg">{h?.tagline}</p>
+                                        <p className="text-sm opacity-80">{h?.card_overlay_text || h?.subtitle || h?.description}</p>
+                                    </div>
+                                    {(h?.card_cta_text || h?.cta_text) ? (
+                                        <a href={h?.card_cta_link || h?.cta_link || '/midea-ac'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">
+                                            {h.card_cta_text || h.cta_text}
+                                        </a>
+                                    ) : null}
+                                </div>
+
                                 {cta && (
                                     <div className="flex gap-3">
                                         <a href={h?.cta_link || '/midea-ac'} className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">{cta}</a>

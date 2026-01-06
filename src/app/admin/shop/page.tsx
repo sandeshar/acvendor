@@ -12,6 +12,11 @@ interface HeroData {
     highlight_text: string;
     subtitle: string;
     description: string;
+    /** Short text used in the image card overlay on the hero image */
+    card_overlay_text?: string;
+    /** Optional CTA specific to the image card overlay */
+    card_cta_text?: string;
+    card_cta_link?: string;
     cta_text: string;
     cta_link: string;
     cta2_text?: string;
@@ -40,6 +45,7 @@ export default function AdminShopPage() {
         highlight_text: '',
         subtitle: '',
         description: '',
+        card_overlay_text: '',
         cta_text: '',
         cta_link: '',
         cta2_text: '',
@@ -58,6 +64,7 @@ export default function AdminShopPage() {
         highlight_text: '',
         subtitle: '',
         description: '',
+        card_overlay_text: '',
         cta_text: '',
         cta_link: '',
         cta2_text: '',
@@ -250,14 +257,7 @@ export default function AdminShopPage() {
                             />
                             <p className="text-xs text-slate-400 mt-2">Short, eye-catching label shown above the main headline.</p>
 
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Premium Air Conditioning — short supporting phrase"
-                                value={globalHero.tagline}
-                                onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
+
                         </div>
 
                         {/* Headline */}
@@ -347,7 +347,8 @@ export default function AdminShopPage() {
                         {/* Card */}
                         <div className="p-4 bg-gray-50 rounded-lg">
                             <h3 className="text-sm font-semibold mb-3">Image Card</h3>
-                            {/* <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
+                            {/* 
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
                             <input
                                 type="text"
                                 placeholder="Short supporting subtitle"
@@ -356,6 +357,47 @@ export default function AdminShopPage() {
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             /> */}
 
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Premium Air Conditioning — short supporting phrase"
+                                value={globalHero.tagline}
+                                onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                            />
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Card Overlay Text</label>
+                            <input
+                                type="text"
+                                placeholder="Short text shown in card overlay (e.g., short benefit)"
+                                value={globalHero.card_overlay_text}
+                                onChange={e => setGlobalHero({ ...globalHero, card_overlay_text: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                            />
+
+                            <div className="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Text</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. Browse Catalog"
+                                        value={globalHero.card_cta_text}
+                                        onChange={e => setGlobalHero({ ...globalHero, card_cta_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Link</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. /shop or external URL"
+                                        value={globalHero.card_cta_link}
+                                        onChange={e => setGlobalHero({ ...globalHero, card_cta_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-2">Used in the image card overlay on the right side of the /shop hero. Falls back to the main CTA if not set.</p>
 
                         </div>
 
@@ -465,6 +507,40 @@ export default function AdminShopPage() {
                                     onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
+                                <input
+                                    type="text"
+                                    value={brandHero.card_overlay_text}
+                                    onChange={e => setBrandHero({ ...brandHero, card_overlay_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    placeholder="Short text shown in card overlay"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.card_cta_text}
+                                        onChange={e => setBrandHero({ ...brandHero, card_cta_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder="Button text shown on overlay"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Link</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.card_cta_link}
+                                        onChange={e => setBrandHero({ ...brandHero, card_cta_link: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder="Button link (relative or external)"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-3">

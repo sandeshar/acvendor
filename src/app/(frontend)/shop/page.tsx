@@ -199,11 +199,11 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                 <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex justify-between items-center">
                                     <div>
                                         <p className="font-bold text-lg">{hero?.tagline}</p>
-                                        <p className="text-sm opacity-80">{hero?.description}</p>
+                                        <p className="text-sm opacity-80">{hero?.card_overlay_text || hero?.subtitle || hero?.description}</p>
                                     </div>
-                                    {hero?.cta_text ? (
-                                        <Link href={hero?.cta_link || '/shop'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">
-                                            {hero.cta_text}
+                                    {(hero?.card_cta_text || hero?.cta_text) ? (
+                                        <Link href={hero?.card_cta_link || hero?.cta_link || '/shop'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">
+                                            {hero.card_cta_text || hero.cta_text}
                                         </Link>
                                     ) : null}
                                 </div>
