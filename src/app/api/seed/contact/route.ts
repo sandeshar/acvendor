@@ -30,7 +30,13 @@ export async function POST() {
         await ContactPageInfo.create({
             office_location: 'Kathmandu, Nepal',
             phone: '+977 9800000000',
+            // Required phone fields
+            phone_item_1_number: '+977 9800000000',
+            phone_item_2_number: '+977 9800000001',
             email: 'support@acvendor.com',
+            // WhatsApp fields
+            whatsapp_number: '+977 9800000000',
+            whatsapp_link: 'https://wa.me/9779800000000',
             map_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.5769816700773!2d85.3206!3d27.7172!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjfCsDQzJzAyLjAiTiA4NcKwMTknMjIuMiJF!5e0!3m2!1sen!2snp!4v',
             info_title: 'Contact Information',
             info_description: "Reaching out for a repair, new installation, or general inquiry? We're just a call away.",
