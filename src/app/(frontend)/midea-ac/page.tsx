@@ -184,19 +184,6 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                                     <h2 className="text-gray-100 text-sm sm:text-base font-normal leading-relaxed">{subtitle}</h2>
                                 </div>
 
-                                {/* Image Card Overlay (uses card fields with fallbacks) */}
-                                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex justify-between items-center">
-                                    <div>
-                                        <p className="font-bold text-lg">{h?.tagline}</p>
-                                        <p className="text-sm opacity-80">{h?.card_overlay_text || h?.subtitle || h?.description}</p>
-                                    </div>
-                                    {(h?.card_cta_text || h?.cta_text) ? (
-                                        <a href={h?.card_cta_link || h?.cta_link || '/midea-ac'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">
-                                            {h.card_cta_text || h.cta_text}
-                                        </a>
-                                    ) : null}
-                                </div>
-
                                 {cta && (
                                     <div className="flex gap-3">
                                         <a href={h?.cta_link || '/midea-ac'} className="flex cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors">{cta}</a>

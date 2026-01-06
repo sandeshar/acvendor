@@ -11,6 +11,7 @@ const aboutPageHeroSchema = new Schema({
     hero_image: { type: String, required: true, maxlength: 512 },
     hero_image_alt: { type: String, required: true, maxlength: 256 },
     badge_text: { type: String, required: true, default: '', maxlength: 128 },
+    highlight_text: { type: String, default: '', maxlength: 256 },
     is_active: { type: Number, default: 1, required: true },
 }, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },

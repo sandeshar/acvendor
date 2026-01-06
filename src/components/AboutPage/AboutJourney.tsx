@@ -21,7 +21,7 @@ interface AboutJourneySectionData {
 }
 
 interface AboutStatData {
-    id: number;
+    id?: number;
     label: string;
     value: string;
     display_order: number;
@@ -99,8 +99,8 @@ const AboutJourney = ({ section, stats = [], features = [], badges = [], certifi
             <section className="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-10 bg-primary/5">
                 <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-                        {(stats && stats.length > 0 ? stats : DEFAULT_STATS).map((s) => (
-                            <StatCard key={s.id} value={s.value} label={s.label} />
+                        {(stats && stats.length > 0 ? stats : DEFAULT_STATS).map((s, i) => (
+                            <StatCard key={s.id ?? `stat-${i}`} value={s.value} label={s.label} />
                         ))}
                     </div>
                 </div>

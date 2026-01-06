@@ -9,7 +9,7 @@ interface AboutTeamSectionData {
 }
 
 interface AboutTeamMemberData {
-    id: number;
+    id?: number;
     name: string;
     role: string;
     description: string;
@@ -43,9 +43,9 @@ const TeamSection = ({ section, members = [] }: TeamSectionProps) => {
                     </p>
                 </div>
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-                    {members.map((member) => (
+                    {members.map((member, i) => (
                         <TeamMemberCard
-                            key={member.id}
+                            key={member.id ?? `team-${i}`}
                             name={member.name}
                             role={member.role}
                             description={member.description}

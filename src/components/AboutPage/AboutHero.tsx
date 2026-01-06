@@ -28,7 +28,7 @@ const AboutHero = ({ data }: AboutHeroProps) => {
 
     return (
         <section className="w-full">
-            <div className="relative flex min-h-[480px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-4" data-alt={data.hero_image_alt || ''} style={{ backgroundImage: bgUrl ? `linear-gradient(rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%), url("${bgUrl}")` : undefined }}>
+            <div className="relative flex min-h-[680px] flex-col gap-6 bg-cover bg-center bg-no-repeat items-center justify-center p-4" data-alt={data.hero_image_alt || ''} style={{ backgroundImage: bgUrl ? `linear-gradient(rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%), url("${bgUrl}")` : undefined }}>
                 <div className="flex flex-col gap-4 text-center max-w-[800px]">
                     {data.badge_text && (
                         <div className="inline-flex w-fit mx-auto items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
@@ -36,7 +36,26 @@ const AboutHero = ({ data }: AboutHeroProps) => {
                             {data.badge_text}
                         </div>
                     )}
-                    <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-5xl lg:text-6xl">{data.title}</h1>
+                    <h1 className="text-white text-4xl font-black leading-tight tracking-[-0.033em] md:text-5xl lg:text-6xl">
+                        {(() => {
+                            const t = data.title || '';
+                            const highlight = (data.highlight_text || '').trim();
+                            if (!highlight) return t;
+
+                            const idx = t.indexOf(highlight);
+                            if (idx === -1) return t;
+
+                            return (
+                                <>
+                                    {t.substring(0, idx)}
+                                    <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-blue-400 to-indigo-400">
+                                        {highlight}
+                                    </span>
+                                    {t.substring(idx + highlight.length)}
+                                </>
+                            );
+                        })()}
+                    </h1>
                     {data.description ? (
                         <h2 className="text-gray-200 text-base font-normal leading-normal md:text-lg max-w-2xl mx-auto">
                             {data.description}

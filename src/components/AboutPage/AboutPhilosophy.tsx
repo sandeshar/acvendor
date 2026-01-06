@@ -10,7 +10,7 @@ interface AboutPhilosophySectionData {
 }
 
 interface AboutPrincipleData {
-    id: number;
+    id?: number;
     title: string;
     description: string;
     display_order: number;
@@ -43,7 +43,7 @@ const AboutPhilosophy = ({ section, principles = [] }: AboutPhilosophyProps) => 
                 <div className="grid gap-8 md:grid-cols-3">
                     {principles.map((principle, index) => (
                         <PrincipleCard
-                            key={principle.id}
+                            key={principle.id ?? `principle-${index}`}
                             number={index + 1}
                             title={principle.title}
                             description={principle.description}

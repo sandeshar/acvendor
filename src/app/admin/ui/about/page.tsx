@@ -320,8 +320,6 @@ export default function AboutPageUI() {
                                     <InputGroup label="Title" value={journeyData.title || ''} onChange={(v) => setJourneyData({ ...journeyData, title: v })} />
                                     <TextAreaGroup label="Paragraph 1" value={journeyData.paragraph1 || ''} onChange={(v) => setJourneyData({ ...journeyData, paragraph1: v })} />
                                     <TextAreaGroup label="Paragraph 2" value={journeyData.paragraph2 || ''} onChange={(v) => setJourneyData({ ...journeyData, paragraph2: v })} />
-                                    <InputGroup label="Thinking Box Title" value={journeyData.thinking_box_title || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_title: v })} />
-                                    <TextAreaGroup label="Thinking Box Content" value={journeyData.thinking_box_content || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_content: v })} />
 
                                     <div className="mt-4 space-y-3">
                                         <div className="flex items-center justify-between px-2">
@@ -351,6 +349,11 @@ export default function AboutPageUI() {
 
                                     <ImageUploader label="Section Image" value={journeyData.hero_image || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image: v })} folder="about/journey" />
                                     <InputGroup label="Section Image Alt Text" value={journeyData.hero_image_alt || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image_alt: v })} />
+
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={journeyData.is_active === 1} onChange={(c) => setJourneyData({ ...journeyData, is_active: c ? 1 : 0 })} />
+                                    </div>
                                 </div>
 
                                 {/* Stats List */}
@@ -388,6 +391,13 @@ export default function AboutPageUI() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+
+                                {/* Why Choose Us Section */}
+                                <div className="mt-6 space-y-4">
+                                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Why Choose Us Section</h3>
+                                    <InputGroup label="Thinking Box Title" value={journeyData.thinking_box_title || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_title: v })} />
+                                    <TextAreaGroup label="Thinking Box Content" value={journeyData.thinking_box_content || ''} onChange={(v) => setJourneyData({ ...journeyData, thinking_box_content: v })} />
                                 </div>
 
                                 {/* Features List */}
