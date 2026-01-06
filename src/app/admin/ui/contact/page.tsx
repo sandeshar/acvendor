@@ -50,21 +50,50 @@ export default function ContactPageUI() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bodyData),
                 });
-                if (!res.ok) throw new Error(`Failed to save ${url}`);
-                return res.json();
+
+                // Try to parse server response for better error messages
+                let payload: any = null;
+                try { payload = await res.json(); } catch (e) { /* ignore parse errors */ }
+
+                if (!res.ok) {
+                    const errMsg = payload?.error || payload?.message || `${res.status} ${res.statusText}`;
+                    throw new Error(errMsg);
+                }
+
+                return payload;
             };
 
-            await Promise.all([
+            // If contactInfo has no id, try to fetch existing info and merge so we perform an update instead of a bad create
+            let infoPayload = contactInfo;
+            if (!contactInfo?.id && !contactInfo?._id) {
+                try {
+                    const existingRes = await fetch('/api/pages/contact/info');
+                    if (existingRes.ok) {
+                        const existing = await existingRes.json();
+                        infoPayload = { ...existing, ...contactInfo };
+                    }
+                } catch (e) { /* ignore */ }
+            }
+
+            const [heroRes, infoRes, formRes] = await Promise.all([
                 saveSection('/api/pages/contact/hero', heroData),
-                saveSection('/api/pages/contact/info', contactInfo),
+                saveSection('/api/pages/contact/info', infoPayload),
                 saveSection('/api/pages/contact/form-config', formConfig),
             ]);
 
+            // If the contact info endpoint returned the updated document, use it to update local state immediately
+            if (infoRes && infoRes.data) {
+                setContactInfo(infoRes.data);
+            } else {
+                // fallback to re-fetching everything
+                await fetchData();
+            }
+
             showToast("Settings saved successfully!", { type: 'success' });
-            await fetchData();
         } catch (error) {
             console.error("Error saving settings:", error);
-            showToast("Failed to save settings. Please try again.", { type: 'error' });
+            const msg = error instanceof Error ? error.message : String(error);
+            showToast(`Failed to save settings: ${msg}`, { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -160,12 +189,21 @@ export default function ContactPageUI() {
                                     <TextAreaGroup label="Section Description" value={contactInfo.info_description || ''} onChange={(v) => setContactInfo({ ...contactInfo, info_description: v })} />
 
                                     <InputGroup label="Office Location" value={contactInfo.office_location || ''} onChange={(v) => setContactInfo({ ...contactInfo, office_location: v })} />
-                                    <InputGroup label="Phone Number" value={contactInfo.phone || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone: v })} />
-                                    <InputGroup label="Phone Item 1 Subtext" value={contactInfo.phone_item_1_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_1_subtext: v })} />
-                                    <InputGroup label="Phone Item 2 Subtext" value={contactInfo.phone_item_2_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_2_subtext: v })} />
+                                    <InputGroup label="Phone Number (Primary)" value={contactInfo.phone || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone: v })} />
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <InputGroup label="Sales Hotline (Number)" value={contactInfo.phone_item_1_number || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_1_number: v })} />
+                                        <InputGroup label="Sales Hotline (Subtext)" value={contactInfo.phone_item_1_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_1_subtext: v })} />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-2">
+                                        <InputGroup label="Service Support (Number)" value={contactInfo.phone_item_2_number || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_2_number: v })} />
+                                        <InputGroup label="Service Support (Subtext)" value={contactInfo.phone_item_2_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, phone_item_2_subtext: v })} />
+                                    </div>
 
                                     <InputGroup label="WhatsApp Title" value={contactInfo.whatsapp_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, whatsapp_title: v })} />
                                     <InputGroup label="WhatsApp Subtext" value={contactInfo.whatsapp_subtext || ''} onChange={(v) => setContactInfo({ ...contactInfo, whatsapp_subtext: v })} />
+                                    <InputGroup label="WhatsApp Number (international, no +)" value={contactInfo.whatsapp_number || ''} onChange={(v) => setContactInfo({ ...contactInfo, whatsapp_number: v })} />
 
                                     <InputGroup label="Location Title" value={contactInfo.location_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, location_title: v })} />
                                     <InputGroup label="Opening Hours Title" value={contactInfo.opening_hours_title || ''} onChange={(v) => setContactInfo({ ...contactInfo, opening_hours_title: v })} />

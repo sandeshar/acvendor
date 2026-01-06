@@ -20,7 +20,11 @@ export const ContactPageHero = models.ContactPageHero || model('ContactPageHero'
 const contactPageInfoSchema = new Schema({
     office_location: { type: String, required: true, maxlength: 256 },
     phone: { type: String, required: true, maxlength: 50 },
+    phone_item_1_number: { type: String, required: true, default: '', maxlength: 50 },
+    phone_item_2_number: { type: String, required: true, default: '', maxlength: 50 },
     email: { type: String, required: true, maxlength: 256 },
+    whatsapp_number: { type: String, required: true, default: '', maxlength: 50 },
+    whatsapp_link: { type: String, required: true, default: '', maxlength: 1024 },
     map_url: { type: String, required: true, maxlength: 1024 },
     info_title: { type: String, required: true, default: 'Contact Information', maxlength: 128 },
     info_description: { type: String, required: true, default: "Reaching out for a repair, new installation, or general inquiry? We're just a call away.", maxlength: 512 },

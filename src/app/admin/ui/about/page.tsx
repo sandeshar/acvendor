@@ -414,7 +414,8 @@ export default function AboutPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (feature.id) setDeletedFeatures([...deletedFeatures, feature.id]);
+                                                        const idToDelete = feature.id ?? feature._id ?? null;
+                                                        if (idToDelete) setDeletedFeatures([...deletedFeatures, idToDelete]);
                                                         setFeatures(features.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -467,7 +468,8 @@ export default function AboutPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (p.id) setDeletedPrinciples([...deletedPrinciples, p.id]);
+                                                        const idToDelete = p.id ?? p._id ?? null;
+                                                        if (idToDelete) setDeletedPrinciples([...deletedPrinciples, idToDelete]);
                                                         setPrinciples(principles.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -519,7 +521,8 @@ export default function AboutPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (member.id) setDeletedTeamMembers([...deletedTeamMembers, member.id]);
+                                                        const idToDelete = member.id ?? member._id ?? null;
+                                                        if (idToDelete) setDeletedTeamMembers([...deletedTeamMembers, idToDelete]);
                                                         setTeamMembers(teamMembers.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -571,7 +574,8 @@ export default function AboutPageUI() {
                                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                             <button
                                                 onClick={() => {
-                                                    if (badges[idx] && badges[idx].id) setDeletedBadges([...deletedBadges, badges[idx].id]);
+                                                    const idToDelete = badges[idx]?.id ?? badges[idx]?._id ?? null;
+                                                    if (idToDelete) setDeletedBadges([...deletedBadges, idToDelete]);
                                                     setBadges(badges.filter((_, i) => i !== idx));
                                                 }}
                                                 className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -621,7 +625,8 @@ export default function AboutPageUI() {
                                                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
                                                 <button
                                                     onClick={() => {
-                                                        if (certifications[idx] && certifications[idx].id) setDeletedCertifications([...deletedCertifications, certifications[idx].id]);
+                                                        const idToDelete = certifications[idx]?.id ?? certifications[idx]?._id ?? null;
+                                                        if (idToDelete) setDeletedCertifications([...deletedCertifications, idToDelete]);
                                                         setCertifications(certifications.filter((_, i) => i !== idx));
                                                     }}
                                                     className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"

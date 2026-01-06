@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
             }
 
-            return NextResponse.json(submission);
+            return NextResponse.json({ ...submission, id: submission._id.toString() });
         }
 
         let submissions;
@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
             submissions = await ContactFormSubmissions.find().sort({ createdAt: -1 }).lean();
         }
 
-        return NextResponse.json(submissions);
+        // Normalize to include an `id` field for client convenience
+        const mapped = submissions.map((s: any) => ({ ...s, id: s._id.toString() }));
+
+        return NextResponse.json(mapped);
     } catch (error) {
         console.error('Error fetching submissions:', error);
         return NextResponse.json({ error: 'Failed to fetch submissions' }, { status: 500 });

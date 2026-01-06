@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { showToast } from '@/components/Toast';
 
 type Submission = {
-    id: number;
+    id: string;
     name: string;
     email: string;
     phone?: string | null;
@@ -31,7 +31,7 @@ export default function ContactArchivePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
-    const [updatingId, setUpdatingId] = useState<number | null>(null);
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [selected, setSelected] = useState<Submission | null>(null);
 
     const fetchSubmissions = async () => {
@@ -69,7 +69,7 @@ export default function ContactArchivePage() {
         }
     };
 
-    const handleStatusChange = async (id: number, status: StatusKey) => {
+    const handleStatusChange = async (id: string, status: StatusKey) => {
         setUpdatingId(id);
         try {
             const res = await fetch("/api/pages/contact/submissions", {

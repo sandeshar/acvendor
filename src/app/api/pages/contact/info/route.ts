@@ -28,12 +28,25 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({ ...info, id: info._id.toString() });
+    } catch (error) {
+        console.error('Error fetching info section:', error);
+        return NextResponse.json({ error: 'Failed to fetch info section' }, { status: 500 });
+    }
+}
+
+// POST - Create info section
+export async function POST(request: NextRequest) {
+    try {
         await connectDB();
         const body = await request.json();
         const {
             office_location,
             phone,
+            phone_item_1_number = '',
+            phone_item_2_number = '',
             email,
+            whatsapp_number = '',
+            whatsapp_link = '',
             map_url,
             map_description,
             info_title,
@@ -52,10 +65,16 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'office_location, phone, email and map_url are required' }, { status: 400 });
         }
 
+        const whatsapp_number_clean = String(whatsapp_number || '').replace(/\D/g, '');
+
         const result = await ContactPageInfo.create({
             office_location,
             phone,
+            phone_item_1_number,
+            phone_item_2_number,
             email,
+            whatsapp_number: whatsapp_number_clean,
+            whatsapp_link,
             map_url,
             map_description: map_description || undefined,
             info_title: info_title || undefined,
@@ -70,10 +89,11 @@ export async function GET(request: NextRequest) {
             is_active,
         });
 
-        revalidateTag('contact-info', 'max');
+        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
 
+        const data = { ...result.toObject(), id: result._id.toString() };
         return NextResponse.json(
-            { success: true, message: 'Info section created successfully', id: result._id },
+            { success: true, message: 'Info section created successfully', data },
             { status: 201 }
         );
     } catch (error) {
@@ -91,7 +111,11 @@ export async function PUT(request: NextRequest) {
             id,
             office_location,
             phone,
+            phone_item_1_number,
+            phone_item_2_number,
             email,
+            whatsapp_number,
+            whatsapp_link,
             map_url,
             map_description,
             info_title,
@@ -106,6 +130,12 @@ export async function PUT(request: NextRequest) {
             is_active,
         } = body;
 
+        // Normalize incoming whatsapp number if present
+        let whatsapp_number_clean: string | undefined = undefined;
+        if (whatsapp_number !== undefined) {
+            whatsapp_number_clean = String(whatsapp_number || '').replace(/\D/g, '');
+        }
+
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         }
@@ -113,7 +143,11 @@ export async function PUT(request: NextRequest) {
         const updateData: any = {};
         if (office_location !== undefined) updateData.office_location = office_location;
         if (phone !== undefined) updateData.phone = phone;
+        if (phone_item_1_number !== undefined) updateData.phone_item_1_number = phone_item_1_number;
+        if (phone_item_2_number !== undefined) updateData.phone_item_2_number = phone_item_2_number;
         if (email !== undefined) updateData.email = email;
+        if (whatsapp_number !== undefined) updateData.whatsapp_number = whatsapp_number_clean !== undefined ? whatsapp_number_clean : String(whatsapp_number);
+        if (whatsapp_link !== undefined) updateData.whatsapp_link = whatsapp_link;
         if (map_url !== undefined) updateData.map_url = map_url;
         if (info_title !== undefined) updateData.info_title = info_title;
         if (info_description !== undefined) updateData.info_description = info_description;
@@ -127,14 +161,20 @@ export async function PUT(request: NextRequest) {
         if (opening_hours_text !== undefined) updateData.opening_hours_text = opening_hours_text;
         if (is_active !== undefined) updateData.is_active = is_active;
 
-        await ContactPageInfo.findByIdAndUpdate(id, updateData, { new: true });
+        const updated = await ContactPageInfo.findByIdAndUpdate(id, updateData, { new: true }).lean();
 
-        revalidateTag('contact-info', 'max');
+        if (!updated) {
+            return NextResponse.json({ error: 'Info section not found' }, { status: 404 });
+        }
 
-        return NextResponse.json({ success: true, message: 'Info section updated successfully' });
+        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
+
+        const data = { ...updated, id: updated._id?.toString?.() ?? id };
+        return NextResponse.json({ success: true, message: 'Info section updated successfully', data });
     } catch (error) {
         console.error('Error updating info section:', error);
-        return NextResponse.json({ error: 'Failed to update info section' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: msg || 'Failed to update info section' }, { status: 500 });
     }
 }
 
@@ -151,7 +191,7 @@ export async function DELETE(request: NextRequest) {
 
         await ContactPageInfo.findByIdAndDelete(id);
 
-        revalidateTag('contact-info', 'max');
+        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
 
         return NextResponse.json({ success: true, message: 'Info section deleted successfully' });
     } catch (error) {

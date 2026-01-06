@@ -5,6 +5,8 @@ interface ContactInfoProps {
     data: {
         office_location: string;
         phone: string;
+        phone_item_1_number?: string;
+        phone_item_2_number?: string;
         email: string;
         info_title?: string;
         info_description?: string;
@@ -12,6 +14,7 @@ interface ContactInfoProps {
         phone_item_2_subtext?: string;
         whatsapp_title?: string;
         whatsapp_subtext?: string;
+        whatsapp_link?: string;
         location_title?: string;
         opening_hours_title?: string;
         opening_hours_text?: string;
@@ -33,10 +36,10 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                         <span className="material-symbols-outlined">phone_in_talk</span>
                     </div>
                     <div className="flex flex-col justify-center flex-1">
-                        <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone || '+977-9801XXXXXX'}</p>
+                        <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone_item_1_number || data.phone || '+977-9801XXXXXX'}</p>
                         <p className="text-[#617589] text-sm font-normal">{data.phone_item_1_subtext || 'Sales Hotline (24/7)'}</p>
                     </div>
-                    <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone || '+9779801XXXXXX'}`}>Call</a>
+                    <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone_item_1_number || data.phone || '+9779801XXXXXX'}`}>Call</a>
                 </div>
 
                 {/* Phone Item 2 */}
@@ -45,14 +48,14 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                         <span className="material-symbols-outlined">headset_mic</span>
                     </div>
                     <div className="flex flex-col justify-center flex-1">
-                        <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone || '+977-01-4XXXXXX'}</p>
+                        <p className="text-[#111418] text-lg font-bold leading-normal">{data.phone_item_2_number || data.phone || '+977-01-4XXXXXX'}</p>
                         <p className="text-[#617589] text-sm font-normal">{data.phone_item_2_subtext || 'Service Support & Repairs'}</p>
                     </div>
-                    <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone || '+977014XXXXXX'}`}>Call</a>
+                    <a className="shrink-0 text-primary font-bold text-sm bg-primary/10 px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors" href={`tel:${data.phone_item_2_number || data.phone || '+977014XXXXXX'}`}>Call</a>
                 </div>
 
                 {/* WhatsApp CTA */}
-                <div className="flex items-center gap-4 bg-[#25D366]/10 p-4 rounded-xl border border-[#25D366]/20 transition-transform hover:-translate-y-1 duration-300 group cursor-pointer">
+                <a href={data.whatsapp_link || (data.whatsapp_number ? `https://wa.me/${String(data.whatsapp_number).replace(/[^0-9]/g, '')}` : '#')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 bg-[#25D366]/10 p-4 rounded-xl border border-[#25D366]/20 transition-transform hover:-translate-y-1 duration-300 group">
                     <div className="text-[#25D366] flex items-center justify-center rounded-lg bg-white shrink-0 size-12 shadow-sm">
                         <span className="material-symbols-outlined">chat</span>
                     </div>
@@ -61,7 +64,7 @@ const ContactInfo = ({ data }: ContactInfoProps) => {
                         <p className="text-[#617589] text-sm font-normal">{data.whatsapp_subtext || 'Get instant quotes & support'}</p>
                     </div>
                     <span className="material-symbols-outlined text-[#25D366]">arrow_forward</span>
-                </div>
+                </a>
 
                 {/* Location & Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
