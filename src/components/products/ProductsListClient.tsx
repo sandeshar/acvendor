@@ -8,7 +8,7 @@ import CompareTray from './CompareTray';
 import { formatPrice } from '@/utils/formatPrice';
 
 
-export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { brand?: string } }) {
+export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { category?: string, subcategory?: string, minPrice?: string, maxPrice?: string, status?: string } }) {
     const [view, setView] = useState<'grid' | 'list'>('grid');
     const [query, setQuery] = useState('');
 
@@ -40,7 +40,11 @@ export default function ProductsListClient({ products, productPathPrefix, search
                 const params = new URLSearchParams();
                 params.set('q', q);
                 params.set('limit', '48');
-                if (searchContext?.brand) params.set('brand', searchContext.brand);
+                if (searchContext?.category) params.set('category', searchContext.category);
+                if (searchContext?.subcategory) params.set('subcategory', searchContext.subcategory);
+                if (searchContext?.minPrice) params.set('minPrice', searchContext.minPrice);
+                if (searchContext?.maxPrice) params.set('maxPrice', searchContext.maxPrice);
+                if (searchContext?.status) params.set('status', searchContext.status);
                 const res = await fetch(`/api/products?${params.toString()}`);
                 if (!res.ok) {
                     if (active) setRemoteProducts([]);
@@ -70,7 +74,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
         }, 300);
 
         return () => { active = false; clearTimeout(timer); };
-    }, [query, searchContext?.brand]);
+    }, [query, searchContext?.category]);
 
     const displayedProducts = remoteProducts !== null ? remoteProducts : filteredLocal;
 

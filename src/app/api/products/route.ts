@@ -5,6 +5,7 @@ import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { revalidateTag } from 'next/cache';
 import { ReviewTestimonials } from '@/db/reviewSchema';
 import { ReviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema';
+import mongoose from 'mongoose';
 
 // GET - Fetch products
 export async function GET(request: NextRequest) {
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
         const limit = searchParams.get('limit');
         const status = searchParams.get('status');
         const featured = searchParams.get('featured');
+        const minPrice = searchParams.get('minPrice');
+        const maxPrice = searchParams.get('maxPrice');
+        const smart = searchParams.get('smart');
+        const filtration = searchParams.get('filtration');
 
         if (id) {
             // Try to find by ID first (ObjectId)
@@ -176,15 +181,29 @@ export async function GET(request: NextRequest) {
         }
 
         if (status) {
-            query.statusId = status;
+            if (status === 'in_stock' || status === 'out_of_stock' || status === 'in-stock' || status === 'out-of-stock') {
+                query.inventory_status = status.replace('-', '_');
+            } else if (!isNaN(parseInt(status))) {
+                query.statusId = parseInt(status);
+            }
         }
 
         if (featured === '1' || featured === 'true') {
             query.featured = 1;
         }
 
+        if (minPrice || maxPrice) {
+            query.price = {};
+            if (minPrice && !isNaN(parseFloat(minPrice))) query.price.$gte = parseFloat(minPrice);
+            if (maxPrice && !isNaN(parseFloat(maxPrice))) query.price.$lte = parseFloat(maxPrice);
+            if (Object.keys(query.price).length === 0) delete query.price;
+        }
+
+        if (smart === '1' || smart === 'true') query.smart = 1;
+        if (filtration === '1' || filtration === 'true') query.filtration = 1;
+
         if (category) {
-            // Try to use category as ID first, then as slug
+            // Try to use category as ID first, then as slug, and then as a brand name
             try {
                 const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
                 let cat = null;
@@ -198,27 +217,57 @@ export async function GET(request: NextRequest) {
 
                 if (cat) {
                     query.category_id = cat._id;
+                } else {
+                    // Fallback: see if "category" is actually a brand name (case-insensitive)
+                    const brandCats = await ServiceCategories.find({
+                        brand: { $regex: new RegExp(`^${category}$`, 'i') }
+                    }).lean();
+                    const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
+                    if (catIds.length) {
+                        query.category_id = { $in: catIds };
+                    } else {
+                        // If category/brand not found, force empty result by providing a non-existent ID
+                        query._id = new mongoose.Types.ObjectId();
+                    }
                 }
             } catch (e) {
                 // ignore
             }
         }
 
-        // If brand parameter is provided, restrict products to categories tagged with that brand or global categories
+        // If brand parameter is provided, restrict products to categories tagged with that brand or global categories.
+        // Also support when `brand` is actually a category slug or ObjectId: in that case return products only for that category.
         if (brand) {
             const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
-            const brandCats = await ServiceCategories.find({
-                $or: [
-                    { brand: brand },
-                    { brand: '' }
-                ]
-            }).lean();
-            const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
-            if (catIds.length) {
-                query.category_id = { $in: catIds };
+
+            // Try interpreting `brand` as a category id first, then as a slug
+            let matchedCat = null;
+            try {
+                matchedCat = await ServiceCategories.findById(brand).lean();
+            } catch (e) { }
+
+            if (!matchedCat) {
+                matchedCat = await ServiceCategories.findOne({ slug: brand }).lean();
+            }
+
+            if (matchedCat) {
+                // `brand` refers to a specific category -> restrict to that single category
+                query.category_id = matchedCat._id;
             } else {
-                // If no categories for brand, return empty set
-                return NextResponse.json([]);
+                // Fallback: find categories that are tagged with this brand, or global categories (brand = '')
+                const brandCats = await ServiceCategories.find({
+                    $or: [
+                        { brand: brand },
+                        { brand: '' }
+                    ]
+                }).lean();
+                const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
+                if (catIds.length) {
+                    query.category_id = { $in: catIds };
+                } else {
+                    // If no categories for brand, return empty set
+                    return NextResponse.json([]);
+                }
             }
         }
 
@@ -231,7 +280,13 @@ export async function GET(request: NextRequest) {
                 } catch (e) { }
 
                 if (!sub) {
+                    // Try exact slug
                     sub = await ServiceSubcategories.findOne({ slug: subcategory }).lean();
+                }
+
+                if (!sub && category) {
+                    // Try category-prefixed slug (e.g. midea-split)
+                    sub = await ServiceSubcategories.findOne({ slug: `${category}-${subcategory}` }).lean();
                 }
 
                 if (sub) {

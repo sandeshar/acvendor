@@ -94,7 +94,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
         })();
         const limit = 12;
         const offset = (Math.max(1, page) - 1) * limit;
-        const productsRes = await fetch(`${API_BASE}/api/products?brand=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}`, { cache: 'no-store' });
+        const productsRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}`, { cache: 'no-store' });
         const brandProducts = productsRes.ok ? await productsRes.json() : [];
         const hasMore = Array.isArray(brandProducts) && brandProducts.length === limit;
 
@@ -110,7 +110,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                     </div>
                     <h1 className="text-3xl font-bold mb-2">{brandParam.toUpperCase()} Products</h1>
                     <ProductsListClient products={brandProducts} productPathPrefix="/products" />
-                    <ProductsPagination currentPage={page} hasMore={hasMore} />
+                    <ProductsPagination currentPage={page} hasMore={hasMore} basePath={`/shop/category/${encodeURIComponent(brandParam)}`} />
                 </div>
             </main>
         );
@@ -123,7 +123,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
     const brandProductsMap: Record<string, any[]> = {};
     await Promise.all(brandSet.map(async (slug: string) => {
         try {
-            const pRes = await fetch(`${API_BASE}/api/products?brand=${encodeURIComponent(slug)}&limit=4`, { cache: 'no-store' });
+            const pRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(slug)}&limit=4`, { cache: 'no-store' });
             const productsForBrand = pRes.ok ? await pRes.json() : [];
             brandProductsMap[slug] = Array.isArray(productsForBrand) ? productsForBrand : [];
         } catch (e) { brandProductsMap[slug] = []; }
@@ -243,7 +243,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                 <h2 className="text-3xl font-bold text-text-main-light">{(slug || '').toUpperCase()} Series</h2>
                                 <p className="text-text-sub-light mt-1">Explore popular models and best sellers</p>
                             </div>
-                            <Link href={`/shop/brand/${encodeURIComponent(slug)}`} className="hidden sm:flex items-center gap-1 text-primary font-bold text-sm hover:gap-2 transition-all">
+                            <Link href={`/shop/category/${encodeURIComponent(slug)}`} className="hidden sm:flex items-center gap-1 text-primary font-bold text-sm hover:gap-2 transition-all">
                                 View All {slug.toUpperCase()} <span className="material-symbols-outlined text-sm">arrow_forward</span>
                             </Link>
                         </div>

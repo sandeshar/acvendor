@@ -105,10 +105,10 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         return `/midea-ac${qs ? `?${qs}` : ''}`;
     };
 
-    // Fetch brand-specific hero (fallback to global shop hero if not present)
+    // Fetch category-specific hero (fallback to global shop hero if not present)
     let brandHero: any = null;
     try {
-        const res = await fetch(`${API_BASE}/api/pages/shop/brand-hero?brand=${brand}`, { cache: 'no-store', next: { tags: ['shop-brand-hero'] } });
+        const res = await fetch(`${API_BASE}/api/pages/shop/category-hero?category=${brand}`, { cache: 'no-store', next: { tags: ['shop-category-hero'] } });
         if (res.ok) brandHero = await res.json();
     } catch (e) { /* ignore */ }
 

@@ -18,8 +18,8 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/pages/homepage/expertise-section`, { next: { tags: ['homepage-expertise-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/expertise-items`, { next: { tags: ['homepage-expertise-items'] } }),
             fetch(`${baseUrl}/api/pages/homepage/contact-section`, { next: { tags: ['homepage-contact-section'] } }),
-            // Request featured products for the Midea brand
-            fetch(`${baseUrl}/api/products?featured=1&limit=4&brand=midea`, { next: { tags: ['products'] } }),
+            // Request featured products for the Midea category
+            fetch(`${baseUrl}/api/products?featured=1&limit=4&category=midea`, { next: { tags: ['products'] } }),
             fetch(`${baseUrl}/api/pages/homepage/products-section`, { next: { tags: ['homepage-products-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/testimonials-section`, { next: { tags: ['homepage-testimonials-section'] } }),
             fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),

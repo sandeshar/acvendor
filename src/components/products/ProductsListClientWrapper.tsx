@@ -30,16 +30,21 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
     const searchParams = useSearchParams();
 
     useEffect(() => {
-        // Fetch filtered products on client when query params change (category, subcategory, brand, page)
-        const category = searchParams?.get('category');
-        const subcategory = searchParams?.get('subcategory');
-        const page = searchParams?.get('page');
-        const brand = searchParams?.get('brand');
-        const sort = searchParams?.get('sort');
+        // Fetch filtered products on client when query params change (category, subcategory, page, pricing, etc)
+        const context = (props as any).searchContext || {};
+        const getParam = (name: string) => searchParams?.get(name) || context[name];
 
-        // If no filters and no page and no brand and no sort, keep initial products
-        if (!category && !subcategory && !page && !brand && !sort) {
-            setProducts(initialProducts);
+        const category = getParam('category');
+        const subcategory = getParam('subcategory');
+        const page = searchParams?.get('page');
+        const sort = getParam('sort');
+        const minPrice = getParam('minPrice');
+        const maxPrice = getParam('maxPrice');
+        const status = getParam('status');
+
+        // If no filters and no page and no sort, keep initial products
+        if (!category && !subcategory && !page && !sort && !minPrice && !maxPrice && !status) {
+            setProducts(normalizeProducts(initialProducts));
             return;
         }
 
@@ -50,8 +55,10 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
                 q.set('limit', '12');
                 if (category) q.set('category', category);
                 if (subcategory) q.set('subcategory', subcategory);
-                if (brand) q.set('brand', brand);
                 if (sort) q.set('sort', sort);
+                if (minPrice) q.set('minPrice', minPrice);
+                if (maxPrice) q.set('maxPrice', maxPrice);
+                if (status) q.set('status', status);
                 if (page) {
                     const pNum = Math.max(1, parseInt(page) || 1);
                     const offset = (pNum - 1) * 12;

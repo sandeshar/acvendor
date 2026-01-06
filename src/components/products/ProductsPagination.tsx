@@ -10,20 +10,20 @@ export default function ProductsPagination({ currentPage, hasMore, basePath }: {
     const brand = searchParams?.get('brand');
 
     const buildHref = (newPage: number) => {
-        const params = new URLSearchParams();
-        if (category) params.set('category', category);
-        if (subcategory) params.set('subcategory', subcategory);
+        const params = new URLSearchParams(String(searchParams || ''));
         if (newPage && newPage > 1) params.set('page', String(newPage));
+        else params.delete('page');
+
         const qs = params.toString();
-        if (basePath) return `${basePath}${qs ? `?${qs}` : ''}`;
+        if (basePath) {
+            // strip query from basePath if it exists
+            const base = basePath.split('?')[0];
+            return `${base}${qs ? `?${qs}` : ''}`;
+        }
 
         // If brand query is present, paginate within /shop
-        if (brand) {
-            const p = new URLSearchParams();
-            if (brand) p.set('brand', brand);
-            if (newPage && newPage > 1) p.set('page', String(newPage));
-            const qq = p.toString();
-            return `/shop${qq ? `?${qq}` : ''}`;
+        if (searchParams?.get('brand')) {
+            return `/shop${qs ? `?${qs}` : ''}`;
         }
 
         return `/midea-ac${qs ? `?${qs}` : ''}`;

@@ -7,17 +7,17 @@ export async function GET(request: NextRequest) {
     try {
         await connectDB();
         const searchParams = request.nextUrl.searchParams;
-        const brand = searchParams.get('brand');
+        const category = searchParams.get('category');
 
-        if (!brand) {
-            return NextResponse.json({ error: 'brand query param is required' }, { status: 400 });
+        if (!category) {
+            return NextResponse.json({ error: 'category query param is required' }, { status: 400 });
         }
 
-        const row = await ShopPageBrandHero.findOne({ brand_slug: brand }).lean();
+        const row = await ShopPageBrandHero.findOne({ brand_slug: category }).lean();
         if (!row) return NextResponse.json({}, { status: 200 });
         return NextResponse.json({ ...row, id: row._id.toString() });
     } catch (error) {
-        console.error('Error fetching brand hero:', error);
+        console.error('Error fetching category hero:', error);
         // If table not present or other DB issue, return empty object (non-fatal)
         return NextResponse.json({}, { status: 200 });
     }
@@ -31,11 +31,11 @@ export async function POST(request: NextRequest) {
         if (!brand_slug) return NextResponse.json({ error: 'brand_slug is required' }, { status: 400 });
 
         const res = await ShopPageBrandHero.create({ brand_slug, badge_text: badge_text || '', tagline: tagline || '', title: title || '', highlight_text: highlight_text || '', subtitle: subtitle || '', description: description || '', card_overlay_text: card_overlay_text || '', card_cta_text: card_cta_text || '', card_cta_link: card_cta_link || '', cta_text: cta_text || '', cta_link: cta_link || '', cta2_text: cta2_text || '', cta2_link: cta2_link || '', background_image: background_image || '', hero_image_alt: hero_image_alt || '', is_active: typeof is_active === 'number' ? is_active : 1, display_order: display_order || 0 });
-        try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
+        try { revalidateTag('shop-category-hero', 'max'); } catch (e) { }
         return NextResponse.json({ success: true, id: res._id });
     } catch (error) {
-        console.error('Error creating brand hero:', error);
-        return NextResponse.json({ error: 'Failed to create brand hero' }, { status: 500 });
+        console.error('Error creating category hero:', error);
+        return NextResponse.json({ error: 'Failed to create category hero' }, { status: 500 });
     }
 }
 
@@ -67,11 +67,11 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) updateData.display_order = display_order;
 
         await ShopPageBrandHero.findByIdAndUpdate(id, updateData, { new: true });
-        try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
+        try { revalidateTag('shop-category-hero', 'max'); } catch (e) { }
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error updating brand hero:', error);
-        return NextResponse.json({ error: 'Failed to update brand hero' }, { status: 500 });
+        console.error('Error updating category hero:', error);
+        return NextResponse.json({ error: 'Failed to update category hero' }, { status: 500 });
     }
 }
 
@@ -82,10 +82,10 @@ export async function DELETE(request: NextRequest) {
         const id = searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'id query param is required' }, { status: 400 });
         await ShopPageBrandHero.findByIdAndDelete(id);
-        try { revalidateTag('shop-brand-hero', 'max'); } catch (e) { }
+        try { revalidateTag('shop-category-hero', 'max'); } catch (e) { }
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting brand hero:', error);
-        return NextResponse.json({ error: 'Failed to delete brand hero' }, { status: 500 });
+        console.error('Error deleting category hero:', error);
+        return NextResponse.json({ error: 'Failed to delete category hero' }, { status: 500 });
     }
 }

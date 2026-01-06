@@ -24,7 +24,7 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
                     const js = s.ok ? await s.json() : null;
                     finalBrand = js?.data?.featuredBrand || '';
                 }
-                const qs = finalBrand ? `?brand=${encodeURIComponent(finalBrand)}` : '';
+                const qs = finalBrand ? `?category=${encodeURIComponent(finalBrand)}` : '';
                 const catsRes = await fetch(`/api/pages/services/categories${qs}`);
                 const cats = catsRes.ok ? await catsRes.json() : [];
                 if (mounted) setCategories(cats || []);
@@ -41,7 +41,7 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
 
     return (
         <div className="flex flex-col gap-1">
-            <Link href={brand ? `/midea-ac?brand=${encodeURIComponent(brand)}` : '/midea-ac'} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${!selectedCategory ? 'bg-primary/10 text-primary' : 'hover:bg-[#f0f2f4]'} transition-colors`}>
+            <Link href={brand ? `/midea-ac?category=${encodeURIComponent(brand)}` : '/midea-ac'} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${!selectedCategory ? 'bg-primary/10 text-primary' : 'hover:bg-[#f0f2f4]'} transition-colors`}>
                 <span className="material-symbols-outlined">ac_unit</span>
                 <p className="text-sm font-bold leading-normal">{brand ? `${brand.toUpperCase()} All` : 'All Midea'}</p>
             </Link>

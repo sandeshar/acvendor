@@ -5,10 +5,10 @@ import { ServiceSubcategories, ServiceCategories } from "@/db/serviceCategoriesS
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
-        const brand = request.nextUrl.searchParams.get('brand');
-        if (brand) {
-            // fetch categories with this brand OR global categories, then return subcategories for those categories
-            const cats = await ServiceCategories.find({ $or: [{ brand }, { brand: '' }] }).lean();
+        const category = request.nextUrl.searchParams.get('category') || request.nextUrl.searchParams.get('brand');
+        if (category) {
+            // fetch categories with this brand/category OR global categories, then return subcategories for those categories
+            const cats = await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean();
             const catIds = cats.map((c: any) => c._id).filter(Boolean);
             if (catIds.length) {
                 const subs = await ServiceSubcategories.find({ category_id: { $in: catIds } }).lean();

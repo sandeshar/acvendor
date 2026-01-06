@@ -134,7 +134,7 @@ export default function AdminShopPage() {
         }
 
         try {
-            const res = await fetch(`/api/pages/shop/brand-hero?brand=${slug}`);
+            const res = await fetch(`/api/pages/shop/category-hero?category=${slug}`);
             const data = await res.json();
             if (data?._id || data?.id) {
                 setBrandHero({ ...data, id: data.id ?? data._id });
@@ -197,7 +197,7 @@ export default function AdminShopPage() {
         setSaving(true);
         try {
             const method = brandHero.id ? 'PUT' : 'POST';
-            const res = await fetch('/api/pages/shop/brand-hero', {
+            const res = await fetch('/api/pages/shop/category-hero', {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...brandHero, brand_slug: selectedBrand })
@@ -223,7 +223,7 @@ export default function AdminShopPage() {
         <div className="p-8 max-w-7xl mx-auto space-y-12">
             <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-bold text-slate-900 font-display">Shop Management</h1>
-                <p className="text-slate-500">Manage global and brand-specific hero sections for the shop page.</p>
+                <p className="text-slate-500">Manage global and category-specific hero sections for the shop page.</p>
             </div>
 
             {/* Global Shop Hero */}
@@ -309,7 +309,7 @@ export default function AdminShopPage() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
                                     <input
                                         type="text"
-                                        placeholder="e.g. /shop?brand=gree or external URL"
+                                        placeholder="e.g. /shop/category/gree or external URL"
                                         value={globalHero.cta_link}
                                         onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -424,14 +424,14 @@ export default function AdminShopPage() {
                 </div>
             </section>
 
-            {/* Brand Hero Selection */}
+            {/* Category Hero Selection */}
             <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-bold text-slate-800">{selectedBrand ? `${selectedBrand.toUpperCase()} Hero Section` : 'Brand Hero Section'}</h2>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage branding for {selectedBrand ? `/${selectedBrand}-ac` : 'brand-specific'} pages</p>
+                        <h2 className="text-lg font-bold text-slate-800">{selectedBrand ? `${selectedBrand.toUpperCase()} Hero Section` : 'Category Hero Section'}</h2>
+                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage branding for {selectedBrand ? `/${selectedBrand}-ac` : 'category-specific'} pages</p>
                         <div className="flex items-center gap-3 mt-3">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Brand:</label>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Category:</label>
                             <select
                                 value={selectedBrand}
                                 onChange={(e) => {
@@ -440,7 +440,7 @@ export default function AdminShopPage() {
                                 }}
                                 className="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 text-sm font-bold text-slate-700"
                             >
-                                <option value="">Select a Brand</option>
+                                <option value="">Select a Category</option>
                                 {brands.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
                             </select>
                         </div>
@@ -450,14 +450,14 @@ export default function AdminShopPage() {
                         disabled={saving || !selectedBrand}
                         className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
                     >
-                        {saving ? 'Saving...' : 'Save Brand Hero'}
+                        {saving ? 'Saving...' : 'Save Category Hero'}
                     </button>
                 </div>
 
                 {!selectedBrand ? (
                     <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <span className="material-symbols-outlined text-4xl mb-2">branding_watermark</span>
-                        <p>Select a brand to manage its unique hero content</p>
+                        <span className="material-symbols-outlined text-4xl mb-2">category</span>
+                        <p>Select a category to manage its unique hero content</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">

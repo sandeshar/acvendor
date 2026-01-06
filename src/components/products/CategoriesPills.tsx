@@ -17,7 +17,7 @@ export default function CategoriesPills({ brand, selectedCategory = '', selected
                     const js = s.ok ? await s.json() : null;
                     finalBrand = js?.data?.featuredBrand || '';
                 }
-                const qs = finalBrand ? `?brand=${encodeURIComponent(finalBrand)}` : '';
+                const qs = finalBrand ? `?category=${encodeURIComponent(finalBrand)}` : '';
                 const catsRes = await fetch(`/api/pages/services/categories${qs}`);
                 const cats = catsRes.ok ? await catsRes.json() : [];
                 if (mounted) setCategories(cats || []);

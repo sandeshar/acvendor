@@ -5,9 +5,9 @@ import { ServiceCategories } from "@/db/serviceCategoriesSchema";
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
-        const brand = request.nextUrl.searchParams.get('brand');
-        // Include both brand-specific categories and global (empty-brand) categories so brand pages show shared categories too
-        const categories = brand ? await ServiceCategories.find({ $or: [{ brand: brand }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
+        const category = request.nextUrl.searchParams.get('category') || request.nextUrl.searchParams.get('brand');
+        // Include both category-specific (brand) categories and global (empty-brand) categories so category pages show shared categories too
+        const categories = category ? await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
         const formatted = categories.map((c: any) => ({ ...c, id: c._id.toString() }));
         return NextResponse.json(formatted);
     } catch (error) {

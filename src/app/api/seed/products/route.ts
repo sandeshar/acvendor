@@ -60,7 +60,7 @@ export async function POST(request: Request) {
                 warranty: '1 year',
                 category_id: someCategory._id,
                 subcategory_id: someSub._id,
-                statusId: publishedStatus._id,
+                statusId: 1, // Use standard number for status
                 featured: 1,
                 meta_title: 'Sample Mini Product',
                 meta_description: 'Demo product used by the seed script',
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
                 warranty: '2 years',
                 category_id: someCategory._id,
                 subcategory_id: someSub._id,
-                statusId: publishedStatus._id,
+                statusId: 1,
                 featured: 0,
                 meta_title: 'Sample Large Product',
                 meta_description: 'Demo product used by the seed script',
@@ -132,8 +132,8 @@ export async function POST(request: Request) {
                     capacity: sc.ac_type || 'N/A',
                     warranty: `${i} year${i > 1 ? 's' : ''}`,
                     category_id: sc.category_id,
-                    subcategory_id: sc.id,
-                    statusId: publishedStatus.id,
+                    subcategory_id: sc._id,
+                    statusId: 1, // Default to 1 (Published)
                     featured: i === 1 ? 1 : 0,
                     meta_title: `${brandPrefix}${sc.name} Product ${i}`,
                     meta_description: `${excerpt} Part of ${parentCat ? parentCat.name : sc.name} category${parentCat?.brand ? ` for ${parentCat.brand}` : ''}`,
