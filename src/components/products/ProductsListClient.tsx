@@ -160,7 +160,9 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                 {/* Price row: show price and compare add button */}
                                 <div className="flex items-center justify-between mt-3">
                                     <div className="text-lg font-bold text-[#111418]">
-                                        {Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : ''}
+                                        {Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : (
+                                            <span className="text-sm font-semibold text-primary/80">Contact for Price</span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button aria-label={containsButtonAria(p) ? 'Remove from compare' : 'Add to compare'} onClick={(e) => onCompareClick(e, p)} className={`h-9 w-9 flex items-center justify-center rounded-lg border bg-white shadow-sm relative z-10 ${containsButtonClass(p)} transition-colors`}>

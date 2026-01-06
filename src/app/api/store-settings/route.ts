@@ -147,7 +147,7 @@ export async function PUT(request: NextRequest) {
                 (data as any).footerSections = sections;
             }
 
-            try { revalidateTag('store-settings'); } catch (e) { /* ignore */ }
+            try { revalidateTag('store-settings', 'max'); } catch (e) { /* ignore */ }
             return NextResponse.json({ success: true, message: 'Store settings created', data, id });
         }
 
@@ -181,7 +181,7 @@ export async function PUT(request: NextRequest) {
             }
         }
 
-        try { revalidateTag('store-settings'); } catch (e) { /* ignore */ }
+        try { revalidateTag('store-settings', 'max'); } catch (e) { /* ignore */ }
         // Re-fetch footer sections so response includes them
         const data = fromDb(updated);
         if (data) {
