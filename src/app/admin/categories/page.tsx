@@ -45,8 +45,8 @@ export default function CategoriesManagerPage() {
     const [availableBrands, setAvailableBrands] = useState<any[]>([]);
 
     useEffect(() => {
-        // Load brands for selection
-        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
+        // Load brands for selection (include inactive for management)
+        fetch('/api/pages/services/brands?admin=1').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
     }, []);
 
     useEffect(() => {

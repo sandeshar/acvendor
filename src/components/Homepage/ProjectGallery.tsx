@@ -16,11 +16,12 @@ interface ProjectGalleryProps {
     section?: {
         title?: string;
         description?: string;
+        is_active?: number;
     } | null;
 }
 
 const ProjectGallery = ({ projects, section }: ProjectGalleryProps) => {
-    const defaultProjects = [
+    if (section && section.is_active === 0) return null; const defaultProjects = [
         {
             title: "Corporate Tower, Kathmandu",
             description: "Centralized VRF Installation",

@@ -46,6 +46,8 @@ export default function ServicesManagerPage() {
     const [processSteps, setProcessSteps] = useState<any[]>([]);
     const [ctaData, setCtaData] = useState<any>({});
     const [deletedProcessSteps, setDeletedProcessSteps] = useState<number[]>([]);
+    // Track deleted features so they can be deleted server-side on save
+    const [deletedFeatures, setDeletedFeatures] = useState<string[]>([]);
 
     // New sections: Brands, Trust, Features
     const [brands, setBrands] = useState<any[]>([]);
@@ -78,9 +80,9 @@ export default function ServicesManagerPage() {
                 fetch('/api/pages/services/cta'),
                 fetch('/api/pages/services/categories'),
                 fetch('/api/pages/services/subcategories'),
-                fetch('/api/pages/services/brands'),
-                fetch('/api/pages/services/trust'),
-                fetch('/api/pages/services/features'),
+                fetch('/api/pages/services/brands?admin=1'),
+                fetch('/api/pages/services/trust?admin=1'),
+                fetch('/api/pages/services/features?admin=1'),
             ]);
 
             const posts = postsRes.ok ? await postsRes.json() : [];
@@ -90,9 +92,13 @@ export default function ServicesManagerPage() {
             const loadedBrands = brandsRes.ok ? await brandsRes.json() : [];
             const loadedTrust = trustRes.ok ? await trustRes.json() : null;
             const loadedFeatures = featuresRes.ok ? await featuresRes.json() : [];
-            setBrands(loadedBrands);
+            // Normalize brands: ensure id is set
+            const normalizedBrands = Array.isArray(loadedBrands) ? loadedBrands.map((b: any) => ({ ...b, id: b.id ?? (b._id ? String(b._id) : undefined), is_active: typeof b.is_active === 'number' ? b.is_active : (b.is_active ? 1 : 0) })) : [];
+            setBrands(normalizedBrands);
             if (loadedTrust) setTrustData(loadedTrust);
-            setFeaturesList(loadedFeatures);
+            // Normalize features: ensure each feature has an `id` property (copy from `_id`)
+            const normalizedFeatures = Array.isArray(loadedFeatures) ? loadedFeatures.map((f: any) => ({ ...f, id: f.id ?? (f._id ? String(f._id) : undefined), is_active: typeof f.is_active === 'number' ? f.is_active : (f.is_active ? 1 : 0) })) : [];
+            setFeaturesList(normalizedFeatures);
             console.log('Categories loaded:', cats);
             console.log('Subcategories loaded:', subs);
             setCategories(cats);
@@ -220,7 +226,16 @@ export default function ServicesManagerPage() {
             setServicesList(servicesArray);
             setHeroData(heroRes.ok ? await heroRes.json() : {});
             setProcessSection(procSecRes.ok ? await procSecRes.json() : {});
-            setProcessSteps(procStepsRes.ok ? await procStepsRes.json() : []);
+            // Normalize process steps to include `id` from `_id` and ensure numeric is_active/display_order
+            const loadedSteps = procStepsRes.ok ? await procStepsRes.json() : [];
+            const normalizedSteps = Array.isArray(loadedSteps) ? loadedSteps.map((s: any, i: number) => ({
+                ...s,
+                id: s.id ?? (s._id ? String(s._id) : undefined),
+                is_active: typeof s.is_active === 'number' ? s.is_active : (s.is_active ? 1 : 0),
+                display_order: s.display_order ?? s.order_index ?? (i + 1),
+                step_number: s.step_number ?? s.order_index ?? (i + 1),
+            })) : [];
+            setProcessSteps(normalizedSteps);
             setCtaData(ctaRes.ok ? await ctaRes.json() : {});
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -397,6 +412,16 @@ export default function ServicesManagerPage() {
     const handleSavePageBuilder = async () => {
         setSaving(true);
         try {
+            // Client-side validation: ensure features have titles before attempting to save
+            if (activeTab === 'features') {
+                const missing = featuresList.map((f, i) => ({ f, i })).filter(x => !x.f.title || !String(x.f.title).trim()).map(x => x.i + 1);
+                if (missing.length) {
+                    showToast(`Please provide titles for feature items: ${missing.join(', ')}`, { type: 'error' });
+                    setSaving(false);
+                    return;
+                }
+            }
+
             const promises = [];
 
             if (activeTab === "hero") {
@@ -419,9 +444,9 @@ export default function ServicesManagerPage() {
                 );
 
                 processSteps.forEach((step, idx) => {
-                    // Normalize payload to API expectations: step_number, title, description, display_order, is_active
-                    const stepNumber = step.step_number ?? step.order_index ?? (idx + 1);
-                    const displayOrder = step.display_order ?? step.order_index ?? (idx + 1);
+                    // Prefer client-side order_index when available (reordering), otherwise fall back to stored step_number/display_order
+                    const stepNumber = step.order_index ?? step.step_number ?? (idx + 1);
+                    const displayOrder = step.order_index ?? step.display_order ?? (idx + 1);
                     const payload: any = {
                         title: step.title,
                         description: step.description,
@@ -441,14 +466,9 @@ export default function ServicesManagerPage() {
                     );
                 });
 
+                // Delete removed process steps via query param id
                 deletedProcessSteps.forEach(id => {
-                    promises.push(
-                        fetch('/api/pages/services/process-steps', {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id }),
-                        })
-                    );
+                    promises.push(fetch(`/api/pages/services/process-steps?id=${id}`, { method: 'DELETE' }));
                 });
             }
 
@@ -476,12 +496,36 @@ export default function ServicesManagerPage() {
 
             // Trust
             if (activeTab === "trust") {
-                const payload = { id: trustData.id, title: trustData.title || '', description: trustData.description || '', quote_text: trustData.quote_text || '', quote_author: trustData.quote_author || '', quote_role: trustData.quote_role || '', quote_image: trustData.quote_image || '', is_active: trustData.is_active ?? 1 };
+                const payload = {
+                    id: trustData.id,
+                    title: trustData.title || '',
+                    description: trustData.description || '',
+                    quote_text: trustData.quote_text || '',
+                    quote_author: trustData.quote_author || '',
+                    quote_role: trustData.quote_role || '',
+                    quote_image: trustData.quote_image || '',
+                    stat1_value: trustData.stat1_value || '',
+                    stat1_label: trustData.stat1_label || '',
+                    stat1_sublabel: trustData.stat1_sublabel || '',
+                    stat2_value: trustData.stat2_value || '',
+                    stat2_label: trustData.stat2_label || '',
+                    stat2_sublabel: trustData.stat2_sublabel || '',
+                    stat3_value: trustData.stat3_value || '',
+                    stat3_label: trustData.stat3_label || '',
+                    stat3_sublabel: trustData.stat3_sublabel || '',
+                    is_active: trustData.is_active ?? 1
+                };
                 promises.push(fetch('/api/pages/services/trust', { method: trustData.id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
             }
 
             // Features
             if (activeTab === "features") {
+                // First delete removed features to avoid race conditions and duplicates
+                if (deletedFeatures.length) {
+                    const delPromises = deletedFeatures.map(fid => fetch(`/api/pages/services/features?id=${encodeURIComponent(fid)}`, { method: 'DELETE' }));
+                    await Promise.all(delPromises);
+                }
+
                 for (const f of featuresList) {
                     const payload = { icon: f.icon || '', title: f.title || '', description: f.description || '', display_order: f.display_order ?? 0, is_active: f.is_active ?? 1 };
                     if (f.id) {
@@ -491,9 +535,26 @@ export default function ServicesManagerPage() {
                     }
                 }
             }
-            await Promise.all(promises);
+            const results = await Promise.all(promises);
+
+            // Ensure all fetch responses were OK. If any failed (e.g., validation), surface the first error.
+            for (const r of results) {
+                if (r && typeof (r as any).ok !== 'undefined' && !(r as any).ok) {
+                    // Try to read JSON error details
+                    let details = '';
+                    try {
+                        const body = await (r as Response).json();
+                        if (body && body.error) details = `: ${body.error}`;
+                    } catch (e) {
+                        // ignore parse errors
+                    }
+                    throw new Error(`One or more requests failed${details}`);
+                }
+            }
+
             showToast('Changes saved successfully!', { type: 'success' });
             setDeletedProcessSteps([]);
+            setDeletedFeatures([]);
             fetchAllData();
         } catch (error) {
             console.error('Error saving:', error);
@@ -689,7 +750,7 @@ export default function ServicesManagerPage() {
                                                 <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
                                                 <Toggle checked={f.is_active === 1} onChange={(c: boolean) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setFeaturesList(copy); }} />
                                             </div>
-                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); setFeaturesList(copy); }}>
+                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); const removed = featuresList[idx]; if (removed && (removed.id || removed._id)) { setDeletedFeatures([...deletedFeatures, String(removed.id ?? removed._id)]); } setFeaturesList(copy); }}>
                                                 <span className="material-symbols-outlined">delete</span>
                                             </button>
                                         </div>

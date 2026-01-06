@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ error: 'Hero section not found' }, { status: 404 });
             }
 
-            return NextResponse.json(hero);
+            return NextResponse.json({ ...hero, id: String(hero._id) });
         }
 
         const hero = await ServicesPageHero.findOne({ is_active: 1 }).lean();
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'No active hero section found' }, { status: 404 });
         }
 
-        return NextResponse.json(hero);
+        return NextResponse.json({ ...hero, id: String(hero._id) });
     } catch (error) {
         console.error('Error fetching hero section:', error);
         return NextResponse.json({ error: 'Failed to fetch hero section' }, { status: 500 });
@@ -55,6 +55,15 @@ export async function POST(request: NextRequest) {
 
         if (!title || !description) {
             return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
+        }
+
+        // If we're creating a new active hero, deactivate existing active entries so only one is active
+        if (is_active === 1) {
+            try {
+                await ServicesPageHero.updateMany({ is_active: 1 }, { is_active: 0 });
+            } catch (e) {
+                console.warn('Failed to deactivate existing hero sections:', e);
+            }
         }
 
         const result = await ServicesPageHero.create({
@@ -122,6 +131,15 @@ export async function PUT(request: NextRequest) {
         if (background_image !== undefined) updateData.background_image = background_image;
         if (hero_image_alt !== undefined) updateData.hero_image_alt = hero_image_alt;
         if (is_active !== undefined) updateData.is_active = is_active;
+
+        // If setting this hero as active, deactivate any other active hero records
+        if (is_active === 1) {
+            try {
+                await ServicesPageHero.updateMany({ _id: { $ne: id }, is_active: 1 }, { is_active: 0 });
+            } catch (e) {
+                console.warn('Failed to deactivate other hero sections:', e);
+            }
+        }
 
         await ServicesPageHero.findByIdAndUpdate(id, updateData, { new: true });
 

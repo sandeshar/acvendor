@@ -6,7 +6,9 @@ import {
     HomepageTrustLogos,
     HomepageExpertiseSection,
     HomepageExpertiseItems,
-    HomepageContactSection
+    HomepageContactSection,
+    HomepageProductsSection,
+    HomepageTestimonialsSection,
 } from '@/db/homepageSchema';
 
 export async function POST() {
@@ -20,6 +22,8 @@ export async function POST() {
         await HomepageExpertiseSection.deleteMany({});
         await HomepageExpertiseItems.deleteMany({});
         await HomepageContactSection.deleteMany({});
+        await HomepageProductsSection.deleteMany({});
+        await HomepageTestimonialsSection.deleteMany({});
 
         // Seed Hero Section
         await HomepageHero.create({
@@ -152,6 +156,20 @@ export async function POST() {
             service_placeholder: 'Choose a service (e.g., installation, warranty)',
             message_placeholder: 'How can we help?',
             submit_button_text: 'Contact Support',
+            is_active: 1,
+        });
+
+        // Seed Products Section
+        await HomepageProductsSection.create({
+            title: 'Featured Products',
+            description: 'Browse our selection of top-rated air conditioning units and accessories.',
+            is_active: 1,
+        });
+
+        // Seed Testimonials Section
+        await HomepageTestimonialsSection.create({
+            title: "Don't Just Take Our Word For It",
+            subtitle: 'Here are a few kind words from our satisfied customers.',
             is_active: 1,
         });
 

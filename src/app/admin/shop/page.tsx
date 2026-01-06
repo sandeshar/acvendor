@@ -77,7 +77,7 @@ export default function AdminShopPage() {
         try {
             const [heroRes, brandsRes] = await Promise.all([
                 fetch('/api/pages/shop/hero'),
-                fetch('/api/pages/services/brands')
+                fetch('/api/pages/services/brands?admin=1')
             ]);
 
             const heroData = await heroRes.json();
@@ -281,6 +281,14 @@ export default function AdminShopPage() {
                                 onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             />
+
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
+                            <textarea
+                                value={globalHero.description}
+                                onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
+                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
+                                placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
+                            />
                         </div>
 
                         {/* CTA */}
@@ -336,25 +344,19 @@ export default function AdminShopPage() {
                     </div>
 
                     <div className="space-y-6">
-                        {/* Content */}
+                        {/* Card */}
                         <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Content</h3>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
+                            <h3 className="text-sm font-semibold mb-3">Image Card</h3>
+                            {/* <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
                             <input
                                 type="text"
                                 placeholder="Short supporting subtitle"
                                 value={globalHero.subtitle}
                                 onChange={e => setGlobalHero({ ...globalHero, subtitle: e.target.value })}
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
+                            /> */}
 
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
-                            <textarea
-                                value={globalHero.description}
-                                onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
-                                placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
-                            />
+
                         </div>
 
                         {/* Image & accessibility */}

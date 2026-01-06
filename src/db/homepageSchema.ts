@@ -97,6 +97,30 @@ const homepageContactSectionSchema = new Schema({
 
 export const HomepageContactSection = models.HomepageContactSection || model('HomepageContactSection', homepageContactSectionSchema);
 
+// Homepage Products Section
+const homepageProductsSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_products_section'
+});
+
+export const HomepageProductsSection = models.HomepageProductsSection || model('HomepageProductsSection', homepageProductsSectionSchema);
+
+// Homepage Testimonials Section
+const homepageTestimonialsSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    subtitle: { type: String, required: true, maxlength: 1024 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_testimonials_section'
+});
+
+export const HomepageTestimonialsSection = models.HomepageTestimonialsSection || model('HomepageTestimonialsSection', homepageTestimonialsSectionSchema);
+
 // Backward compatibility exports (camelCase for existing API code)
 export const homepageHero = HomepageHero;
 export const homepageTrustLogos = HomepageTrustLogos;
@@ -104,3 +128,5 @@ export const homepageTrustSection = HomepageTrustSection;
 export const homepageExpertiseSection = HomepageExpertiseSection;
 export const homepageExpertiseItems = HomepageExpertiseItems;
 export const homepageContactSection = HomepageContactSection;
+export const homepageProductsSection = HomepageProductsSection;
+export const homepageTestimonialsSection = HomepageTestimonialsSection;

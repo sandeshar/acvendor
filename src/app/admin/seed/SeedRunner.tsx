@@ -24,7 +24,7 @@ const SeedRunner = () => {
 
     // Fetch brands for seeding options
     useEffect(() => {
-        fetch('/api/pages/services/brands').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
+        fetch('/api/pages/services/brands?admin=1').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
     }, []);
 
     const seedTargets = [

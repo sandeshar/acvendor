@@ -11,7 +11,7 @@ async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
-        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, projectsRes, projectsSectionRes] = await Promise.all([
+        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes] = await Promise.all([
             fetch(`${baseUrl}/api/pages/homepage/hero`, { next: { tags: ['homepage-hero'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-section`, { next: { tags: ['homepage-trust-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-logos`, { next: { tags: ['homepage-trust-logos'] } }),
@@ -20,6 +20,8 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/pages/homepage/contact-section`, { next: { tags: ['homepage-contact-section'] } }),
             // Request featured products for the Midea brand
             fetch(`${baseUrl}/api/products?featured=1&limit=4&brand=midea`, { next: { tags: ['products'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/products-section`, { next: { tags: ['homepage-products-section'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/testimonials-section`, { next: { tags: ['homepage-testimonials-section'] } }),
             fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),
             fetch(`${baseUrl}/api/pages/projects/section`, { next: { tags: ['projects-section'] } }),
         ]);
@@ -31,6 +33,8 @@ async function getHomepageData() {
         const expertiseItems = expertiseItemsRes.ok ? (await expertiseItemsRes.json() || []) : [];
         const contactSection = contactSectionRes.ok ? (await contactSectionRes.json() || {}) : {};
         const featuredProducts = featuredRes.ok ? (await featuredRes.json() || []) : [];
+        const productsSection = productsSectionRes.ok ? (await productsSectionRes.json() || {}) : {};
+        const testimonialsSection = testimonialsSectionRes.ok ? (await testimonialsSectionRes.json() || {}) : {};
         const projects = projectsRes.ok ? (await projectsRes.json() || []) : [];
         const projectsSection = projectsSectionRes.ok ? (await projectsSectionRes.json() || {}) : {};
 
@@ -42,6 +46,8 @@ async function getHomepageData() {
             expertiseItems,
             contactSection: Object.keys(contactSection).length ? contactSection : null,
             products: featuredProducts,
+            productsSection: Object.keys(productsSection).length ? productsSection : null,
+            testimonialsSection: Object.keys(testimonialsSection).length ? testimonialsSection : null,
             projects,
             projectsSection: Object.keys(projectsSection).length ? projectsSection : null,
         };
@@ -71,9 +77,11 @@ export default async function Home() {
                 <Trust section={data.trustSection} logos={data.trustLogos} />
                 {/* Product showcase (featured products) */}
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
-                <ProductShowcase products={data.products || []} brand="midea" />
+                <ProductShowcase products={data.products || []} brand="midea" section={data.productsSection || undefined} />
                 <ProjectGallery projects={data.projects || []} section={data.projectsSection} />
-                <TestimonialSlider filter="homepage" />
+                {(!data.testimonialsSection || (data.testimonialsSection?.is_active ?? 1) === 1) && (
+                    <TestimonialSlider filter="homepage" title={data.testimonialsSection?.title} subtitle={data.testimonialsSection?.subtitle} />
+                )}
                 <Contact data={data.contactSection} />
             </div>
         </main>

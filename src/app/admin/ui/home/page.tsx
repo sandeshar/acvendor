@@ -19,6 +19,9 @@ export default function HomePageUI() {
     const [expertiseItems, setExpertiseItems] = useState<any[]>([]);
 
     const [contactData, setContactData] = useState<any>({});
+    const [productsSection, setProductsSection] = useState<any>({});
+    const [projectsSection, setProjectsSection] = useState<any>({});
+    const [testimonialsSection, setTestimonialsSection] = useState<any>({});
 
     // Track deleted items
     const [deletedTrustLogos, setDeletedTrustLogos] = useState<number[]>([]);
@@ -28,13 +31,16 @@ export default function HomePageUI() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes] = await Promise.all([
+            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes] = await Promise.all([
                 fetch('/api/pages/homepage/hero'),
                 fetch('/api/pages/homepage/trust-section'),
                 fetch('/api/pages/homepage/trust-logos'),
                 fetch('/api/pages/homepage/expertise-section'),
                 fetch('/api/pages/homepage/expertise-items'),
                 fetch('/api/pages/homepage/contact-section'),
+                fetch('/api/pages/homepage/products-section'),
+                fetch('/api/pages/projects/section'),
+                fetch('/api/pages/homepage/testimonials-section'),
             ]);
 
             if (heroRes.ok) setHeroData(await heroRes.json());
@@ -43,6 +49,12 @@ export default function HomePageUI() {
             if (expSecRes.ok) setExpertiseSection(await expSecRes.json());
             if (expItemsRes.ok) setExpertiseItems(await expItemsRes.json());
             if (contactRes.ok) setContactData(await contactRes.json());
+            if (productsSecRes.ok) setProductsSection(await productsSecRes.json() || {});
+            if (projectsSecRes.ok) {
+                const ps = await projectsSecRes.json();
+                setProjectsSection(ps || {});
+            }
+            if (testimonialsSecRes.ok) setTestimonialsSection(await testimonialsSecRes.json() || {});
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -63,10 +75,12 @@ export default function HomePageUI() {
                 // Determine entity id from either id or _id
                 const entityId = data?.id ?? data?._id ?? null;
                 // Skip saving if data is empty (no fields filled) and no id/_id present
+                // Allow saving when only `is_active` changed so toggles are persisted even if title/description are empty
                 const hasContent = Object.keys(data || {}).some(key =>
                     key !== 'id' && key !== 'is_active' && data[key] !== '' && data[key] !== null && data[key] !== undefined
                 );
-                if (!hasContent && !entityId) {
+                const onlyToggleChange = !hasContent && Object.keys(data || {}).length === 1 && (data?.is_active !== undefined);
+                if (!hasContent && !entityId && !onlyToggleChange) {
                     return null; // Skip empty sections without id
                 }
 
@@ -120,6 +134,9 @@ export default function HomePageUI() {
                 saveSection('/api/pages/homepage/expertise-section', expertiseSection),
                 saveList('/api/pages/homepage/expertise-items', expertiseItems, deletedExpertiseItems),
                 saveSection('/api/pages/homepage/contact-section', contactData),
+                saveSection('/api/pages/homepage/products-section', productsSection),
+                saveSection('/api/pages/projects/section', projectsSection),
+                saveSection('/api/pages/homepage/testimonials-section', testimonialsSection),
             ]);
 
             setDeletedTrustLogos([]);
@@ -151,6 +168,9 @@ export default function HomePageUI() {
         { id: "hero", label: "Hero" },
         { id: "trust", label: "Trust" },
         { id: "expertise", label: "Expertise" },
+        { id: "products", label: "Products" },
+        { id: "projects", label: "Projects" },
+        { id: "testimonials", label: "Testimonials" },
         { id: "contact", label: "Contact" },
     ];
 
@@ -440,6 +460,66 @@ export default function HomePageUI() {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PRODUCTS SECTION */}
+                    {activeTab === "products" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-indigo-500">inventory_2</span>
+                                    Products Section
+                                </h2>
+                                <div className="space-y-5 mb-8">
+                                    <InputGroup label="Title" value={productsSection.title || ''} onChange={(v) => setProductsSection({ ...productsSection, title: v })} />
+                                    <TextAreaGroup label="Description" value={productsSection.description || ''} onChange={(v) => setProductsSection({ ...productsSection, description: v })} />
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={productsSection.is_active === 1} onChange={(c) => setProductsSection({ ...productsSection, is_active: c ? 1 : 0 })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* PROJECTS SECTION */}
+                    {activeTab === "projects" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-teal-500">apartment</span>
+                                    Projects Section
+                                </h2>
+                                <div className="space-y-5 mb-8">
+                                    <InputGroup label="Title" value={projectsSection?.title || ''} onChange={(v) => setProjectsSection({ ...projectsSection, title: v })} />
+                                    <TextAreaGroup label="Description" value={projectsSection?.description || ''} onChange={(v) => setProjectsSection({ ...projectsSection, description: v })} />
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={(projectsSection?.is_active ?? 1) === 1} onChange={(c) => setProjectsSection({ ...projectsSection, is_active: c ? 1 : 0 })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TESTIMONIALS SECTION */}
+                    {activeTab === "testimonials" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-yellow-500">reviews</span>
+                                    Testimonials Section
+                                </h2>
+                                <div className="space-y-5 mb-8">
+                                    <InputGroup label="Title" value={testimonialsSection?.title || ''} onChange={(v) => setTestimonialsSection({ ...testimonialsSection, title: v })} />
+                                    <TextAreaGroup label="Subtitle" value={testimonialsSection?.subtitle || ''} onChange={(v) => setTestimonialsSection({ ...testimonialsSection, subtitle: v })} />
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={(testimonialsSection?.is_active ?? 1) === 1} onChange={(c) => setTestimonialsSection({ ...testimonialsSection, is_active: c ? 1 : 0 })} />
+                                    </div>
                                 </div>
                             </div>
                         </div>

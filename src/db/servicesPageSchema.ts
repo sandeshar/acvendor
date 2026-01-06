@@ -105,7 +105,7 @@ const servicesPageBrandsSchema = new Schema({
     name: { type: String, required: true, maxlength: 256 },
     slug: { type: String, maxlength: 128, default: '' },
     logo: { type: String, required: true, default: '', maxlength: 512 },
-    link: { type: String, required: true, default: '', maxlength: 512 },
+    link: { type: String, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
 }, {

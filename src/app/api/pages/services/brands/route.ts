@@ -12,11 +12,18 @@ export async function GET(request: NextRequest) {
         if (id) {
             const row = await ServicesPageBrands.findById(id).lean();
             if (!row) return NextResponse.json({ error: 'Brand not found' }, { status: 404 });
-            return NextResponse.json(row);
+            return NextResponse.json({ ...row, id: row._id ? String(row._id) : undefined });
         }
 
-        const rows = await ServicesPageBrands.find().sort({ display_order: 1 }).lean();
-        return NextResponse.json(rows);
+        const admin = searchParams.get('admin');
+        let rows;
+        if (admin === '1' || admin === 'true') {
+            rows = await ServicesPageBrands.find().sort({ display_order: 1 }).lean();
+        } else {
+            rows = await ServicesPageBrands.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
+        }
+        const normalized = Array.isArray(rows) ? rows.map(r => ({ ...r, id: r._id ? String(r._id) : undefined })) : [];
+        return NextResponse.json(normalized);
     } catch (error) {
         console.error('Error fetching brands:', error);
         return NextResponse.json({ error: 'Failed to fetch brands' }, { status: 500 });
@@ -29,7 +36,9 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { name, slug = '', logo = '', link = '', display_order = 0, is_active = 1 } = body;
         if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
-        const res = await ServicesPageBrands.create({ name, slug: slug || null, logo, link, display_order, is_active });
+        const payload: any = { name, slug: slug || null, logo, display_order, is_active };
+        if (link && String(link).trim()) payload.link = link;
+        const res = await ServicesPageBrands.create(payload);
         revalidateTag('services-brands', 'max');
         return NextResponse.json({ success: true, id: res._id }, { status: 201 });
     } catch (error) {
@@ -45,7 +54,8 @@ export async function PUT(request: NextRequest) {
         const { id } = body;
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
-        ['name', 'slug', 'logo', 'link', 'display_order', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        ['name', 'slug', 'logo', 'display_order', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        if (body.link !== undefined && String(body.link).trim()) update.link = body.link;
         await ServicesPageBrands.findByIdAndUpdate(id, update, { new: true });
         revalidateTag('services-brands', 'max');
         return NextResponse.json({ success: true });

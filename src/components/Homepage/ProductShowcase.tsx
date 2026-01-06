@@ -13,16 +13,20 @@ interface Product {
 interface Props {
     products: Product[];
     brand?: string;
+    section?: { title?: string; description?: string; is_active?: number };
 }
 
 import { formatPrice } from '@/utils/formatPrice';
 
 
-const ProductShowcase = ({ products, brand }: Props) => {
+const ProductShowcase = ({ products, brand, section }: Props) => {
+    // Respect section visibility
+    if (section && section.is_active === 0) return null;
     if (!products || products.length === 0) return null;
 
     const brandLabel = brand ? `${brand.charAt(0).toUpperCase()}${brand.slice(1)}` : null;
-    const titleText = brandLabel ? `Featured ${brandLabel} Products` : 'Featured Products';
+    const titleText = section?.title || (brandLabel ? `Featured ${brandLabel} Products` : 'Featured Products');
+    const descriptionText = section?.description || 'We supply a wide range of energy-efficient air conditioners.';
     const viewAllLink = brand ? `/${brand}-ac` : '/midea-ac';
     const productBaseLink = brand ? `/${brand}-ac` : '/midea-ac';
 
@@ -43,7 +47,7 @@ const ProductShowcase = ({ products, brand }: Props) => {
                                 {titleText}
                             </h2>
                             <p className="text-[#617589] text-lg">
-                                We supply a wide range of energy-efficient air conditioners.
+                                {descriptionText}
                             </p>
                         </div>
                         <Link href={viewAllLink} className="text-primary font-bold hover:underline flex items-center">

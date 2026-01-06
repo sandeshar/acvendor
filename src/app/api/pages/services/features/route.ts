@@ -6,8 +6,17 @@ import { revalidateTag } from 'next/cache';
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
-        const rows = await ServicesPageFeatures.find().sort({ display_order: 1 }).lean();
-        return NextResponse.json(rows);
+        const searchParams = request.nextUrl.searchParams;
+        const admin = searchParams.get('admin');
+        let rows;
+        if (admin === '1' || admin === 'true') {
+            rows = await ServicesPageFeatures.find().sort({ display_order: 1 }).lean();
+        } else {
+            rows = await ServicesPageFeatures.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
+        }
+        // Normalize to include `id` string
+        const normalized = Array.isArray(rows) ? rows.map(r => ({ ...r, id: r._id ? String(r._id) : undefined })) : [];
+        return NextResponse.json(normalized);
     } catch (error) {
         console.error('Error fetching features:', error);
         return NextResponse.json({ error: 'Failed to fetch features' }, { status: 500 });

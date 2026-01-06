@@ -13,6 +13,7 @@ const projectsSectionSchema = new Schema({
     cta_button_link: { type: String, default: '/contact', maxlength: 255 },
     secondary_cta_text: { type: String, default: 'Download Portfolio', maxlength: 100 },
     secondary_cta_link: { type: String, default: '#', maxlength: 255 },
+    is_active: { type: Number, default: 1, required: true },
 }, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'projects_section'
