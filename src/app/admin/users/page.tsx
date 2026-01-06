@@ -13,7 +13,12 @@ export default function UsersPage() {
     const fetchUsers = async () => {
         const response = await fetch('/api/users');
         const data = await response.json();
-        setUsers(data);
+        // Normalize MongoDB _id to id
+        const normalized = (data || []).map((u: any) => ({
+            ...u,
+            id: u._id || u.id
+        }));
+        setUsers(normalized);
     };
 
     const filteredUsers = users.filter(user =>

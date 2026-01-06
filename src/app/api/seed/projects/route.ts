@@ -14,6 +14,12 @@ export async function POST() {
                 title: 'Our Engineering Excellence',
                 description: 'AC Vendor, One Project at a Time. Explore our diverse portfolio of residential, commercial, and industrial HVAC installations across the country.',
                 background_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBttW6xBdRw1tfBXdAF9ibc5IrvpR0y-wCgzDU0_shUutz7Yikf6kgoSXoouAitl5HBEp3OgJBn6WXsBGHSVuwiQlIwZdGn3At4QAQ5ha0DBdG3q9cMa3oRgzqkjcEv9sVe6kXVRSKrJxyQvNYEWNMI87u4Iuy1p6PL2i-b7ZodX-ml0JLmRe_w2k_r-usH4auYcBJT5qv0XdukeBU7JHwJ3DaftaEs_VKbTN5O8RWEGTyPcuMTDfv43bUSGIGE8Y0Af0wfRug1jqc',
+                secondary_cta_text: 'Download Portfolio',
+                secondary_cta_link: '#',
+                review_text: 'The team at Midea AC Solutions delivered exactly what they promised for our hotel renovation. The VRF system is incredibly efficient, and the installation was seamless despite the challenging timeline.',
+                review_author_name: 'Ram Bahadur Shrestha',
+                review_author_title: 'Operations Manager, Everest Hotel',
+                review_author_image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjRnoyWKSCZH8orZ-NT8KIJbxtTO2F0jFKpUyy_yRVD55046YP3KiqqHa47kqMU2LVaZpIMs0U63dzt3REfHl7niuXjBNI92oaRPj9ezDT4C-OR_VFgJKBSUFTVBm0KQpuaKg-mh0OoYs-Z9Ud7VAQq5ZCPb3WuBirbeoL6LqC5V_LYIvMzeFcqAE36SyBmmlYn397XcyoQXRo70FgebmXvdl4ZOsoTkH6bkrffDdetqSbfhd-zefq8Wei_DjBx8DS-il7lBSrTsY'
             });
         } else {
             await ProjectsSection.create({

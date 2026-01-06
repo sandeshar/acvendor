@@ -89,9 +89,8 @@ export async function POST(request: NextRequest) {
             is_active,
         });
 
-        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
-
         const data = { ...result.toObject(), id: result._id.toString() };
+        try { revalidateTag('contact-info', 'max'); } catch (e) { /* ignore */ }
         return NextResponse.json(
             { success: true, message: 'Info section created successfully', data },
             { status: 201 }
@@ -167,7 +166,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Info section not found' }, { status: 404 });
         }
 
-        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
+        try { revalidateTag('contact-info', 'max'); } catch (e) { /* ignore */ }
 
         const data = { ...updated, id: updated._id?.toString?.() ?? id };
         return NextResponse.json({ success: true, message: 'Info section updated successfully', data });
@@ -191,7 +190,7 @@ export async function DELETE(request: NextRequest) {
 
         await ContactPageInfo.findByIdAndDelete(id);
 
-        try { revalidateTag('contact-info'); } catch (e) { /* ignore */ }
+        try { revalidateTag('contact-info', 'max'); } catch (e) { /* ignore */ }
 
         return NextResponse.json({ success: true, message: 'Info section deleted successfully' });
     } catch (error) {

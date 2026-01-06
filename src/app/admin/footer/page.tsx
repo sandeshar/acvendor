@@ -19,9 +19,12 @@ export default function FooterManagerPage() {
     const fetchSections = async () => {
         setLoading(true);
         try {
+            // Debug
+            try { console.log('fetchSections: calling /api/store-settings'); } catch (e) { }
             // Prefer unified store settings which contains footerSections and footerText
             const resStore = await fetch('/api/store-settings', { cache: 'no-store' });
             const storeJson = await resStore.json();
+            try { console.log('fetchSections: store response', storeJson); } catch (e) { }
             if (storeJson?.success && storeJson.data) {
                 setSections(storeJson.data.footerSections || []);
                 setFooterText(storeJson.data.footerText || storeJson.data.footer_text || '');
@@ -114,18 +117,37 @@ export default function FooterManagerPage() {
             const storeJson = await storeRes.json();
             const currentStore = storeJson?.data || {};
 
+            // Remove potentially ambiguous or stale keys from currentStore before spreading
+            const { FooterSection: _oldSections, footerSections: _oldSections2, ...cleanStore } = currentStore;
+
             const payload = {
-                ...currentStore,
-                footerSections: sections.map((sec, sIdx) => ({ title: sec.title, order: sIdx, links: (sec.links || []).map((l: any, i: number) => ({ label: l.label, href: l.href, isExternal: !!l.isExternal, order: i })) })),
+                ...cleanStore,
+                footerSections: sections.map((sec, sIdx) => ({ 
+                    title: sec.title, 
+                    order: sIdx, 
+                    links: (sec.links || []).map((l: any, i: number) => ({ 
+                        label: l.label, 
+                        href: l.href, 
+                        isExternal: !!l.isExternal, 
+                        order: i 
+                    })) 
+                })),
                 footerText: footerText,
             };
 
+            try { console.log('saveAll: payload', payload); } catch (e) { }
             const res = await fetch('/api/store-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const json = await res.json();
+            try { console.log('saveAll: response', json); } catch (e) { }
             if (!json?.success) throw new Error(json?.error || 'Save failed');
             showToast('Footer sections saved', { type: 'success' });
             setSections(json.data?.footerSections || []);
             setFooterText(json.data?.footerText || json.data?.footer_text || '');
+            // Server response should contain the canonical saved data. Only re-fetch if it's missing to avoid
+            // overriding fresh state with a potentially stale GET result immediately after writes.
+            if (!json.data?.footerSections) {
+                await fetchSections();
+            }
         } catch (e: any) {
             console.error('Save failed', e);
             showToast(e.message || 'Save failed', { type: 'error' });

@@ -126,62 +126,107 @@ export default function CompareTableClient({ products }: { products: any[] }) {
         return rows;
     }, [visibleRows, showOnlyDifferences, diffInfo]);
 
-    if (!products || products.length === 0) return <div className="text-sm text-gray-500">No products to compare</div>;
+    if (!products || products.length === 0) return (
+        <div className="bg-white rounded-3xl p-20 text-center shadow-sm border border-slate-100">
+            <span className="material-symbols-outlined text-6xl text-slate-200 mb-4">compare_arrows</span>
+            <h3 className="text-xl font-bold text-slate-900">No products to compare</h3>
+            <p className="text-slate-500 mt-2 mb-6">Select products from the shop to see their differences here.</p>
+            <Link href="/products" className="bg-primary text-white px-6 py-3 rounded-full font-bold hover:shadow-lg transition-all inline-block">Browse Products</Link>
+        </div>
+    );
 
     return (
-        <div>
-            <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                    <label className="inline-flex items-center gap-2">
-                        <input type="checkbox" checked={showOnlyDifferences} onChange={(e) => setShowOnlyDifferences(e.target.checked)} />
-                        <span className="text-sm">Show only differences</span>
+        <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-6">
+                    <label className="inline-flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-10 h-6 rounded-full transition-colors relative ${showOnlyDifferences ? 'bg-primary' : 'bg-slate-200'}`}>
+                            <input type="checkbox" className="hidden" checked={showOnlyDifferences} onChange={(e) => setShowOnlyDifferences(e.target.checked)} />
+                            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${showOnlyDifferences ? 'translate-x-4' : ''}`} />
+                        </div>
+                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">Show only differences</span>
                     </label>
+                    <div className="text-sm text-slate-400 font-medium">
+                        Comparing <span className="text-slate-900 font-bold">{products.length}</span> items
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={() => window.print()} className="px-3 py-1 rounded border text-sm">Print</button>
-                    <Link href="/products" className="px-3 py-1 rounded border text-sm">Back to products</Link>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => window.print()} className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">print</span>
+                        Print
+                    </button>
+                    <Link href="/products" className="px-4 py-2 rounded-xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-colors flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">add</span>
+                        Add More
+                    </Link>
                 </div>
             </div>
 
-            <div className="overflow-auto border rounded-lg">
-                <table className="w-full table-fixed border-collapse min-w-[900px]">
-                    <thead>
-                        <tr>
-                            <th className="w-48 text-left px-4 py-2 sticky left-0 bg-white z-30"></th>
-                            {products.map((p: any) => (
-                                <th key={p.id} className="px-4 py-4 border-b align-top">
-                                    <div className="flex flex-col items-center gap-2">
-                                        <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="h-24 w-24 object-contain rounded" />
-                                        <div className="font-bold text-center">{p.title}</div>
-                                        <div className="text-xs text-gray-500">{p.model || p.capacity}</div>
-                                        <div className="text-sm font-semibold mt-1">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</div>
-                                        <div className="mt-2"><Link href={`/products/${p.slug}`} className="text-sm text-primary">View</Link></div>
+            <div className="overflow-hidden bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+                <div className="overflow-x-auto">
+                    <table className="w-full table-fixed border-collapse min-w-[1000px]">
+                        <thead>
+                            <tr className="bg-slate-50/50">
+                                <th className="w-64 p-6 sticky left-0 z-30 bg-slate-50 border-b border-slate-100 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                    <div className="text-left">
+                                        <div className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 mb-1">Specifications</div>
+                                        <div className="text-lg font-black text-slate-900">Feature List</div>
                                     </div>
                                 </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rowsToShow.map((row) => (
-                            <tr key={row.key} className="border-t">
-                                <td className="px-4 py-3 font-medium text-sm align-top bg-surface-light sticky left-0 z-20">{row.label}</td>
-                                {products.map((p: any) => {
-                                    const raw = (() => {
-                                        const r = getRaw(p, row.key);
-                                        if (r === undefined || r === null) return '';
-                                        if (typeof r === 'boolean') return r ? 'true' : 'false';
-                                        return String(r).trim();
-                                    })();
-                                    return (
-                                        <td key={p.id + '_' + row.key} className="px-4 py-3 align-top">
-                                            {renderField(p, row.key)}
-                                        </td>
-                                    );
-                                })}
+                                {products.map((p: any) => (
+                                    <th key={p.id} className="p-6 border-b border-slate-100 align-top relative group">
+                                        <div className="flex flex-col h-full">
+                                            <div className="relative aspect-square w-full mb-4 bg-white rounded-2xl p-4 border border-slate-50 shadow-sm group-hover:shadow-md transition-shadow flex items-center justify-center overflow-hidden">
+                                                <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500" />
+                                                {p.featured === 1 && (
+                                                    <div className="absolute top-2 left-2 bg-yellow-400 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm text-yellow-900 border border-yellow-300">Popular</div>
+                                                )}
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 truncate">{p.category?.name || 'AC UNIT'}</div>
+                                                <h3 className="font-black text-slate-900 text-sm leading-tight line-clamp-2 h-10 mb-2 group-hover:text-primary transition-colors">{p.title}</h3>
+                                                <div className="mt-auto">
+                                                    <div className="text-primary font-black text-lg">
+                                                        {p.price ? `NPR ${formatPrice(p.price)}` : 'Contact for Price'}
+                                                    </div>
+                                                    <Link href={`/products/${p.slug}`} className="mt-4 block w-full text-center py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-primary transition-colors">
+                                                        View Details
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
+                                ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {rowsToShow.map((row) => {
+                                const isDiff = diffInfo[row.key]?.differs;
+                                return (
+                                    <tr key={row.key} className={`group/row transition-colors ${isDiff ? 'bg-amber-50/20' : 'hover:bg-slate-50/50'}`}>
+                                        <td className={`p-5 font-bold text-xs align-top sticky left-0 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.02)] transition-colors border-b border-slate-50 ${isDiff ? 'bg-amber-50 text-amber-900' : 'bg-white text-slate-500 group-hover/row:text-slate-900'}`}>
+                                            <div className="flex items-center gap-2">
+                                                {isDiff && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />}
+                                                {row.label}
+                                            </div>
+                                        </td>
+                                        {products.map((p: any) => {
+                                            const isMostCommon = !isDiff || getRaw(p, row.key) === diffInfo[row.key]?.mostCommon;
+                                            return (
+                                                <td key={p.id + '_' + row.key} className={`p-5 align-top text-sm border-b border-slate-50 transition-colors ${isDiff && !isMostCommon ? 'bg-amber-50/30 font-semibold text-slate-900' : 'text-slate-600'}`}>
+                                                    {renderField(p, row.key)}
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div className="text-center pb-12">
+                <p className="text-slate-400 text-xs italic">Prices and specifications are subject to change without notice.</p>
             </div>
         </div>
     );

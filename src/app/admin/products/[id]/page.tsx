@@ -65,7 +65,7 @@ export default function EditProductPage() {
 
             const putPayload = {
                 ...product,
-                id: Number(productId),
+                id: productId,
                 images: imagesPayload,
                 metaTitle: product.meta_title || product.title,
                 metaDescription: product.meta_description || product.excerpt,
@@ -75,6 +75,8 @@ export default function EditProductPage() {
                 noise: product.technical?.noise || null,
                 dimensions: product.technical?.dimensions || null,
                 voltage: product.technical?.voltage || null,
+                capacity: product.technical?.capacity || null,
+                warranty: product.technical?.warranty || null,
                 locations: JSON.stringify(product.locations || []),
             };
 
@@ -95,10 +97,14 @@ export default function EditProductPage() {
             const detailPayload: any = {
                 key: product.slug,
                 slug: product.slug,
+                icon: 'inventory_2',
                 title: product.title,
                 description: product.excerpt,
+                bullets: '[]',
+                display_order: 0,
                 image: product.thumbnail || '/placeholder-product.png',
-                postId: Number(productId),
+                image_alt: product.title,
+                postId: productId,
                 locations: JSON.stringify(product.locations || []),
                 inventory_status: product.inventory_status,
                 images: JSON.stringify(product.images || []),

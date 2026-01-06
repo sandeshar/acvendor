@@ -85,6 +85,10 @@ export async function GET() {
                 });
             }
             (data as any).FooterSection = sections;
+            // Backwards-compatible key
+            (data as any).footerSections = sections;
+            // Log what GET returns for visibility
+            try { console.log(new Date().toISOString(), 'GET /api/store-settings returning sections:', sections); } catch (e) { }
         }
 
         return NextResponse.json({ success: true, data });
@@ -100,20 +104,59 @@ export async function PUT(request: NextRequest) {
         const body = await request.json();
         const update = toDb(body);
 
+        // Debug logging to help diagnose stale save/load issues
+        try { console.log(new Date().toISOString(), 'PUT /api/store-settings payload footerSections:', body.footerSections ?? body.FooterSection); } catch (e) { /* ignore */ }
+
         // Read current row (single row table semantics)
         const row = await StoreSettings.findOne().lean();
 
         if (!row) {
             const created = await StoreSettings.create(update);
+            const id = created._id;
+
+            // If footer sections were provided in the payload, create them for the new store
+            const footerSectionsPayload = body.footerSections ?? body.FooterSection;
+            if (footerSectionsPayload && Array.isArray(footerSectionsPayload)) {
+                for (const [sIdx, sec] of footerSectionsPayload.entries()) {
+                    const newSection = await FooterSection.create({ store_id: id, title: sec.title || '', order: sec.order ?? sIdx });
+                    if (sec.links && Array.isArray(sec.links)) {
+                        for (const [lIdx, ln] of sec.links.entries()) {
+                            await FooterLink.create({
+                                section_id: newSection._id,
+                                label: ln.label || '',
+                                href: ln.href || '#',
+                                is_external: ln.isExternal ? 1 : 0,
+                                order: ln.order ?? lIdx,
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Re-fetch footer sections so response includes them
             const data = fromDb(created);
-            return NextResponse.json({ success: true, message: 'Store settings created', data, id: created._id });
+            if (data) {
+                const secs = await FooterSection.find({ store_id: id }).sort({ order: 1 }).lean();
+                const sections: any[] = [];
+                for (const s of secs) {
+                    const links = await FooterLink.find({ section_id: s._id }).sort({ order: 1 }).lean();
+                    sections.push({ id: s._id, title: s.title, order: s.order, links: links.map((l: any) => ({ id: l._id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })) });
+                }
+                (data as any).FooterSection = sections;
+                // Backwards-compatible key
+                (data as any).footerSections = sections;
+            }
+
+            try { revalidateTag('store-settings'); } catch (e) { /* ignore */ }
+            return NextResponse.json({ success: true, message: 'Store settings created', data, id });
         }
 
         const id = row._id;
         const updated = await StoreSettings.findByIdAndUpdate(id, update, { new: true }).lean();
 
         // If footer sections were provided in the payload, replace existing sections/links
-        if (body.FooterSection && Array.isArray(body.FooterSection)) {
+        const footerSectionsPayload = body.footerSections ?? body.FooterSection;
+        if (footerSectionsPayload && Array.isArray(footerSectionsPayload)) {
             // Delete existing sections + links for this store
             const existing = await FooterSection.find({ store_id: id }).lean();
             for (const ex of existing) {
@@ -122,7 +165,7 @@ export async function PUT(request: NextRequest) {
             }
 
             // Insert new sections and links
-            for (const [sIdx, sec] of body.FooterSection.entries()) {
+            for (const [sIdx, sec] of footerSectionsPayload.entries()) {
                 const newSection = await FooterSection.create({ store_id: id, title: sec.title || '', order: sec.order ?? sIdx });
                 if (sec.links && Array.isArray(sec.links)) {
                     for (const [lIdx, ln] of sec.links.entries()) {
@@ -138,7 +181,7 @@ export async function PUT(request: NextRequest) {
             }
         }
 
-        try { revalidateTag('store-settings', 'max'); } catch (e) { /* ignore */ }
+        try { revalidateTag('store-settings'); } catch (e) { /* ignore */ }
         // Re-fetch footer sections so response includes them
         const data = fromDb(updated);
         if (data) {
@@ -149,6 +192,8 @@ export async function PUT(request: NextRequest) {
                 sections.push({ id: s._id, title: s.title, order: s.order, links: links.map((l: any) => ({ id: l._id, label: l.label, href: l.href, isExternal: !!l.is_external, order: l.order })) });
             }
             (data as any).FooterSection = sections;
+            // Backwards-compatible key
+            (data as any).footerSections = sections;
         }
 
         return NextResponse.json({ success: true, message: 'Store settings updated', data });

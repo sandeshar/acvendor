@@ -33,6 +33,7 @@ const SideBar = () => {
         { name: 'Services Manager', icon: 'service_toolbox', href: '/admin/services/manager' },
         { name: 'Category Manager', icon: 'category', href: '/admin/categories' },
         { name: 'Products', icon: 'inventory_2', href: '/admin/products' },
+        { name: 'Quotations', icon: 'request_quote', href: '/admin/quotation/drafts' },
         { name: 'Shop', icon: 'store', href: '/admin/shop' },
         { name: 'Testimonials', icon: 'reviews', href: '/admin/testimonials' },
         { name: 'Contact', icon: 'contact_mail', href: '/admin/contact' },

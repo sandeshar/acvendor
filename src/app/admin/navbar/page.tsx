@@ -160,7 +160,7 @@ export default function NavbarManagerPage() {
         const data = await fetchCategories();
         const defaults: Record<string, boolean> = {};
         for (const cat of data) {
-            const exists = navbarItems.some(n => n.href === `/services/category/${cat.slug}` && String(n.parent_id) === String(id));
+            const exists = navbarItems.some(n => (n.href === `/services/category/${cat.slug}` || n.href === `/shop/category/${cat.slug}`) && String(n.parent_id) === String(id));
             defaults[String(cat.id)] = exists;
         }
         setSelectedCategories(defaults);
@@ -170,10 +170,20 @@ export default function NavbarManagerPage() {
         const selected = categories.filter((c: any) => selectedCategories[String(c.id)]);
         if (selected.length === 0) return;
         try {
+            // Check if parent is a dropdown; if not, update it
+            const parentItem = navbarItems.find(n => String(n.id) === String(parentId));
+            if (parentItem && parentItem.is_dropdown !== 1) {
+                await fetch('/api/navbar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...parentItem, is_dropdown: 1 }),
+                });
+            }
+
             // For each category, create a navbar item and then create nav items for subcategories under it (if any)
             for (const [selIndex, cat] of selected.entries()) {
                 // Prevent duplicates: reuse existing category nav item under parent if present
-                const existingCat = navbarItems.find(n => n.href === `/services/category/${cat.slug}` && n.parent_id === parentId);
+                const existingCat = navbarItems.find(n => (n.href === `/services/category/${cat.slug}` || n.href === `/shop/category/${cat.slug}`) && n.parent_id === parentId);
                 let newNavId: string | number | undefined;
                 if (existingCat && (existingCat.id || existingCat._id)) {
                     newNavId = existingCat.id ?? existingCat._id;
@@ -197,7 +207,7 @@ export default function NavbarManagerPage() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             label: cat.name,
-                            href: `/services/category/${cat.slug}`,
+                            href: `/shop/category/${cat.slug}`,
                             order: newOrder,
                             parent_id: parentId,
                             is_button: 0,
@@ -215,7 +225,7 @@ export default function NavbarManagerPage() {
                             {
                                 id: newNavId,
                                 label: cat.name,
-                                href: `/services/category/${cat.slug}`,
+                                href: `/shop/category/${cat.slug}`,
                                 order: newOrder,
                                 parent_id: parentId,
                                 is_button: 0,
@@ -232,14 +242,14 @@ export default function NavbarManagerPage() {
                     // Skip subcategory creation if includeSubcategories is false
                     if (!includeSubcategories) break;
                     // Check if subcategory nav item exists under this category nav
-                    const existingSub = navbarItems.find(n => n.href === `/services/category/${cat.slug}/${sub.slug}` && n.parent_id === newNavId);
+                    const existingSub = navbarItems.find(n => (n.href === `/services/category/${cat.slug}/${sub.slug}` || n.href === `/shop/category/${cat.slug}/${sub.slug}`) && n.parent_id === newNavId);
                     if (existingSub) continue;
                     const subRes = await fetch('/api/navbar', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             label: sub.name,
-                            href: `/services/category/${cat.slug}/${sub.slug}`,
+                            href: `/shop/category/${cat.slug}/${sub.slug}`,
                             order: 0,
                             parent_id: newNavId,
                             is_button: 0,
@@ -256,7 +266,7 @@ export default function NavbarManagerPage() {
                                 {
                                     id: newSubId,
                                     label: sub.name,
-                                    href: `/services/category/${cat.slug}/${sub.slug}`,
+                                    href: `/shop/category/${cat.slug}/${sub.slug}`,
                                     order: 0,
                                     parent_id: newNavId as number,
                                     is_button: 0,
@@ -619,7 +629,7 @@ export default function NavbarManagerPage() {
                                                         </label>
                                                         <div className="flex items-center gap-2">
                                                             {(item.id ?? item._id) && (() => {
-                                                                const existing = navbarItems.filter(n => String(n.parent_id) === String(item.id ?? item._id)).find(n => n.href === `/services/category/${cat.slug}`);
+                                                                const existing = navbarItems.filter(n => String(n.parent_id) === String(item.id ?? item._id)).find(n => n.href === `/shop/category/${cat.slug}` || n.href === `/services/category/${cat.slug}`);
                                                                 if (existing && (existing.id ?? existing._id)) {
                                                                     return (
                                                                         <div className="flex gap-2 items-center text-sm">
@@ -712,10 +722,10 @@ export default function NavbarManagerPage() {
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Parent ID (optional)</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={selectedItem.parent_id || ''}
-                                        onChange={(e) => setSelectedItem({ ...selectedItem, parent_id: e.target.value ? Number(e.target.value) : null })}
-                                        placeholder="Leave empty"
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, parent_id: e.target.value || null })}
+                                        placeholder="ObjectId string"
                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     />
                                 </div>

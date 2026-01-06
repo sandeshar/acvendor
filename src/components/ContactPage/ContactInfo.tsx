@@ -15,6 +15,7 @@ interface ContactInfoProps {
         whatsapp_title?: string;
         whatsapp_subtext?: string;
         whatsapp_link?: string;
+        whatsapp_number?: string;
         location_title?: string;
         opening_hours_title?: string;
         opening_hours_text?: string;

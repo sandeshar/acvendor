@@ -54,17 +54,22 @@ export default async function ComparePage({ searchParams }: { searchParams?: { i
     );
 
     return (
-        <main className="p-10">
-            <div className="layout-container max-w-[1200px] mx-auto">
-                <div className="flex items-center gap-2 text-sm mb-6">
-                    <Link href="/" className="text-[#617589]">Home</Link>
-                    <span className="text-[#617589]">/</span>
-                    <Link href="/products" className="text-[#617589]">Products</Link>
-                    <span className="text-[#617589]">/</span>
-                    <span className="font-medium">Compare</span>
+        <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+            <div className="max-w-[1400px] mx-auto">
+                <div className="flex items-center gap-2 text-xs mb-8 text-slate-500 uppercase tracking-widest">
+                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <span className="opacity-30">/</span>
+                    <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
+                    <span className="opacity-30">/</span>
+                    <span className="font-bold text-slate-900">Compare</span>
                 </div>
 
-                <h1 className="text-2xl font-bold mb-4">Compare Products</h1>
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Compare Products</h1>
+                        <p className="text-slate-500 mt-1">Direct side-by-side comparison of technical specifications</p>
+                    </div>
+                </div>
 
                 <CompareTableClient products={products} />
             </div>

@@ -70,7 +70,7 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
                                 <div className="p-4 flex flex-col gap-2">
                                     <h3 className="text-lg font-bold text-[#111418] truncate">{p.title}</h3>
                                     <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt}</p>
-                                    {p.price && (
+                                    {Number(p.price) > 0 && (
                                         <div className="mt-2 flex items-center justify-between">
                                             <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
                                             <div className="text-xs text-gray-400">Starting at</div>

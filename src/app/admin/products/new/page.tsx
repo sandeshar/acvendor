@@ -35,6 +35,8 @@ export default function NewProductPage() {
                 noise: product.technical?.noise || null,
                 dimensions: product.technical?.dimensions || null,
                 voltage: product.technical?.voltage || null,
+                capacity: product.technical?.capacity || null,
+                warranty: product.technical?.warranty || null,
                 locations: JSON.stringify(product.locations || []),
             };
 
@@ -57,6 +59,8 @@ export default function NewProductPage() {
                 icon: 'inventory_2',
                 title: product.title,
                 description: product.excerpt,
+                bullets: '[]',
+                display_order: 0,
                 image: product.thumbnail || '/placeholder-product.png',
                 image_alt: product.title,
                 postId: postData.id,

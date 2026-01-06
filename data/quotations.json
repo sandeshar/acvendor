@@ -32,25 +32,6 @@
     "updatedAt": "2025-12-30T13:14:17.032Z"
   },
   {
-    "status": "draft",
-    "client": {},
-    "dateIssued": "2025-12-30",
-    "validUntil": "2026-01-29",
-    "referenceNo": "",
-    "items": [],
-    "notes": "",
-    "totals": {
-      "subtotal": 0,
-      "discount": 0,
-      "tax": 0,
-      "grandTotal": 0
-    },
-    "id": 2,
-    "number": "QT-2025-002",
-    "createdAt": "2025-12-30T12:55:03.200Z",
-    "updatedAt": "2025-12-30T12:55:03.200Z"
-  },
-  {
     "status": "sent",
     "client": {},
     "dateIssued": "2025-12-30",
@@ -145,5 +126,38 @@
     "number": "QT-2025-005",
     "createdAt": "2025-12-30T13:15:10.849Z",
     "updatedAt": "2025-12-30T13:31:47.927Z"
+  },
+  {
+    "status": "sent",
+    "client": {
+      "name": "sldajlk",
+      "company": "",
+      "email": "skljdsa@kfl.com",
+      "phone": "987987",
+      "address": "",
+      "pan": ""
+    },
+    "dateIssued": "2026-01-06",
+    "validUntil": "2026-02-05",
+    "referenceNo": "",
+    "items": [
+      {
+        "description": "LG Commercial Product 2",
+        "qty": 2,
+        "unitPrice": 199,
+        "discountPercent": 0
+      }
+    ],
+    "notes": "sadasd",
+    "totals": {
+      "subtotal": 398,
+      "discount": 0,
+      "tax": 51.74,
+      "grandTotal": 449.74
+    },
+    "id": 6,
+    "number": "QT-2026-006",
+    "createdAt": "2026-01-06T13:45:17.773Z",
+    "updatedAt": "2026-01-06T13:45:17.898Z"
   }
 ]

@@ -41,11 +41,11 @@ export async function POST() {
         // Insert default footer sections and links (no 'Connect' — social links are in store settings)
         const defaultSections = [
             {
-                title: 'Products',
+                title: 'Shop',
                 links: [
-                    { label: 'All Products', href: '/midea-ac' },
+                    { label: 'All Products', href: '/shop' },
                     { label: 'Brands', href: '/brands' },
-                    { label: 'Installation', href: '/services' },
+                    { label: 'Midea AC', href: '/midea-ac' },
                     { label: 'Contact', href: '/contact' },
                 ],
             },

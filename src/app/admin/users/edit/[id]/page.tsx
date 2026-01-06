@@ -48,7 +48,7 @@ export default function AddUserPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ id: parseInt(id as string), ...formData }),
+            body: JSON.stringify({ id: id as string, ...formData }),
         });
         if (response.ok) {
             showToast('User updated successfully!', { type: 'success' });

@@ -192,14 +192,14 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                                            <select value={product.category_id ?? ''} onChange={e => setProduct({ ...product, category_id: e.target.value ? Number(e.target.value) : null, subcategory_id: null })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                            <select value={product.category_id ?? ''} onChange={e => setProduct({ ...product, category_id: e.target.value || null, subcategory_id: null })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                                                 <option value="">Select Category</option>
                                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-xs font-bold text-gray-500 uppercase">Subcategory</label>
-                                            <select value={product.subcategory_id ?? ''} onChange={e => setProduct({ ...product, subcategory_id: e.target.value ? Number(e.target.value) : null })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium">
+                                            <select value={product.subcategory_id ?? ''} onChange={e => setProduct({ ...product, subcategory_id: e.target.value || null })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium">
                                                 <option value="">Select Subcategory</option>
                                                 {subcategories.filter((s: any) => s.category_id === product.category_id).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                             </select>
@@ -212,6 +212,12 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Power</label><input value={product.technical?.power || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, power: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
                                                 <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">ISEER</label><input value={product.technical?.iseer || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, iseer: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Capacity</label><input value={product.technical?.capacity || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, capacity: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Refrigerant</label><input value={product.technical?.refrigerant || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, refrigerant: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Noise Level</label><input value={product.technical?.noise || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, noise: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Dimensions</label><input value={product.technical?.dimensions || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Voltage</label><input value={product.technical?.voltage || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                                <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Warranty</label><input value={product.technical?.warranty || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, warranty: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
                                             </div>
                                         </div>
                                         <div className="space-y-4">

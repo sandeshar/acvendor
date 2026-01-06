@@ -997,7 +997,7 @@ export async function POST(request: Request) {
 
                 // Seed main navbar items
                 const homeResult = await NavbarItems.create({ label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 });
-                const servicesResult = await NavbarItems.create({ label: 'Services', href: '/services', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 });
+                const servicesResult = await NavbarItems.create({ label: 'Shop', href: '/shop', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 });
 
                 // Add service categories as dropdown items (parent_id = services item id)
                 if (categories.length > 0) {
@@ -1007,7 +1007,7 @@ export async function POST(request: Request) {
                         const isDropdown = !!catSubs ? 1 : 0;
                         await NavbarItems.create({
                             label: categories[i].name,
-                            href: `/services/category/${categories[i].slug}`,
+                            href: `/shop/category/${categories[i].slug}`,
                             order: i,
                             parent_id: servicesId,
                             is_button: 0,

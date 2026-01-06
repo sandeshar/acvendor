@@ -29,7 +29,7 @@ export default function AdminQuotationPage() {
     const [notes, setNotes] = useState('');
     const [items, setItems] = useState<QuotationItem[]>([]);
     const [globalDiscount, setGlobalDiscount] = useState<number>(0);
-    const [taxPercent, setTaxPercent] = useState<number>(10);
+    const [taxPercent, setTaxPercent] = useState<number>(13);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -193,7 +193,10 @@ export default function AdminQuotationPage() {
             {/* Page Heading & Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">Create New Quotation</h1>
+                    <div className="flex items-center gap-2">
+                         <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">Create Quotation</h1>
+                         <Link href="/admin/quotation/drafts" className="text-xs font-bold text-primary hover:underline ml-4 mt-2">View All Drafts</Link>
+                    </div>
                     <p className="text-[#616f89] text-base font-normal">{number ? `Quotation ${number}` : 'New Quotation'}</p>
                 </div>
 
@@ -320,8 +323,8 @@ export default function AdminQuotationPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="relative">
-                                            <span className="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
-                                            <input type="number" value={it.unitPrice ?? 0} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) || 0 })} className="w-full rounded border border-gray-200 bg-white pl-5 pr-2 py-1.5 text-sm text-right" />
+                                            <span className="absolute left-2 top-1.5 text-gray-400 text-xs">NRS</span>
+                                            <input type="number" value={it.unitPrice ?? 0} onChange={(e) => updateItem(idx, { unitPrice: Number(e.target.value) || 0 })} className="w-full rounded border border-gray-200 bg-white pl-10 pr-2 py-1.5 text-sm text-right" />
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -359,7 +362,7 @@ export default function AdminQuotationPage() {
                 <div className="w-full md:w-[400px] bg-white rounded-xl shadow-sm border border-[#f0f2f4] p-6 flex flex-col gap-4">
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-[#616f89]">Subtotal</span>
-                        <span className="font-medium">${formatCurrency(totals.subtotal)}</span>
+                        <span className="font-medium">NRS {formatCurrency(totals.subtotal)}</span>
                     </div>
 
                     <div className="flex justify-between items-center text-sm">
@@ -372,7 +375,7 @@ export default function AdminQuotationPage() {
                                 <input className="w-full rounded border border-gray-200 bg-white pl-2 pr-6 py-1 text-right text-xs focus:ring-primary focus:border-primary" type="number" value={globalDiscount} onChange={(e) => setGlobalDiscount(Number(e.target.value) || 0)} />
                                 <span className="absolute right-2 top-1 text-gray-400 text-xs">%</span>
                             </div>
-                            <span className="font-medium text-red-500">-${formatCurrency(totals.discount)}</span>
+                            <span className="font-medium text-red-500">-NRS {formatCurrency(totals.discount)}</span>
                         </div>
                     </div>
 
@@ -380,7 +383,7 @@ export default function AdminQuotationPage() {
                         <span className="text-[#616f89]">Tax / VAT ({taxPercent}%)</span>
                         <div className="flex items-center gap-2">
                             <input className="w-20 rounded border border-gray-200 bg-white pl-2 pr-2 py-1 text-right text-xs focus:ring-primary focus:border-primary" type="number" value={taxPercent} onChange={(e) => setTaxPercent(Number(e.target.value) || 0)} />
-                            <span className="font-medium">${formatCurrency(totals.tax)}</span>
+                            <span className="font-medium">NRS {formatCurrency(totals.tax)}</span>
                         </div>
                     </div>
 
@@ -388,7 +391,7 @@ export default function AdminQuotationPage() {
 
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-bold text-[#111318]">Grand Total</span>
-                        <span className="text-2xl font-black text-primary">${formatCurrency(totals.grandTotal)}</span>
+                        <span className="text-2xl font-black text-primary">NRS {formatCurrency(totals.grandTotal)}</span>
                     </div>
 
                     <div className="mt-4 flex flex-col gap-3">

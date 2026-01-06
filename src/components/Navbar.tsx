@@ -61,6 +61,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     const [mobileOpenChild, setMobileOpenChild] = useState<string | number | null>(null);
     const [subServices, setSubServices] = useState<Record<string, any[]>>({});
     const [hoveredSubSlug, setHoveredSubSlug] = useState<string | null>(null);
+    const [defaultProducts, setDefaultProducts] = useState<any[]>([]);
 
     // Logo load state: if the image fails to load, we show a fallback icon
     const [logoError, setLogoError] = useState(false);
@@ -88,6 +89,11 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                     if (!Array.isArray(items)) throw new Error('Invalid navbar data');
                     const activeItems = items
                         .filter((item: NavbarItem) => item.is_active === 1)
+                        .map((item: any) => ({
+                            ...item,
+                            id: item._id || item.id,
+                            parent_id: item.parent_id || null
+                        }))
                         .sort((a: NavbarItem, b: NavbarItem) => a.order - b.order);
                     if (isMounted) setNavLinks(activeItems);
                 } else {
@@ -98,10 +104,10 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                 if (isMounted) {
                     setNavLinks([
                         { id: 1, label: 'Home', href: '/', order: 0, is_button: 0, is_active: 1 },
-                        { id: 2, label: 'Midea AC', href: '/midea-ac', order: 1, is_button: 0, is_active: 1 },
-                        { id: 3, label: 'Shop', href: '/shop', order: 2, is_button: 0, is_active: 1 },
-                        { id: 4, label: 'About Us', href: '/about', order: 3, is_button: 0, is_active: 1 },
-                        { id: 5, label: 'Brands', href: '/brands', order: 4, is_button: 0, is_active: 1 },
+                        { id: 2, label: 'Shop', href: '/shop', order: 1, is_button: 0, is_active: 1, is_dropdown: 1 },
+                        { id: 3, label: 'Midea AC', href: '/midea-ac', order: 2, is_button: 0, is_active: 1 },
+                        { id: 4, label: 'Portfolio', href: '/projects', order: 3, is_button: 0, is_active: 1 },
+                        { id: 5, label: 'About Us', href: '/about', order: 4, is_button: 0, is_active: 1 },
                         { id: 6, label: 'FAQ', href: '/faq', order: 5, is_button: 0, is_active: 1 },
                     ]);
                 }
@@ -111,6 +117,14 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         };
 
         fetchNavItems();
+
+        fetch('/api/products?limit=4&featured=1')
+            .then(r => r.json())
+            .then(data => {
+                if (Array.isArray(data)) setDefaultProducts(data);
+                else if (data && data.rows && Array.isArray(data.rows)) setDefaultProducts(data.rows);
+            })
+            .catch(() => { });
 
         return () => {
             isMounted = false;
@@ -139,31 +153,50 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         return navLinks.some((item) => String(item.parent_id ?? '') === String(itemId));
     };
 
-    const safeParseSubcategoryFromHref = (href: string): string | null => {
+    const parseLinkInfo = (href: string): { type: 'category' | 'subcategory' | null, slug: string | null } => {
         try {
-            // if href is relative, new URL with origin works
+            // Handle absolute or relative URLs
             const url = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-            // First, prefer explicit query param for backwards compatibility
-            const qp = url.searchParams.get('subcategory');
-            if (qp) return qp;
-            // Path-based format: /services/category/:categorySlug/:subcategorySlug
-            const segments = url.pathname.split('/').filter(Boolean);
-            if (segments[0] === 'services' && segments[1] === 'category' && segments.length >= 4) {
-                return segments[3];
+            
+            // 1. Explicit search params
+            const subQ = url.searchParams.get('subcategory');
+            if (subQ) return { type: 'subcategory', slug: subQ };
+            const catQ = url.searchParams.get('category');
+            if (catQ) return { type: 'category', slug: catQ };
+
+            // 2. Path patterns
+            const path = url.pathname.replace(/\/$/, ''); // remove trailing slash
+            const segments = path.split('/').filter(Boolean);
+            
+            // Pattern: /shop/category/[slug]/[subslug] or /shop/category/[slug]
+            if ((segments[0] === 'services' || segments[0] === 'shop') && segments[1] === 'category') {
+                if (segments.length >= 4) return { type: 'subcategory', slug: segments[3] };
+                if (segments.length >= 3) return { type: 'category', slug: segments[2] };
             }
-            return null;
+            
+            // Pattern: /shop/[category]/[subcategory] if not using 'category' segment
+            if ((segments[0] === 'services' || segments[0] === 'shop') && segments.length >= 3) {
+                return { type: 'subcategory', slug: segments[2] };
+            }
+            if ((segments[0] === 'services' || segments[0] === 'shop') && segments.length >= 2) {
+                return { type: 'category', slug: segments[1] };
+            }
+
+            return { type: null, slug: null };
         } catch (err) {
-            return null;
+            return { type: null, slug: null };
         }
     };
 
-    // fetch subServices for a subSlug if needed
-    const fetchSubServicesIfNeeded = (subSlug: string) => {
-        if (!subServices[subSlug]) {
-            fetch(`/api/services?subcategory=${encodeURIComponent(subSlug)}&status=2&limit=${MAX_SERVICES_PREVIEW}`)
+    // fetch subProducts for a slug if needed
+    const fetchSubProductsIfNeeded = (slug: string, type: 'category' | 'subcategory' = 'subcategory') => {
+        const cacheKey = `${type}:${slug}`;
+        if (!subServices[cacheKey]) {
+            const param = type === 'category' ? 'category' : 'subcategory';
+            fetch(`/api/products?${param}=${encodeURIComponent(slug)}&limit=${MAX_SERVICES_PREVIEW}`)
                 .then((r) => (r.ok ? r.json() : []))
-                .then((data) => setSubServices((prev) => ({ ...prev, [subSlug]: Array.isArray(data) ? data : [] })))
-                .catch((err) => console.error('Failed to fetch subcategory services', err));
+                .then((data) => setSubServices((prev) => ({ ...prev, [cacheKey]: Array.isArray(data) ? data : [] })))
+                .catch((err) => console.error('Failed to fetch dropdown products', err));
         }
     };
 
@@ -178,12 +211,24 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         if (firstChild.id !== undefined) setOpenChildDropdown(firstChild.id);
 
         const grandchildren = getChildren(firstChild.id);
-        const firstSubSlug = grandchildren.map((gc) => safeParseSubcategoryFromHref(gc.href)).find(Boolean) ?? null;
-        if (firstSubSlug) {
-            setHoveredSubSlug(firstSubSlug);
-            fetchSubServicesIfNeeded(firstSubSlug);
+        if (grandchildren.length > 0) {
+            const info = parseLinkInfo(grandchildren[0].href);
+            if (info.slug && info.type) {
+                const key = `${info.type}:${info.slug}`;
+                setHoveredSubSlug(key);
+                fetchSubProductsIfNeeded(info.slug, info.type);
+            } else {
+                setHoveredSubSlug(null);
+            }
         } else {
-            setHoveredSubSlug(null);
+            const info = parseLinkInfo(firstChild.href);
+            if (info.slug && info.type) {
+                const key = `${info.type}:${info.slug}`;
+                setHoveredSubSlug(key);
+                fetchSubProductsIfNeeded(info.slug, info.type);
+            } else {
+                setHoveredSubSlug(null);
+            }
         }
     };
 
@@ -222,7 +267,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                         onMouseEnter={() => {
                                             clearAllCloseTimers();
                                             if (hasDropdown) {
-                                                if (openDropdown !== link.id) {
+                                                if (String(openDropdown) !== String(link.id)) {
                                                     initDesktopRightPanels(children);
                                                 }
                                                 if (link.id !== undefined) setOpenDropdown(link.id);
@@ -241,7 +286,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                             {hasDropdown && <span className="material-symbols-outlined text-sm">expand_more</span>}
                                         </Link>
 
-                                        {hasDropdown && openDropdown === link.id && (
+                                        {hasDropdown && String(openDropdown) === String(link.id) && (
                                             <div
                                                 className="absolute top-full left-0 right-0 w-full bg-card shadow-lg border-b border-muted py-2 z-60 pointer-events-auto"
                                                 onMouseEnter={() => {
@@ -278,15 +323,6 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                 <div
                                                                                     key={`${child._id ?? child.id ?? child.href}-${childIdx}`}
                                                                                     className="relative"
-                                                                                    onMouseEnter={() => {
-                                                                                        clearAllCloseTimers();
-                                                                                        if (child.id !== undefined) setOpenChildDropdown(child.id);
-                                                                                        if (link.id !== undefined) setOpenDropdown(link.id);
-                                                                                    }}
-                                                                                    onMouseLeave={() => {
-                                                                                        if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
-                                                                                        childCloseTimerRef.current = setTimeout(() => setOpenChildDropdown(null), CHILD_CLOSE_DELAY_MS);
-                                                                                    }}
                                                                                 >
                                                                                     <Link
                                                                                         href={child.href}
@@ -295,11 +331,30 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
                                                                                             if (child.id !== undefined) setOpenChildDropdown(child.id);
-                                                                                            const sub = safeParseSubcategoryFromHref(child.href);
-                                                                                            if (sub) {
-                                                                                                setHoveredSubSlug(sub);
-                                                                                                fetchSubServicesIfNeeded(sub);
+                                                                                            
+                                                                                            // Automatically show first subcategory's services if they exist
+                                                                                            if (grandchildren.length > 0) {
+                                                                                                const info = parseLinkInfo(grandchildren[0].href);
+                                                                                                if (info.slug && info.type) {
+                                                                                                    const key = `${info.type}:${info.slug}`;
+                                                                                                    setHoveredSubSlug(key);
+                                                                                                    fetchSubProductsIfNeeded(info.slug, info.type);
+                                                                                                    return;
+                                                                                                }
                                                                                             }
+
+                                                                                            const info = parseLinkInfo(child.href);
+                                                                                            if (info.slug && info.type) {
+                                                                                                const key = `${info.type}:${info.slug}`;
+                                                                                                setHoveredSubSlug(key);
+                                                                                                fetchSubProductsIfNeeded(info.slug, info.type);
+                                                                                            } else {
+                                                                                                setHoveredSubSlug(null);
+                                                                                            }
+                                                                                        }}
+                                                                                        onMouseLeave={() => {
+                                                                                            if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
+                                                                                            childCloseTimerRef.current = setTimeout(() => setOpenChildDropdown(null), CHILD_CLOSE_DELAY_MS);
                                                                                         }}
                                                                                     >
                                                                                         <span>{child.label}</span>
@@ -332,10 +387,13 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                     <div
                                                                         key={`col-${child.id}`}
                                                                         onMouseEnter={() => { if (child.id !== undefined) setOpenChildDropdown(child.id); }}
-                                                                        className={`py-1 ${openChildDropdown === child.id ? 'block' : 'hidden'}`}
+                                                                        className={`py-1 ${String(openChildDropdown) === String(child.id) ? 'block' : 'hidden'}`}
                                                                     >
                                                                         {grandchildren.map((gc, gcIdx) => {
-                                                                            const subSlug = safeParseSubcategoryFromHref(gc.href);
+                                                                            const info = parseLinkInfo(gc.href);
+                                                                            const subSlug = info.slug;
+                                                                            const subType = info.type;
+                                                                            const cacheKey = subSlug && subType ? `${subType}:${subSlug}` : null;
                                                                             return (
                                                                                 <div key={`g-${gc._id ?? gc.id ?? gc.href}-${gcIdx}`}>
                                                                                     <Link
@@ -345,14 +403,15 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
                                                                                             if (child.id !== undefined) setOpenChildDropdown(child.id);
-                                                                                            if (subSlug) {
-                                                                                                setHoveredSubSlug(subSlug);
-                                                                                                fetchSubServicesIfNeeded(subSlug);
+                                                                                            if (subSlug && subType) {
+                                                                                                const key = `${subType}:${subSlug}`;
+                                                                                                setHoveredSubSlug(key);
+                                                                                                fetchSubProductsIfNeeded(subSlug, subType);
                                                                                             }
                                                                                         }}
                                                                                         onMouseLeave={() => {
                                                                                             if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
-                                                                                            serviceCloseTimerRef.current = setTimeout(() => setHoveredSubSlug((prev) => (prev === subSlug ? null : prev)), CHILD_CLOSE_DELAY_MS);
+                                                                                            serviceCloseTimerRef.current = setTimeout(() => setHoveredSubSlug((prev) => (prev === cacheKey ? null : prev)), CHILD_CLOSE_DELAY_MS);
                                                                                         }}
                                                                                     >
                                                                                         {gc.label}
@@ -380,23 +439,59 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             <div className="py-2 px-3">
                                                                 {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
                                                                     <div className="space-y-2">
-                                                                        {subServices[hoveredSubSlug].map((s, sIdx) => (
-                                                                            <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/services/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded">
+                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Featured Products</div>
+                                                                        {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
+                                                                            <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
                                                                                 {s.thumbnail ? (
                                                                                     // eslint-disable-next-line @next/next/no-img-element
-                                                                                    <img src={s.thumbnail} alt={s.title} className="w-12 h-8 object-cover rounded" />
+                                                                                    <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
                                                                                 ) : (
-                                                                                    <span className="rounded w12 h-8 bg-slate-100 block" />
+                                                                                    <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
+                                                                                        <span className="material-symbols-outlined text-slate-300">image</span>
+                                                                                    </div>
                                                                                 )}
-                                                                                <div className="flex-1">
-                                                                                    <div className="text-sm font-medium text-slate-800 truncate">{s.title}</div>
-                                                                                    <div className="text-xs text-slate-500 truncate">{s.excerpt}</div>
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
+                                                                                    {Number(s.price) > 0 && (
+                                                                                        <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
+                                                                                    )}
+                                                                                    {s.model && (
+                                                                                        <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
+                                                                                    )}
                                                                                 </div>
                                                                             </Link>
                                                                         ))}
                                                                     </div>
                                                                 ) : (
-                                                                    <div className="text-sm text-slate-400">Hover a subcategory to preview services</div>
+                                                                    <div className="space-y-2">
+                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">{hoveredSubSlug ? 'No products here' : 'Recommended'}</div>
+                                                                        {(defaultProducts.length > 0 ? defaultProducts : []).map((s, sIdx) => (
+                                                                            <Link key={`def-${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
+                                                                                {s.thumbnail ? (
+                                                                                    <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
+                                                                                ) : (
+                                                                                    <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
+                                                                                        <span className="material-symbols-outlined text-slate-300">image</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div className="flex-1 min-w-0">
+                                                                                    <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
+                                                                                    {Number(s.price) > 0 && (
+                                                                                        <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
+                                                                                    )}
+                                                                                    {s.model && (
+                                                                                        <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
+                                                                                    )}
+                                                                                </div>
+                                                                            </Link>
+                                                                        ))}
+                                                                        {defaultProducts.length === 0 && (
+                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                                                                                <span className="material-symbols-outlined text-4xl mb-2 opacity-20">inventory_2</span>
+                                                                                <p className="text-xs">No products available</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </div>

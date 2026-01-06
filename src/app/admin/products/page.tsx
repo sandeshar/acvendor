@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import { showToast } from '@/components/Toast';
 import { formatPrice } from '@/utils/formatPrice';
 
@@ -18,6 +19,7 @@ type ProductPost = {
 };
 
 export default function AdminProductsPage() {
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<ProductPost[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -135,6 +137,12 @@ export default function AdminProductsPage() {
                         </span>
                         <div className="flex items-center gap-2">
                             <button
+                                onClick={() => router.push(`/admin/quotation?productIds=${selectedIds.join(',')}`)}
+                                className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 transition-colors"
+                            >
+                                Make Quotation
+                            </button>
+                            <button
                                 onClick={bulkDelete}
                                 disabled={saving}
                                 className="px-3 py-1.5 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700 transition-colors"
@@ -227,6 +235,9 @@ export default function AdminProductsPage() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => router.push(`/admin/quotation?productIds=${p.id}`)} className="p-1.5 text-gray-400 hover:text-green-600 transition-colors" title="Make Quotation">
+                                                        <span className="material-symbols-outlined text-[20px]">request_quote</span>
+                                                    </button>
                                                     <NextLink href={`/admin/products/${p.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors">
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </NextLink>

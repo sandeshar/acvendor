@@ -401,8 +401,8 @@ export async function POST(request: NextRequest) {
             excerpt: excerpt || '',
             content: content || null,
             thumbnail: thumbnail || null,
-            price: (typeof price !== 'undefined' && price !== null) ? price : null,
-            compare_at_price: (typeof compare_at_price !== 'undefined' && compare_at_price !== null) ? compare_at_price : null,
+            price: (typeof price !== 'undefined' && price !== null && price !== '') ? price : null,
+            compare_at_price: (typeof compare_at_price !== 'undefined' && compare_at_price !== null && compare_at_price !== '') ? compare_at_price : null,
             currency: currency || 'NRS',
             statusId,
             category_id: category_id || null,
@@ -422,7 +422,7 @@ export async function POST(request: NextRequest) {
             voltage: voltage || null,
             locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
             inventory_status: inventory_status || 'in_stock',
-            rating: (typeof rating !== 'undefined' && rating !== null) ? rating : '0',
+            rating: (typeof rating !== 'undefined' && rating !== null && rating !== '') ? rating : '0',
             meta_title: metaTitle || null,
             meta_description: metaDescription || null,
         };
@@ -515,8 +515,8 @@ export async function PUT(request: NextRequest) {
         if (excerpt !== undefined) updateData.excerpt = excerpt;
         if (content !== undefined) updateData.content = content;
         if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
-        if (price !== undefined) updateData.price = price;
-        if (compare_at_price !== undefined) updateData.compare_at_price = compare_at_price;
+        if (price !== undefined) updateData.price = (price === '' ? null : price);
+        if (compare_at_price !== undefined) updateData.compare_at_price = (compare_at_price === '' ? null : compare_at_price);
         if (currency !== undefined) updateData.currency = currency;
         if (statusId !== undefined) updateData.statusId = statusId;
         if (category_id !== undefined) updateData.category_id = category_id;
@@ -536,7 +536,7 @@ export async function PUT(request: NextRequest) {
         if (voltage !== undefined) updateData.voltage = voltage;
         if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
         if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
-        if (rating !== undefined) updateData.rating = rating;
+        if (rating !== undefined) updateData.rating = (rating === '' ? '0' : rating);
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;
         if (metaDescription !== undefined) updateData.meta_description = metaDescription;
 

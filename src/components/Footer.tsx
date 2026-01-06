@@ -6,12 +6,12 @@ interface FooterProps {
 
 const footerLinks = [
     {
-        title: 'Services',
+        title: 'Shop',
         links: [
-            { label: 'AC Installation', href: '/services' },
-            { label: 'AC Repair', href: '/services' },
-            { label: 'Maintenance', href: '/services' },
-            { label: 'Gas Refilling', href: '/services' },
+            { label: 'Air Conditioners', href: '/shop' },
+            { label: 'Home Appliances', href: '/shop' },
+            { label: 'Spare Parts', href: '/shop' },
+            { label: 'Accessories', href: '/shop' },
         ],
     },
     {

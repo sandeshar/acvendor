@@ -67,26 +67,7 @@ export default async function ProjectsPage() {
                 <div className="layout-content-container flex flex-col max-w-[1200px] flex-1 gap-10">
                     <ProjectsClient projects={items} />
 
-                    {/* Client Testimonial (Inline) - Static or from DB in future */}
-                    <div className="bg-primary/5 rounded-2xl p-8 md:p-12 mt-4 relative overflow-hidden">
-                        <span className="absolute top-6 left-8 text-6xl text-primary/20 font-serif leading-none">"</span>
-                        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
-                            <div className="flex-1 text-center md:text-left">
-                                <p className="text-xl md:text-2xl font-medium text-[#111418] italic leading-relaxed">
-                                    "The team at Midea AC Solutions delivered exactly what they promised for our hotel renovation. The VRF system is incredibly efficient, and the installation was seamless despite the challenging timeline."
-                                </p>
-                                <div className="mt-6">
-                                    <p className="font-bold text-primary text-lg">Ram Bahadur Shrestha</p>
-                                    <p className="text-sm text-gray-500">Operations Manager, Everest Hotel</p>
-                                </div>
-                            </div>
-                            <div
-                                className="w-32 h-32 shrink-0 rounded-full border-4 border-white shadow-lg bg-cover bg-center"
-                                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDjRnoyWKSCZH8orZ-NT8KIJbxtTO2F0jFKpUyy_yRVD55046YP3KiqqHa47kqMU2LVaZpIMs0U63dzt3REfHl7niuXjBNI92oaRPj9ezDT4C-OR_VFgJKBSUFTVBm0KQpuaKg-mh0OoYs-Z9Ud7VAQq5ZCPb3WuBirbeoL6LqC5V_LYIvMzeFcqAE36SyBmmlYn397XcyoQXRo70FgebmXvdl4ZOsoTkH6bkrffDdetqSbfhd-zefq8Wei_DjBx8DS-il7lBSrTsY")' }}
-                            >
-                            </div>
-                        </div>
-                    </div>
+
 
                     {/* CTA Section */}
                     <div className="bg-primary rounded-2xl p-8 md:p-16 text-center text-white mt-8 mb-8 relative overflow-hidden group">

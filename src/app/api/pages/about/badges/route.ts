@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { name, logo = '', link = '', display_order = 0, is_active = 1 } = body;
         const newBadge = await AboutPageBadges.create({ name, logo, link, display_order, is_active });
-        try { revalidateTag('about-badges'); } catch (e) { /* ignore */ }
+        try { revalidateTag('about-badges', 'max'); } catch (e) { /* ignore */ }
         return NextResponse.json({ success: true, id: newBadge._id }, { status: 201 });
     } catch (error) {
         console.error('Error creating badge:', error);
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest) {
         if (display_order !== undefined) update.display_order = display_order;
         if (is_active !== undefined) update.is_active = is_active;
         await AboutPageBadges.findByIdAndUpdate(id, update, { new: true });
-        try { revalidateTag('about-badges'); } catch (e) { /* ignore */ }
+        try { revalidateTag('about-badges', 'max'); } catch (e) { /* ignore */ }
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error updating badge:', error);
@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest) {
         const id = request.nextUrl.searchParams.get('id');
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         await AboutPageBadges.findByIdAndDelete(id);
-        try { revalidateTag('about-badges'); } catch (e) { /* ignore */ }
+        try { revalidateTag('about-badges', 'max'); } catch (e) { /* ignore */ }
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting badge:', error);

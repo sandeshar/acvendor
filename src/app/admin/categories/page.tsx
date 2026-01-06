@@ -526,7 +526,7 @@ export default function CategoriesManagerPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Parent Category</label>
                                 <select
                                     value={selectedSubcategory.category_id}
-                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: Number(e.target.value) })}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: e.target.value })}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     {categories.map((cat) => (
