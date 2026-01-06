@@ -5,6 +5,7 @@ import type { ProductWithRelations } from '@/types/product';
 import ProductTabs from '@/components/products/ProductTabs';
 import ProductGallery from '@/components/products/ProductGallery';
 import Star from '@/components/icons/Star';
+import { formatPrice } from '@/utils/formatPrice';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -157,13 +158,15 @@ export default async function ProductPage({ params }: { params: { slug: string }
                         <div className="flex flex-col gap-2">
                             <div className="flex items-baseline gap-2">
                                 {(post.price && Number(String(post.price).replace(/[^0-9.-]/g, '')) > 0) ? (
-                                    <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{post.price}</span>
+                                    <span className="text-3xl font-bold text-[#111418]">NPR {formatPrice(post.price)}</span>
                                 ) : (
-                                    <span className="text-3xl font-bold text-[#111418]">Contact for price</span>
+                                    <span className="text-3xl font-bold text-primary">Contact for Price</span>
                                 )}
-                                {post.compare_at_price && Number(String(post.compare_at_price).replace(/[^0-9.-]/g, '')) > 0 ? <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{post.compare_at_price}</span> : null}
+                                {post.compare_at_price && Number(String(post.compare_at_price).replace(/[^0-9.-]/g, '')) > 0 ? (
+                                    <span className="text-lg text-[#617589] line-through decoration-1">NPR {formatPrice(post.compare_at_price)}</span>
+                                ) : null}
                             </div>
-                            <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p>
+                            <p className="text-sm text-[#617589]">Price includes 13% VAT. Installation charges calculated based on site visit.</p>
                         </div>
 
                         {/* Feature Badges */}

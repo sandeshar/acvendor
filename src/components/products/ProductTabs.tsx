@@ -132,6 +132,12 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                                             <td className="px-6 py-4 text-[#111418]">{post.voltage}</td>
                                         </tr>
                                     )}
+                                    {(post as any).warranty && (
+                                        <tr className="bg-white">
+                                            <td className="px-6 py-4 font-medium text-[#617589]">Warranty</td>
+                                            <td className="px-6 py-4 text-[#111418]">{(post as any).warranty}</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         ) : (

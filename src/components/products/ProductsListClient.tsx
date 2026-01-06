@@ -202,7 +202,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 font-bold">{Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : '-'}</td>
+                                    <td className="px-4 py-4 font-bold">{Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : <span className="text-xs text-primary/80">Contact for Price</span>}</td>
                                     <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
                                     <td className="px-4 py-4">

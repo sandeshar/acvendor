@@ -187,7 +187,7 @@ export default function CompareTableClient({ products }: { products: any[] }) {
                                                 <h3 className="font-black text-slate-900 text-sm leading-tight line-clamp-2 h-10 mb-2 group-hover:text-primary transition-colors">{p.title}</h3>
                                                 <div className="mt-auto">
                                                     <div className="text-primary font-black text-lg">
-                                                        {p.price ? `NPR ${formatPrice(p.price)}` : 'Contact for Price'}
+                                                        {parsePriceNumber(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : 'Contact for Price'}
                                                     </div>
                                                     <Link href={`/products/${p.slug}`} className="mt-4 block w-full text-center py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-primary transition-colors">
                                                         View Details
