@@ -157,7 +157,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         try {
             // Handle absolute or relative URLs
             const url = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-            
+
             // 1. Explicit search params
             const subQ = url.searchParams.get('subcategory');
             if (subQ) return { type: 'subcategory', slug: subQ };
@@ -167,13 +167,13 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
             // 2. Path patterns
             const path = url.pathname.replace(/\/$/, ''); // remove trailing slash
             const segments = path.split('/').filter(Boolean);
-            
+
             // Pattern: /shop/category/[slug]/[subslug] or /shop/category/[slug]
             if ((segments[0] === 'services' || segments[0] === 'shop') && segments[1] === 'category') {
                 if (segments.length >= 4) return { type: 'subcategory', slug: segments[3] };
                 if (segments.length >= 3) return { type: 'category', slug: segments[2] };
             }
-            
+
             // Pattern: /shop/[category]/[subcategory] if not using 'category' segment
             if ((segments[0] === 'services' || segments[0] === 'shop') && segments.length >= 3) {
                 return { type: 'subcategory', slug: segments[2] };
@@ -331,7 +331,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
                                                                                             if (child.id !== undefined) setOpenChildDropdown(child.id);
-                                                                                            
+
                                                                                             // Automatically show first subcategory's services if they exist
                                                                                             if (grandchildren.length > 0) {
                                                                                                 const info = parseLinkInfo(grandchildren[0].href);

@@ -122,15 +122,15 @@ export default function FooterManagerPage() {
 
             const payload = {
                 ...cleanStore,
-                footerSections: sections.map((sec, sIdx) => ({ 
-                    title: sec.title, 
-                    order: sIdx, 
-                    links: (sec.links || []).map((l: any, i: number) => ({ 
-                        label: l.label, 
-                        href: l.href, 
-                        isExternal: !!l.isExternal, 
-                        order: i 
-                    })) 
+                footerSections: sections.map((sec, sIdx) => ({
+                    title: sec.title,
+                    order: sIdx,
+                    links: (sec.links || []).map((l: any, i: number) => ({
+                        label: l.label,
+                        href: l.href,
+                        isExternal: !!l.isExternal,
+                        order: i
+                    }))
                 })),
                 footerText: footerText,
             };

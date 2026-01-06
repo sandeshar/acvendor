@@ -194,8 +194,8 @@ export default function AdminQuotationPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                         <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">Create Quotation</h1>
-                         <Link href="/admin/quotation/drafts" className="text-xs font-bold text-primary hover:underline ml-4 mt-2">View All Drafts</Link>
+                        <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">Create Quotation</h1>
+                        <Link href="/admin/quotation/drafts" className="text-xs font-bold text-primary hover:underline ml-4 mt-2">View All Drafts</Link>
                     </div>
                     <p className="text-[#616f89] text-base font-normal">{number ? `Quotation ${number}` : 'New Quotation'}</p>
                 </div>
