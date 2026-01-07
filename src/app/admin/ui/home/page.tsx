@@ -23,16 +23,18 @@ export default function HomePageUI() {
     const [productsSection, setProductsSection] = useState<any>({});
     const [projectsSection, setProjectsSection] = useState<any>({});
     const [testimonialsSection, setTestimonialsSection] = useState<any>({});
+    const [heroFeatures, setHeroFeatures] = useState<any[]>([]);
 
     // Track deleted items
     const [deletedTrustLogos, setDeletedTrustLogos] = useState<number[]>([]);
     const [deletedExpertiseItems, setDeletedExpertiseItems] = useState<number[]>([]);
+    const [deletedHeroFeatures, setDeletedHeroFeatures] = useState<any[]>([]);
 
     // --- Fetch Data ---
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes] = await Promise.all([
+            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes, heroFeaturesRes] = await Promise.all([
                 fetch('/api/pages/homepage/hero'),
                 fetch('/api/pages/homepage/trust-section'),
                 fetch('/api/pages/homepage/trust-logos'),
@@ -42,6 +44,7 @@ export default function HomePageUI() {
                 fetch('/api/pages/homepage/products-section'),
                 fetch('/api/pages/projects/section'),
                 fetch('/api/pages/homepage/testimonials-section'),
+                fetch('/api/pages/homepage/hero-floats?admin=1'),
             ]);
 
             if (heroRes.ok) setHeroData(await heroRes.json());
@@ -56,6 +59,7 @@ export default function HomePageUI() {
                 setProjectsSection(ps || {});
             }
             if (testimonialsSecRes.ok) setTestimonialsSection(await testimonialsSecRes.json() || {});
+            if (heroFeaturesRes.ok) setHeroFeatures(await heroFeaturesRes.json());
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -138,10 +142,12 @@ export default function HomePageUI() {
                 saveSection('/api/pages/homepage/products-section', productsSection),
                 saveSection('/api/pages/projects/section', projectsSection),
                 saveSection('/api/pages/homepage/testimonials-section', testimonialsSection),
+                saveList('/api/pages/homepage/hero-floats', heroFeatures, deletedHeroFeatures),
             ]);
 
             setDeletedTrustLogos([]);
             setDeletedExpertiseItems([]);
+            setDeletedHeroFeatures([]);
 
             showToast("Settings saved successfully!", { type: 'success' });
             // Re-fetch fresh data instead of full reload so UI shows exact current state
@@ -167,6 +173,7 @@ export default function HomePageUI() {
 
     const tabs = [
         { id: "hero", label: "Hero" },
+        { id: "hero-features", label: "Hero Features" },
         { id: "trust", label: "Trust" },
         { id: "expertise", label: "Expertise" },
         { id: "products", label: "Products" },
@@ -341,6 +348,90 @@ export default function HomePageUI() {
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                         <Toggle checked={heroData.is_active === 1} onChange={(c) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* HERO FEATURES SECTION */}
+                    {activeTab === "hero-features" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-indigo-500">featured_play_list</span>
+                                        Hero Floating Features
+                                    </h2>
+                                    <button
+                                        onClick={() => addItem(heroFeatures, setHeroFeatures, { title: "", description: "", icon_name: "", icon_bg: "bg-blue-600", is_active: 1 })}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">add</span>
+                                        Add Feature
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {heroFeatures.map((item, idx) => (
+                                        <div key={idx} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow group relative">
+                                            <button
+                                                onClick={() => {
+                                                    if (item._id) setDeletedHeroFeatures([...deletedHeroFeatures, item]);
+                                                    setHeroFeatures(heroFeatures.filter((_, i) => i !== idx));
+                                                }}
+                                                className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <span className="material-symbols-outlined">delete</span>
+                                            </button>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-4">
+                                                    <InputGroup
+                                                        label="Title"
+                                                        value={item.title || ''}
+                                                        onChange={(v) => updateItem(idx, 'title', v, heroFeatures, setHeroFeatures)}
+                                                    />
+                                                    <TextAreaGroup
+                                                        label="Description"
+                                                        value={item.description || ''}
+                                                        onChange={(v) => updateItem(idx, 'description', v, heroFeatures, setHeroFeatures)}
+                                                    />
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+                                                        <IconSelector
+                                                            value={item.icon_name || ''}
+                                                            onChange={(v) => updateItem(idx, 'icon_name', v, heroFeatures, setHeroFeatures)}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-between pt-2">
+                                                        <span className="text-sm font-medium text-gray-700">Display Order</span>
+                                                        <input
+                                                            type="number"
+                                                            value={item.display_order || 0}
+                                                            onChange={(e) => updateItem(idx, 'display_order', Number(e.target.value), heroFeatures, setHeroFeatures)}
+                                                            className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center justify-between pt-2">
+                                                        <span className="text-sm font-medium text-gray-700">Active</span>
+                                                        <Toggle
+                                                            checked={item.is_active === 1}
+                                                            onChange={(v) => updateItem(idx, 'is_active', v ? 1 : 0, heroFeatures, setHeroFeatures)}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {heroFeatures.length === 0 && (
+                                        <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                            <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">featured_video</span>
+                                            <p className="text-gray-500">No feature cards added. Click "Add Feature" to get started.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

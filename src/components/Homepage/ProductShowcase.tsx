@@ -16,7 +16,7 @@ interface Props {
     section?: { title?: string; description?: string; is_active?: number };
 }
 
-import { formatPrice } from '@/utils/formatPrice';
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 
 const ProductShowcase = ({ products, brand, section }: Props) => {
@@ -55,32 +55,35 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
                         </Link>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {products.map((p, i) => (
-                            <Link
-                                key={p._id ?? p.id ?? p.slug ?? i}
-                                href={`${productBaseLink}/${p.slug}`}
-                                className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
-                            >
-                                <div
-                                    className="aspect-4/3 w-full bg-cover bg-center"
-                                    style={{ backgroundImage: `url(${p.thumbnail || defaultImages[i % defaultImages.length]})` }}
-                                    role="img"
-                                    aria-label={p.title}
-                                ></div>
-                                <div className="p-4 flex flex-col gap-2">
-                                    <h3 className="text-lg font-bold text-[#111418] truncate">{p.title}</h3>
-                                    <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt}</p>
-                                    <div className="mt-2 flex items-center justify-between">
-                                        {Number(p.price) > 0 ? (
-                                            <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
-                                        ) : (
-                                            <div className="text-primary/80 font-bold border-b border-primary/20 pb-0.5">Contact for price</div>
-                                        )}
-                                        {Number(p.price) > 0 && <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">Starting at</div>}
+                        {products.map((p, i) => {
+                            const priceNum = parsePriceNumber(p.price);
+                            return (
+                                <Link
+                                    key={p._id ?? p.id ?? p.slug ?? i}
+                                    href={`${productBaseLink}/${p.slug}`}
+                                    className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow"
+                                >
+                                    <div
+                                        className="aspect-4/3 w-full bg-cover bg-center"
+                                        style={{ backgroundImage: `url(${p.thumbnail || defaultImages[i % defaultImages.length]})` }}
+                                        role="img"
+                                        aria-label={p.title}
+                                    ></div>
+                                    <div className="p-4 flex flex-col gap-2">
+                                        <h3 className="text-lg font-bold text-[#111418] truncate">{p.title}</h3>
+                                        <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt}</p>
+                                        <div className="mt-2 flex items-center justify-between">
+                                            {priceNum > 0 ? (
+                                                <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
+                                            ) : (
+                                                <div className="text-primary/80 font-bold border-b border-primary/20 pb-0.5">Contact for price</div>
+                                            )}
+                                            {/* {priceNum > 0 && <div className="text-xs text-gray-400 font-medium uppercase tracking-wider">Starting at</div>} */}
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

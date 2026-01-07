@@ -43,7 +43,7 @@ const Hero = ({ data }: HeroProps) => {
     const bgUrl = isValidUrl(data.background_image) ? String(data.background_image).trim() : defaultBg;
 
     return (
-        <div className="relative flex min-h-[600px] flex-col justify-center overflow-hidden">
+        <div className="relative flex min-h-[650px] flex-col justify-center overflow-hidden pb-12">
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0 overflow-hidden">
                 <img src={bgUrl} alt={data.hero_image_alt || 'Modern living room with air conditioner'} className="w-full h-full object-cover object-center" loading="eager" decoding="async" />

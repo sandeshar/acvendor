@@ -121,6 +121,21 @@ const homepageTestimonialsSectionSchema = new Schema({
 
 export const HomepageTestimonialsSection = models.HomepageTestimonialsSection || model('HomepageTestimonialsSection', homepageTestimonialsSectionSchema);
 
+// Homepage Hero Features (Floating Cards)
+const homepageHeroFeaturesSchema = new Schema({
+    icon_name: { type: String, required: true, maxlength: 128 },
+    icon_bg: { type: String, default: 'bg-blue-600', maxlength: 128 },
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, default: '', maxlength: 512 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: true,
+    collection: 'homepage_hero_features'
+});
+
+export const HomepageHeroFeatures = models.HomepageHeroFeaturesV2 || model('HomepageHeroFeaturesV2', homepageHeroFeaturesSchema);
+
 // Backward compatibility exports (camelCase for existing API code)
 export const homepageHero = HomepageHero;
 export const homepageTrustLogos = HomepageTrustLogos;
@@ -130,3 +145,4 @@ export const homepageExpertiseItems = HomepageExpertiseItems;
 export const homepageContactSection = HomepageContactSection;
 export const homepageProductsSection = HomepageProductsSection;
 export const homepageTestimonialsSection = HomepageTestimonialsSection;
+export const homepageHeroFeatures = HomepageHeroFeatures;

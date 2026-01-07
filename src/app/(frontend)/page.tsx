@@ -1,6 +1,7 @@
 import Contact from "@/components/Homepage/Contact";
 import Expertise from "@/components/Homepage/Expertise";
 import Hero from "@/components/Homepage/Hero";
+import HeroFeatures from "@/components/Homepage/HeroFeatures";
 import Trust from "@/components/Homepage/Trust";
 import ProductShowcase from '@/components/Homepage/ProductShowcase';
 import ProjectGallery from "@/components/Homepage/ProjectGallery";
@@ -11,7 +12,7 @@ async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
-        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes] = await Promise.all([
+        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes, heroFeaturesRes] = await Promise.all([
             fetch(`${baseUrl}/api/pages/homepage/hero`, { next: { tags: ['homepage-hero'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-section`, { next: { tags: ['homepage-trust-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-logos`, { next: { tags: ['homepage-trust-logos'] } }),
@@ -24,6 +25,7 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/pages/homepage/testimonials-section`, { next: { tags: ['homepage-testimonials-section'] } }),
             fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),
             fetch(`${baseUrl}/api/pages/projects/section`, { next: { tags: ['projects-section'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/hero-floats`, { next: { tags: ['homepage-hero-floats'] } }),
         ]);
 
         const hero = heroRes.ok ? (await heroRes.json() || {}) : {};
@@ -37,6 +39,7 @@ async function getHomepageData() {
         const testimonialsSection = testimonialsSectionRes.ok ? (await testimonialsSectionRes.json() || {}) : {};
         const projects = projectsRes.ok ? (await projectsRes.json() || []) : [];
         const projectsSection = projectsSectionRes.ok ? (await projectsSectionRes.json() || {}) : {};
+        const heroFeatures = heroFeaturesRes.ok ? (await heroFeaturesRes.json() || []) : [];
 
         return {
             hero: Object.keys(hero).length ? hero : null,
@@ -50,6 +53,7 @@ async function getHomepageData() {
             testimonialsSection: Object.keys(testimonialsSection).length ? testimonialsSection : null,
             projects,
             projectsSection: Object.keys(projectsSection).length ? projectsSection : null,
+            heroFeatures,
         };
     } catch (error) {
         console.error('Error fetching homepage data:', error);
@@ -63,6 +67,7 @@ async function getHomepageData() {
             products: [],
             projects: [],
             projectsSection: null,
+            heroFeatures: [],
         };
     }
 }
@@ -74,6 +79,9 @@ export default async function Home() {
         <main className="flex flex-col items-center page-bg">
             <div className="flex flex-col w-full">
                 <Hero data={data.hero} />
+                <div className="bg-white w-full flex justify-center -mt-8 relative z-20">
+                    <HeroFeatures features={data.heroFeatures} />
+                </div>
                 <Trust section={data.trustSection} logos={data.trustLogos} />
                 {/* Product showcase (featured products) */}
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />

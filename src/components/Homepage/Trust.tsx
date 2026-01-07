@@ -39,7 +39,7 @@ const Trust = ({ section, logos = [] }: TrustProps) => {
                             <img
                                 key={logo._id ?? logo.id ?? logo.logo_url ?? i}
                                 alt={logo.alt_text}
-                                className="h-8 md:h-10 w-auto object-contain"
+                                className="h-14 md:h-20 w-auto object-contain"
                                 src={logo.logo_url}
                             />
                         ))}

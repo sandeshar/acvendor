@@ -413,16 +413,6 @@ export default function ServicesManagerPage() {
     const handleSavePageBuilder = async () => {
         setSaving(true);
         try {
-            // Client-side validation: ensure features have titles before attempting to save
-            if (activeTab === 'features') {
-                const missing = featuresList.map((f, i) => ({ f, i })).filter(x => !x.f.title || !String(x.f.title).trim()).map(x => x.i + 1);
-                if (missing.length) {
-                    showToast(`Please provide titles for feature items: ${missing.join(', ')}`, { type: 'error' });
-                    setSaving(false);
-                    return;
-                }
-            }
-
             const promises = [];
 
             if (activeTab === "hero") {
@@ -517,24 +507,6 @@ export default function ServicesManagerPage() {
                     is_active: trustData.is_active ?? 1
                 };
                 promises.push(fetch('/api/pages/services/trust', { method: trustData.id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
-            }
-
-            // Features
-            if (activeTab === "features") {
-                // First delete removed features to avoid race conditions and duplicates
-                if (deletedFeatures.length) {
-                    const delPromises = deletedFeatures.map(fid => fetch(`/api/pages/services/features?id=${encodeURIComponent(fid)}`, { method: 'DELETE' }));
-                    await Promise.all(delPromises);
-                }
-
-                for (const f of featuresList) {
-                    const payload = { icon: f.icon || '', title: f.title || '', description: f.description || '', display_order: f.display_order ?? 0, is_active: f.is_active ?? 1 };
-                    if (f.id) {
-                        promises.push(fetch('/api/pages/services/features', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id, ...payload }) }));
-                    } else {
-                        promises.push(fetch('/api/pages/services/features', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }));
-                    }
-                }
             }
             const results = await Promise.all(promises);
 
@@ -639,7 +611,6 @@ export default function ServicesManagerPage() {
     // Hero -> Features -> Services -> Process -> Brands -> Trust -> CTA
     const tabs = [
         { id: "hero", label: "Hero", icon: "web_asset" },
-        { id: "features", label: "Features", icon: "view_timeline" },
         { id: "services", label: "Services", icon: "design_services" },
         { id: "process", label: "Process", icon: "settings_suggest" },
         { id: "brands", label: "Brands", icon: "support_agent" },
@@ -722,44 +693,6 @@ export default function ServicesManagerPage() {
                             <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                 <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                 <Toggle checked={heroData.is_active === 1} onChange={(c: boolean) => setHeroData({ ...heroData, is_active: c ? 1 : 0 })} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* FEATURES SECTION */}
-                    {activeTab === "features" && (
-                        <div className="space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-gray-900">Feature Items</h3>
-                                <button
-                                    onClick={() => setFeaturesList([...featuresList, { icon: 'star', title: 'New Feature', description: '', display_order: featuresList.length + 1, is_active: 1 }])}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
-                                >
-                                    <span className="material-symbols-outlined">add</span> Add Feature
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {featuresList.map((f, idx) => (
-                                    <div key={f.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
-                                        <div className="flex flex-col gap-1.5">
-                                            <label className="text-sm font-medium text-gray-700">Icon</label>
-                                            <IconSelector value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
-                                        </div>
-                                        <InputGroup label="Title" value={f.title} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], title: v }; setFeaturesList(copy); }} />
-                                        <TextAreaGroup label="Description" value={f.description || ''} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], description: v }; setFeaturesList(copy); }} />
-                                        <div className="flex gap-2 items-center">
-                                            <InputGroup label="Order" value={(f.display_order || 0).toString()} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setFeaturesList(copy); }} />
-                                            <div className="pt-2">
-                                                <span className="text-sm font-medium text-gray-700 mr-2">Active</span>
-                                                <Toggle checked={f.is_active === 1} onChange={(c: boolean) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], is_active: c ? 1 : 0 }; setFeaturesList(copy); }} />
-                                            </div>
-                                            <button className="ml-auto text-red-600" onClick={() => { const copy = featuresList.filter((_, i) => i !== idx); const removed = featuresList[idx]; if (removed && (removed.id || removed._id)) { setDeletedFeatures([...deletedFeatures, String(removed.id ?? removed._id)]); } setFeaturesList(copy); }}>
-                                                <span className="material-symbols-outlined">delete</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         </div>
                     )}

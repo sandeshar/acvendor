@@ -125,7 +125,9 @@ export default async function ServicesPage() {
     return (
         <main className="page-bg grow ">
             <HeroSection data={data.hero} />
-            <ServicesFeatureStrip />
+            <div className="w-full flex justify-center -mt-8 relative z-20">
+                <ServicesFeatureStrip />
+            </div>
             <ServicesOverview services={services} />
             <ServiceDetails services={services} />
             <ProcessSection section={data.processSection} steps={data.processSteps} />

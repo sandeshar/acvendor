@@ -5,7 +5,7 @@ import Link from "next/link";
 import Star from '@/components/icons/Star';
 import useCompare from './useCompare';
 import CompareTray from './CompareTray';
-import { formatPrice } from '@/utils/formatPrice';
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 
 export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { category?: string, subcategory?: string, minPrice?: string, maxPrice?: string, status?: string } }) {
@@ -164,7 +164,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                 {/* Price row: show price and compare add button */}
                                 <div className="flex items-center justify-between mt-3">
                                     <div className="text-lg font-bold text-[#111418]">
-                                        {Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : (
+                                        {parsePriceNumber(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : (
                                             <span className="text-sm font-semibold text-primary/80">Contact for Price</span>
                                         )}
                                     </div>
@@ -206,7 +206,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 font-bold">{Number(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : <span className="text-xs text-primary/80">Contact for Price</span>}</td>
+                                    <td className="px-4 py-4 font-bold">{parsePriceNumber(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : <span className="text-xs text-primary/80">Contact for Price</span>}</td>
                                     <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
                                     <td className="px-4 py-4">

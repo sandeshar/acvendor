@@ -46,7 +46,7 @@ const HeroSection = ({ data }: HeroSectionProps) => {
 
     return (
         <section className="relative bg-white">
-            <div className="relative w-full h-[500px] overflow-hidden">
+            <div className="relative w-full h-[600px] overflow-hidden pb-8">
                 {/* Background Image */}
                 <div className="absolute inset-0 w-full h-full bg-cover bg-center" data-alt={data.hero_image_alt || ''} style={{ backgroundImage: `url("${bgUrl}")` }} />
                 <div className="absolute inset-0 bg-linear-to-r from-slate-900/90 to-slate-900/40" />
