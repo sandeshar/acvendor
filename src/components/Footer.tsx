@@ -44,14 +44,13 @@ const Footer = ({ storeName, storeLogo, store }: FooterProps) => {
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2">
                             {storeLogo ? (
-                                <img 
-                                    src={storeLogo} 
-                                    alt={storeName} 
-                                    className={`${
-                                        store?.logoSize === 'large' ? 'h-12' : 
-                                        store?.logoSize === 'small' ? 'h-8' : 
-                                        'h-10'
-                                    } w-auto object-contain rounded`} 
+                                <img
+                                    src={storeLogo}
+                                    alt={storeName}
+                                    className={`${store?.logoSize === 'large' ? 'h-12' :
+                                            store?.logoSize === 'small' ? 'h-8' :
+                                                'h-10'
+                                        } w-auto object-contain rounded`}
                                 />
                             ) : (
                                 <span className="material-symbols-outlined text-primary-var text-2xl">hub</span>

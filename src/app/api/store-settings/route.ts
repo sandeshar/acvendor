@@ -155,8 +155,9 @@ export async function PUT(request: NextRequest) {
         }
 
         const id = row._id;
-        const updated = await StoreSettings.findByIdAndUpdate(id, update, { new: true }).lean();
+        const updated = await StoreSettings.findOneAndUpdate({}, update, { new: true, upsert: true }).lean();
         console.log('updated:', updated);
+        const updatedId = updated._id;
 
         // If footer sections were provided in the payload, replace existing sections/links
         const footerSectionsPayload = body.footerSections ?? body.FooterSection;
