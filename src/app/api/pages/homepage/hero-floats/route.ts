@@ -27,10 +27,12 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { icon_name, icon_bg, title, description = '', display_order = 0, is_active = 1 } = body;
+        const { icon_name, icon_bg, title, description = '', display_order = 0, is_active = 1, icon } = body;
+        // Accept legacy `icon` field from older builds and map it to `icon_name`
+        const resolvedIconName = icon_name ?? icon ?? '';
         if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 });
-        if (!icon_name) return NextResponse.json({ error: 'Icon is required' }, { status: 400 });
-        const res = await HomepageHeroFeatures.create({ icon_name, icon_bg, title, description, display_order, is_active });
+        if (!resolvedIconName) return NextResponse.json({ error: 'Icon is required' }, { status: 400 });
+        const res = await HomepageHeroFeatures.create({ icon_name: resolvedIconName, icon_bg, title, description, display_order, is_active });
         revalidateTag('homepage-hero-floats', 'max');
         return NextResponse.json({ success: true, id: res._id }, { status: 201 });
     } catch (error) {
@@ -47,6 +49,8 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
         const update: any = {};
         ['icon_name', 'icon_bg', 'title', 'description', 'display_order', 'is_active'].forEach(k => { if (body[k] !== undefined) update[k] = body[k]; });
+        // Support legacy `icon` property for older clients/bundles
+        if (body.icon !== undefined && update.icon_name === undefined) update.icon_name = body.icon;
         await HomepageHeroFeatures.findByIdAndUpdate(id, update, { new: true });
         revalidateTag('homepage-hero-floats', 'max');
         return NextResponse.json({ success: true });
