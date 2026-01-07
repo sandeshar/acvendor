@@ -300,6 +300,7 @@ export default function AdminProjectsPage() {
                                             onChange={url => setSectionDraft({ ...sectionDraft, background_image: url })}
                                             folder="projects"
                                             label="Background Image"
+                                            ratio="16:9"
                                         />
                                     </div>
                                 </div>
@@ -484,6 +485,7 @@ export default function AdminProjectsPage() {
                                             onChange={url => setProjectForm({ ...projectForm, image: url })}
                                             folder="projects"
                                             label="Project Image"
+                                            ratio="16:9"
                                         />
                                         <div className="flex items-center gap-6">
                                             <div className="flex-1">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import NextLink from "next/link";
 import { showToast } from '@/components/Toast';
 import ImageUploader from '@/components/shared/ImageUploader';
+import IconSelector from "@/components/admin/IconSelector";
 import { getBlogStatusLabel, getBlogStatusClasses } from "@/utils/statusHelpers";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -715,7 +716,7 @@ export default function ServicesManagerPage() {
                                 <InputGroup label="Secondary CTA Link" value={heroData.secondary_cta_link || ''} onChange={(v: string) => setHeroData({ ...heroData, secondary_cta_link: v })} />
                             </div>
 
-                            <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" />
+                            <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="services" ratio="16:9" />
                             <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v: string) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
                             <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
@@ -741,7 +742,10 @@ export default function ServicesManagerPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {featuresList.map((f, idx) => (
                                     <div key={f.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
-                                        <InputGroup label="Icon (material)" value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-sm font-medium text-gray-700">Icon</label>
+                                            <IconSelector value={f.icon} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], icon: v }; setFeaturesList(copy); }} />
+                                        </div>
                                         <InputGroup label="Title" value={f.title} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], title: v }; setFeaturesList(copy); }} />
                                         <TextAreaGroup label="Description" value={f.description || ''} onChange={(v: string) => { const copy = [...featuresList]; copy[idx] = { ...copy[idx], description: v }; setFeaturesList(copy); }} />
                                         <div className="flex gap-2 items-center">
@@ -884,7 +888,10 @@ export default function ServicesManagerPage() {
                                                 </button>
                                             </div>
                                         </div>
-                                        <InputGroup label="Icon (Material Symbol)" value={step.icon || ''} onChange={(v: string) => updateProcessStep(idx, 'icon', v)} />
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-sm font-medium text-gray-700">Icon</label>
+                                            <IconSelector value={step.icon || ''} onChange={(v: string) => updateProcessStep(idx, 'icon', v)} />
+                                        </div>
                                         <InputGroup label="Title" value={step.title || ''} onChange={(v: string) => updateProcessStep(idx, 'title', v)} />
                                         <TextAreaGroup label="Description" value={step.description || ''} onChange={(v: string) => updateProcessStep(idx, 'description', v)} />
                                     </div>
@@ -931,7 +938,7 @@ export default function ServicesManagerPage() {
                                     <div key={b.id || idx} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-4">
                                         <InputGroup label="Name" value={b.name} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], name: v }; setBrands(copy); }} />
                                         <InputGroup label="Link" value={b.link || ''} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], link: v }; setBrands(copy); }} />
-                                        <ImageUploader label="Logo" value={b.logo || ''} onChange={(url: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], logo: url }; setBrands(copy); }} folder="services/brands" />
+                                        <ImageUploader label="Logo" value={b.logo || ''} onChange={(url: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], logo: url }; setBrands(copy); }} folder="services/brands" ratio="1:1" />
                                         <div className="flex gap-2 items-center">
                                             <InputGroup label="Order" value={(b.display_order || 0).toString()} onChange={(v: string) => { const copy = [...brands]; copy[idx] = { ...copy[idx], display_order: parseInt(v || '0') || 0 }; setBrands(copy); }} />
                                             <div className="pt-2">
@@ -958,7 +965,7 @@ export default function ServicesManagerPage() {
                                 <TextAreaGroup label="Quote Text" value={trustData.quote_text || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_text: v })} />
                                 <InputGroup label="Quote Author" value={trustData.quote_author || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_author: v })} />
                                 <InputGroup label="Quote Role" value={trustData.quote_role || ''} onChange={(v: string) => setTrustData({ ...trustData, quote_role: v })} />
-                                <ImageUploader label="Quote Image" value={trustData.quote_image || ''} onChange={(url: string) => setTrustData({ ...trustData, quote_image: url })} folder="services/trust" />
+                                <ImageUploader label="Quote Image" value={trustData.quote_image || ''} onChange={(url: string) => setTrustData({ ...trustData, quote_image: url })} folder="services/trust" ratio="1:1" />
 
                                 <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
                                     <div className="space-y-3">
@@ -1049,12 +1056,10 @@ export default function ServicesManagerPage() {
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Icon (Material Symbol)</label>
-                                                        <input
-                                                            type="text"
+                                                        <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
+                                                        <IconSelector
                                                             value={selectedService.icon}
-                                                            onChange={(e) => updateItem('icon', e.target.value)}
-                                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                            onChange={(v: string) => updateItem('icon', v)}
                                                         />
                                                     </div>
 
@@ -1090,6 +1095,7 @@ export default function ServicesManagerPage() {
                                                                 updateItem('thumbnail', url);
                                                             }}
                                                             folder="services"
+                                                            ratio="4:3"
                                                         />
                                                     </div>
 

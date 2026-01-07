@@ -8,7 +8,8 @@ export default function ImageUploader({
     onChange,
     folder,
     accept = "image/*",
-    buttonText = "Choose image"
+    buttonText = "Choose image",
+    ratio
 }: {
     label: string;
     value?: string;
@@ -16,6 +17,7 @@ export default function ImageUploader({
     folder: string;
     accept?: string;
     buttonText?: string;
+    ratio?: string;
 }) {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [dragOver, setDragOver] = useState(false);
@@ -66,7 +68,14 @@ export default function ImageUploader({
 
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+            <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">{label}</label>
+                {ratio && (
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-indigo-100">
+                        {ratio} Ratio
+                    </span>
+                )}
+            </div>
 
             {value ? (
                 <div className="flex items-center gap-3 mb-2">

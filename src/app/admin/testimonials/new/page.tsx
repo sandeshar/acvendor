@@ -217,6 +217,7 @@ export default function AddTestimonialPage() {
                             value={imageUrl}
                             onChange={(url: string) => setImageUrl(url)}
                             folder="testimonials"
+                            ratio="1:1"
                         />
                     </div>
 

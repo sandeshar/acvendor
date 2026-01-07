@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { showToast } from '@/components/Toast';
 import ImageUploader from '@/components/shared/ImageUploader';
+import IconSelector from "@/components/admin/IconSelector";
 
 export default function HomePageUI() {
     const [activeTab, setActiveTab] = useState("hero");
@@ -300,7 +301,7 @@ export default function HomePageUI() {
                                         <InputGroup label="Secondary CTA Link" value={heroData.secondary_cta_link || ''} onChange={(v) => setHeroData({ ...heroData, secondary_cta_link: v })} />
                                     </div>
 
-                                    <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="home" />
+                                    <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(url: string) => setHeroData({ ...heroData, background_image: url })} folder="home" ratio="16:9" />
                                     <InputGroup label="Background Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
                                     {/* Trust Badges */}
@@ -309,19 +310,28 @@ export default function HomePageUI() {
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <div className="p-3 bg-white rounded border border-gray-100">
                                                 <div className="text-sm font-medium mb-2">Badge 1</div>
-                                                <InputGroup label="Icon" value={heroData.trust_badge1_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge1_icon: v })} />
+                                                <div className="mb-2">
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Icon</label>
+                                                    <IconSelector value={heroData.trust_badge1_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge1_icon: v })} />
+                                                </div>
                                                 <InputGroup label="Text" value={heroData.trust_badge1_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge1_text: v })} />
                                             </div>
 
                                             <div className="p-3 bg-white rounded border border-gray-100">
                                                 <div className="text-sm font-medium mb-2">Badge 2</div>
-                                                <InputGroup label="Icon" value={heroData.trust_badge2_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge2_icon: v })} />
+                                                <div className="mb-2">
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Icon</label>
+                                                    <IconSelector value={heroData.trust_badge2_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge2_icon: v })} />
+                                                </div>
                                                 <InputGroup label="Text" value={heroData.trust_badge2_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge2_text: v })} />
                                             </div>
 
                                             <div className="p-3 bg-white rounded border border-gray-100">
                                                 <div className="text-sm font-medium mb-2">Badge 3</div>
-                                                <InputGroup label="Icon" value={heroData.trust_badge3_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge3_icon: v })} />
+                                                <div className="mb-2">
+                                                    <label className="block text-xs font-medium text-gray-500 mb-1">Icon</label>
+                                                    <IconSelector value={heroData.trust_badge3_icon || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge3_icon: v })} />
+                                                </div>
                                                 <InputGroup label="Text" value={heroData.trust_badge3_text || ''} onChange={(v) => setHeroData({ ...heroData, trust_badge3_text: v })} />
                                             </div>
                                         </div>
@@ -377,7 +387,7 @@ export default function HomePageUI() {
                                             </div>
                                             <div className="space-y-4">
                                                 <InputGroup label="Alt Text" value={logo.alt_text || ''} onChange={(v) => updateItem(idx, 'alt_text', v, trustLogos, setTrustLogos)} />
-                                                <ImageUploader label="Logo" value={logo.logo_url || ''} onChange={(url: string) => updateItem(idx, 'logo_url', url, trustLogos, setTrustLogos)} folder="logos" />
+                                                <ImageUploader label="Logo" value={logo.logo_url || ''} onChange={(url: string) => updateItem(idx, 'logo_url', url, trustLogos, setTrustLogos)} folder="logos" ratio="Logo" />
 
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <InputGroup label="Display Order" value={String(logo.display_order || '')} onChange={(v) => updateItem(idx, 'display_order', Number(v), trustLogos, setTrustLogos)} />
@@ -443,7 +453,8 @@ export default function HomePageUI() {
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-3 gap-4">
                                                     <div className="col-span-1">
-                                                        <InputGroup label="Icon (Material Symbol)" value={item.icon || ''} onChange={(v) => updateItem(idx, 'icon', v, expertiseItems, setExpertiseItems)} />
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+                                                        <IconSelector value={item.icon || ''} onChange={(v) => updateItem(idx, 'icon', v, expertiseItems, setExpertiseItems)} />
                                                     </div>
                                                     <div className="col-span-2">
                                                         <InputGroup label="Title" value={item.title || ''} onChange={(v) => updateItem(idx, 'title', v, expertiseItems, setExpertiseItems)} />

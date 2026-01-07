@@ -164,7 +164,7 @@ export default function ContactPageUI() {
                                     <InputGroup label="Title" value={heroData.title || ''} onChange={(v) => setHeroData({ ...heroData, title: v })} />
                                     <InputGroup label="Highlight Text" value={heroData.highlight_text || ''} onChange={(v) => setHeroData({ ...heroData, highlight_text: v })} />
                                     <TextAreaGroup label="Description" value={heroData.description || ''} onChange={(v) => setHeroData({ ...heroData, description: v })} />
-                                    <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(v) => setHeroData({ ...heroData, background_image: v })} folder="contact" />
+                                    <ImageUploader label="Background Image" value={heroData.background_image || ''} onChange={(v) => setHeroData({ ...heroData, background_image: v })} folder="contact" ratio="16:9" />
                                     <InputGroup label="Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">

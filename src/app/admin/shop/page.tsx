@@ -409,6 +409,7 @@ export default function AdminShopPage() {
                                 onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
                                 folder="shop"
                                 label="Background Image"
+                                ratio="16:9"
                             />
 
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Alt Text</label>
@@ -599,6 +600,7 @@ export default function AdminShopPage() {
                                 onChange={url => setBrandHero({ ...brandHero, background_image: url })}
                                 folder="shop"
                                 label="Brand Background"
+                                ratio="16:9"
                             />
                             <div className="grid grid-cols-2 gap-4">
                                 <div>

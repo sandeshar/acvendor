@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { showToast } from '@/components/Toast';
+import IconSelector from "@/components/admin/IconSelector";
 
 type Category = {
     id?: number;
@@ -470,13 +471,10 @@ export default function CategoriesManagerPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Icon (Material Symbol)</label>
-                                <input
-                                    type="text"
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
+                                <IconSelector
                                     value={selectedCategory.icon || ''}
-                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, icon: e.target.value })}
-                                    placeholder="category"
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    onChange={(v) => setSelectedCategory({ ...selectedCategory, icon: v })}
                                 />
                             </div>
                             <div>

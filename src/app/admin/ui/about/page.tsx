@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ImageUploader from "@/components/shared/ImageUploader";
+import IconSelector from "@/components/admin/IconSelector";
 import { showToast } from '@/components/Toast';
 
 export default function AboutPageUI() {
@@ -296,7 +297,7 @@ export default function AboutPageUI() {
                                         <InputGroup label="Secondary Button Link" value={heroData.button2_link || ''} onChange={(v) => setHeroData({ ...heroData, button2_link: v })} />
                                     </div>
 
-                                    <ImageUploader label="Hero Image" value={heroData.hero_image || ''} onChange={(v) => setHeroData({ ...heroData, hero_image: v })} folder="about" />
+                                    <ImageUploader label="Hero Image" value={heroData.hero_image || ''} onChange={(v) => setHeroData({ ...heroData, hero_image: v })} folder="about" ratio="16:9" />
                                     <InputGroup label="Hero Image Alt Text" value={heroData.hero_image_alt || ''} onChange={(v) => setHeroData({ ...heroData, hero_image_alt: v })} />
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
@@ -347,7 +348,7 @@ export default function AboutPageUI() {
                                         ))}
                                     </div>
 
-                                    <ImageUploader label="Section Image" value={journeyData.hero_image || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image: v })} folder="about/journey" />
+                                    <ImageUploader label="Section Image" value={journeyData.hero_image || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image: v })} folder="about/journey" ratio="4:3" />
                                     <InputGroup label="Section Image Alt Text" value={journeyData.hero_image_alt || ''} onChange={(v) => setJourneyData({ ...journeyData, hero_image_alt: v })} />
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
@@ -424,7 +425,10 @@ export default function AboutPageUI() {
                                                 </button>
                                             </div>
                                             <div className="space-y-4">
-                                                <InputGroup label="Icon (material)" value={feature.icon || ''} onChange={(v) => updateItem(idx, 'icon', v, features, setFeatures)} />
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+                                                    <IconSelector value={feature.icon || ''} onChange={(v) => updateItem(idx, 'icon', v, features, setFeatures)} />
+                                                </div>
                                                 <InputGroup label="Title" value={feature.title || ''} onChange={(v) => updateItem(idx, 'title', v, features, setFeatures)} />
                                                 <TextAreaGroup label="Description" value={feature.description || ''} onChange={(v) => updateItem(idx, 'description', v, features, setFeatures)} />
                                                 <div className="grid grid-cols-2 gap-4">
@@ -535,7 +539,7 @@ export default function AboutPageUI() {
                                                     <InputGroup label="Name" value={member.name || ''} onChange={(v) => updateItem(idx, 'name', v, teamMembers, setTeamMembers)} />
                                                     <InputGroup label="Role" value={member.role || ''} onChange={(v) => updateItem(idx, 'role', v, teamMembers, setTeamMembers)} />
                                                 </div>
-                                                <ImageUploader label="Image" value={member.image || ''} onChange={(v) => updateItem(idx, 'image', v, teamMembers, setTeamMembers)} folder="about/team" />
+                                                <ImageUploader label="Image" value={member.image || ''} onChange={(v) => updateItem(idx, 'image', v, teamMembers, setTeamMembers)} folder="about/team" ratio="1:1" />
                                                 <InputGroup label="Image Alt Text" value={member.image_alt || ''} onChange={(v) => updateItem(idx, 'image_alt', v, teamMembers, setTeamMembers)} />
                                                 <TextAreaGroup label="Bio" value={member.description || ''} onChange={(v) => updateItem(idx, 'description', v, teamMembers, setTeamMembers)} />
                                                 <div className="grid grid-cols-2 gap-4">
@@ -588,7 +592,7 @@ export default function AboutPageUI() {
                                             <InputGroup label="Link" value={b.link || ''} onChange={(v) => updateItem(idx, 'link', v, badges, setBadges)} />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4 mt-4">
-                                            <ImageUploader label="Logo" value={b.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, badges, setBadges)} folder="about/badges" />
+                                            <ImageUploader label="Logo" value={b.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, badges, setBadges)} folder="about/badges" ratio="1:1" />
                                             <InputGroup label="Display Order" value={String(b.display_order || idx + 1)} onChange={(v) => updateItem(idx, 'display_order', Number(v), badges, setBadges)} />
                                         </div>
                                     </div>
@@ -639,7 +643,7 @@ export default function AboutPageUI() {
                                                 <InputGroup label="Link" value={c.link || ''} onChange={(v) => updateItem(idx, 'link', v, certifications, setCertifications)} />
                                             </div>
                                             <div className="grid grid-cols-2 gap-4 mt-4">
-                                                <ImageUploader label="Logo" value={c.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, certifications, setCertifications)} folder="about/certifications" />
+                                                <ImageUploader label="Logo" value={c.logo || ''} onChange={(v) => updateItem(idx, 'logo', v, certifications, setCertifications)} folder="about/certifications" ratio="1:1" />
                                                 <InputGroup label="Display Order" value={String(c.display_order || idx + 1)} onChange={(v) => updateItem(idx, 'display_order', Number(v), certifications, setCertifications)} />
                                             </div>
                                         </div>

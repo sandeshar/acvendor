@@ -279,7 +279,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                 <div className="space-y-8 animate-in fade-in duration-300">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-gray-900 uppercase">Thumbnail</label>
-                                        <div className="max-w-xs"><ImageUploader label="" folder="products" value={product.thumbnail || ''} onChange={(v) => setProduct({ ...product, thumbnail: v })} /></div>
+                                        <div className="max-w-xs"><ImageUploader label="" folder="products" value={product.thumbnail || ''} onChange={(v) => setProduct({ ...product, thumbnail: v })} ratio="4:3" /></div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-gray-900 uppercase">Image Gallery</label>
@@ -291,7 +291,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                 </div>
                                             ))}
                                             <div className="aspect-square rounded-md border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                                                <ImageUploader label="" folder="products" value={''} onChange={(v) => setProduct({ ...product, images: [...(product.images || []), v] })} buttonText="Upload" />
+                                                <ImageUploader label="" folder="products" value={''} onChange={(v) => setProduct({ ...product, images: [...(product.images || []), v] })} buttonText="Upload" ratio="4:3" />
                                             </div>
                                         </div>
                                     </div>
