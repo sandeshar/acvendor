@@ -163,7 +163,7 @@ export async function PUT(request: NextRequest) {
         const footerSectionsPayload = body.footerSections ?? body.FooterSection;
         if (footerSectionsPayload && Array.isArray(footerSectionsPayload)) {
             // Delete existing sections + links for this store
-            const existing = await FooterSection.find({ store_id: id }).lean();
+            const existing = await FooterSection.find({ store_id: updatedId }).lean();
             for (const ex of existing) {
                 await FooterLink.deleteMany({ section_id: ex._id });
                 await FooterSection.findByIdAndDelete(ex._id);
@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest) {
 
             // Insert new sections and links
             for (const [sIdx, sec] of footerSectionsPayload.entries()) {
-                const newSection = await FooterSection.create({ store_id: id, title: sec.title || '', order: sec.order ?? sIdx });
+                const newSection = await FooterSection.create({ store_id: updatedId, title: sec.title || '', order: sec.order ?? sIdx });
                 if (sec.links && Array.isArray(sec.links)) {
                     for (const [lIdx, ln] of sec.links.entries()) {
                         await FooterLink.create({
@@ -191,7 +191,7 @@ export async function PUT(request: NextRequest) {
         const data = fromDb(updated);
         console.log('data:', data);
         if (data) {
-            const secs = await FooterSection.find({ store_id: id }).sort({ order: 1 }).lean();
+            const secs = await FooterSection.find({ store_id: updatedId }).sort({ order: 1 }).lean();
             const sections: any[] = [];
             for (const s of secs) {
                 const links = await FooterLink.find({ section_id: s._id }).sort({ order: 1 }).lean();
