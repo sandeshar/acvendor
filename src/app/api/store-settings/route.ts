@@ -9,6 +9,7 @@ function toDb(payload: any) {
         store_name: payload.storeName ?? '',
         store_description: payload.storeDescription ?? '',
         store_logo: payload.storeLogo ?? payload.logo ?? '',
+        logo_size: payload.logoSize ?? 'small',
         favicon: payload.favicon ?? '',
         contact_email: payload.contactEmail ?? '',
         contact_phone: payload.contactPhone ?? '',
@@ -28,6 +29,7 @@ function toDb(payload: any) {
         // Boolean flags stored as tinyint(1)
         hide_site_name: payload.hideSiteName ? 1 : 0,
         hide_site_name_on_mobile: payload.hideSiteNameOnMobile ? 1 : 0,
+        hide_store_name_in_footer: payload.hideStoreNameInFooter ? 1 : 0,
     };
 }
 
@@ -39,6 +41,7 @@ function fromDb(row: any) {
         storeName: row.store_name,
         storeDescription: row.store_description,
         storeLogo: row.store_logo,
+        logoSize: row.logo_size || 'small',
         favicon: row.favicon,
         contactEmail: row.contact_email,
         contactPhone: row.contact_phone,
@@ -61,6 +64,8 @@ function fromDb(row: any) {
         hideSiteName: !!row.hide_site_name,
         // Mobile preference: whether to hide the site name on small screens
         hideSiteNameOnMobile: !!row.hide_site_name_on_mobile,
+        // Whether to hide the store name in the footer
+        hideStoreNameInFooter: !!row.hide_store_name_in_footer,
         updatedAt: row.updated_at,
     };
 }
@@ -87,8 +92,6 @@ export async function GET() {
             (data as any).FooterSection = sections;
             // Backwards-compatible key
             (data as any).footerSections = sections;
-            // Log what GET returns for visibility
-            try { console.log(new Date().toISOString(), 'GET /api/store-settings returning sections:', sections); } catch (e) { }
         }
 
         return NextResponse.json({ success: true, data });
@@ -102,10 +105,10 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
+        console.log('PUT /api/store-settings body:', body);
         const update = toDb(body);
+        console.log('update:', update);
 
-        // Debug logging to help diagnose stale save/load issues
-        try { console.log(new Date().toISOString(), 'PUT /api/store-settings payload footerSections:', body.footerSections ?? body.FooterSection); } catch (e) { /* ignore */ }
 
         // Read current row (single row table semantics)
         const row = await StoreSettings.findOne().lean();
@@ -153,6 +156,7 @@ export async function PUT(request: NextRequest) {
 
         const id = row._id;
         const updated = await StoreSettings.findByIdAndUpdate(id, update, { new: true }).lean();
+        console.log('updated:', updated);
 
         // If footer sections were provided in the payload, replace existing sections/links
         const footerSectionsPayload = body.footerSections ?? body.FooterSection;
@@ -184,6 +188,7 @@ export async function PUT(request: NextRequest) {
         try { revalidateTag('store-settings', 'max'); } catch (e) { /* ignore */ }
         // Re-fetch footer sections so response includes them
         const data = fromDb(updated);
+        console.log('data:', data);
         if (data) {
             const secs = await FooterSection.find({ store_id: id }).sort({ order: 1 }).lean();
             const sections: any[] = [];

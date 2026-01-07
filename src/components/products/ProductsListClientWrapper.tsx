@@ -59,6 +59,9 @@ export default function ProductsListClientWrapper(props: ComponentProps<typeof P
                 if (minPrice) q.set('minPrice', minPrice);
                 if (maxPrice) q.set('maxPrice', maxPrice);
                 if (status) q.set('status', status);
+                // Support q (free-text) param from URL or searchContext
+                const qParam = getParam('q');
+                if (qParam) q.set('q', qParam);
                 if (page) {
                     const pNum = Math.max(1, parseInt(page) || 1);
                     const offset = (pNum - 1) * 12;

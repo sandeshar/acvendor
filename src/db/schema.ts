@@ -46,6 +46,7 @@ const storeSettingsSchema = new Schema({
     store_name: { type: String, required: true, maxlength: 256 },
     store_description: { type: String, required: true, maxlength: 1024 },
     store_logo: { type: String, required: true, maxlength: 512 },
+    logo_size: { type: String, required: false, default: 'small', maxlength: 20 },
     favicon: { type: String, required: true, maxlength: 512 },
     contact_email: { type: String, required: true, maxlength: 256 },
     contact_phone: { type: String, required: true, maxlength: 50 },
@@ -70,6 +71,8 @@ const storeSettingsSchema = new Schema({
     hide_site_name: { type: Number, default: 0, required: true },
     // Whether to hide the site name on small screens (mobile)
     hide_site_name_on_mobile: { type: Number, default: 0, required: true },
+    // Whether to hide the store name in the footer
+    hide_store_name_in_footer: { type: Number, default: 0, required: true },
 }, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },
     collection: 'store_settings'

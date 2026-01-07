@@ -106,15 +106,43 @@ export async function GET(request: NextRequest) {
 
         const normalizePost = async (post: any) => {
             if (!post) return post;
-            const statusNumeric = await statusNameToNumeric(post.status);
+
             let statusName: string | null = null;
-            if (typeof post.status === 'string' && /^[a-fA-F0-9]{24}$/.test(post.status)) {
-                const s = await Status.findById(post.status).lean();
-                statusName = s?.name || null;
-            } else if (typeof post.status === 'number') {
-                const sName = Object.values(STATUS_MAP as any)[post.status - 1];
-                statusName = (sName as string) || null;
+            let statusNumeric: number | null = null;
+
+            try {
+                // Derive name from various representations
+                if (typeof post.status === 'string' && /^[a-fA-F0-9]{24}$/.test(post.status)) {
+                    const s = await Status.findById(post.status).lean();
+                    statusName = s?.name || null;
+                } else if (typeof post.status === 'number') {
+                    const sName = Object.values(STATUS_MAP as any)[post.status - 1];
+                    statusName = (sName as string) || null;
+                } else if (typeof post.status === 'object' && post.status?.name) {
+                    statusName = post.status.name;
+                } else if (typeof post.status === 'string') {
+                    statusName = post.status;
+                }
+
+                // Try to get numeric representation from whatever form we have
+                statusNumeric = await statusNameToNumeric(statusName ?? post.status);
+            } catch (e) {
+                console.error('Error resolving status for post normalization:', e);
             }
+
+            // Fallback: if numeric still unresolved but we have an ObjectId, fetch the doc and try again
+            if (!statusNumeric && typeof post.status === 'string' && /^[a-fA-F0-9]{24}$/.test(post.status)) {
+                try {
+                    const s = await Status.findById(post.status).lean();
+                    if (s?.name) {
+                        statusName = statusName || s.name;
+                        statusNumeric = await statusNameToNumeric(s.name);
+                    }
+                } catch (e) {
+                    /* ignore */
+                }
+            }
+
             return {
                 ...post,
                 // Ensure front-end compatibility: expose `id` as string _id when numeric ids were expected previously
@@ -127,8 +155,8 @@ export async function GET(request: NextRequest) {
         if (id) {
             // Get single post by ID
             console.log('Fetching post by ID:', id);
-            const post = await BlogPost.findById(id).lean();
-            console.log('Query result:', post);
+            const post = await BlogPost.findById(id).populate('status').lean();
+            console.log('Query result (populated status):', post);
 
             if (!post) {
                 return NextResponse.json(
@@ -143,14 +171,20 @@ export async function GET(request: NextRequest) {
 
         if (slug) {
             // Get single post by slug
-            const post = await BlogPost.findOne({ slug }).lean();
+            console.log('Fetching post by slug:', slug);
+            const post = await BlogPost.findOne({ slug }).populate('status').lean();
+            console.log('Raw post result for slug (populated status):', slug, { found: !!post, status: post?.status });
 
             if (!post) {
+                console.log('Post not found for slug:', slug);
                 return NextResponse.json(
                     { error: 'Post not found' },
                     { status: 404 }
                 );
             }
+
+            const statusNumeric = await statusNameToNumeric(post.status);
+            console.log('Resolved status for slug:', slug, { rawStatus: post.status, statusNumeric });
 
             const normalized = await normalizePost(post);
             return NextResponse.json(normalized);
@@ -185,7 +219,7 @@ export async function GET(request: NextRequest) {
         if (limit && !isNaN(parseInt(limit))) {
             const l = parseInt(limit);
             const o = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
-            posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).limit(l).skip(o).lean();
+            posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).limit(l).skip(o).populate('status').lean();
             const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
             if (meta === 'true') {
                 return NextResponse.json({ posts: normalizedPosts, total });
@@ -193,7 +227,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(normalizedPosts);
         }
 
-        posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).lean();
+        posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).populate('status').lean();
         const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
         console.log('Found posts:', normalizedPosts.length);
         return NextResponse.json(normalizedPosts);

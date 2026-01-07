@@ -4,6 +4,7 @@ import { ReviewTestimonialServices } from "@/db/reviewTestimonialServicesSchema"
 import { ReviewTestimonialProducts } from "@/db/reviewTestimonialProductsSchema";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from 'next/cache';
+import mongoose from 'mongoose';
 
 export async function GET(request: NextRequest) {
     await connectDB();
@@ -137,6 +138,11 @@ export async function PUT(request: NextRequest) {
         // Basic validation
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+        }
+
+        // ensure id is a valid Mongo ObjectId
+        if (!mongoose.Types.ObjectId.isValid(String(id))) {
+            return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
         }
 
         const updateData: any = {};

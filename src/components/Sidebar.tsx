@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 const SideBar = () => {
     const [isUIOpen, setIsUIOpen] = useState(false);
     const [isSEOOpen, setIsSEOOpen] = useState(false);
+    const [isCatalogOpen, setIsCatalogOpen] = useState(true);
+    const [isContentOpen, setIsContentOpen] = useState(false);
     const [siteName, setSiteName] = useState('Admin Panel');
 
     useEffect(() => {
@@ -26,18 +28,7 @@ const SideBar = () => {
         fetchSiteName();
     }, []);
 
-    const mainItems = [
-        { name: 'Dashboard', icon: 'dashboard', href: '/admin' },
-        { name: 'Store Setting', icon: 'settings', href: '/admin/store-setting' },
-        { name: 'Users', icon: 'group', href: '/admin/users' },
-        { name: 'Services Manager', icon: 'service_toolbox', href: '/admin/services/manager' },
-        { name: 'Category Manager', icon: 'category', href: '/admin/categories' },
-        { name: 'Products', icon: 'inventory_2', href: '/admin/products' },
-        { name: 'Quotations', icon: 'request_quote', href: '/admin/quotation/drafts' },
-        { name: 'Shop', icon: 'store', href: '/admin/shop' },
-        { name: 'Testimonials', icon: 'reviews', href: '/admin/testimonials' },
-        { name: 'Contact', icon: 'contact_mail', href: '/admin/contact' },
-    ];
+
 
     const seoItems = [
         { name: 'Sitemap', icon: 'map', href: '/admin/seo/sitemap' },
@@ -58,22 +49,109 @@ const SideBar = () => {
     return (
         <aside className="admin-sidebar hidden md:flex sticky top-0 h-screen max-h-screen w-64 min-w-64 shrink-0 flex-col justify-between border-r border-gray-700 bg-gray-900 p-4 shadow-sm overflow-y-auto overflow-x-hidden">
             <div className="flex flex-col gap-8">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
-                        <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 600" }}>database</span>
+                <div className="flex flex-col gap-3 px-2">
+                    <div className="flex items-center gap-3">
+                        <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-white">
+                            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 600" }}>database</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <h1 className="text-white text-base font-bold leading-normal">{siteName}</h1>
+                            <p className="text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
+                        </div>
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-white text-base font-bold leading-normal">{siteName}</h1>
-                        <p className="text-gray-400 text-sm font-normal leading-normal">Admin Panel</p>
-                    </div>
+
+
                 </div>
                 <nav className="flex flex-col gap-2">
-                    {mainItems.map((item) => (
-                        <a key={item.name} className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10" href={item.href}>
-                            <span className="material-symbols-outlined text-lg">{item.icon}</span>
-                            <p className="text-sm font-medium leading-normal">{item.name}</p>
+                    {/* Manage (top-level links, not a dropdown) */}
+                    <div className="flex flex-col gap-1 pl-0 mt-1">
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10" href="/admin">
+                            <span className="material-symbols-outlined text-base">dashboard</span>
+                            <p className="text-sm font-medium leading-normal">Dashboard</p>
                         </a>
-                    ))}
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10" href="/admin/users">
+                            <span className="material-symbols-outlined text-base">group</span>
+                            <p className="text-sm font-medium leading-normal">Users</p>
+                        </a>
+                        <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10" href="/admin/store-setting">
+                            <span className="material-symbols-outlined text-base">settings</span>
+                            <p className="text-sm font-medium leading-normal">Store Setting</p>
+                        </a>
+                    </div>
+
+                    {/* Catalog group */}
+                    <div className="flex flex-col">
+                        <button
+                            onClick={() => setIsCatalogOpen(!isCatalogOpen)}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 w-full"
+                        >
+                            <span className="material-symbols-outlined text-lg">inventory_2</span>
+                            <p className="text-sm font-medium leading-normal flex-1 text-left">Catalog</p>
+                            <span className={`material-symbols-outlined text-lg transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>
+                                expand_more
+                            </span>
+                        </button>
+
+                        {isCatalogOpen && (
+                            <div className="flex flex-col gap-1 pl-6 mt-1">
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/products">
+                                    <span className="material-symbols-outlined text-base">inventory_2</span>
+                                    <p className="text-xs font-medium leading-normal">Products</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/quotation/drafts">
+                                    <span className="material-symbols-outlined text-base">request_quote</span>
+                                    <p className="text-xs font-medium leading-normal">Quotations</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/shop">
+                                    <span className="material-symbols-outlined text-base">store</span>
+                                    <p className="text-xs font-medium leading-normal">Shop</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/contact">
+                                    <span className="material-symbols-outlined text-base">contact_mail</span>
+                                    <p className="text-xs font-medium leading-normal">Contact</p>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Content group */}
+                    <div className="flex flex-col">
+                        <button
+                            onClick={() => setIsContentOpen(!isContentOpen)}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 w-full"
+                        >
+                            <span className="material-symbols-outlined text-lg">article</span>
+                            <p className="text-sm font-medium leading-normal flex-1 text-left">Content</p>
+                            <span className={`material-symbols-outlined text-lg transition-transform ${isContentOpen ? 'rotate-180' : ''}`}>
+                                expand_more
+                            </span>
+                        </button>
+
+                        {isContentOpen && (
+                            <div className="flex flex-col gap-1 pl-6 mt-1">
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/blog">
+                                    <span className="material-symbols-outlined text-base">article</span>
+                                    <p className="text-xs font-medium leading-normal">Blog</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/testimonials">
+                                    <span className="material-symbols-outlined text-base">reviews</span>
+                                    <p className="text-xs font-medium leading-normal">Testimonials</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/projects">
+                                    <span className="material-symbols-outlined text-base">architecture</span>
+                                    <p className="text-xs font-medium leading-normal">Projects</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/services/manager">
+                                    <span className="material-symbols-outlined text-base">service_toolbox</span>
+                                    <p className="text-xs font-medium leading-normal">Services Manager</p>
+                                </a>
+                                <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:bg-white/10 text-sm" href="/admin/categories">
+                                    <span className="material-symbols-outlined text-base">category</span>
+                                    <p className="text-xs font-medium leading-normal">Category Manager</p>
+                                </a>
+                            </div>
+                        )}
+                    </div>
 
                     {/* SEO Tools with sub-navigation */}
                     <div className="flex flex-col">

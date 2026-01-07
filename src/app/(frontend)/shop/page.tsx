@@ -94,7 +94,8 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
         })();
         const limit = 12;
         const offset = (Math.max(1, page) - 1) * limit;
-        const productsRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}`, { cache: 'no-store' });
+        const qParam = (searchParams as any)?.q || undefined;
+        const productsRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}${qParam ? `&q=${encodeURIComponent(qParam)}` : ''}`, { cache: 'no-store' });
         const brandProducts = productsRes.ok ? await productsRes.json() : [];
         const hasMore = Array.isArray(brandProducts) && brandProducts.length === limit;
 

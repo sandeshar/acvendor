@@ -212,7 +212,7 @@ export default function EditTestimonialPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    id: parseInt(id),
+                    id: id,
                     name: formData.name,
                     role: formData.role,
                     content: formData.content,

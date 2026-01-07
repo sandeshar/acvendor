@@ -150,7 +150,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
                             </div>
                             <h1 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">{post.title}</h1>
                             <p className="text-[#617589] text-base md:text-lg">{post.model || post.excerpt || ''}</p>
-                            {post.locations && <p className="text-primary text-sm font-medium mt-1">Available for installation in {Array.isArray(post.locations) ? post.locations.join(', ') : post.locations}</p>}
                         </div>
 
                         {/* Price & Tags */}

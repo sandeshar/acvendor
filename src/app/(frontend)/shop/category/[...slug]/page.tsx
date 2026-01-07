@@ -31,6 +31,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     if (minPrice) url.searchParams.set('minPrice', minPrice);
     if (maxPrice) url.searchParams.set('maxPrice', maxPrice);
     if (status) url.searchParams.set('status', status);
+    // propagate free-text q if present in page search params
+    const qParam = (searchParams as any)?.q || undefined;
+    if (qParam) url.searchParams.set('q', qParam);
 
     // Fetch products, categories, subcategories and optional category-hero
     const [productsRes, catsRes, subsRes, heroRes] = await Promise.all([

@@ -3,6 +3,7 @@ export interface StoreSettings {
     storeName: string;
     storeDescription: string;
     storeLogo: string;
+    logoSize?: 'small' | 'medium' | 'large';
     favicon: string;
     contactEmail: string;
     contactPhone: string;

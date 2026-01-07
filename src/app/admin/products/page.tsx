@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { showToast } from '@/components/Toast';
@@ -10,6 +10,7 @@ type ProductPost = {
     id: number;
     slug: string;
     title: string;
+    model?: string | null;
     excerpt?: string;
     thumbnail?: string | null;
     inventory_status?: string | null;
@@ -23,25 +24,103 @@ export default function AdminProductsPage() {
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<ProductPost[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Read initial q param from URL on mount (so global search via sidebar works)
+    useEffect(() => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q') || '';
+            if (q) setSearchQuery(q);
+        } catch (e) { /* ignore */ }
+    }, []);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [saving, setSaving] = useState(false);
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(12);
     const [hasMore, setHasMore] = useState<boolean>(false);
+    const [total, setTotal] = useState<number | null>(null);
 
+    // Category filter state
+    const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+    const [categoryFilter, setCategoryFilter] = useState<string>('');
+
+    // Debounce refs to avoid frequent API calls while typing
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastManualSearchRef = useRef<string | null>(null);
+
+    // Trigger fetch when page/perPage or category changes
     useEffect(() => {
         fetchProducts(page);
-    }, [page, perPage]);
+    }, [page, perPage, categoryFilter]);
 
-    const fetchProducts = async (p: number = 1) => {
+    // Debounced search: wait for typing to stop before firing API call
+    useEffect(() => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        // if user recently triggered a manual search (Enter), skip scheduling duplicate
+        const handler = setTimeout(() => {
+            if (lastManualSearchRef.current === searchQuery) {
+                // manual/explicit search already handled
+                lastManualSearchRef.current = null;
+                return;
+            }
+            setPage(1);
+            fetchProducts(1);
+        }, 400);
+        debounceTimerRef.current = handler;
+        return () => { if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; } };
+    }, [searchQuery]);
+
+    useEffect(() => {
+        // fetch categories for the filter dropdown
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/pages/services/categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(Array.isArray(data) ? data : []);
+                }
+            } catch (err) {
+                console.error('Failed to load categories for products filter:', err);
+            }
+        };
+        fetchCategories();
+
+        // If initial URL contains q param, load it immediately
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q') || '';
+            if (q) {
+                setSearchQuery(q);
+                setPage(1);
+                // call fetchProducts with override so it uses the immediate q
+                fetchProducts(1, q);
+            }
+        } catch (e) { /* ignore */ }
+    }, []);
+
+    const fetchProducts = async (p: number = 1, qOverride?: string) => {
         setLoading(true);
         try {
             const offset = (p - 1) * perPage;
-            const res = await fetch(`/api/products?limit=${perPage}&offset=${offset}`);
+            // include category filter when set and server-side q param when present
+            const categoryQuery = categoryFilter ? `&category=${encodeURIComponent(categoryFilter)}` : '';
+            const qToUse = typeof qOverride === 'string' ? qOverride : searchQuery;
+            const qQuery = qToUse ? `&q=${encodeURIComponent(qToUse)}` : '';
+            const res = await fetch(`/api/products?limit=${perPage}&offset=${offset}${categoryQuery}${qQuery}&meta=true`);
             const data = res.ok ? await res.json() : [];
-            setProducts(data || []);
-            setHasMore((data || []).length === perPage);
-            return data || [];
+
+            if (res.ok && data && data.products) {
+                setProducts(data.products || []);
+                setTotal(typeof data.total === 'number' ? data.total : null);
+                setHasMore(offset + (data.products || []).length < (data.total ?? 0));
+                return data.products || [];
+            }
+
+            // backward compatibility: array-only response
+            setProducts(Array.isArray(data) ? data : []);
+            setTotal(null);
+            setHasMore((Array.isArray(data) ? data.length : 0) === perPage);
+            return Array.isArray(data) ? data : [];
         } catch (error) {
             console.error('Error fetching products:', error);
             showToast('Failed to load products', { type: 'error' });
@@ -93,7 +172,10 @@ export default function AdminProductsPage() {
     const filtered = products.filter(p => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
-        return (p.title || '').toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q);
+        return (p.title || '').toLowerCase().includes(q)
+            || (p.slug || '').toLowerCase().includes(q)
+            || (String(p.model || '')).toLowerCase().includes(q)
+            || (p.excerpt || '').toLowerCase().includes(q);
     });
 
     return (
@@ -107,14 +189,68 @@ export default function AdminProductsPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="relative hidden md:block">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
-                            <input
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search..."
-                                className="pl-9 pr-4 py-2 bg-gray-100 border border-transparent rounded-md text-sm focus:bg-white focus:border-gray-200 outline-none w-64 transition-all"
-                            />
+                        <div className="relative hidden md:flex items-center gap-3">
+                            <div className="relative hidden md:block">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+                                <input
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            // clear any pending debounce and mark this as manual search to avoid duplicate
+                                            if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; }
+                                            lastManualSearchRef.current = searchQuery;
+                                            setPage(1);
+                                            fetchProducts(1, searchQuery);
+                                            // update URL so it's shareable/global
+                                            try {
+                                                const params = new URLSearchParams(window.location.search);
+                                                if (searchQuery) params.set('q', searchQuery); else params.delete('q');
+                                                const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+                                                window.history.replaceState({}, '', newUrl);
+                                            } catch (err) { /* ignore */ }
+                                        }
+                                    }}
+                                    placeholder="Search..."
+                                    className="pl-9 pr-10 py-2 bg-gray-100 border border-transparent rounded-md text-sm focus:bg-white focus:border-gray-200 outline-none w-64 transition-all"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => {
+                                            // clear any pending debounce
+                                            if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; }
+                                            lastManualSearchRef.current = null;
+                                            setSearchQuery('');
+                                            setPage(1);
+                                            fetchProducts(1, '');
+                                            try {
+                                                const params = new URLSearchParams(window.location.search);
+                                                params.delete('q');
+                                                const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+                                                window.history.replaceState({}, '', newUrl);
+                                            } catch (err) { /* ignore */ }
+                                        }}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                        aria-label="Clear search"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Category filter */}
+                            <div className="hidden md:block">
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+                                    className="px-3 py-2 bg-gray-100 border border-transparent rounded-md text-sm focus:bg-white focus:border-gray-200 outline-none transition-all"
+                                >
+                                    <option value="">All Categories</option>
+                                    {categories.map(c => (
+                                        <option key={c.id} value={c.slug}>{c.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <NextLink
@@ -209,12 +345,12 @@ export default function AdminProductsPage() {
                                             </td>
                                             <td className="px-4 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 overflow-hidden flex-shrink-0">
+                                                    <div className="w-10 h-10 bg-gray-100 rounded border border-gray-200 overflow-hidden shrink-0">
                                                         {p.thumbnail && <img src={p.thumbnail} className="w-full h-full object-cover" />}
                                                     </div>
                                                     <div>
                                                         <div className="font-bold text-gray-900">{p.title}</div>
-                                                        <div className="text-[11px] text-gray-500 font-mono">{p.slug}</div>
+                                                        <div className="text-[11px] text-gray-500 font-mono">{p.model ? `${p.model} • ${p.slug}` : p.slug}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -264,8 +400,14 @@ export default function AdminProductsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1 disabled:opacity-30"><span className="material-symbols-outlined">chevron_left</span></button>
-                            <span className="text-xs font-bold px-3">Page {page}</span>
-                            <button onClick={() => setPage(p => p + 1)} disabled={!hasMore} className="p-1 disabled:opacity-30"><span className="material-symbols-outlined">chevron_right</span></button>
+                            {/** Compute total pages when total is known, otherwise infer from hasMore */}
+                            {(() => {
+                                const totalPages = total ? Math.max(1, Math.ceil(total / perPage)) : (hasMore ? page + 1 : page);
+                                return (
+                                    <span className="text-xs font-bold px-3">Page {page} of {totalPages} {total !== null ? `(${total} results)` : ''}</span>
+                                );
+                            })()}
+                            <button onClick={() => setPage(p => p + 1)} disabled={total ? page >= Math.max(1, Math.ceil(total / perPage)) : !hasMore} className="p-1 disabled:opacity-30"><span className="material-symbols-outlined">chevron_right</span></button>
                         </div>
                     </div>
                 </div>

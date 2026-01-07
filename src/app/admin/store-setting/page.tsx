@@ -21,6 +21,7 @@ export default function StoreSettingPage() {
         metaDescription: "",
         metaKeywords: "",
         logo: "",
+        logoSize: "small",
         favicon: "",
         theme: "default",
         hideSiteNameOnMobile: false,
@@ -67,6 +68,7 @@ export default function StoreSettingPage() {
                         metaDescription: d.metaDescription || "",
                         metaKeywords: d.metaKeywords || "",
                         logo: d.storeLogo || "",
+                        logoSize: d.logoSize || "small",
                         favicon: d.favicon || "",
                         theme: d.theme || "default",
                         hideSiteNameOnMobile: !!d.hideSiteNameOnMobile,
@@ -140,6 +142,7 @@ export default function StoreSettingPage() {
                 storeName: formData.storeName,
                 storeDescription: formData.storeDescription,
                 storeLogo: formData.logo,
+                logoSize: formData.logoSize,
                 favicon: formData.favicon,
                 contactEmail: formData.contactEmail,
                 contactPhone: formData.contactPhone,
@@ -294,6 +297,22 @@ export default function StoreSettingPage() {
                                             {formData.logo && (
                                                 <img src={formData.logo} alt="Logo preview" className="w-16 h-16 object-contain border border-slate-200 rounded-lg" />
                                             )}
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="logoSize" className="block text-sm font-medium text-slate-700 mb-2">
+                                                Logo Size
+                                            </label>
+                                            <select
+                                                id="logoSize"
+                                                value={formData.logoSize}
+                                                onChange={(e) => setFormData({ ...formData, logoSize: e.target.value })}
+                                                className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                            >
+                                                <option value="small">Small (32px height)</option>
+                                                <option value="medium">Medium (48px height)</option>
+                                                <option value="large">Large (64px height)</option>
+                                            </select>
                                         </div>
                                     </div>
 

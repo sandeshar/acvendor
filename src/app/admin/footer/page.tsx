@@ -11,6 +11,8 @@ export default function FooterManagerPage() {
     const [saving, setSaving] = useState(false);
     const [sections, setSections] = useState<FooterSection[]>([]);
     const [footerText, setFooterText] = useState('');
+    const [hideStoreNameInFooter, setHideStoreNameInFooter] = useState(false);
+    const [logoSize, setLogoSize] = useState('small');
 
     useEffect(() => {
         fetchSections();
@@ -28,6 +30,8 @@ export default function FooterManagerPage() {
             if (storeJson?.success && storeJson.data) {
                 setSections(storeJson.data.footerSections || []);
                 setFooterText(storeJson.data.footerText || storeJson.data.footer_text || '');
+                setHideStoreNameInFooter(storeJson.data.hideStoreNameInFooter || false);
+                setLogoSize(storeJson.data.logoSize || 'small');
                 setLoading(false);
                 return;
             }
@@ -133,7 +137,11 @@ export default function FooterManagerPage() {
                     }))
                 })),
                 footerText: footerText,
+                hideStoreNameInFooter: hideStoreNameInFooter,
+                logoSize: logoSize,
             };
+
+            console.log('payload:', payload);
 
             try { console.log('saveAll: payload', payload); } catch (e) { }
             const res = await fetch('/api/store-settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -143,6 +151,8 @@ export default function FooterManagerPage() {
             showToast('Footer sections saved', { type: 'success' });
             setSections(json.data?.footerSections || []);
             setFooterText(json.data?.footerText || json.data?.footer_text || '');
+            setHideStoreNameInFooter(json.data?.hideStoreNameInFooter || false);
+            setLogoSize(json.data?.logoSize || 'small');
             // Server response should contain the canonical saved data. Only re-fetch if it's missing to avoid
             // overriding fresh state with a potentially stale GET result immediately after writes.
             if (!json.data?.footerSections) {
@@ -174,6 +184,34 @@ export default function FooterManagerPage() {
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-slate-700 mb-2">Footer Text</label>
                         <input value={footerText} onChange={(e) => setFooterText(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Copyright text or footer message" />
+                    </div>
+
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Footer Options</label>
+                        <div className="space-y-3">
+                            <div className="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    id="hideStoreNameInFooter" 
+                                    checked={hideStoreNameInFooter} 
+                                    onChange={(e) => setHideStoreNameInFooter(e.target.checked)} 
+                                    className="h-4 w-4 text-primary focus:ring-primary border-slate-300 rounded" 
+                                />
+                                <label htmlFor="hideStoreNameInFooter" className="ml-2 text-sm text-slate-700">Hide store name in footer</label>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <label className="text-sm text-slate-700">Logo Size:</label>
+                                <select 
+                                    value={logoSize} 
+                                    onChange={(e) => setLogoSize(e.target.value)} 
+                                    className="px-3 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                >
+                                    <option value="small">Small</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="large">Large</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     {loading ? (

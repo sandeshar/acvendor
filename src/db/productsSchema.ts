@@ -28,6 +28,8 @@ const productSchema = new Schema({
     dimensions: { type: String, maxlength: 128, default: '' },
     voltage: { type: String, maxlength: 64, default: '' },
     locations: { type: String, default: '' },
+    // Human friendly availability label displayed before locations list
+    availabilityLabel: { type: String, maxlength: 256, default: 'Available for installation in' },
     inventory_status: { type: String, default: 'in_stock', maxlength: 64 },
     rating: { type: mongoose.Schema.Types.Decimal128, default: 0 },
     reviews_count: { type: Number, default: 0, required: true },

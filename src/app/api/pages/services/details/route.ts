@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         const {
             postId,
             locations,
+            availabilityLabel,
             inventory_status,
             images: imagesField,
             price,
@@ -182,6 +183,7 @@ export async function PUT(request: NextRequest) {
         const {
             postId,
             locations,
+            availabilityLabel,
             inventory_status,
             images: imagesField,
             price,
@@ -204,6 +206,7 @@ export async function PUT(request: NextRequest) {
 
         if (postId !== undefined) updateData.postId = postId;
         if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
+        if (availabilityLabel !== undefined) updateData.availabilityLabel = availabilityLabel;
         if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
         if (imagesField !== undefined) updateData.images = typeof imagesField === 'string' ? imagesField : JSON.stringify(imagesField);
         if (price !== undefined) updateData.price = price;

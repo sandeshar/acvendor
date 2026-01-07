@@ -284,7 +284,7 @@ export default function AdminQuotationPage() {
                                     {searchResults.map((p, i) => (
                                         <button key={i} onClick={() => addProduct(p)} className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-3">
                                             <div className="text-sm font-medium">{p.title || p.name || p.slug}</div>
-                                            <div className="ml-auto text-xs text-gray-500">{p.price ? `NPR ${formatPrice(p.price)}` : ''}</div>
+                                            <div className="ml-auto text-xs text-gray-500">{p.model ? `${p.model}${p.price ? ' • ' : ''}` : ''}{p.price ? `NPR ${formatPrice(p.price)}` : ''}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -397,7 +397,7 @@ export default function AdminQuotationPage() {
                     <div className="mt-4 flex flex-col gap-3">
                         <button onClick={saveAndSend} disabled={saving} className="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-base font-bold shadow-lg shadow-primary/30 hover:bg-blue-700 hover:shadow-xl transition-all active:scale-[0.98]">
                             <span className="material-symbols-outlined text-[20px]">send</span>
-                            {saving ? 'Saving...' : 'Save &amp; Send Quotation'}
+                            {saving ? 'Saving...' : 'Save & Send Quotation'}
                         </button>
 
                         <button onClick={() => router.back()} className="w-full text-center text-sm font-medium text-[#616f89] hover:text-[#111318] transition-colors">

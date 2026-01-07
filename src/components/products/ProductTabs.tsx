@@ -12,16 +12,10 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
             <div className="mt-6">
                 <section className="flex flex-col gap-10 animate-fade-in">
                     <div className="max-w-[800px]">
-                        <h3 className="text-2xl font-bold text-[#111418] mb-4">{post.title}</h3>
-                        {post.excerpt ? (
-                            <p className="text-[#111418] leading-relaxed mb-6">{post.excerpt}</p>
-                        ) : post.content ? (
-                            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: post.content as string }} />
-                        ) : (
-                            <p className="text-[#617589]">No overview available.</p>
-                        )}
+                        {/* Title removed here: product title is already shown in the hero section above */}
 
                         {/* Application areas are dynamic when available via `post.application_areas` (array or JSON string), otherwise fall back to defaults */}
+                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Best Fit for</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                             {(() => {
                                 // Build areas list from product data when available
@@ -81,7 +75,7 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                 <section className="mt-10">
                     <h3 className="text-2xl font-bold text-[#111418] mb-6">Technical Specifications</h3>
                     <div className="overflow-hidden rounded-xl border border-[#dbe0e6]">
-                        {(post.model || post.capacity || post.power || post.iseer || post.refrigerant || post.noise || post.dimensions || post.voltage) ? (
+                        {(post.model || post.capacity || post.power || post.iseer || post.refrigerant || post.noise || post.dimensions || post.voltage || ((post as any).technical && ((post as any).technical.customSpecs && (post as any).technical.customSpecs.length))) ? (
                             <table className="w-full text-left text-sm">
                                 <tbody className="divide-y divide-[#dbe0e6]">
                                     {post.model && (
@@ -138,6 +132,16 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                                             <td className="px-6 py-4 text-[#111418]">{(post as any).warranty}</td>
                                         </tr>
                                     )}
+
+                                    {/* render custom specs (from detail.technical.customSpecs) in the same table */}
+                                    {((post as any).technical && Array.isArray((post as any).technical.customSpecs)) ? (
+                                        (post as any).technical.customSpecs.map((s: any, idx: number) => (
+                                            <tr key={`custom-${idx}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#f6f7f8]'}>
+                                                <td className="px-6 py-4 font-medium text-[#617589]">{s.name || s.key || `Spec ${idx + 1}`}</td>
+                                                <td className="px-6 py-4 text-[#111418]">{s.value || s.val || '-'}</td>
+                                            </tr>
+                                        ))
+                                    ) : null}
                                 </tbody>
                             </table>
                         ) : (
@@ -146,6 +150,13 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                     </div>
                 </section>
 
+                {/* Product content rendered below Technical Specifications */}
+                {post.content ? (
+                    <section className="mt-8 max-w-[800px] animate-fade-in">
+                        <h3 className="text-2xl font-bold text-[#111418] mb-4">Product Details</h3>
+                        <div className="prose max-w-none text-[#111418]" dangerouslySetInnerHTML={{ __html: post.content as string }} />
+                    </section>
+                ) : null}
 
             </div>
         </div>

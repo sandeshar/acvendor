@@ -65,6 +65,7 @@ export default function NewProductPage() {
                 image_alt: product.title,
                 postId: postData.id,
                 locations: JSON.stringify(product.locations || []),
+                availabilityLabel: product.availabilityLabel || null,
                 inventory_status: product.inventory_status,
                 images: JSON.stringify(product.images || []),
                 application_areas: JSON.stringify(product.application_areas || []),

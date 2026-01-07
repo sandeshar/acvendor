@@ -37,10 +37,36 @@ async function getProductPost(slug: string): Promise<ProductWithRelations | null
                             } catch (e) {
                                 // ignore parse errors
                             }
+
                             // merge content/description if missing
                             if (!post.excerpt && detail.description) post.excerpt = detail.description;
                             if (!post.content && detail.content) post.content = detail.content;
                             if (!post.thumbnail && detail.image) post.thumbnail = detail.image;
+
+                            // Merge technical details (detail.technical may be JSON or object)
+                            try {
+                                const techRaw = detail.technical;
+                                let parsedTech: any = null;
+                                if (techRaw) {
+                                    if (typeof techRaw === 'string') {
+                                        try { parsedTech = JSON.parse(techRaw); } catch (e) { parsedTech = null; }
+                                    } else if (typeof techRaw === 'object') {
+                                        parsedTech = techRaw;
+                                    }
+                                }
+                                if (parsedTech) {
+                                    // attach to post.technical for structured access
+                                    (post as any).technical = { ...(post as any).technical || {}, ...parsedTech };
+
+                                    // Also ensure top-level fields exist for backward compatibility (power, iseer etc.)
+                                    const fields = ['power', 'iseer', 'refrigerant', 'noise', 'dimensions', 'voltage', 'capacity', 'warranty'];
+                                    for (const f of fields) {
+                                        if (!post[f] && parsedTech[f] !== undefined && parsedTech[f] !== null) post[f] = parsedTech[f];
+                                    }
+                                }
+                            } catch (e) {
+                                // ignore technical parsing errors
+                            }
                         }
                     }
                 } catch (e) {
@@ -151,7 +177,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
                             </div>
                             <h1 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">{post.title}</h1>
                             <p className="text-[#617589] text-base md:text-lg">{post.model || post.excerpt || ''}</p>
-                            {post.locations && <p className="text-primary text-sm font-medium mt-1">Available for installation in {Array.isArray(post.locations) ? post.locations.join(', ') : post.locations}</p>}
                         </div>
 
                         {/* Price & Tags */}
@@ -166,7 +191,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                     <span className="text-lg text-[#617589] line-through decoration-1">NPR {formatPrice(post.compare_at_price)}</span>
                                 ) : null}
                             </div>
-                            <p className="text-sm text-[#617589]">Price includes 13% VAT. Installation charges calculated based on site visit.</p>
                         </div>
 
                         {/* Feature Badges */}

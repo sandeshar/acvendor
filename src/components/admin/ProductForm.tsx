@@ -44,6 +44,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
             iseer: '',
             refrigerant: '',
             noise: '',
+            customSpecs: [], // flexible additional specs (array of { name, value })
         },
         features: [],
         meta_title: '',
@@ -171,6 +172,17 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                     </div>
 
                                     <div className="space-y-1">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Availability Label</label>
+                                        <input
+                                            value={product.availabilityLabel || ''}
+                                            onChange={e => setProduct({ ...product, availabilityLabel: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 outline-none transition-all text-sm"
+                                            placeholder="e.g. Available for installation in"
+                                        />
+                                        <p className="text-xs text-gray-400">Optional text shown before the locations list on the product page.</p>
+                                    </div>
+
+                                    <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Product Content</label>
                                         <div className="border border-gray-300 rounded-md overflow-hidden">
                                             <div className="bg-gray-50 border-b border-gray-200 p-2 flex gap-1">
@@ -218,6 +230,32 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                 <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Dimensions</label><input value={product.technical?.dimensions || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, dimensions: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
                                                 <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Voltage</label><input value={product.technical?.voltage || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, voltage: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
                                                 <div className="space-y-1"><label className="text-[10px] font-bold text-gray-400 uppercase">Warranty</label><input value={product.technical?.warranty || ''} onChange={e => setProduct({ ...product, technical: { ...product.technical, warranty: e.target.value } })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
+                                            </div>
+
+                                            {/* Custom technical specs */}
+                                            <div className="pt-4">
+                                                <h3 className="text-xs font-bold text-gray-900 uppercase">Custom Specs</h3>
+                                                <div className="space-y-2 mt-3">
+                                                    {(product.technical?.customSpecs || []).map((spec: any, idx: number) => (
+                                                        <div key={idx} className="flex gap-2 items-center">
+                                                            <input
+                                                                value={spec.name || ''}
+                                                                onChange={(e) => setProduct({ ...product, technical: { ...product.technical, customSpecs: (product.technical?.customSpecs || []).map((s: any, i: number) => i === idx ? { ...s, name: e.target.value } : s) } })}
+                                                                placeholder="Spec name"
+                                                                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-1/3"
+                                                            />
+                                                            <input
+                                                                value={spec.value || ''}
+                                                                onChange={(e) => setProduct({ ...product, technical: { ...product.technical, customSpecs: (product.technical?.customSpecs || []).map((s: any, i: number) => i === idx ? { ...s, value: e.target.value } : s) } })}
+                                                                placeholder="Spec value"
+                                                                className="px-3 py-2 border border-gray-300 rounded-md text-sm flex-1"
+                                                            />
+                                                            <button onClick={() => setProduct({ ...product, technical: { ...product.technical, customSpecs: (product.technical?.customSpecs || []).filter((_: any, i: number) => i !== idx) } })} className="text-gray-400 hover:text-red-600"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                                                        </div>
+                                                    ))}
+
+                                                    <button onClick={() => setProduct({ ...product, technical: { ...product.technical, customSpecs: [...(product.technical?.customSpecs || []), { name: '', value: '' }] } })} className="w-full py-2 border border-dashed border-gray-300 rounded text-xs font-bold text-gray-400 hover:bg-gray-50 transition-colors uppercase">+ Add Item</button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="space-y-4">

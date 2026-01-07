@@ -10,7 +10,7 @@ export const fetchCache = 'force-no-store';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1, sort?: string) {
+async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1, sort?: string, qParam?: string) {
     try {
         const q = new URLSearchParams();
         if (limit) q.set('limit', String(limit));
@@ -18,6 +18,7 @@ async function getProducts(limit = 12, brand?: string, category?: string, subcat
         if (category) q.set('category', category);
         if (subcategory) q.set('subcategory', subcategory);
         if (sort) q.set('sort', sort);
+        if (qParam) q.set('q', qParam);
         const offset = (Math.max(1, page) - 1) * (limit || 12);
         if (offset) q.set('offset', String(offset));
         const res = await fetch(`${API_BASE}/api/products?${q.toString()}`, { cache: 'no-store', next: { tags: ['products'] } });
@@ -91,7 +92,8 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         console.error('MideaPage: failed to inspect searchParams', err, { searchParams });
     }
 
-    const products = await getProducts(12, brand, category || undefined, subcategory, page, sort);
+    const qParam = (searchParams as any)?.q || undefined;
+    const products = await getProducts(12, brand, category || undefined, subcategory, page, sort, qParam);
 
     const hasMore = (products || []).length === 12;
 
@@ -100,6 +102,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         if (category) params.set('category', category);
         if (subcategory) params.set('subcategory', subcategory);
         if (sort) params.set('sort', sort);
+        if (qParam) params.set('q', qParam);
         if (newPage && newPage > 1) params.set('page', String(newPage));
         const qs = params.toString();
         return `/midea-ac${qs ? `?${qs}` : ''}`;

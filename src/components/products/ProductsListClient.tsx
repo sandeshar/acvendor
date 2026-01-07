@@ -22,7 +22,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
         const q = query.trim().toLowerCase();
         if (!q) return products;
         return products.filter((p: any) => {
-            return (p.title || '').toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q) || (p.excerpt || '').toLowerCase().includes(q);
+            return (p.title || '').toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q) || (p.excerpt || '').toLowerCase().includes(q) || (p.model || '').toLowerCase().includes(q);
         });
     }, [products, query]);
 

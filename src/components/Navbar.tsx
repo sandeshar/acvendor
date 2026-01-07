@@ -78,6 +78,13 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     // Optional: remove the site name entirely (hide on all screens)
     const hideSiteName = Boolean(store?.hideSiteName || store?.hide_site_name);
 
+    // Logo size from store settings (small, medium, large)
+    const logoSize = store?.logoSize || store?.logo_size || 'small';
+    const logoHeightClass = logoSize === 'large' ? 'h-16' : logoSize === 'medium' ? 'h-12' : 'h-8';
+    const siteNameSizeClass = logoSize === 'large' ? 'text-2xl' : logoSize === 'medium' ? 'text-xl' : 'text-lg';
+    const navItemSizeClass = logoSize === 'large' ? 'text-lg' : logoSize === 'medium' ? 'text-base' : 'text-sm';
+    const navIconSizeClass = logoSize === 'large' ? 'text-lg' : logoSize === 'medium' ? 'text-base' : 'text-sm';
+
     useEffect(() => {
         let isMounted = true;
 
@@ -238,12 +245,12 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                 <a href="/" className="flex items-center gap-4 text-body hover:opacity-90 transition-opacity">
                     {storeLogo && !logoError ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={logoSrc} alt={storeName} className="h-8 w-auto object-contain rounded" onError={() => setLogoError(true)} />
+                        <img src={logoSrc} alt={storeName} className={`${logoHeightClass} w-auto object-contain rounded`} onError={() => setLogoError(true)} />
                     ) : (
                         <span className="material-symbols-outlined text-primary-var text-3xl">hub</span>
                     )}
                     {!hideSiteName && (
-                        <h2 className={`text-lg font-bold leading-tight tracking-[-0.015em] ${hideSiteNameOnMobile ? 'hidden sm:inline-block' : ''}`}>{storeName}</h2>
+                        <h2 className={`${siteNameSizeClass} font-bold leading-tight tracking-[-0.015em] ${hideSiteNameOnMobile ? 'hidden sm:inline-block' : ''}`}>{storeName}</h2>
                     )}
                 </a>
 
@@ -280,10 +287,10 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                     >
                                         <Link
                                             href={link.href}
-                                            className="text-sm font-medium leading-normal text-subtext hover-text-primary transition-colors flex items-center gap-1"
+                                            className={`${navItemSizeClass} font-medium leading-normal text-subtext hover-text-primary transition-colors flex items-center gap-1`}
                                         >
                                             {link.label}
-                                            {hasDropdown && <span className="material-symbols-outlined text-sm">expand_more</span>}
+                                            {hasDropdown && <span className={`material-symbols-outlined ${navIconSizeClass}`}>expand_more</span>}
                                         </Link>
 
                                         {hasDropdown && String(openDropdown) === String(link.id) && (
@@ -326,7 +333,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                 >
                                                                                     <Link
                                                                                         href={child.href}
-                                                                                        className="px-4 py-2 text-sm text-subtext hover-bg-card hover-text-primary transition-colors flex items-center justify-between"
+                                                                                        className={`px-4 py-2 ${navItemSizeClass} text-subtext hover-bg-card hover-text-primary transition-colors flex items-center justify-between`}
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
@@ -398,7 +405,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                 <div key={`g-${gc._id ?? gc.id ?? gc.href}-${gcIdx}`}>
                                                                                     <Link
                                                                                         href={gc.href}
-                                                                                        className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-primary transition-colors"
+                                                                                        className={`block px-4 py-2 ${navItemSizeClass} text-slate-700 hover:bg-slate-100 hover:text-primary transition-colors`}
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
@@ -508,7 +515,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                         <a
                             key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                             href={link.href}
-                            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
+                            className={`flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white ${navItemSizeClass} font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors`}
                         >
                             <span className="truncate">{link.label}</span>
                         </a>
@@ -546,7 +553,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                 <div key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}>
                                     <div className="flex items-center justify-between">
                                         <a
-                                            className="flex-1 text-sm font-medium leading-normal text-slate-700 hover:text-primary hover:bg-slate-100 px-4 py-3 rounded-lg transition-colors"
+                                            className={`flex-1 ${navItemSizeClass} font-medium leading-normal text-slate-700 hover:text-primary hover:bg-slate-100 px-4 py-3 rounded-lg transition-colors`}
                                             href={link.href}
                                             onClick={() => !hasDropdown && setIsMenuOpen(false)}
                                         >
@@ -569,7 +576,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                         <div className="flex items-center justify-between">
                                                             <a
                                                                 href={child.href}
-                                                                className="text-sm text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors flex-1"
+                                                                className={`${navItemSizeClass} text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors flex-1`}
                                                                 onClick={() => setIsMenuOpen(false)}
                                                             >
                                                                 {child.label}
@@ -587,7 +594,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                     <a
                                                                         key={`g-${gc.id}`}
                                                                         href={gc.href}
-                                                                        className="text-sm text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors"
+                                                                        className={`${navItemSizeClass} text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors`}
                                                                         onClick={() => setIsMenuOpen(false)}
                                                                     >
                                                                         {gc.label}
@@ -608,7 +615,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                             <a
                                 key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                                 href={link.href}
-                                className="flex items-center justify-center overflow-hidden rounded-lg h-10 px-4 mt-2 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
+                                className={`flex items-center justify-center overflow-hidden rounded-lg h-10 px-4 mt-2 bg-primary text-white ${navItemSizeClass} font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors`}
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 <span className="truncate">{link.label}</span>

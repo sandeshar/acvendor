@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
         const limit = searchParams.get('limit');
         const status = searchParams.get('status');
         const featured = searchParams.get('featured');
+        const meta = searchParams.get('meta');
         const minPrice = searchParams.get('minPrice');
         const maxPrice = searchParams.get('maxPrice');
         const smart = searchParams.get('smart');
@@ -394,7 +395,15 @@ export async function GET(request: NextRequest) {
             // ignore aggregation errors
         }
 
-        return NextResponse.json(rows.map((r: any) => ({ ...r, id: r._id.toString() })));
+        const formattedRows = rows.map((r: any) => ({ ...r, id: r._id.toString() }));
+
+        // If client requested meta information with pagination, include total count
+        if (limit && meta === 'true') {
+            const total = await Product.countDocuments(query);
+            return NextResponse.json({ products: formattedRows, total });
+        }
+
+        return NextResponse.json(formattedRows);
     } catch (error) {
         console.error('Error fetching products:', error);
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
@@ -444,6 +453,7 @@ export async function POST(request: NextRequest) {
             dimensions,
             voltage,
             locations,
+            availabilityLabel,
         } = body;
 
         if (!slug || !title || typeof statusId === 'undefined') {
@@ -476,6 +486,7 @@ export async function POST(request: NextRequest) {
             dimensions: dimensions || null,
             voltage: voltage || null,
             locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
+            availabilityLabel: typeof availabilityLabel !== 'undefined' ? availabilityLabel : undefined,
             inventory_status: inventory_status || 'in_stock',
             rating: (typeof rating !== 'undefined' && rating !== null && rating !== '') ? rating : '0',
             meta_title: metaTitle || null,
@@ -560,6 +571,7 @@ export async function PUT(request: NextRequest) {
             dimensions,
             voltage,
             locations,
+            availabilityLabel,
         } = body;
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -590,6 +602,7 @@ export async function PUT(request: NextRequest) {
         if (dimensions !== undefined) updateData.dimensions = dimensions;
         if (voltage !== undefined) updateData.voltage = voltage;
         if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
+        if (availabilityLabel !== undefined) updateData.availabilityLabel = availabilityLabel;
         if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
         if (rating !== undefined) updateData.rating = (rating === '' ? '0' : rating);
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;
