@@ -162,7 +162,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                 )}
                                 {post.compare_at_price && Number(String(post.compare_at_price).replace(/[^0-9.-]/g, '')) > 0 ? <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{post.compare_at_price}</span> : null}
                             </div>
-                            <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p>
+                            {/* <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p> */}
                         </div>
 
                         {/* Feature Badges */}

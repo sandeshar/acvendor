@@ -14,7 +14,7 @@ export default async function ServicesBrands() {
                         brands.map((b: any) => (
                             <div key={b.id} className="flex items-center gap-4">
                                 {b.logo ? (
-                                    <img src={b.logo} alt={b.name} className="h-8 object-contain" />
+                                    <img src={b.logo} alt={b.name} className="h-16 object-contain" />
                                 ) : (
                                     <span className="text-2xl font-black text-slate-400">{b.name}</span>
                                 )}
