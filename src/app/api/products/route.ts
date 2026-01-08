@@ -86,12 +86,12 @@ export async function GET(request: NextRequest) {
                         reviews_breakdown: breakdown
                     });
                 } catch (e) {
-                    return NextResponse.json({ 
-                        ...product, 
-                        id: product._id.toString(), 
+                    return NextResponse.json({
+                        ...product,
+                        id: product._id.toString(),
                         price: product.price ? product.price.toString() : null,
                         compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
-                        images 
+                        images
                     });
                 }
             }
@@ -148,12 +148,12 @@ export async function GET(request: NextRequest) {
                         reviews_breakdown: breakdown
                     });
                 } catch (e) {
-                    return NextResponse.json({ 
-                        ...product, 
-                        id: product._id.toString(), 
+                    return NextResponse.json({
+                        ...product,
+                        id: product._id.toString(),
                         price: product.price ? product.price.toString() : null,
                         compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
-                        images 
+                        images
                     });
                 }
             }
@@ -389,8 +389,8 @@ export async function GET(request: NextRequest) {
             // ignore aggregation errors
         }
 
-        const formattedRows = rows.map((r: any) => ({ 
-            ...r, 
+        const formattedRows = rows.map((r: any) => ({
+            ...r,
             id: r._id.toString(),
             price: r.price ? r.price.toString() : null,
             compare_at_price: r.compare_at_price ? r.compare_at_price.toString() : null
