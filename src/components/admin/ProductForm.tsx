@@ -12,6 +12,10 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Highlight from '@tiptap/extension-highlight';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import IconSelector from '@/components/admin/IconSelector';
 
 interface ProductFormProps {
@@ -25,6 +29,10 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
     const [activeTab, setActiveTab] = useState<'general' | 'specs' | 'media' | 'seo'>('general');
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);
+    // Table border color (default and current selection)
+    const [tableBorderColor, setTableBorderColor] = useState<string>('#e5e7eb');
+    // Toggle for showing advanced controls (keeps toolbar compact)
+    const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
     const [product, setProduct] = useState<any>({
         title: '',
@@ -37,7 +45,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         locations: [],
         price: '',
         compare_at_price: '',
-        currency: 'NRS',
+        currency: 'NPR',
         model: '',
         technical: {
             power: '',
@@ -52,17 +60,24 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         category_id: null,
         subcategory_id: null,
         statusId: 1,
+        application_areas: [],
         ...initialData
     });
 
-    useEffect(() => {
-        if (initialData) {
-            setProduct((prev: any) => ({ ...prev, ...initialData }));
-            if (editor && initialData.content) {
-                editor.commands.setContent(initialData.content);
-            }
-        }
-    }, [initialData]);
+
+
+    const excerptEditor = useEditor({
+        extensions: [
+            StarterKit.configure({ codeBlock: false }),
+            Link.configure({ openOnClick: false }),
+            Underline,
+            Placeholder.configure({ placeholder: 'Brief description...' }),
+        ],
+        content: product.excerpt || '',
+        editorProps: { attributes: { class: 'tiptap min-h-[100px] p-4 focus:outline-none prose max-w-none text-sm', spellcheck: 'true' } },
+        onUpdate: ({ editor }) => setProduct((p: any) => ({ ...p, excerpt: editor.getHTML() })),
+        immediatelyRender: false,
+    });
 
     const editor = useEditor({
         extensions: [
@@ -74,6 +89,11 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
             Highlight,
             TextStyle,
             Color,
+            // Table extensions
+            Table.configure({ resizable: true }),
+            TableRow,
+            TableHeader,
+            TableCell,
             Placeholder.configure({ placeholder: 'Description...' }),
         ],
         content: product.content || '',
@@ -81,6 +101,42 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         onUpdate: ({ editor }) => setProduct((p: any) => ({ ...p, content: editor.getHTML() })),
         immediatelyRender: false,
     });
+
+    // Initialize editors with incoming data once editors are available
+    useEffect(() => {
+        if (!initialData) return;
+        setProduct((prev: any) => ({ ...prev, ...initialData }));
+
+        try {
+            if (editor && initialData.content) {
+                editor.commands.setContent(initialData.content);
+            }
+        } catch (e) { /* ignore if editor not ready */ }
+
+        try {
+            if (excerptEditor && initialData.excerpt) {
+                excerptEditor.commands.setContent(initialData.excerpt);
+            }
+        } catch (e) { /* ignore if excerptEditor not ready */ }
+    }, [initialData, editor, excerptEditor]);
+
+    // Sync color input with the table under caret (if any)
+    useEffect(() => {
+        if (!editor) return;
+        const updateColorFromSelection = () => {
+            try {
+                const attrs = editor.getAttributes('table') || {};
+                const style = attrs.style || '';
+                const m = style.match(/--table-border-color:\s*([^;]+);?/);
+                if (m && m[1]) setTableBorderColor(m[1]);
+                // do not override if no style found so default remains
+            } catch (e) { /* ignore */ }
+        };
+        editor.on('selectionUpdate', updateColorFromSelection);
+        // run once on mount to capture when editor starts with caret in table
+        updateColorFromSelection();
+        return () => { editor.off('selectionUpdate', updateColorFromSelection); };
+    }, [editor]);
 
     useEffect(() => {
         fetch('/api/pages/services/categories').then(r => r.json()).then(setCategories).catch(() => { });
@@ -93,6 +149,32 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         { id: 'media', label: 'Gallery', icon: 'image' },
         { id: 'seo', label: 'SEO & Price', icon: 'trending_up' },
     ];
+
+    // Track whether the caret is currently inside a table (reactive state)
+    const [isInTable, setIsInTable] = useState<boolean>(false);
+
+    const hasTableCommands = !!(editor && (((editor.commands as any)?.insertTable instanceof Function) || ((editor.chain().focus() as any)?.insertTable instanceof Function) || !!(editor.can?.().insertTable)));
+
+    // Log available table-related commands for debugging when editor initializes
+    useEffect(() => {
+        if (!editor) return;
+        try {
+            const cmds = Object.keys((editor.commands as any) || {}).filter(k => typeof (editor.commands as any)[k] === 'function');
+            if (!cmds.includes('insertTable')) {
+                console.warn('Tiptap table commands missing. Available commands:', cmds);
+            } else {
+                console.log('Tiptap table commands available.');
+            }
+        } catch (e) { console.warn('Failed to enumerate editor commands', e); }
+
+        // Update initial state
+        setIsInTable(!!(editor.isActive('table') || editor.isActive('tableRow') || editor.isActive('tableCell')));
+
+        // Subscribe to selection updates to keep isInTable in sync
+        const updateInTable = () => setIsInTable(!!(editor.isActive('table') || editor.isActive('tableRow') || editor.isActive('tableCell')));
+        editor.on('selectionUpdate', updateInTable);
+        return () => { try { editor.off('selectionUpdate', updateInTable); } catch (e) { /* ignore */ } };
+    }, [editor]);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -163,12 +245,14 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Brief Description</label>
-                                        <textarea
-                                            value={product.excerpt}
-                                            onChange={e => setProduct({ ...product, excerpt: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 outline-none transition-all resize-none text-sm"
-                                            rows={2}
-                                        />
+                                        <div className="border border-gray-300 rounded-md overflow-hidden">
+                                            <div className="bg-gray-50 border-b border-gray-200 p-2 flex gap-1">
+                                                <button type="button" onClick={() => excerptEditor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded ${excerptEditor?.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><span className="material-symbols-outlined text-[18px]">format_bold</span></button>
+                                                <button type="button" onClick={() => excerptEditor?.chain().focus().toggleItalic().run()} className={`p-1.5 rounded ${excerptEditor?.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><span className="material-symbols-outlined text-[18px]">format_italic</span></button>
+                                                <button type="button" onClick={() => excerptEditor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded ${excerptEditor?.isActive('bulletList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><span className="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+                                            </div>
+                                            <EditorContent editor={excerptEditor} />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-1">
@@ -185,10 +269,104 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Product Content</label>
                                         <div className="border border-gray-300 rounded-md overflow-hidden">
-                                            <div className="bg-gray-50 border-b border-gray-200 p-2 flex gap-1">
-                                                <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded ${editor?.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><span className="material-symbols-outlined text-[18px]">format_bold</span></button>
-                                                <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded ${editor?.isActive('bulletList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}><span className="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+                                            <div className="bg-gray-50 border-b border-gray-200 p-2 flex flex-wrap gap-1 items-center">
+                                                {/* Primary toolbar: keep minimal icons */}
+                                                <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()} className={`p-1.5 rounded ${editor?.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Bold"><span className="material-symbols-outlined text-[18px]">format_bold</span></button>
+                                                <button type="button" onClick={() => editor?.chain().focus().toggleItalic().run()} className={`p-1.5 rounded ${editor?.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Italic"><span className="material-symbols-outlined text-[18px]">format_italic</span></button>
+
+                                                <div className="w-px bg-gray-300 mx-1"></div>
+
+                                                <button type="button" onClick={() => {
+                                                    const url = window.prompt('Enter URL:');
+                                                    if (url) editor?.chain().focus().setLink({ href: url }).run();
+                                                }} className={`p-1.5 rounded ${editor?.isActive('link') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Add Link"><span className="material-symbols-outlined text-[18px]">link</span></button>
+
+                                                <button type="button" onClick={() => {
+                                                    const url = window.prompt('Enter Image URL:');
+                                                    if (url) editor?.chain().focus().setImage({ src: url }).run();
+                                                }} className="p-1.5 rounded hover:bg-gray-100" title="Add Image"><span className="material-symbols-outlined text-[18px]">image</span></button>
+
+                                                <button type="button" onClick={() => {
+                                                    const rows = parseInt(window.prompt('Rows', '3') || '3');
+                                                    const cols = parseInt(window.prompt('Columns', '3') || '3');
+                                                    const header = window.confirm('Include header row?');
+                                                    if (!editor) return;
+                                                    if (!(editor as any).can?.().insertTable && typeof (editor.chain().focus() as any).insertTable !== 'function') {
+                                                        alert('Table commands are not available — check table extensions.');
+                                                        return;
+                                                    }
+                                                    try {
+                                                        editor.chain().focus().insertTable({ rows, cols, withHeaderRow: header }).run();
+                                                        // After insertion, apply the currently selected border color
+                                                        if (tableBorderColor) {
+                                                            // give ProseMirror a tick to place caret inside table
+                                                            setTimeout(() => {
+                                                                try {
+                                                                    editor.chain().focus().updateAttributes('table', { style: `--table-border-color: ${tableBorderColor};` }).run();
+                                                                } catch (e) { console.warn('Could not set table border color', e); }
+                                                            }, 10);
+                                                        }
+                                                    } catch (e) { console.warn('insertTable failed', e); alert('Failed to insert table'); }
+                                                }} className={`p-1.5 rounded ${isInTable ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Insert Table"><span className="material-symbols-outlined text-[18px]">table_chart</span></button>
+
+                                                <div className="flex-1"></div>
+
+                                                <button type="button" onClick={() => editor?.chain().focus().setTextAlign('left').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Align Left"><span className="material-symbols-outlined text-[18px]">format_align_left</span></button>
+                                                <button type="button" onClick={() => editor?.chain().focus().setTextAlign('center').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Align Center"><span className="material-symbols-outlined text-[18px]">format_align_center</span></button>
+                                                <button type="button" onClick={() => editor?.chain().focus().setTextAlign('right').run()} className={`p-1.5 rounded ${editor?.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Align Right"><span className="material-symbols-outlined text-[18px]">format_align_right</span></button>
+
+                                                <button type="button" onClick={() => setShowAdvanced(s => !s)} className="p-1.5 rounded hover:bg-gray-100" title="More"><span className="material-symbols-outlined text-[18px]">more_horiz</span></button>
+
                                             </div>
+
+                                            {showAdvanced && (
+                                                <div className="bg-gray-50 border-b border-gray-200 p-2 flex flex-wrap gap-1 mt-2">
+                                                    <button type="button" onClick={() => editor?.chain().focus().toggleUnderline().run()} className={`p-1.5 rounded ${editor?.isActive('underline') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Underline"><span className="material-symbols-outlined text-[18px]">format_underlined</span></button>
+
+                                                    <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-1.5 rounded ${editor?.isActive('heading', { level: 2 }) ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="H2"><span className="material-symbols-outlined text-[18px]">looks_two</span></button>
+                                                    <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-1.5 rounded ${editor?.isActive('heading', { level: 3 }) ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="H3"><span className="material-symbols-outlined text-[18px]">looks_3</span></button>
+
+                                                    <div className="w-px bg-gray-300 mx-1"></div>
+
+                                                    <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()} className={`p-1.5 rounded ${editor?.isActive('bulletList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Bullet List"><span className="material-symbols-outlined text-[18px]">format_list_bulleted</span></button>
+                                                    <button type="button" onClick={() => editor?.chain().focus().toggleOrderedList().run()} className={`p-1.5 rounded ${editor?.isActive('orderedList') ? 'bg-gray-200' : 'hover:bg-gray-100'}`} title="Ordered List"><span className="material-symbols-outlined text-[18px]">format_list_numbered</span></button>
+
+                                                    <div className="w-px bg-gray-300 mx-1"></div>
+
+                                                    <button type="button" onClick={() => { if (!isInTable || !editor) { alert('Place the caret inside a table to add a row.'); return; } try { editor.chain().focus().addRowAfter().run(); } catch (e) { console.warn(e); alert('Failed to add row'); } }} disabled={!isInTable} className={`p-1.5 rounded ${isInTable ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'}`} title="Add Row"><span className="material-symbols-outlined text-[18px]">table_rows</span></button>
+
+                                                    {/* Border color picker */}
+                                                    <div className="flex items-center gap-2 px-2">
+                                                        <input type="color" value={tableBorderColor} onChange={(e) => setTableBorderColor((e.target as HTMLInputElement).value)} className="w-8 h-8 p-1 rounded cursor-pointer border" title="Table border color" />
+                                                        <button type="button" onClick={() => {
+                                                            if (!editor) return;
+                                                            if (isInTable) {
+                                                                try { editor.chain().focus().updateAttributes('table', { style: `--table-border-color: ${tableBorderColor};` }).run(); alert('Applied color to table'); } catch (e) { console.warn(e); alert('Failed to apply color to table'); }
+                                                            } else {
+                                                                alert('No table selected — this color will be applied to newly inserted tables.');
+                                                            }
+                                                        }} className="p-1 text-xs rounded hover:bg-gray-100">Apply</button>
+                                                    </div>
+
+                                                    <button type="button" onClick={() => { if (!isInTable || !editor) { alert('Place the caret inside a table to delete a row.'); return; } try { editor.chain().focus().deleteRow().run(); } catch (e) { console.warn(e); alert('Failed to delete row'); } }} disabled={!isInTable} className={`p-1.5 rounded ${isInTable ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'}`} title="Delete Row"><span className="material-symbols-outlined text-[18px]">remove</span></button>
+
+                                                    <button type="button" onClick={() => { if (!isInTable || !editor) { alert('Place the caret inside a table to add a column.'); return; } try { editor.chain().focus().addColumnAfter().run(); } catch (e) { console.warn(e); alert('Failed to add column'); } }} disabled={!isInTable} className={`p-1.5 rounded ${isInTable ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'}`} title="Add Column"><span className="material-symbols-outlined text-[18px]">view_column</span></button>
+
+                                                    <button type="button" onClick={() => { if (!isInTable || !editor) { alert('Place the caret inside a table to delete a column.'); return; } try { editor.chain().focus().deleteColumn().run(); } catch (e) { console.warn(e); alert('Failed to delete column'); } }} disabled={!isInTable} className={`p-1.5 rounded ${isInTable ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'}`} title="Delete Column"><span className="material-symbols-outlined text-[18px]">remove</span></button>
+
+                                                    <button type="button" onClick={() => { if (!isInTable || !editor) { alert('Place the caret inside a table to delete it.'); return; } try { editor.chain().focus().deleteTable().run(); } catch (e) { console.warn(e); alert('Failed to delete table'); } }} disabled={!isInTable} className={`p-1.5 rounded ${isInTable ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed'}`} title="Delete Table"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+
+                                                </div>
+                                            )}
+
+                                            {!hasTableCommands && (
+                                                <div className="text-xs text-yellow-700 p-2 border border-yellow-100 rounded mt-2 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[16px]">warning</span>
+                                                    <div>Table commands are not available — check table extensions.</div>
+                                                    <button onClick={() => { console.log('Editor debug:', editor); console.log('Available commands:', Object.keys((editor?.commands as any || {})).filter(k => typeof (editor?.commands as any)[k] === 'function')); alert('Logged editor debug to console'); }} className="ml-auto underline text-xs">Log debug info</button>
+                                                </div>
+                                            )}
+
                                             <EditorContent editor={editor} />
                                         </div>
                                     </div>
@@ -270,6 +448,36 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                 ))}
                                                 <button onClick={() => setProduct({ ...product, features: [...(product.features || []), { icon: 'star', label: '' }] })} className="w-full py-2 border border-dashed border-gray-300 rounded text-xs font-bold text-gray-400 hover:bg-gray-50 transition-colors uppercase">+ Add Item</button>
                                             </div>
+                                            <div className="pt-6">
+                                                <h3 className="text-xs font-bold text-gray-900 uppercase">Best Fit For</h3>
+                                                <div className="space-y-3 mt-3">
+                                                    {(product.application_areas || []).map((a: any, idx: number) => {
+                                                        const item = typeof a === 'string' ? { icon: 'home', label: a } : a;
+                                                        return (
+                                                            <div key={idx} className="flex gap-3 items-center p-2 rounded-lg border border-gray-100 bg-gray-50/50">
+                                                                <IconSelector
+                                                                    value={item.icon || 'home'}
+                                                                    onChange={(v) => setProduct({
+                                                                        ...product,
+                                                                        application_areas: product.application_areas.map((x: any, i: number) => i === idx ? { ...item, icon: v } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
+                                                                    })}
+                                                                />
+                                                                <input
+                                                                    value={item.label || ''}
+                                                                    onChange={(e) => setProduct({
+                                                                        ...product,
+                                                                        application_areas: product.application_areas.map((x: any, i: number) => i === idx ? { ...item, label: e.target.value } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
+                                                                    })}
+                                                                    placeholder="e.g. Home, Office"
+                                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-1 focus:ring-blue-500 outline-none"
+                                                                />
+                                                                <button onClick={() => setProduct({ ...product, application_areas: (product.application_areas || []).filter((_: any, i: number) => i !== idx) })} className="text-gray-400 hover:text-red-600 p-1 cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    <button onClick={() => setProduct({ ...product, application_areas: [...(product.application_areas || []), { icon: 'home', label: '' }] })} className="w-full py-2 border border-dashed border-gray-300 rounded text-xs font-bold text-gray-400 hover:bg-gray-50 transition-colors uppercase">+ Add Item</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -304,7 +512,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                         <div className="space-y-6">
                                             <h3 className="text-xs font-bold text-gray-900 uppercase border-b pb-2">Pricing</h3>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Selling Price</label><input value={product.price} onChange={e => setProduct({ ...product, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-md font-bold" /></div>
+                                                <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Selling Price</label><input value={product.price || ''} onChange={e => setProduct({ ...product, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-md font-bold" /></div>
                                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Status</label>
                                                     <select value={product.inventory_status} onChange={e => setProduct({ ...product, inventory_status: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-bold">
                                                         <option value="in_stock">In Stock</option>

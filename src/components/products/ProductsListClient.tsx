@@ -156,7 +156,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                     ) : (
                                         <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
                                     )}
-                                    <span className="text-xs font-medium text-gray-500">{p.model || p.capacity || ''}</span>
+                                    <span className="text-xs font-medium text-gray-500">{(p.technical_enabled ?? 1) !== 0 ? (p.model || p.capacity || '') : ''}</span>
                                 </div>
                                 <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
                                 <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>

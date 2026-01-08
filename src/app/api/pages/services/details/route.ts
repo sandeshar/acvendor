@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
             images: imagesField ? (typeof imagesField === 'string' ? imagesField : JSON.stringify(imagesField)) : null,
             price: price ?? null,
             compare_at_price: compare_at_price ?? null,
-            currency: currency || 'NRS',
+            currency: currency || 'NPR',
             model: model || null,
             capacity: capacity || null,
             warranty: warranty || null,

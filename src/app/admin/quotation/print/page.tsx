@@ -194,7 +194,7 @@ export default function AdminQuotationPrintPage() {
                                     </div>
                                     <div className="mt-2 flex items-center justify-between rounded bg-primary/5 p-3">
                                         <span className="text-base font-bold text-primary">Grand Total</span>
-                                        <span className="text-xl font-black text-primary">NRS {formatCurrency(quotation.totals?.grandTotal || 0)}</span>
+                                        <span className="text-xl font-black text-primary">NPR {formatCurrency(quotation.totals?.grandTotal || 0)}</span>
                                     </div>
                                 </div>
                             </div>

@@ -28,6 +28,9 @@ export default function NewProductPage() {
                 thumbnail: product.thumbnail || null,
                 metaTitle: product.meta_title || product.title,
                 metaDescription: product.meta_description || product.excerpt,
+                // include rich content so frontend shows tables and other markup
+                content: product.content || null,
+                excerpt: product.excerpt || null,
                 // technical fields flatten for DB
                 power: product.technical?.power || null,
                 iseer: product.technical?.iseer || null,
@@ -52,36 +55,7 @@ export default function NewProductPage() {
             }
             const postData = await postRes.json();
 
-            // 2. Create Service Detail
-            const detailPayload = {
-                key: product.slug,
-                slug: product.slug,
-                icon: 'inventory_2',
-                title: product.title,
-                description: product.excerpt,
-                bullets: '[]',
-                display_order: 0,
-                image: product.thumbnail || '/placeholder-product.png',
-                image_alt: product.title,
-                postId: postData.id,
-                locations: JSON.stringify(product.locations || []),
-                availabilityLabel: product.availabilityLabel || null,
-                inventory_status: product.inventory_status,
-                images: JSON.stringify(product.images || []),
-                application_areas: JSON.stringify(product.application_areas || []),
-                features: JSON.stringify(product.features || []),
-                technical: JSON.stringify(product.technical || {}),
-            };
-
-            const detailRes = await fetch('/api/pages/services/details', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(detailPayload),
-            });
-
-            if (!detailRes.ok) {
-                throw new Error('Product created but failed to create detail record');
-            }
+            // NOTE: Creating a service detail for products has been removed to keep products and services independent.
 
             showToast('Product created successfully', { type: 'success' });
             router.push(`/admin/products/${postData.id}`);

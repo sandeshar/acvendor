@@ -9,27 +9,38 @@ interface IconSelectorProps {
 }
 
 const COMMON_ICONS = [
-    'wifi', 'eco', 'bolt', 'air', 'ac_unit', 'support_agent', 'handyman', 'verified_user', 'star',
-    'home', 'chair', 'bed', 'desk', 'meeting_room', 'battery_full', 'speed', 'thermostat',
-    'settings', 'request_quote', 'download', 'menu_book', 'check_circle', 'info', 'notifications',
-    'cloud', 'sunny', 'toys', 'energy_savings_leaf', 'smart_toy', 'humidity_mid',
-    'apartment', 'build', 'construction', 'electric_bolt', 'faucet', 'fire_extinguisher', 'gas_meter',
-    'heat_pump', 'kitchen', 'lightbulb', 'local_fire_department', 'mop', 'plumbing', 'propane',
-    'roofing', 'solar_power', 'tools_installation_kit', 'water_damage', 'water_drop', 'wind_power',
-    'add', 'remove', 'edit', 'delete', 'save', 'close', 'search', 'menu', 'arrow_back', 'arrow_forward',
-    'check', 'warning', 'error', 'help', 'account_circle', 'shopping_cart', 'favorite', 'visibility',
-    'visibility_off', 'lock', 'lock_open', 'mail', 'call', 'map', 'navigation', 'work', 'school',
-    'science', 'fitness_center', 'celebration', 'restaurant', 'local_shipping', 'payments',
-    'contact_support', 'event', 'calendar_today', 'schedule', 'update', 'history', 'launch',
-    'open_in_new', 'link', 'attachment', 'content_copy', 'content_paste', 'content_cut', 'undo', 'redo',
-    'cloud_upload', 'cloud_download', 'backup', 'refresh', 'sync', 'more_vert', 'more_horiz',
-    'expand_more', 'expand_less', 'chevron_right', 'chevron_left', 'first_page', 'last_page',
-    'auto_awesome', 'palette', 'image', 'photo_camera', 'videocam', 'mic', 'volume_up', 'play_arrow',
-    'pause', 'stop', 'skip_next', 'skip_previous', 'fast_forward', 'fast_rewind', 'playlist_add',
-    'filter_list', 'sort', 'view_list', 'view_module', 'view_quilt', 'view_stream', 'view_week',
-    'grid_view', 'table_rows', 'apps', 'dashboard', 'category', 'label', 'tag', 'bookmarks',
-    'push_pin', 'flag', 'report', 'assignment', 'task_alt', 'notes', 'list_alt', 'description',
-    'article', 'feedback'
+    // Essentials & General
+    'star', 'favorite', 'visibility', 'visibility_off', 'lock', 'lock_open', 'mail', 'call', 'map', 'navigation',
+    'search', 'menu', 'close', 'add', 'remove', 'edit', 'delete', 'save', 'refresh', 'sync',
+    'check_circle', 'info', 'warning', 'error', 'help', 'notifications', 'launch', 'open_in_new',
+
+    // Home & Living
+    'home', 'chair', 'bed', 'desk', 'meeting_room', 'apartment', 'corporate_fare', 'hotel', 'storefront',
+    'kitchen', 'deck', 'shower', 'bathtub', 'local_laundry_service', 'tv', 'weekend', 'outdoor_grill',
+
+    // Business & Places
+    'work', 'school', 'science', 'fitness_center', 'celebration', 'restaurant', 'local_cafe', 'fastfood',
+    'bakery_dining', 'local_hospital', 'medical_services', 'account_balance', 'business_center',
+    'local_shipping', 'payments', 'shopping_cart', 'shopping_basket', 'local_mall', 'store',
+
+    // HVAC & Services
+    'ac_unit', 'air', 'eco', 'bolt', 'electric_bolt', 'energy_savings_leaf', 'thermostat', 'humidity_mid',
+    'heat_pump', 'wind_power', 'solar_power', 'water_drop', 'water_damage', 'plumbing', 'faucet',
+    'gas_meter', 'fire_extinguisher', 'propane', 'roofing',
+
+    // Tools & Tech
+    'build', 'construction', 'handyman', 'tools_installation_kit', 'engineering', 'precision_manufacturing',
+    'settings', 'settings_suggest', 'support_agent', 'verified_user', 'speed', 'battery_full',
+    'dns', 'cloud', 'backup', 'cloud_upload', 'cloud_download', 'wifi', 'smart_toy', 'toys',
+
+    // Navigation & Layout
+    'arrow_back', 'arrow_forward', 'chevron_right', 'chevron_left', 'expand_more', 'expand_less',
+    'first_page', 'last_page', 'more_vert', 'more_horiz', 'grid_view', 'view_list', 'view_module',
+    'dashboard', 'category', 'label', 'tag', 'bookmarks', 'push_pin', 'flag',
+
+    // Content & Data
+    'article', 'description', 'notes', 'list_alt', 'assignment', 'task_alt', 'feedback', 'history',
+    'calendar_today', 'schedule', 'update', 'event', 'attachment', 'link', 'content_copy', 'content_paste'
 ];
 
 export default function IconSelector({ value = '', onChange, className = '' }: IconSelectorProps) {

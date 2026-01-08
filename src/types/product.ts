@@ -65,12 +65,13 @@ export interface ProductPost {
     voltage?: string | null;
     locations?: string[] | string | null;
     inventory_status?: string | null;
+    technical_enabled?: number | null;
     rating?: number | null;
     reviews_count?: number | null;
     meta_title?: string | null;
     meta_description?: string | null;
     technical?: Record<string, any> | null;
-    application_areas?: string[] | string | null;
+    application_areas?: Array<{ icon?: string; label: string }> | string[] | string | null;
     features?: Array<{ icon?: string; label: string }> | string | null;
     createdAt?: Date;
     updatedAt?: Date;

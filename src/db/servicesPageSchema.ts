@@ -38,7 +38,7 @@ const servicesPageDetailsSchema = new Schema({
     images: { type: String, default: '[]' }, // JSON array
     price: { type: String, maxlength: 64, default: '' },
     compare_at_price: { type: String, maxlength: 64, default: '' },
-    currency: { type: String, default: 'NRS', maxlength: 10 },
+    currency: { type: String, default: 'NPR', maxlength: 10 },
     model: { type: String, maxlength: 256, default: '' },
     capacity: { type: String, maxlength: 128, default: '' },
     warranty: { type: String, maxlength: 128, default: '' },

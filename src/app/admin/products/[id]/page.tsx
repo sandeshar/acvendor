@@ -25,25 +25,10 @@ export default function EditProductPage() {
             if (!res.ok) throw new Error('Product not found');
             const data = await res.json();
 
-            // Load matching service detail by slug
-            let detailData = {};
-            if (data.slug) {
-                const dres = await fetch(`/api/pages/services/details?slug=${data.slug}`);
-                if (dres.ok) {
-                    const detail = await dres.json();
-                    if (!detail.error) {
-                        detailData = {
-                            application_areas: detail.application_areas ? JSON.parse(detail.application_areas) : [],
-                            features: detail.features ? JSON.parse(detail.features) : [],
-                            technical: detail.technical ? JSON.parse(detail.technical) : (data.technical || {}),
-                        };
-                    }
-                }
-            }
+            // NOTE: We no longer load or merge service detail records into product editor; products are kept independent.
 
             setInitialData({
                 ...data,
-                ...detailData,
                 locations: data.locations ? (typeof data.locations === 'string' ? JSON.parse(data.locations) : data.locations) : [],
                 images: data.images ? data.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
             });
@@ -69,6 +54,9 @@ export default function EditProductPage() {
                 images: imagesPayload,
                 metaTitle: product.meta_title || product.title,
                 metaDescription: product.meta_description || product.excerpt,
+                // include rich content so frontend shows tables and other markup
+                content: product.content || null,
+                excerpt: product.excerpt || null,
                 power: product.technical?.power || null,
                 iseer: product.technical?.iseer || null,
                 refrigerant: product.technical?.refrigerant || null,
@@ -88,46 +76,7 @@ export default function EditProductPage() {
 
             if (!putRes.ok) throw new Error('Failed to update product');
 
-            // 2. Upsert Service Detail
-            // First find the detail record id
-            const dSearch = await fetch(`/api/pages/services/details?slug=${product.slug}`);
-            const detailSearch = await dSearch.json();
-            const detailId = detailSearch?.id;
-
-            const detailPayload: any = {
-                key: product.slug,
-                slug: product.slug,
-                icon: 'inventory_2',
-                title: product.title,
-                description: product.excerpt,
-                bullets: '[]',
-                display_order: 0,
-                image: product.thumbnail || '/placeholder-product.png',
-                image_alt: product.title,
-                postId: productId,
-                locations: JSON.stringify(product.locations || []),
-                availabilityLabel: product.availabilityLabel || null,
-                inventory_status: product.inventory_status,
-                images: JSON.stringify(product.images || []),
-                application_areas: JSON.stringify(product.application_areas || []),
-                features: JSON.stringify(product.features || []),
-                technical: JSON.stringify(product.technical || {}),
-            };
-
-            if (detailId) {
-                detailPayload.id = detailId;
-                await fetch('/api/pages/services/details', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(detailPayload),
-                });
-            } else {
-                await fetch('/api/pages/services/details', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(detailPayload),
-                });
-            }
+            // NOTE: Upserting service detail records when saving products has been removed so products do not automatically create/modify service pages.
 
             showToast('Product updated successfully', { type: 'success' });
             fetchProductData();

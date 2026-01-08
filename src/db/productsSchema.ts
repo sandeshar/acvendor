@@ -9,7 +9,7 @@ const productSchema = new Schema({
     thumbnail: { type: String, maxlength: 512, default: '' },
     price: { type: mongoose.Schema.Types.Decimal128, default: null },
     compare_at_price: { type: mongoose.Schema.Types.Decimal128, default: null },
-    currency: { type: String, default: 'NRS', maxlength: 10 },
+    currency: { type: String, default: 'NPR', maxlength: 10 },
     statusId: { type: Number, default: 1, required: true },
     featured: { type: Number, default: 0, required: true },
     category_id: { type: Schema.Types.ObjectId, ref: 'ServiceCategories' },
@@ -19,6 +19,8 @@ const productSchema = new Schema({
     warranty: { type: String, maxlength: 128, default: '' },
     energy_saving: { type: String, maxlength: 128, default: '' },
     smart: { type: Number, default: 0, required: true },
+    // Whether technical specifications are enabled for this product (1 = enabled, 0 = disabled)
+    technical_enabled: { type: Number, default: 1 },
     filtration: { type: Number, default: 0, required: true },
     brochure_url: { type: String, maxlength: 512, default: '' },
     power: { type: String, maxlength: 128, default: '' },
@@ -28,6 +30,7 @@ const productSchema = new Schema({
     dimensions: { type: String, maxlength: 128, default: '' },
     voltage: { type: String, maxlength: 64, default: '' },
     locations: { type: String, default: '' },
+    application_areas: { type: String, default: '' }, // JSON array of {icon, label}
     // Human friendly availability label displayed before locations list
     availabilityLabel: { type: String, maxlength: 256, default: 'Available for installation in' },
     inventory_status: { type: String, default: 'in_stock', maxlength: 64 },

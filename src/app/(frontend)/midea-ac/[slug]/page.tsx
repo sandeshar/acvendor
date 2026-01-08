@@ -5,6 +5,7 @@ import type { ProductWithRelations } from '@/types/product';
 import ProductTabs from '@/components/products/ProductTabs';
 import ProductGallery from '@/components/products/ProductGallery';
 import Star from '@/components/icons/Star';
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -17,34 +18,7 @@ async function getProductPost(slug: string): Promise<ProductWithRelations | null
         if (res.ok) {
             const post = await res.json();
             if (post && (post.id || post.slug)) {
-                // attempt to fetch service/detail record to enrich product with application_areas
-                try {
-                    const detailRes = await fetch(`${API_BASE}/api/pages/services/details?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-                    if (detailRes.ok) {
-                        const detail = await detailRes.json();
-                        if (detail) {
-                            // parse application_areas and features safely
-                            try {
-                                const areas = detail.application_areas ? (Array.isArray(detail.application_areas) ? detail.application_areas : JSON.parse(detail.application_areas)) : undefined;
-                                if (areas) post.application_areas = areas;
-                            } catch (e) {
-                                // ignore parse errors
-                            }
-                            try {
-                                const feats = detail.features ? (Array.isArray(detail.features) ? detail.features : JSON.parse(detail.features)) : undefined;
-                                if (feats) post.features = feats;
-                            } catch (e) {
-                                // ignore parse errors
-                            }
-                            // merge content/description if missing
-                            if (!post.excerpt && detail.description) post.excerpt = detail.description;
-                            if (!post.content && detail.content) post.content = detail.content;
-                            if (!post.thumbnail && detail.image) post.thumbnail = detail.image;
-                        }
-                    }
-                } catch (e) {
-                    // ignore
-                }
+                // NOTE: Removed automatic enrichment from Service details to avoid cross-type fallbacks
 
                 // Fetch related testimonials (reviews) for this product
                 try {
@@ -98,9 +72,9 @@ const getCurrencySymbol = (currency?: string | null) => {
         'AUD': 'A$',
         'JPY': '¥',
         'INR': '₹',
-        'NRS': 'रु'
+        'NPR': 'Rs.'
     };
-    return symbols[currency || 'USD'] || '$';
+    return symbols[currency || 'NPR'] || 'Rs.';
 };
 
 export default async function ProductPage({ params }: { params: { slug: string } }) {
@@ -108,6 +82,39 @@ export default async function ProductPage({ params }: { params: { slug: string }
     const post = await getProductPost(slug);
 
     if (!post) notFound();
+
+    // Normalize brief description (excerpt) for display:
+    const normalizeExcerpt = (raw?: string | null) => {
+        if (!raw) return '';
+        let s = String(raw).trim();
+
+        // If excerpt is a JSON array stored as a string, convert to HTML list
+        try {
+            const parsed = JSON.parse(s);
+            if (Array.isArray(parsed)) {
+                return `<ul>${parsed.map((it: any) => `<li>${String(it)}</li>`).join('')}</ul>`;
+            }
+        } catch (e) { /* not JSON */ }
+
+        // Handle double-escaped entities like '&amp;lt;ul&amp;gt;'
+        if (s.includes('&amp;lt;') || s.includes('&amp;gt;')) {
+            s = s.replace(/&amp;lt;/g, '<').replace(/&amp;gt;/g, '>');
+        }
+
+        // Decode common HTML entities if the excerpt was escaped
+        if (s.includes('&lt;') || s.includes('&gt;') || s.includes('&amp;')) {
+            s = s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+        }
+
+        // Support simple markdown lists (lines starting with '-' or '*')
+        if (/^(-|\*)\s+/m.test(s)) {
+            const lines = s.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const items = lines.map((l) => l.replace(/^(-|\*)\s+/, '')).map(li => `<li>${li}</li>`).join('');
+            return `<ul>${items}</ul>`;
+        }
+
+        return s;
+    };
 
     const images = (post.images && post.images.length) ? post.images.map(i => i.url) : (post.thumbnail ? [post.thumbnail] : ['/placeholder-product.png']);
 
@@ -148,19 +155,23 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                 {post.rating !== undefined && post.rating !== null ? <span className="text-sm font-bold text-[#111418]">{post.rating}</span> : null}
                                 {post.reviews_count ? <span className="text-sm text-[#617589]">({post.reviews_count} Reviews)</span> : null}
                             </div>
+                            <p className="text-[#617589] text-xs md:text-lg">Model: {post.model || ''}</p>
                             <h1 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em] mb-2">{post.title}</h1>
-                            <p className="text-[#617589] text-base md:text-lg">{post.model || post.excerpt || ''}</p>
+                            <div
+                                className="prose prose-lg max-w-none"
+                                dangerouslySetInnerHTML={{ __html: normalizeExcerpt(post.excerpt || '') }}
+                            />
                         </div>
 
                         {/* Price & Tags */}
                         <div className="flex flex-col gap-2">
                             <div className="flex items-baseline gap-2">
-                                {(post.price && Number(String(post.price).replace(/[^0-9.-]/g, '')) > 0) ? (
-                                    <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{post.price}</span>
+                                {parsePriceNumber(post.price) > 0 ? (
+                                    <span className="text-3xl font-bold text-[#111418]">{getCurrencySymbol(post.currency)}{formatPrice(post.price)}</span>
                                 ) : (
                                     <span className="text-3xl font-bold text-[#111418]">Contact for price</span>
                                 )}
-                                {post.compare_at_price && Number(String(post.compare_at_price).replace(/[^0-9.-]/g, '')) > 0 ? <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{post.compare_at_price}</span> : null}
+                                {parsePriceNumber(post.compare_at_price) > 0 ? <span className="text-lg text-[#617589] line-through decoration-1">{getCurrencySymbol(post.currency)}{formatPrice(post.compare_at_price)}</span> : null}
                             </div>
                             {/* <p className="text-sm text-[#617589]">Price includes VAT. Installation charges calculated separately.</p> */}
                         </div>

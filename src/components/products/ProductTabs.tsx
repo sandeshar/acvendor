@@ -5,77 +5,90 @@ import type { ProductWithRelations } from '@/types/product';
 
 export default function ProductTabs({ post }: { post: ProductWithRelations }) {
 
+    const hasCustomSpecs = Boolean((post as any).technical && Array.isArray((post as any).technical.customSpecs) && (post as any).technical.customSpecs.length > 0);
+    const hasOtherSpecs = Boolean(post.capacity || post.power || post.iseer || post.refrigerant || post.noise || post.dimensions || post.voltage || (post as any).warranty || hasCustomSpecs);
+
+    // Compute application areas only from provided product data. Do NOT fall back to defaults here —
+    // if no product-specific areas exist we will hide the section entirely.
+    const applicationAreasRaw = (post as any).application_areas || (post as any).applicationAreas || null;
+    let areas: Array<{ icon: string; label: string }> = [];
+    try {
+        if (applicationAreasRaw) {
+            if (Array.isArray(applicationAreasRaw)) {
+                if (applicationAreasRaw.length && typeof applicationAreasRaw[0] === 'string') {
+                    const mapping: Record<string, string> = {
+                        'living room': 'chair',
+                        'bedroom': 'bed',
+                        'small office': 'desk',
+                        'meeting room': 'meeting_room',
+                        'office': 'corporate_fare',
+                        'home': 'home',
+                        'commercial': 'storefront',
+                        'industrial': 'factory'
+                    };
+                    areas = applicationAreasRaw.map((s: string) => ({ icon: mapping[s.toLowerCase()] || 'chair', label: s }));
+                } else {
+                    areas = applicationAreasRaw.map((a: any) => ({ icon: a.icon || 'chair', label: a.label || a.name || 'Area' }));
+                }
+            } else if (typeof applicationAreasRaw === 'string') {
+                try {
+                    const parsed = JSON.parse(applicationAreasRaw);
+                    if (Array.isArray(parsed)) {
+                        areas = parsed.map((a: any) => ({ icon: a.icon || 'chair', label: a.label || a.name || String(a) }));
+                    } else if (typeof parsed === 'object') {
+                        areas = Object.keys(parsed).map(k => ({ icon: parsed[k]?.icon || 'chair', label: parsed[k]?.label || k }));
+                    }
+                } catch (e) {
+                    const parts = applicationAreasRaw.split(',').map((s: string) => s.trim()).filter(Boolean);
+                    if (parts.length) {
+                        const mapping: Record<string, string> = {
+                            'living room': 'chair',
+                            'bedroom': 'bed',
+                            'small office': 'desk',
+                            'meeting room': 'meeting_room',
+                            'office': 'corporate_fare',
+                            'home': 'home',
+                            'commercial': 'storefront',
+                            'industrial': 'factory'
+                        };
+                        areas = parts.map((s: string) => ({ icon: mapping[s.toLowerCase()] || 'chair', label: s }));
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        // ignore parsing errors and leave areas empty
+    }
+
+    const showBestFit = areas.length > 0;
+
     return (
         <div>
 
 
             <div className="mt-6">
-                <section className="flex flex-col gap-10 animate-fade-in">
-                    <div className="max-w-[800px]">
-                        {/* Title removed here: product title is already shown in the hero section above */}
+                {showBestFit && (
+                    <section className="flex flex-col gap-10 animate-fade-in">
+                        <div className="max-w-[800px]">
+                            {/* Title removed here: product title is already shown in the hero section above */}
 
-                        {/* Application areas are dynamic when available via `post.application_areas` (array or JSON string), otherwise fall back to defaults */}
-                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Best Fit for</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                            {(() => {
-                                // Build areas list from product data when available
-                                const defaults = [
-                                    { icon: 'chair', label: 'Living Room' },
-                                    { icon: 'bed', label: 'Bedroom' },
-                                    { icon: 'desk', label: 'Small Office' },
-                                    { icon: 'meeting_room', label: 'Meeting Room' },
-                                ];
-
-                                let areas: Array<{ icon: string; label: string }> = defaults;
-
-                                try {
-                                    const raw = (post as any).application_areas || (post as any).applicationAreas || null;
-                                    if (raw) {
-                                        if (Array.isArray(raw)) {
-                                            // array of strings or objects
-                                            if (raw.length && typeof raw[0] === 'string') {
-                                                const mapping: Record<string, string> = { 'living room': 'chair', 'bedroom': 'bed', 'small office': 'desk', 'meeting room': 'meeting_room' };
-                                                areas = raw.map((s: string) => ({ icon: mapping[s.toLowerCase()] || 'chair', label: s }));
-                                            } else {
-                                                areas = raw.map((a: any) => ({ icon: a.icon || 'chair', label: a.label || a.name || 'Area' }));
-                                            }
-                                        } else if (typeof raw === 'string') {
-                                            try {
-                                                const parsed = JSON.parse(raw);
-                                                if (Array.isArray(parsed)) {
-                                                    areas = parsed.map((a: any) => ({ icon: a.icon || 'chair', label: a.label || a.name || String(a) }));
-                                                } else if (typeof parsed === 'object') {
-                                                    areas = Object.keys(parsed).map(k => ({ icon: parsed[k]?.icon || 'chair', label: parsed[k]?.label || k }));
-                                                }
-                                            } catch (e) {
-                                                // fallback: treat as comma-separated labels
-                                                const parts = raw.split(',').map((s: string) => s.trim()).filter(Boolean);
-                                                if (parts.length) {
-                                                    const mapping: Record<string, string> = { 'living room': 'chair', 'bedroom': 'bed', 'small office': 'desk', 'meeting room': 'meeting_room' };
-                                                    areas = parts.map((s: string) => ({ icon: mapping[s.toLowerCase()] || 'chair', label: s }));
-                                                }
-                                            }
-                                        }
-                                    }
-                                } catch (err) {
-                                    // ignore parsing errors and use defaults
-                                }
-
-                                return areas.map((a) => (
+                            <h3 className="text-2xl font-bold text-[#111418] mb-6">Best Fit for</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                                {areas.map((a) => (
                                     <div key={a.label} className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
                                         <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">{a.icon}</span></div>
                                         <span className="font-semibold text-sm">{a.label}</span>
                                     </div>
-                                ));
-                            })()}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
-                <section className="mt-10">
-                    <h3 className="text-2xl font-bold text-[#111418] mb-6">Technical Specifications</h3>
-                    <div className="overflow-hidden rounded-xl border border-[#dbe0e6]">
-                        {(post.model || post.capacity || post.power || post.iseer || post.refrigerant || post.noise || post.dimensions || post.voltage || ((post as any).technical && ((post as any).technical.customSpecs && (post as any).technical.customSpecs.length))) ? (
+                {post.technical_enabled !== 0 && hasOtherSpecs && (
+                    <section className="mt-10">
+                        <h3 className="text-2xl font-bold text-[#111418] mb-6">Technical Specifications</h3>
+                        <div className="overflow-hidden rounded-xl border border-[#dbe0e6]">
                             <table className="w-full text-left text-sm">
                                 <tbody className="divide-y divide-[#dbe0e6]">
                                     {post.model && (
@@ -144,15 +157,13 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                                     ) : null}
                                 </tbody>
                             </table>
-                        ) : (
-                            <div className="p-6 text-sm text-[#617589]">Technical specifications not available.</div>
-                        )}
-                    </div>
-                </section>
+                        </div>
+                    </section>
+                )}
 
                 {/* Product content rendered below Technical Specifications */}
                 {post.content ? (
-                    <section className="mt-8 max-w-[800px] animate-fade-in">
+                    <section className="mt-12 animate-fade-in max-w-full">
                         <h3 className="text-2xl font-bold text-[#111418] mb-4">Product Details</h3>
                         <div className="prose max-w-none text-[#111418]" dangerouslySetInnerHTML={{ __html: post.content as string }} />
                     </section>

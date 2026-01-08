@@ -78,32 +78,25 @@ export async function GET(request: NextRequest) {
                     return NextResponse.json({
                         ...product,
                         id: product._id.toString(),
+                        price: product.price ? product.price.toString() : null,
+                        compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
                         images,
                         rating: Number(rating.toFixed(1)),
                         reviews_count,
                         reviews_breakdown: breakdown
                     });
                 } catch (e) {
-                    return NextResponse.json({ ...product, id: product._id.toString(), images });
+                    return NextResponse.json({ 
+                        ...product, 
+                        id: product._id.toString(), 
+                        price: product.price ? product.price.toString() : null,
+                        compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
+                        images 
+                    });
                 }
             }
 
-            // Fallback: check servicePosts by slug or ID
-            try {
-                const { ServicePosts } = await import('@/db/servicePostsSchema');
-                let servicePost = null;
-                try {
-                    servicePost = await ServicePosts.findById(id).lean();
-                } catch (e) { }
-
-                if (!servicePost) {
-                    servicePost = await ServicePosts.findOne({ slug: id }).lean();
-                }
-
-                if (servicePost) return NextResponse.json({ ...servicePost, id: servicePost._id.toString() });
-            } catch (e) {
-                // ignore
-            }
+            // NOTE: Removed fallback to ServicePosts (returning a service as a product) per project policy
 
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
@@ -147,24 +140,25 @@ export async function GET(request: NextRequest) {
                     return NextResponse.json({
                         ...product,
                         id: product._id.toString(),
+                        price: product.price ? product.price.toString() : null,
+                        compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
                         images,
                         rating: Number(rating.toFixed(1)),
                         reviews_count,
                         reviews_breakdown: breakdown
                     });
                 } catch (e) {
-                    return NextResponse.json({ ...product, id: product._id.toString(), images });
+                    return NextResponse.json({ 
+                        ...product, 
+                        id: product._id.toString(), 
+                        price: product.price ? product.price.toString() : null,
+                        compare_at_price: product.compare_at_price ? product.compare_at_price.toString() : null,
+                        images 
+                    });
                 }
             }
 
-            // Fallback to service posts (legacy services table)
-            try {
-                const { ServicePosts } = await import('@/db/servicePostsSchema');
-                const servicePost = await ServicePosts.findOne({ slug }).lean();
-                if (servicePost) return NextResponse.json({ ...servicePost, id: servicePost._id.toString() });
-            } catch (e) {
-                // ignore if not available
-            }
+            // NOTE: Removed fallback to ServicePosts (returning a service as a product) per project policy
 
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
@@ -395,7 +389,12 @@ export async function GET(request: NextRequest) {
             // ignore aggregation errors
         }
 
-        const formattedRows = rows.map((r: any) => ({ ...r, id: r._id.toString() }));
+        const formattedRows = rows.map((r: any) => ({ 
+            ...r, 
+            id: r._id.toString(),
+            price: r.price ? r.price.toString() : null,
+            compare_at_price: r.compare_at_price ? r.compare_at_price.toString() : null
+        }));
 
         // If client requested meta information with pagination, include total count
         if (limit && meta === 'true') {
@@ -453,12 +452,15 @@ export async function POST(request: NextRequest) {
             dimensions,
             voltage,
             locations,
+            application_areas,
             availabilityLabel,
+            // technical enabled flag (accept both variants) -- normalized below
         } = body;
+        // Normalize technical flag: accept camelCase or snake_case from incoming body
+        const technicalEnabledNormalized = typeof body.technicalEnabled !== 'undefined' ? body.technicalEnabled : (typeof body.technical_enabled !== 'undefined' ? body.technical_enabled : undefined);
 
-        if (!slug || !title || typeof statusId === 'undefined') {
-            return NextResponse.json({ error: 'Required fields: slug, title, statusId' }, { status: 400 });
-        }
+        // Log incoming technical flag for debugging
+        console.log('Creating product, technicalEnabled (normalized):', (typeof body.technicalEnabled !== 'undefined' ? body.technicalEnabled : body.technical_enabled));
 
         const productData: any = {
             slug,
@@ -468,7 +470,7 @@ export async function POST(request: NextRequest) {
             thumbnail: thumbnail || null,
             price: (typeof price !== 'undefined' && price !== null && price !== '') ? price : null,
             compare_at_price: (typeof compare_at_price !== 'undefined' && compare_at_price !== null && compare_at_price !== '') ? compare_at_price : null,
-            currency: currency || 'NRS',
+            currency: currency || 'NPR',
             statusId,
             category_id: category_id || null,
             subcategory_id: subcategory_id || null,
@@ -486,11 +488,13 @@ export async function POST(request: NextRequest) {
             dimensions: dimensions || null,
             voltage: voltage || null,
             locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
+            application_areas: application_areas ? (typeof application_areas === 'string' ? application_areas : JSON.stringify(application_areas)) : null,
             availabilityLabel: typeof availabilityLabel !== 'undefined' ? availabilityLabel : undefined,
             inventory_status: inventory_status || 'in_stock',
             rating: (typeof rating !== 'undefined' && rating !== null && rating !== '') ? rating : '0',
             meta_title: metaTitle || null,
             meta_description: metaDescription || null,
+            technical_enabled: typeof technicalEnabledNormalized !== 'undefined' ? (technicalEnabledNormalized ? 1 : 0) : 1,
         };
 
         const newProduct = await Product.create(productData);
@@ -571,7 +575,10 @@ export async function PUT(request: NextRequest) {
             dimensions,
             voltage,
             locations,
+            application_areas,
             availabilityLabel,
+            // technical enabled flag
+            technicalEnabled,
         } = body;
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -602,11 +609,18 @@ export async function PUT(request: NextRequest) {
         if (dimensions !== undefined) updateData.dimensions = dimensions;
         if (voltage !== undefined) updateData.voltage = voltage;
         if (locations !== undefined) updateData.locations = typeof locations === 'string' ? locations : JSON.stringify(locations);
+        if (application_areas !== undefined) updateData.application_areas = typeof application_areas === 'string' ? application_areas : JSON.stringify(application_areas);
         if (availabilityLabel !== undefined) updateData.availabilityLabel = availabilityLabel;
         if (inventory_status !== undefined) updateData.inventory_status = inventory_status;
         if (rating !== undefined) updateData.rating = (rating === '' ? '0' : rating);
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;
         if (metaDescription !== undefined) updateData.meta_description = metaDescription;
+        // accept either camelCase or snake_case in updates
+        const technicalEnabledIncoming = (typeof body.technicalEnabled !== 'undefined') ? body.technicalEnabled : (typeof body.technical_enabled !== 'undefined' ? body.technical_enabled : undefined);
+        if (typeof technicalEnabledIncoming !== 'undefined') {
+            updateData.technical_enabled = technicalEnabledIncoming ? 1 : 0;
+            console.log('Updating product technical_enabled to', updateData.technical_enabled, 'for id', id);
+        }
 
         await Product.findByIdAndUpdate(id, updateData, { new: true });
 

@@ -1098,7 +1098,7 @@ export default function ServicesManagerPage() {
                                                         <div>
                                                             <label className="block text-sm font-medium text-slate-700 mb-1">Currency</label>
                                                             <select
-                                                                value={selectedService.currency || 'USD'}
+                                                                value={selectedService.currency || 'NPR'}
                                                                 onChange={(e) => updateItem('currency', e.target.value)}
                                                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                             >
@@ -1109,7 +1109,7 @@ export default function ServicesManagerPage() {
                                                                 <option value="AUD">AUD (A$)</option>
                                                                 <option value="JPY">JPY (¥)</option>
                                                                 <option value="INR">INR (₹)</option>
-                                                                <option value="NRS">NRS (रु)</option>
+                                                                <option value="NPR">NPR (Rs.)</option>
                                                             </select>
                                                         </div>
                                                     </div>

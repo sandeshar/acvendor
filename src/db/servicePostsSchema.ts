@@ -17,7 +17,7 @@ const servicePostsSchema = new Schema({
     price_type: { type: String, default: 'fixed', maxlength: 50 },
     price_label: { type: String, maxlength: 100, default: '' },
     price_description: { type: String, default: '' },
-    currency: { type: String, default: 'USD', maxlength: 10 },
+    currency: { type: String, default: 'NPR', maxlength: 10 },
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     statusId: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
     meta_title: { type: String, maxlength: 256, default: '' },

@@ -571,3 +571,68 @@ body {
 
 /* Mobile: ensure consistent horizontal padding for main sections & containers */
 /* Note: section-level horizontal padding is now managed per-component. Global mobile padding removed to allow per-section control. */
+
+/* Table styles: ensure tables render full-width with borders in editor and frontend prose */
+.tiptap table,
+.prose table,
+.prose-sm table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: auto;
+}
+
+.tiptap th,
+.tiptap td,
+.prose th,
+.prose td,
+.prose-sm th,
+.prose-sm td {
+    border: 1px solid var(--table-border-color, #e5e7eb);
+    padding: 0.5rem 0.75rem;
+}
+
+.tiptap th,
+.prose th,
+.prose-sm th {
+    background-color: #fbfaf9;
+    font-weight: 600;
+}
+
+/* Allow horizontal scrolling for long / narrow tables when necessary */
+.prose,
+.prose-sm {
+    overflow-x: auto;
+}
+
+/* Ensure unordered/ordered lists inside prose retain visible markers */
+.prose ul,
+.prose-sm ul {
+    list-style-type: disc;
+    margin-left: 1.25rem;
+    padding-left: 1.25rem;
+}
+
+.prose ol,
+.prose-sm ol {
+    list-style-type: decimal;
+    margin-left: 1.25rem;
+    padding-left: 1.25rem;
+}
+
+/* Ensure list items are treated as list-item and markers are visible/inherit color */
+.prose ul li,
+.prose-sm ul li,
+.prose ol li,
+.prose-sm ol li {
+    display: list-item;
+    line-height: 1.6;
+}
+
+.prose ul li::marker,
+.prose-sm ul li::marker,
+.prose ol li::marker,
+.prose-sm ol li::marker {
+    color: inherit;
+    font-size: 1em;
+    opacity: 1;
+}

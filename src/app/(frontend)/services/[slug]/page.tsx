@@ -86,9 +86,9 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
             'AUD': 'A$',
             'JPY': '¥',
             'INR': '₹',
-            'NRS': 'रु'
+            'NPR': 'Rs.'
         };
-        return symbols[currency || 'USD'] || '$';
+        return symbols[currency || 'NPR'] || 'Rs.';
     };
     const [post, serviceDetail] = await Promise.all([
         getServicePost(slug),

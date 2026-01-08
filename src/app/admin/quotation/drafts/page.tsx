@@ -87,7 +87,7 @@ export default function DraftsPage() {
                                 <td className="px-4 py-3">{d.number || '-'} {d.referenceNo ? `(${d.referenceNo})` : ''}</td>
                                 <td className="px-4 py-3">{d.client?.name || '-'}</td>
                                 <td className="px-4 py-3">{d.dateIssued?.substring(0, 10) || '-'}</td>
-                                <td className="px-4 py-3 text-right">{d.totals ? `NRS ${Number(d.totals.grandTotal || 0).toLocaleString()}` : '-'}</td>
+                                <td className="px-4 py-3 text-right">{d.totals ? `NPR ${Number(d.totals.grandTotal || 0).toLocaleString()}` : '-'}</td>
                                 <td className="px-4 py-3 text-right flex gap-2 justify-end">
                                     <Link href={`/admin/quotation?id=${d.id}`} className="px-3 py-1 bg-white border rounded text-sm">Edit</Link>
                                     <button onClick={() => send(d.id!)} className="px-3 py-1 bg-green-600 text-white rounded text-sm">Send</button>
