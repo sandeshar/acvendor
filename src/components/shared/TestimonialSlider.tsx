@@ -147,7 +147,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
                                 <div className="flex items-center gap-4">
                                     <img
                                         alt={testimonial.name}
-                                        className="h-10 w-10 rounded-full object-cover grayscale"
+                                        className="h-10 w-10 rounded-full object-cover"
                                         src={testimonial.url}
                                     />
                                     <div>

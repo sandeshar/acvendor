@@ -219,11 +219,11 @@ export default function HomePageUI() {
         { id: "hero", label: "Hero" },
         { id: "hero-features", label: "Hero Features" },
         { id: "trust", label: "Trust" },
+        { id: "about", label: "About" },
         { id: "expertise", label: "Expertise" },
         { id: "products", label: "Products" },
-        { id: "projects", label: "Projects" },
-        { id: "about", label: "About" },
         { id: "blog", label: "Blog" },
+        { id: "projects", label: "Projects" },
         { id: "testimonials", label: "Testimonials" },
         { id: "contact", label: "Contact" },
     ];
