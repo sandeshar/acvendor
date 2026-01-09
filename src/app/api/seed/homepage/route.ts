@@ -9,6 +9,10 @@ import {
     HomepageContactSection,
     HomepageProductsSection,
     HomepageTestimonialsSection,
+    HomepageHeroFeatures,
+    HomepageBlogSection,
+    HomepageAboutSection,
+    HomepageAboutItems,
 } from '@/db/homepageSchema';
 
 export async function POST() {
@@ -24,26 +28,30 @@ export async function POST() {
         await HomepageContactSection.deleteMany({});
         await HomepageProductsSection.deleteMany({});
         await HomepageTestimonialsSection.deleteMany({});
+        await HomepageHeroFeatures.deleteMany({});
+        await HomepageBlogSection.deleteMany({});
+        await HomepageAboutSection.deleteMany({});
+        await HomepageAboutItems.deleteMany({});
 
         // Seed Hero Section
         await HomepageHero.create({
-            title: 'AC Vendor — Trusted Air Conditioners & Parts',
-            subtitle: 'High-efficiency AC units, professional installation, and reliable after-sales support — all in one place.',
-            cta_text: 'Shop Now',
-            cta_link: '/midea-ac',
-            background_image: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1400&q=80',
-            hero_image_alt: 'Modern air conditioning units in a showroom',
-            badge_text: 'Free installation on select models',
-            highlight_text: 'Energy-saving comfort',
-            colored_word: 'Cooling',
+            title: 'Nepal Air Conditioner',
+            subtitle: 'Complete HVAC solutions — installation, design, manufacturing, and maintenance across Nepal.',
+            cta_text: 'Contact Us',
+            cta_link: '/contact',
+            background_image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1400&q=80',
+            hero_image_alt: 'Technician installing an air conditioner',
+            badge_text: 'Serving Nepal nationwide',
+            highlight_text: 'Reliable HVAC Solutions',
+            colored_word: 'Nepal',
             trust_badge1_icon: 'local_shipping',
             trust_badge1_text: 'Fast Delivery',
             trust_badge2_icon: 'verified',
             trust_badge2_text: 'Warranty',
             trust_badge3_icon: 'engineering',
             trust_badge3_text: 'Expert Techs',
-            secondary_cta_text: 'Browse Brands',
-            secondary_cta_link: '/brands',
+            secondary_cta_text: 'Our Services',
+            secondary_cta_link: '/services',
             is_active: 1,
         });
 
@@ -172,6 +180,178 @@ export async function POST() {
             subtitle: 'Here are a few kind words from our satisfied customers.',
             is_active: 1,
         });
+
+        // Seed About / First Page Content
+        await HomepageAboutSection.create({
+            title: 'Home Page First Page Content',
+            description: 'Nepal Air Conditioner provides a wide range of HVAC services and solutions tailored for homes, businesses, and industrial needs.',
+            bullets: JSON.stringify([
+                'Residential Air Conditioners',
+                'Commercial HVAC System',
+                'HVAC Engineering / AutoCAD Design',
+                'HVAC System Installation',
+                'HVAC Repair & Maintenance',
+                'Cold Room Manufacturing',
+                'Heat Pump System',
+                'Annual Maintenance Contract (AMC)',
+            ]),
+            image_url: 'https://images.unsplash.com/photo-1581094162769-4b5b6d99a7c6?auto=format&fit=crop&w=1200&q=80',
+            image_alt: 'HVAC systems and engineers working',
+            cta_text: 'Learn More',
+            cta_link: '/services',
+            is_active: 1,
+        });
+
+        // Seed About Items (services)
+        const aboutItems = [
+            {
+                title: 'Residential Air Conditioners',
+                description: 'Energy-efficient AC units and professional installation for homes.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1582719478250-7e5b49b8d6c3?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Residential air conditioner installed in a living room',
+                display_order: 1,
+                is_active: 1,
+            },
+            {
+                title: 'Commercial HVAC System',
+                description: 'Design, supply and install HVAC systems for commercial buildings.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1592854936919-59d5e9f6f2a3?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Commercial HVAC ductwork and units',
+                display_order: 2,
+                is_active: 1,
+            },
+            {
+                title: 'HVAC Engineering / AutoCAD Design',
+                description: 'Detailed HVAC layouts and AutoCAD designs by experienced engineers.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Engineer reviewing HVAC schematics on a computer',
+                display_order: 3,
+                is_active: 1,
+            },
+            {
+                title: 'HVAC System Installation',
+                description: 'Full installation services following best practices and safety standards.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Technician installing an air conditioner',
+                display_order: 4,
+                is_active: 1,
+            },
+            {
+                title: 'HVAC Repair & Maintenance',
+                description: 'Expert troubleshooting, repairs and preventive maintenance services.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Technician performing AC maintenance',
+                display_order: 5,
+                is_active: 1,
+            },
+            {
+                title: 'Cold Room Manufacturing',
+                description: 'Custom cold room design and manufacturing for storage solutions.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1549399546-9d4d5f5d93d0?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Industrial cold room interior',
+                display_order: 6,
+                is_active: 1,
+            },
+            {
+                title: 'Heat Pump System',
+                description: 'Efficient heat pump solutions for heating and cooling needs.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1582719478250-1a1285b6b2f1?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Heat pump unit outside a building',
+                display_order: 7,
+                is_active: 1,
+            },
+            {
+                title: 'Annual Maintenance Contract (AMC)',
+                description: 'Comprehensive AMC plans to keep your systems running reliably year-round.',
+                bullets: '[]',
+                image_url: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1200&q=80',
+                image_alt: 'Technician checklist for maintenance',
+                display_order: 8,
+                is_active: 1,
+            },
+        ];
+
+        for (const item of aboutItems) {
+            await HomepageAboutItems.create(item);
+        }
+
+        // Seed Hero Features (floating cards)
+        const heroFeatures = [
+            { icon_name: 'local_shipping', icon_bg: 'bg-blue-600', title: 'Fast Delivery', description: 'Timely delivery across Nepal.', display_order: 1, is_active: 1 },
+            { icon_name: 'engineering', icon_bg: 'bg-green-600', title: 'Expert Technicians', description: 'Certified HVAC technicians for installation & repair.', display_order: 2, is_active: 1 },
+            { icon_name: 'verified', icon_bg: 'bg-orange-600', title: 'Warranty Plans', description: 'Extended warranty and parts support.', display_order: 3, is_active: 1 },
+            { icon_name: 'support_agent', icon_bg: 'bg-indigo-600', title: '24/7 Support', description: 'Round-the-clock assistance for service requests.', display_order: 4, is_active: 1 },
+        ];
+
+        for (const f of heroFeatures) {
+            await HomepageHeroFeatures.create(f);
+        }
+
+        // Seed Blog Section
+        await HomepageBlogSection.create({
+            title: 'From Our Blog',
+            subtitle: 'Tips and updates on HVAC systems, energy savings, and product guides.',
+            cta_text: 'Read All Posts',
+            cta_link: '/blog',
+            is_active: 1,
+        });
+
+        // Seed a couple of sample blog posts (if not present)
+        try {
+            const { BlogPost, User, Status } = await import('@/db/schema');
+            const firstUser = await User.findOne().lean();
+            const statusRows = await Status.find().lean();
+            const publishedStatus = statusRows.find((s: any) => (s.name || '').toLowerCase() === 'published') || statusRows[0];
+
+            if (firstUser && publishedStatus) {
+                const samplePosts = [
+                    { slug: 'how-to-choose-ac', title: 'How to Choose the Right AC for Your Home', content: '<p>Choosing the right AC depends on room size, insulation, and usage patterns...</p>', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80', metaTitle: 'Choose Right AC', metaDescription: 'Practical tips to pick the best air conditioner.' },
+                    { slug: 'ac-maintenance-checklist', title: 'AC Maintenance Checklist: Keep Your Unit Running Smoothly', content: '<p>Regular maintenance increases efficiency and prevents costly repairs...</p>', thumbnail: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=1200&q=80', metaTitle: 'AC Maintenance', metaDescription: 'Checklist for annual AC maintenance.' },
+                ];
+
+                for (const p of samplePosts) {
+                    const existing = await BlogPost.findOne({ slug: p.slug }).lean();
+                    if (!existing) {
+                        await BlogPost.create({
+                            slug: p.slug,
+                            title: p.title,
+                            content: p.content,
+                            thumbnail: p.thumbnail,
+                            metaTitle: p.metaTitle,
+                            metaDescription: p.metaDescription,
+                            authorId: firstUser._id,
+                            status: publishedStatus._id,
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            // Non-fatal, blog posts optional
+            console.warn('Could not seed sample blog posts', e);
+        }
+
+        // Seed sample testimonials
+        try {
+            const { ReviewTestimonials } = await import('@/db/reviewSchema');
+            const sampleTestimonials = [
+                { url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80', name: 'Ramesh Thapa', role: 'Homeowner', content: 'Prompt service and professional installation — highly recommended!', rating: 5, link: 'homepage' },
+                { url: 'https://images.unsplash.com/photo-1545996124-1f7b7f8b1d02?auto=format&fit=crop&w=400&q=80', name: 'Sita Gurung', role: 'Business Owner', content: 'Reliable maintenance contract and excellent responsiveness.', rating: 5, link: 'homepage' },
+            ];
+
+            for (const t of sampleTestimonials) {
+                await ReviewTestimonials.create(t);
+            }
+        } catch (e) {
+            // Non-fatal
+            console.warn('Could not seed testimonials', e);
+        }
 
         return NextResponse.json(
             {

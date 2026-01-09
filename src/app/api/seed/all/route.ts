@@ -7,6 +7,8 @@ import {
     HomepageExpertiseSection,
     HomepageExpertiseItems,
     HomepageContactSection,
+    HomepageAboutSection,
+    HomepageAboutItems,
 } from '@/db/homepageSchema';
 import {
     AboutPageHero,
@@ -164,6 +166,8 @@ export async function POST(request: Request) {
             await HomepageExpertiseSection.deleteMany({});
             await HomepageExpertiseItems.deleteMany({});
             await HomepageContactSection.deleteMany({});
+            await HomepageAboutSection.deleteMany({});
+            await HomepageAboutItems.deleteMany({});
 
             await HomepageHero.create({
                 title: 'AC Vendor — Trusted Air Conditioners & Parts',
@@ -301,13 +305,99 @@ export async function POST(request: Request) {
             results.homepage.message = error instanceof Error ? error.message : 'Failed to seed homepage';
         }
 
-        // 4. Seed About (delegated)
+        // 4. Seed About (delegated) with fallback
         try {
             const res = await fetch(`${origin}/api/seed/about`, { method: 'POST' });
             const data = await res.json().catch(() => ({}));
-            results.about = { success: res.ok, message: data?.message || data?.error || (res.ok ? 'About seeded' : 'Failed to seed about') };
+            if (res.ok) {
+                results.about = { success: true, message: data?.message || 'About seeded' };
+            } else {
+                // Delegated seeder failed; run inline fallback to ensure About content exists
+                try {
+                    await HomepageAboutSection.deleteMany({});
+                    await HomepageAboutItems.deleteMany({});
+
+                    await HomepageAboutSection.create({
+                        title: 'Home Page First Page Content',
+                        description: 'Nepal Air Conditioner provides a wide range of HVAC services and solutions tailored for homes, businesses, and industrial needs.',
+                        bullets: JSON.stringify([
+                            'Residential Air Conditioners',
+                            'Commercial HVAC System',
+                            'HVAC Engineering / AutoCAD Design',
+                            'HVAC System Installation',
+                            'HVAC Repair & Maintenance',
+                            'Cold Room Manufacturing',
+                            'Heat Pump System',
+                            'Annual Maintenance Contract (AMC)',
+                        ]),
+                        image_url: 'https://images.unsplash.com/photo-1581094162769-4b5b6d99a7c6?auto=format&fit=crop&w=1200&q=80',
+                        image_alt: 'HVAC systems and engineers working',
+                        cta_text: 'Learn More',
+                        cta_link: '/services',
+                        is_active: 1,
+                    });
+
+                    const aboutItemsFallback = [
+                        { title: 'Residential Air Conditioners', description: 'Energy-efficient AC units and professional installation for homes.', bullets: '[]', image_url: '', image_alt: '', display_order: 1, is_active: 1 },
+                        { title: 'Commercial HVAC System', description: 'Design, supply and install HVAC systems for commercial buildings.', bullets: '[]', image_url: '', image_alt: '', display_order: 2, is_active: 1 },
+                        { title: 'HVAC Engineering / AutoCAD Design', description: 'Detailed HVAC layouts and AutoCAD designs by experienced engineers.', bullets: '[]', image_url: '', image_alt: '', display_order: 3, is_active: 1 },
+                        { title: 'HVAC System Installation', description: 'Full installation services following best practices and safety standards.', bullets: '[]', image_url: '', image_alt: '', display_order: 4, is_active: 1 },
+                        { title: 'HVAC Repair & Maintenance', description: 'Expert troubleshooting, repairs and preventive maintenance services.', bullets: '[]', image_url: '', image_alt: '', display_order: 5, is_active: 1 },
+                        { title: 'Cold Room Manufacturing', description: 'Custom cold room design and manufacturing for storage solutions.', bullets: '[]', image_url: '', image_alt: '', display_order: 6, is_active: 1 },
+                        { title: 'Heat Pump System', description: 'Efficient heat pump solutions for heating and cooling needs.', bullets: '[]', image_url: '', image_alt: '', display_order: 7, is_active: 1 },
+                        { title: 'Annual Maintenance Contract (AMC)', description: 'Comprehensive AMC plans to keep your systems running reliably year-round.', bullets: '[]', image_url: '', image_alt: '', display_order: 8, is_active: 1 },
+                    ];
+
+                    for (const item of aboutItemsFallback) await HomepageAboutItems.create(item);
+
+                    results.about = { success: true, message: 'About seeded via fallback' };
+                } catch (e) {
+                    results.about = { success: false, message: 'Failed to seed About via fallback', details: e instanceof Error ? e.message : String(e) };
+                }
+            }
         } catch (error) {
-            results.about.message = error instanceof Error ? error.message : 'Failed to seed about';
+            // Off-network or fetch failure — attempt fallback seed
+            try {
+                await HomepageAboutSection.deleteMany({});
+                await HomepageAboutItems.deleteMany({});
+
+                await HomepageAboutSection.create({
+                    title: 'Home Page First Page Content',
+                    description: 'Nepal Air Conditioner provides a wide range of HVAC services and solutions tailored for homes, businesses, and industrial needs.',
+                    bullets: JSON.stringify([
+                        'Residential Air Conditioners',
+                        'Commercial HVAC System',
+                        'HVAC Engineering / AutoCAD Design',
+                        'HVAC System Installation',
+                        'HVAC Repair & Maintenance',
+                        'Cold Room Manufacturing',
+                        'Heat Pump System',
+                        'Annual Maintenance Contract (AMC)',
+                    ]),
+                    image_url: 'https://images.unsplash.com/photo-1581094162769-4b5b6d99a7c6?auto=format&fit=crop&w=1200&q=80',
+                    image_alt: 'HVAC systems and engineers working',
+                    cta_text: 'Learn More',
+                    cta_link: '/services',
+                    is_active: 1,
+                });
+
+                const aboutItemsFallback = [
+                    { title: 'Residential Air Conditioners', description: 'Energy-efficient AC units and professional installation for homes.', bullets: '[]', image_url: '', image_alt: '', display_order: 1, is_active: 1 },
+                    { title: 'Commercial HVAC System', description: 'Design, supply and install HVAC systems for commercial buildings.', bullets: '[]', image_url: '', image_alt: '', display_order: 2, is_active: 1 },
+                    { title: 'HVAC Engineering / AutoCAD Design', description: 'Detailed HVAC layouts and AutoCAD designs by experienced engineers.', bullets: '[]', image_url: '', image_alt: '', display_order: 3, is_active: 1 },
+                    { title: 'HVAC System Installation', description: 'Full installation services following best practices and safety standards.', bullets: '[]', image_url: '', image_alt: '', display_order: 4, is_active: 1 },
+                    { title: 'HVAC Repair & Maintenance', description: 'Expert troubleshooting, repairs and preventive maintenance services.', bullets: '[]', image_url: '', image_alt: '', display_order: 5, is_active: 1 },
+                    { title: 'Cold Room Manufacturing', description: 'Custom cold room design and manufacturing for storage solutions.', bullets: '[]', image_url: '', image_alt: '', display_order: 6, is_active: 1 },
+                    { title: 'Heat Pump System', description: 'Efficient heat pump solutions for heating and cooling needs.', bullets: '[]', image_url: '', image_alt: '', display_order: 7, is_active: 1 },
+                    { title: 'Annual Maintenance Contract (AMC)', description: 'Comprehensive AMC plans to keep your systems running reliably year-round.', bullets: '[]', image_url: '', image_alt: '', display_order: 8, is_active: 1 },
+                ];
+
+                for (const item of aboutItemsFallback) await HomepageAboutItems.create(item);
+
+                results.about = { success: true, message: 'About seeded via fallback' };
+            } catch (e) {
+                results.about = { success: false, message: error instanceof Error ? error.message : 'Failed to seed about', details: e instanceof Error ? e.message : String(e) };
+            }
         }
 
         // 5. Seed Services

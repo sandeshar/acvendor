@@ -33,7 +33,7 @@ const AboutSection = ({ section }: AboutSectionProps) => {
                     <h2 className="text-[#111418] text-3xl md:text-4xl font-black leading-tight">{section?.title || 'About Us'}</h2>
                     <p className="text-[#617589] text-lg max-w-[720px] mx-auto">{section?.description || 'We deliver best-in-class AC solutions for homes and businesses across Nepal.'}</p>
 
-                    {bullets.length > 0 && (
+                    {/* {bullets.length > 0 && (
                         <ul className="mt-6 space-y-4 text-slate-600">
                             {bullets.map((b, i) => (
                                 <li key={i} className="flex items-start gap-3">
@@ -42,7 +42,7 @@ const AboutSection = ({ section }: AboutSectionProps) => {
                                 </li>
                             ))}
                         </ul>
-                    )}
+                    )} */}
 
                     {/* {section?.cta_text && section?.cta_link && (
                             <a href={section.cta_link} className="mt-8 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-3 font-semibold text-white transition-colors hover:bg-primary/90">
