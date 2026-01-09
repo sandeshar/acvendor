@@ -8,6 +8,8 @@ interface AboutItem {
     bullets: string; // JSON string
     image_url?: string;
     image_alt?: string;
+    cta_text?: string;
+    cta_link?: string;
     display_order?: number;
     is_active?: number;
 }
@@ -54,6 +56,17 @@ const AboutDetails = ({ items = [] }: AboutDetailsProps) => {
                                             </li>
                                         ))}
                                     </ul>
+                                    {s.cta_text && s.cta_link && (
+                                        <div className="mt-8">
+                                            <a
+                                                href={s.cta_link}
+                                                className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary/90 transition-all duration-200"
+                                            >
+                                                {s.cta_text}
+                                                <span className="material-symbols-outlined ml-2 text-[18px]">arrow_forward</span>
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );

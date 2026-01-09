@@ -174,6 +174,8 @@ const homepageAboutItemsSchema = new Schema({
     bullets: { type: String, required: false, default: '[]', maxlength: 4096 },
     image_url: { type: String, required: false, default: '', maxlength: 512 },
     image_alt: { type: String, required: false, default: '', maxlength: 256 },
+    cta_text: { type: String, default: '', maxlength: 100 },
+    cta_link: { type: String, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },
     is_active: { type: Number, default: 1, required: true },
 }, {
@@ -181,7 +183,7 @@ const homepageAboutItemsSchema = new Schema({
     collection: 'homepage_about_items'
 });
 
-export const HomepageAboutItems = models.HomepageAboutItems || model('HomepageAboutItems', homepageAboutItemsSchema);
+export const HomepageAboutItems = models.HomepageAboutItemsV2 || model('HomepageAboutItemsV2', homepageAboutItemsSchema);
 
 // Backward compatibility exports (camelCase for existing API code)
 export const homepageHero = HomepageHero;

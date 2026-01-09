@@ -13,12 +13,14 @@ export async function GET(request: NextRequest) {
         if (id) {
             const section = await HomepageAboutSection.findById(id).lean();
             if (!section) return NextResponse.json({ error: 'About section not found' }, { status: 404 });
-            return NextResponse.json({ ...section, id: section._id.toString() });
+            const normalized = { ...section, cta_text: section.cta_text ?? '', cta_link: section.cta_link ?? '', bullets: section.bullets ?? '[]', image_url: section.image_url ?? '', image_alt: section.image_alt ?? '', id: section._id.toString() };
+            return NextResponse.json(normalized);
         }
 
         const section = await HomepageAboutSection.findOne({ is_active: 1 }).lean();
         if (!section) return NextResponse.json({ error: 'No active about section found' }, { status: 404 });
-        return NextResponse.json({ ...section, id: section._id.toString() });
+        const normalized = { ...section, cta_text: section.cta_text ?? '', cta_link: section.cta_link ?? '', bullets: section.bullets ?? '[]', image_url: section.image_url ?? '', image_alt: section.image_alt ?? '', id: section._id.toString() };
+        return NextResponse.json(normalized);
     } catch (error) {
         console.error('Error fetching homepage about section:', error);
         return NextResponse.json({ error: 'Failed to fetch about section' }, { status: 500 });

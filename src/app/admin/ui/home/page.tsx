@@ -681,7 +681,7 @@ export default function HomePageUI() {
                                 <div className="mt-8 pt-6 border-t border-gray-100">
                                     <div className="flex items-center justify-between mb-4">
                                         <p className="text-sm text-gray-500">Manage About Items</p>
-                                        <button onClick={() => addItem(aboutItems, setAboutItems, { title: '', description: '', bullets: '[]', image_url: '', image_alt: '', display_order: aboutItems.length + 1, is_active: 1 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(aboutItems, setAboutItems, { title: '', description: '', bullets: '[]', image_url: '', image_alt: '', cta_text: '', cta_link: '', display_order: aboutItems.length + 1, is_active: 1 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Item
                                         </button>
                                     </div>
@@ -713,6 +713,10 @@ export default function HomePageUI() {
                                                     <div className="space-y-4">
                                                         <ImageUploader label="Image" value={item.image_url || ''} onChange={(url: string) => updateItem(idx, 'image_url', url, aboutItems, setAboutItems)} folder="home" ratio="4:3" />
                                                         <InputGroup label="Image Alt Text" value={item.image_alt || ''} onChange={(v) => updateItem(idx, 'image_alt', v, aboutItems, setAboutItems)} />
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <InputGroup label="CTA Text" value={item.cta_text || ''} onChange={(v) => updateItem(idx, 'cta_text', v, aboutItems, setAboutItems)} />
+                                                            <InputGroup label="CTA Link" value={item.cta_link || ''} onChange={(v) => updateItem(idx, 'cta_link', v, aboutItems, setAboutItems)} />
+                                                        </div>
                                                         <div className="flex items-center justify-between pt-2">
                                                             <span className="text-sm font-medium text-gray-700">Display Order</span>
                                                             <input

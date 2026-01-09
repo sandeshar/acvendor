@@ -13,7 +13,11 @@ export async function GET(request: NextRequest) {
         if (id) {
             const item = await HomepageAboutItems.findById(id).lean();
             if (!item) return NextResponse.json({ error: 'About item not found' }, { status: 404 });
-            return NextResponse.json(item);
+            return NextResponse.json({
+                ...item,
+                cta_text: item.cta_text ?? '',
+                cta_link: item.cta_link ?? ''
+            });
         }
 
         let items;
@@ -23,7 +27,13 @@ export async function GET(request: NextRequest) {
             items = await HomepageAboutItems.find({ is_active: 1 }).sort({ display_order: 1 }).lean();
         }
 
-        return NextResponse.json(items);
+        const normalizedItems = (items || []).map((it: any) => ({
+            ...it,
+            cta_text: it.cta_text ?? '',
+            cta_link: it.cta_link ?? ''
+        }));
+
+        return NextResponse.json(normalizedItems);
     } catch (error) {
         console.error('Error fetching homepage about items:', error);
         return NextResponse.json({ error: 'Failed to fetch about items' }, { status: 500 });
@@ -34,12 +44,12 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, bullets = '[]', image_url = '', image_alt = '', display_order = 0, is_active = 1 } = body;
+        const { title, description, bullets = '[]', image_url = '', image_alt = '', cta_text = '', cta_link = '', display_order = 0, is_active = 1 } = body;
         if (!title || display_order === undefined || description === undefined) {
             return NextResponse.json({ error: 'Title, description and display_order are required' }, { status: 400 });
         }
 
-        const res = await HomepageAboutItems.create({ title, description, bullets, image_url, image_alt, display_order, is_active });
+        const res = await HomepageAboutItems.create({ title, description, bullets, image_url, image_alt, cta_text, cta_link, display_order, is_active });
         revalidateTag('homepage-about-items', 'max');
         return NextResponse.json({ success: true, id: res._id }, { status: 201 });
     } catch (error) {
@@ -56,7 +66,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
         const update: any = {};
-        ['title', 'description', 'bullets', 'image_url', 'image_alt', 'display_order', 'is_active'].forEach(k => {
+        ['title', 'description', 'bullets', 'image_url', 'image_alt', 'cta_text', 'cta_link', 'display_order', 'is_active'].forEach(k => {
             if (body[k] !== undefined) update[k] = body[k];
         });
 

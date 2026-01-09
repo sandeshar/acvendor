@@ -20,7 +20,7 @@ export default function FloatWhatsApp() {
                 const res = await fetch('/api/pages/contact/info');
                 if (!res.ok) return;
                 const data = await res.json();
-                const link = data?.whatsapp_link || (data?.whatsapp_number ? `https://wa.me/${String(data.whatsapp_number).replace(/[^0-9]/g, '')}` : null);
+                const link = (data?.whatsapp_number ? `https://wa.me/${String(data.whatsapp_number).replace(/[^0-9]/g, '')}` : null);
                 if (link) setHref(link);
             } catch (e) {
                 // ignore
