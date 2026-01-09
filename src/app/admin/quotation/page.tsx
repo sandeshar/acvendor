@@ -202,9 +202,6 @@ export default function AdminQuotationPage() {
 
                 <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>{status === 'draft' ? 'Draft' : 'Sent'}</span>
-                    <button onClick={async () => { const json = await saveDraft(); if (json?.id) router.push(`/admin/quotation/print?id=${json.id}`); }} disabled={saving} className="flex items-center justify-center rounded-lg h-10 px-4 bg-white border border-[#dbdfe6] text-sm font-bold shadow-sm hover:bg-gray-50 transition-colors">
-                        Save Draft
-                    </button>
                 </div>
             </div>
 

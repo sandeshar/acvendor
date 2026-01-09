@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Quotation } from '@/types/quotation';
 
@@ -42,6 +42,7 @@ export default function AdminQuotationPrintPage() {
         })();
     }, []);
 
+    const router = useRouter();
     const handlePrint = () => { if (typeof window !== 'undefined') window.print(); };
 
     if (!id) return <div className="p-6">Missing quotation id</div>;
@@ -51,9 +52,14 @@ export default function AdminQuotationPrintPage() {
             <style>{`@media print { body * { visibility: hidden !important; } #quotation-paper, #quotation-paper * { visibility: visible !important; } #quotation-paper { position: absolute !important; left: 0; top: 0; width: 100% !important; } .no-print { display: none !important; } }`}</style>
             <div className="sticky top-0 z-50 w-full border-b border-[#e5e7eb] bg-white px-4 py-3 no-print">
                 <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111418]">Quotation Preview</h1>
-                        <p className="text-sm text-[#617589]">Review details before sending to client</p>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border text-[#111418] hover:bg-gray-100">
+                            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                        </button>
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111418]">Quotation Preview</h1>
+                            <p className="text-sm text-[#617589]">Review details before sending to client</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Link href={quotation ? `/admin/quotation?id=${quotation.id}` : '/admin/quotation'} className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e5e7eb] px-4 text-sm font-bold text-[#111418] transition hover:bg-[#d1d5db]">
@@ -64,11 +70,6 @@ export default function AdminQuotationPrintPage() {
                         <button onClick={handlePrint} className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e5e7eb] px-4 text-sm font-bold text-[#111418] transition hover:bg-[#d1d5db]">
                             <span className="material-symbols-outlined text-[20px]">print</span>
                             <span className="hidden sm:inline">Print</span>
-                        </button>
-
-                        <button onClick={() => { /* future: generate PDF */ }} className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
-                            <span className="material-symbols-outlined text-[20px]">download</span>
-                            <span>Download PDF</span>
                         </button>
                     </div>
                 </div>
@@ -88,8 +89,12 @@ export default function AdminQuotationPrintPage() {
                             <div className="mb-8 flex flex-col justify-between gap-6 border-b border-slate-200 pb-8 sm:flex-row">
                                 <div className="flex flex-col gap-2">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                            <span className="material-symbols-outlined text-[32px]">ac_unit</span>
+                                        <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            {storeSettings?.storeLogo || storeSettings?.favicon ? (
+                                                <img src={storeSettings?.storeLogo || storeSettings?.favicon} alt={storeSettings?.storeName || 'Site logo'} className="h-20 w-20 object-contain" />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-[32px]">ac_unit</span>
+                                            )}
                                         </div>
                                         <div className="flex flex-col">
                                             <h2 className="text-2xl font-black tracking-tight text-slate-900">{storeSettings?.storeName || 'Nepal Cooling'}</h2>
@@ -226,7 +231,11 @@ export default function AdminQuotationPrintPage() {
 
                             {/* Watermark (Decorative) */}
                             <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03]" data-alt="Company Logo Watermark">
-                                <span className="material-symbols-outlined text-[400px]">ac_unit</span>
+                                {storeSettings?.storeLogo || storeSettings?.favicon ? (
+                                    <img src={storeSettings?.storeLogo || storeSettings?.favicon} alt="Company Logo Watermark" className="h-[400px] w-[400px] object-contain" />
+                                ) : (
+                                    <span className="material-symbols-outlined text-[400px]">ac_unit</span>
+                                )}
                             </div>
                         </>
                     )}
@@ -242,6 +251,7 @@ function AdminQuotationPrintLegacy() {
     const [loading, setLoading] = useState(true);
     const [quotation, setQuotation] = useState<Quotation | null>(null);
     const [storeSettings, setStoreSettings] = useState<any>(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (!id) return setLoading(false);
@@ -276,11 +286,17 @@ function AdminQuotationPrintLegacy() {
         <div>
             <div className="sticky top-0 z-50 w-full border-b border-[#e5e7eb] bg-white px-4 py-3 no-print">
                 <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111418]">Quotation Preview</h1>
-                        <p className="text-sm text-[#617589]">Review details before sending to client</p>
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border text-[#111418] hover:bg-gray-100">
+                            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+                        </button>
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-xl font-bold leading-tight tracking-tight text-[#111418]">Quotation Preview</h1>
+                            <p className="text-sm text-[#617589]">Review details before sending to client</p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-3">
+
                         <button className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e5e7eb] px-4 text-sm font-bold text-[#111418] transition hover:bg-[#d1d5db]">
                             <span className="material-symbols-outlined text-[20px]">edit</span>
                             <span className="hidden sm:inline">Edit</span>
@@ -289,11 +305,6 @@ function AdminQuotationPrintLegacy() {
                         <button onClick={handlePrint} className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#e5e7eb] px-4 text-sm font-bold text-[#111418] transition hover:bg-[#d1d5db]">
                             <span className="material-symbols-outlined text-[20px]">print</span>
                             <span className="hidden sm:inline">Print</span>
-                        </button>
-
-                        <button className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
-                            <span className="material-symbols-outlined text-[20px]">download</span>
-                            <span>Download PDF</span>
                         </button>
                     </div>
                 </div>
@@ -308,11 +319,15 @@ function AdminQuotationPrintLegacy() {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-3">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                    <span className="material-symbols-outlined text-[32px]">ac_unit</span>
+                                    {storeSettings?.storeLogo || storeSettings?.favicon ? (
+                                        <img src={storeSettings?.storeLogo || storeSettings?.favicon} alt={storeSettings?.storeName || 'Site logo'} className="h-10 w-10 object-contain" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-[32px]">ac_unit</span>
+                                    )}
                                 </div>
                                 <div className="flex flex-col">
-                                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Nepal Cooling</h2>
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Solutions Pvt. Ltd.</span>
+                                    <h2 className="text-2xl font-black tracking-tight text-slate-900">{storeSettings?.storeName || 'Nepal Cooling'}</h2>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{storeSettings?.storeDescription || 'Solutions Pvt. Ltd.'}</span>
                                 </div>
                             </div>
                         </div>
@@ -483,7 +498,11 @@ function AdminQuotationPrintLegacy() {
 
                     {/* Watermark (Decorative) */}
                     <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03]" data-alt="Company Logo Watermark">
-                        <span className="material-symbols-outlined text-[400px]">ac_unit</span>
+                        {storeSettings?.storeLogo || storeSettings?.favicon ? (
+                            <img src={storeSettings?.storeLogo || storeSettings?.favicon} alt="Company Logo Watermark" className="h-[400px] w-[400px] object-contain" />
+                        ) : (
+                            <span className="material-symbols-outlined text-[400px]">ac_unit</span>
+                        )}
                     </div>
                 </div>
             </div>

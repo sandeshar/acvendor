@@ -17,7 +17,12 @@ export default function DraftsPage() {
             const res = await fetch('/api/admin/quotations');
             if (!res.ok) throw new Error('Failed to fetch');
             const arr: Quotation[] = await res.json();
-            setDrafts((arr || []).filter(a => (a.status || 'draft') === 'draft'));
+            const sorted = (arr || []).sort((a, b) => {
+                const ta = a.updatedAt ?? a.createdAt ?? '';
+                const tb = b.updatedAt ?? b.createdAt ?? '';
+                return tb.localeCompare(ta);
+            });
+            setDrafts(sorted);
         } catch (e: any) {
             console.error('Failed to load drafts', e);
             showToast('Failed to load drafts', { type: 'error' });

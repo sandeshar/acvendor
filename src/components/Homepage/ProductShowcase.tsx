@@ -38,7 +38,7 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
     ];
 
     return (
-        <div className="w-full bg-white py-20" id="products">
+        <div className="w-full  py-20" id="products">
             <div className="layout-container flex justify-center px-4 md:px-10">
                 <div className="flex flex-col w-full max-w-7xl gap-12">
                     <div className="flex flex-col md:flex-row justify-between items-end gap-6">
@@ -50,7 +50,7 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
                                 {descriptionText}
                             </p>
                         </div>
-                        <Link href={viewAllLink} className="text-primary font-bold hover:underline flex items-center">
+                        <Link href={viewAllLink} className="text-primary font-bold flex items-center">
                             View All Products <span className="material-symbols-outlined ml-1">arrow_forward</span>
                         </Link>
                     </div>

@@ -22,6 +22,10 @@ export default function HomePageUI() {
     const [contactData, setContactData] = useState<any>({});
     const [productsSection, setProductsSection] = useState<any>({});
     const [projectsSection, setProjectsSection] = useState<any>({});
+    const [aboutSection, setAboutSection] = useState<any>({});
+    const [aboutItems, setAboutItems] = useState<any[]>([]);
+    const [deletedAboutItems, setDeletedAboutItems] = useState<any[]>([]);
+    const [blogSection, setBlogSection] = useState<any>({});
     const [testimonialsSection, setTestimonialsSection] = useState<any>({});
     const [heroFeatures, setHeroFeatures] = useState<any[]>([]);
 
@@ -34,7 +38,7 @@ export default function HomePageUI() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes, heroFeaturesRes] = await Promise.all([
+            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes, heroFeaturesRes, blogSectionRes, aboutSectionRes, aboutItemsRes] = await Promise.all([
                 fetch('/api/pages/homepage/hero'),
                 fetch('/api/pages/homepage/trust-section'),
                 fetch('/api/pages/homepage/trust-logos'),
@@ -45,6 +49,9 @@ export default function HomePageUI() {
                 fetch('/api/pages/projects/section'),
                 fetch('/api/pages/homepage/testimonials-section'),
                 fetch('/api/pages/homepage/hero-floats?admin=1'),
+                fetch('/api/pages/homepage/blog-section'),
+                fetch('/api/pages/homepage/about-section'),
+                fetch('/api/pages/homepage/about-items?admin=1'),
             ]);
 
             if (heroRes.ok) setHeroData(await heroRes.json());
@@ -60,6 +67,29 @@ export default function HomePageUI() {
             }
             if (testimonialsSecRes.ok) setTestimonialsSection(await testimonialsSecRes.json() || {});
             if (heroFeaturesRes.ok) setHeroFeatures(await heroFeaturesRes.json());
+            if (blogSectionRes.ok) setBlogSection(await blogSectionRes.json() || {});
+            if (aboutSectionRes.ok) {
+                const s = await aboutSectionRes.json() || {};
+                try {
+                    s.bullets_text = s.bullets ? JSON.parse(s.bullets).join('\n') : '';
+                } catch {
+                    s.bullets_text = String(s.bullets || '');
+                }
+                setAboutSection(s);
+            }
+            if (aboutItemsRes.ok) {
+                const items = await aboutItemsRes.json() || [];
+                const mapped = (items || []).map((it: any) => {
+                    const copy = { ...it };
+                    try {
+                        copy.bullets_text = copy.bullets ? JSON.parse(copy.bullets).join('\n') : '';
+                    } catch {
+                        copy.bullets_text = String(copy.bullets || '');
+                    }
+                    return copy;
+                });
+                setAboutItems(mapped);
+            }
 
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -131,6 +161,17 @@ export default function HomePageUI() {
                 }
             };
 
+            // Prepare aboutSection and aboutItems for save (convert bullets_text -> bullets JSON)
+            const aboutSectionToSave = { ...aboutSection };
+            if (aboutSectionToSave) {
+                aboutSectionToSave.bullets = aboutSectionToSave.bullets_text ? JSON.stringify(aboutSectionToSave.bullets_text.split('\n').map((l: string) => l.trim()).filter(Boolean)) : (aboutSectionToSave.bullets || '[]');
+            }
+
+            const aboutItemsToSave = aboutItems.map(it => ({
+                ...it,
+                bullets: it.bullets_text ? JSON.stringify(String(it.bullets_text).split('\n').map((l: string) => l.trim()).filter(Boolean)) : (it.bullets || '[]')
+            }));
+
             // Execute saves
             await Promise.all([
                 saveSection('/api/pages/homepage/hero', heroData),
@@ -141,6 +182,9 @@ export default function HomePageUI() {
                 saveSection('/api/pages/homepage/contact-section', contactData),
                 saveSection('/api/pages/homepage/products-section', productsSection),
                 saveSection('/api/pages/projects/section', projectsSection),
+                saveSection('/api/pages/homepage/about-section', aboutSectionToSave),
+                saveList('/api/pages/homepage/about-items', aboutItemsToSave, deletedAboutItems),
+                saveSection('/api/pages/homepage/blog-section', blogSection),
                 saveSection('/api/pages/homepage/testimonials-section', testimonialsSection),
                 saveList('/api/pages/homepage/hero-floats', heroFeatures, deletedHeroFeatures),
             ]);
@@ -178,6 +222,8 @@ export default function HomePageUI() {
         { id: "expertise", label: "Expertise" },
         { id: "products", label: "Products" },
         { id: "projects", label: "Projects" },
+        { id: "about", label: "About" },
+        { id: "blog", label: "Blog" },
         { id: "testimonials", label: "Testimonials" },
         { id: "contact", label: "Contact" },
     ];
@@ -601,6 +647,114 @@ export default function HomePageUI() {
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                         <Toggle checked={(projectsSection?.is_active ?? 1) === 1} onChange={(c) => setProjectsSection({ ...projectsSection, is_active: c ? 1 : 0 })} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ABOUT SECTION */}
+                    {activeTab === "about" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-orange-500">info</span>
+                                    About Section
+                                </h2>
+                                <div className="space-y-5 mb-8">
+                                    <InputGroup label="Title" value={aboutSection?.title || ''} onChange={(v) => setAboutSection({ ...aboutSection, title: v })} />
+                                    <TextAreaGroup label="Description" value={aboutSection?.description || ''} onChange={(v) => setAboutSection({ ...aboutSection, description: v })} />
+                                    {/* <TextAreaGroup label="Bullets (one per line)" value={aboutSection?.bullets_text || ''} onChange={(v) => setAboutSection({ ...aboutSection, bullets_text: v })} />
+                                    <ImageUploader label="Image" value={aboutSection?.image_url || ''} onChange={(url: string) => setAboutSection({ ...aboutSection, image_url: url })} folder="home" ratio="4:3" />
+                                    <InputGroup label="Image Alt Text" value={aboutSection?.image_alt || ''} onChange={(v) => setAboutSection({ ...aboutSection, image_alt: v })} />
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <InputGroup label="CTA Text" value={aboutSection?.cta_text || ''} onChange={(v) => setAboutSection({ ...aboutSection, cta_text: v })} />
+                                        <InputGroup label="CTA Link" value={aboutSection?.cta_link || ''} onChange={(v) => setAboutSection({ ...aboutSection, cta_link: v })} />
+                                    </div> */}
+
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={(aboutSection?.is_active ?? 1) === 1} onChange={(c) => setAboutSection({ ...aboutSection, is_active: c ? 1 : 0 })} />
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 pt-6 border-t border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <p className="text-sm text-gray-500">Manage About Items</p>
+                                        <button onClick={() => addItem(aboutItems, setAboutItems, { title: '', description: '', bullets: '[]', image_url: '', image_alt: '', display_order: aboutItems.length + 1, is_active: 1 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                            <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Item
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {aboutItems.map((item, idx) => (
+                                            <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow group relative">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-500">{idx + 1}</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            const idToDelete = item.id ?? item._id ?? null;
+                                                            if (idToDelete) setDeletedAboutItems([...deletedAboutItems, idToDelete]);
+                                                            setAboutItems(aboutItems.filter((_, i) => i !== idx));
+                                                        }}
+                                                        className="text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                                    >
+                                                        <span className="material-symbols-outlined">delete</span>
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-4">
+                                                        <InputGroup label="Title" value={item.title || ''} onChange={(v) => updateItem(idx, 'title', v, aboutItems, setAboutItems)} />
+                                                        <TextAreaGroup label="Description" value={item.description || ''} onChange={(v) => updateItem(idx, 'description', v, aboutItems, setAboutItems)} />
+                                                        <TextAreaGroup label="Bullets (one per line)" value={item.bullets_text || ''} onChange={(v) => updateItem(idx, 'bullets_text', v, aboutItems, setAboutItems)} />
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <ImageUploader label="Image" value={item.image_url || ''} onChange={(url: string) => updateItem(idx, 'image_url', url, aboutItems, setAboutItems)} folder="home" ratio="4:3" />
+                                                        <InputGroup label="Image Alt Text" value={item.image_alt || ''} onChange={(v) => updateItem(idx, 'image_alt', v, aboutItems, setAboutItems)} />
+                                                        <div className="flex items-center justify-between pt-2">
+                                                            <span className="text-sm font-medium text-gray-700">Display Order</span>
+                                                            <input
+                                                                type="number"
+                                                                value={item.display_order || 0}
+                                                                onChange={(e) => updateItem(idx, 'display_order', Number(e.target.value), aboutItems, setAboutItems)}
+                                                                className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-center justify-between pt-2">
+                                                            <span className="text-sm font-medium text-gray-700">Active</span>
+                                                            <Toggle checked={item.is_active === 1} onChange={(c) => updateItem(idx, 'is_active', c ? 1 : 0, aboutItems, setAboutItems)} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* BLOG SECTION */}
+                    {activeTab === "blog" && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+                                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-orange-500">article</span>
+                                    Blog Section
+                                </h2>
+                                <div className="space-y-5 mb-8">
+                                    <InputGroup label="Title" value={blogSection?.title || ''} onChange={(v) => setBlogSection({ ...blogSection, title: v })} />
+                                    <TextAreaGroup label="Subtitle" value={blogSection?.subtitle || ''} onChange={(v) => setBlogSection({ ...blogSection, subtitle: v })} />
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <InputGroup label="CTA Text" value={blogSection?.cta_text || ''} onChange={(v) => setBlogSection({ ...blogSection, cta_text: v })} />
+                                        <InputGroup label="CTA Link" value={blogSection?.cta_link || ''} onChange={(v) => setBlogSection({ ...blogSection, cta_link: v })} />
+                                    </div>
+
+                                    <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
+                                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
+                                        <Toggle checked={(blogSection?.is_active ?? 1) === 1} onChange={(c) => setBlogSection({ ...blogSection, is_active: c ? 1 : 0 })} />
                                     </div>
                                 </div>
                             </div>

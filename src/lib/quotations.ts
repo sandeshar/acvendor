@@ -33,7 +33,8 @@ export async function createQuotation(q: Quotation): Promise<Quotation> {
     const id = list.length ? Math.max(...list.map(x => x.id || 0)) + 1 : 1;
     const number = q.number || `QT-${new Date().getFullYear()}-${String(id).padStart(3, '0')}`;
     const now = new Date().toISOString();
-    const item: Quotation = { ...q, id, number, createdAt: now, updatedAt: now };
+    // default new quotations to draft unless status explicitly provided
+    const item: Quotation = { ...q, id, number, status: q.status || 'draft', createdAt: now, updatedAt: now };
     list.push(item);
     await writeAll(list);
     return item;

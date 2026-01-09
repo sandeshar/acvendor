@@ -145,9 +145,9 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img alt={p.title || 'Product image'} className="h-full w-auto object-contain mix-blend-multiply" src={p.thumbnail || '/placeholder-product.png'} />
 
-                                <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm">
+                                {/* <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-gray-400 hover:text-red-500 transition-colors shadow-sm">
                                     <span className="material-symbols-outlined text-[20px]">favorite</span>
-                                </button>
+                                </button> */}
                             </div>
                             <div className="p-4 flex flex-col flex-1 gap-2">
                                 <div className="flex items-center gap-2 mb-1">

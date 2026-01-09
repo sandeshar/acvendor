@@ -109,6 +109,37 @@ const homepageProductsSectionSchema = new Schema({
 
 export const HomepageProductsSection = models.HomepageProductsSection || model('HomepageProductsSection', homepageProductsSectionSchema);
 
+// Homepage About Section
+const homepageAboutSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 2048 },
+    bullets: { type: String, required: false, default: '[]', maxlength: 4096 },
+    image_url: { type: String, required: false, default: '', maxlength: 512 },
+    image_alt: { type: String, required: false, default: '', maxlength: 256 },
+    cta_text: { type: String, default: '', maxlength: 100 },
+    cta_link: { type: String, default: '', maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_about_section'
+});
+
+export const HomepageAboutSection = models.HomepageAboutSection || model('HomepageAboutSection', homepageAboutSectionSchema);
+
+// Homepage Blog Section
+const homepageBlogSectionSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    subtitle: { type: String, required: true, maxlength: 1024 },
+    cta_text: { type: String, default: '', maxlength: 100 },
+    cta_link: { type: String, default: '', maxlength: 512 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: { createdAt: false, updatedAt: 'updatedAt' },
+    collection: 'homepage_blog_section'
+});
+
+export const HomepageBlogSection = models.HomepageBlogSection || model('HomepageBlogSection', homepageBlogSectionSchema);
+
 // Homepage Testimonials Section
 const homepageTestimonialsSectionSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
@@ -136,6 +167,22 @@ const homepageHeroFeaturesSchema = new Schema({
 
 export const HomepageHeroFeatures = models.HomepageHeroFeaturesV2 || model('HomepageHeroFeaturesV2', homepageHeroFeaturesSchema);
 
+// Homepage About Items (multiple entries like services)
+const homepageAboutItemsSchema = new Schema({
+    title: { type: String, required: true, maxlength: 256 },
+    description: { type: String, required: true, maxlength: 2048 },
+    bullets: { type: String, required: false, default: '[]', maxlength: 4096 },
+    image_url: { type: String, required: false, default: '', maxlength: 512 },
+    image_alt: { type: String, required: false, default: '', maxlength: 256 },
+    display_order: { type: Number, required: true, default: 0 },
+    is_active: { type: Number, default: 1, required: true },
+}, {
+    timestamps: true,
+    collection: 'homepage_about_items'
+});
+
+export const HomepageAboutItems = models.HomepageAboutItems || model('HomepageAboutItems', homepageAboutItemsSchema);
+
 // Backward compatibility exports (camelCase for existing API code)
 export const homepageHero = HomepageHero;
 export const homepageTrustLogos = HomepageTrustLogos;
@@ -146,3 +193,6 @@ export const homepageContactSection = HomepageContactSection;
 export const homepageProductsSection = HomepageProductsSection;
 export const homepageTestimonialsSection = HomepageTestimonialsSection;
 export const homepageHeroFeatures = HomepageHeroFeatures;
+export const homepageBlogSection = HomepageBlogSection;
+export const homepageAboutSection = HomepageAboutSection;
+export const homepageAboutItems = HomepageAboutItems;

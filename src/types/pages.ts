@@ -25,6 +25,27 @@ export interface HomepageHeroData {
     updatedAt?: string | Date;
 }
 
+export interface HomepageBlogSectionData {
+    id?: string;
+    title: string;
+    subtitle?: string;
+    cta_text?: string;
+    cta_link?: string;
+    is_active?: number;
+}
+
+export interface HomepageAboutSectionData {
+    id?: string;
+    title: string;
+    description?: string;
+    bullets?: string; // JSON string of bullet lines
+    image_url?: string;
+    image_alt?: string;
+    cta_text?: string;
+    cta_link?: string;
+    is_active?: number;
+}
+
 // About page types
 export interface AboutHeroData {
     id?: string;

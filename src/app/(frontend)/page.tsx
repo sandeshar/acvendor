@@ -3,16 +3,19 @@ import Expertise from "@/components/Homepage/Expertise";
 import Hero from "@/components/Homepage/Hero";
 import HeroFeatures from "@/components/Homepage/HeroFeatures";
 import Trust from "@/components/Homepage/Trust";
+import AboutSection from "@/components/Homepage/AboutSection";
 import ProductShowcase from '@/components/Homepage/ProductShowcase';
 import ProjectGallery from "@/components/Homepage/ProjectGallery";
 import TestimonialSlider from "@/components/shared/TestimonialSlider";
+import BlogSection from "@/components/Homepage/BlogSection";
+import AboutDetails from "@/components/Homepage/AboutDetails";
 
 
 async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
-        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes, heroFeaturesRes] = await Promise.all([
+        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes, heroFeaturesRes, aboutSectionRes, aboutItemsRes, blogSectionRes, blogPostsRes] = await Promise.all([
             fetch(`${baseUrl}/api/pages/homepage/hero`, { next: { tags: ['homepage-hero'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-section`, { next: { tags: ['homepage-trust-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-logos`, { next: { tags: ['homepage-trust-logos'] } }),
@@ -26,6 +29,10 @@ async function getHomepageData() {
             fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),
             fetch(`${baseUrl}/api/pages/projects/section`, { next: { tags: ['projects-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/hero-floats`, { next: { tags: ['homepage-hero-floats'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/about-section`, { next: { tags: ['homepage-about-section'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/about-items`, { next: { tags: ['homepage-about-items'] } }),
+            fetch(`${baseUrl}/api/pages/homepage/blog-section`, { next: { tags: ['homepage-blog-section'] } }),
+            fetch(`${baseUrl}/api/blog?limit=3`, { next: { tags: ['homepage-blog-posts'] } }),
         ]);
 
         const hero = heroRes.ok ? (await heroRes.json() || {}) : {};
@@ -40,6 +47,10 @@ async function getHomepageData() {
         const projects = projectsRes.ok ? (await projectsRes.json() || []) : [];
         const projectsSection = projectsSectionRes.ok ? (await projectsSectionRes.json() || {}) : {};
         const heroFeatures = heroFeaturesRes.ok ? (await heroFeaturesRes.json() || []) : [];
+        const aboutSection = aboutSectionRes.ok ? (await aboutSectionRes.json() || {}) : {};
+        const aboutItems = aboutItemsRes.ok ? (await aboutItemsRes.json() || []) : [];
+        const blogSection = blogSectionRes.ok ? (await blogSectionRes.json() || {}) : {};
+        const blogPosts = blogPostsRes.ok ? (await blogPostsRes.json() || []) : [];
 
         return {
             hero: Object.keys(hero).length ? hero : null,
@@ -54,6 +65,10 @@ async function getHomepageData() {
             projects,
             projectsSection: Object.keys(projectsSection).length ? projectsSection : null,
             heroFeatures,
+            aboutSection: Object.keys(aboutSection).length ? aboutSection : null,
+            aboutItems,
+            blogSection: Object.keys(blogSection).length ? blogSection : null,
+            blogPosts,
         };
     } catch (error) {
         console.error('Error fetching homepage data:', error);
@@ -68,6 +83,10 @@ async function getHomepageData() {
             projects: [],
             projectsSection: null,
             heroFeatures: [],
+            aboutSection: null,
+            aboutItems: [],
+            blogSection: null,
+            blogPosts: [],
         };
     }
 }
@@ -83,9 +102,18 @@ export default async function Home() {
                     <HeroFeatures features={data.heroFeatures} />
                 </div>
                 <Trust section={data.trustSection} logos={data.trustLogos} />
+
+                {/* Show About section and details only if aboutSection exists and is active */}
+                {data.aboutSection && ![0, '0', false].includes((data.aboutSection as any).is_active) && (
+                    <>
+                        <AboutSection section={data.aboutSection} />
+                        <AboutDetails items={data.aboutItems || []} />
+                    </>
+                )}
                 {/* Product showcase (featured products) */}
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
                 <ProductShowcase products={data.products || []} brand="midea" section={data.productsSection || undefined} />
+                <BlogSection posts={data.blogPosts || []} section={data.blogSection} />
                 <ProjectGallery projects={data.projects || []} section={data.projectsSection} />
                 {(!data.testimonialsSection || (data.testimonialsSection?.is_active ?? 1) === 1) && (
                     <TestimonialSlider filter="homepage" title={data.testimonialsSection?.title} subtitle={data.testimonialsSection?.subtitle} />
