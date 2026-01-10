@@ -527,7 +527,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             </div>
                                         </div>
                                         <div className="space-y-6">
-                                            <h3 className="text-xs font-bold text-gray-900 uppercase border-b pb-2">SEO Meta</h3>
+                                            <h3 className="text-xs font-bold text-gray-900 uppercase border-b pb-2">SEO Meta Tags</h3>
                                             <div className="space-y-4">
                                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Meta Title</label><input value={product.meta_title} onChange={e => setProduct({ ...product, meta_title: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium" /></div>
                                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-500">Meta Description</label><textarea value={product.meta_description} onChange={e => setProduct({ ...product, meta_description: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-medium resize-none" rows={4} /></div>
