@@ -16,8 +16,8 @@ type Category = {
 };
 
 type Subcategory = {
-    id?: number;
-    category_id: number;
+    id?: number | string;
+    category_id: string | number;
     name: string;
     // AC type (e.g., 'Inverter', 'Window', 'Split')
     ac_type?: string | null;
@@ -71,7 +71,8 @@ export default function CategoriesManagerPage() {
             if (subcategoriesRes.ok) {
                 const subs = await subcategoriesRes.json();
                 // Ensure category_id is present and consistent (may come as ObjectId or _id)
-                setSubcategories(Array.isArray(subs) ? subs.map((s: any) => ({ ...s, category_id: s.category_id ?? s.category?._id ?? s.category_id })) : []);
+                // Coerce to string to handle Mongo ObjectIds or numeric ids uniformly
+                setSubcategories(Array.isArray(subs) ? subs.map((s: any) => ({ ...s, category_id: String(s.category_id ?? s.category?._id ?? '') })) : []);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -95,7 +96,7 @@ export default function CategoriesManagerPage() {
     const addSubcategory = () => {
         setSelectedSubcategory({
             // use existing category id or its _id as fallback; keep as string if necessary
-            category_id: Number(categories[0]?.id ?? 0),
+            category_id: String(categories[0]?.id ?? ''),
             name: "",
             ac_type: '',
             slug: "",
@@ -527,7 +528,7 @@ export default function CategoriesManagerPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Parent Category</label>
                                 <select
                                     value={String(selectedSubcategory.category_id ?? '')}
-                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: Number(e.target.value) })}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: e.target.value })}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     <option value="">Select Category</option>
