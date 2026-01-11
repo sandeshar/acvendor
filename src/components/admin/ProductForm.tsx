@@ -105,7 +105,17 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
     // Initialize editors with incoming data once editors are available
     useEffect(() => {
         if (!initialData) return;
-        setProduct((prev: any) => ({ ...prev, ...initialData }));
+
+        const normalizedApplicationAreas = (() => {
+            const v = initialData.application_areas;
+            if (!v) return [];
+            if (typeof v === 'string') {
+                try { return JSON.parse(v); } catch (e) { return [v].filter(Boolean); }
+            }
+            return v;
+        })();
+
+        setProduct((prev: any) => ({ ...prev, ...initialData, application_areas: normalizedApplicationAreas }));
 
         try {
             if (editor && initialData.content) {
@@ -459,14 +469,14 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                                     value={item.icon || 'home'}
                                                                     onChange={(v) => setProduct({
                                                                         ...product,
-                                                                        application_areas: product.application_areas.map((x: any, i: number) => i === idx ? { ...item, icon: v } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
+                                                                        application_areas: (product.application_areas || []).map((x: any, i: number) => i === idx ? { ...item, icon: v } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
                                                                     })}
                                                                 />
                                                                 <input
                                                                     value={item.label || ''}
                                                                     onChange={(e) => setProduct({
                                                                         ...product,
-                                                                        application_areas: product.application_areas.map((x: any, i: number) => i === idx ? { ...item, label: e.target.value } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
+                                                                        application_areas: (product.application_areas || []).map((x: any, i: number) => i === idx ? { ...item, label: e.target.value } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
                                                                     })}
                                                                     placeholder="e.g. Home, Office"
                                                                     className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-1 focus:ring-blue-500 outline-none"

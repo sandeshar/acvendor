@@ -27,10 +27,19 @@ export default function EditProductPage() {
 
             // NOTE: We no longer load or merge service detail records into product editor; products are kept independent.
 
+            const applicationAreas = (() => {
+                if (!data.application_areas) return [];
+                if (typeof data.application_areas === 'string') {
+                    try { return JSON.parse(data.application_areas); } catch (e) { return [data.application_areas].filter(Boolean); }
+                }
+                return data.application_areas;
+            })();
+
             setInitialData({
                 ...data,
                 locations: data.locations ? (typeof data.locations === 'string' ? JSON.parse(data.locations) : data.locations) : [],
                 images: data.images ? data.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
+                application_areas: applicationAreas,
             });
         } catch (e) {
             console.error(e);
