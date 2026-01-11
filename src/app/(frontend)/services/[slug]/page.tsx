@@ -101,7 +101,7 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
         <main className="flex flex-col items-center page-bg">
             <div className="flex flex-col w-full max-w-7xl py-5">
                 {/* Hero Section */}
-                <section className="relative py-20 sm:py-32">
+                <section className="relative py-10 sm:py-16">
                     <div className="absolute inset-0 -z-10 bg-linear-to-br from-slate-50 to-slate-100" />
                     <div className="mx-auto w-full max-w-6xl">
                         <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">

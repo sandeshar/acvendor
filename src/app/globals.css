@@ -492,7 +492,7 @@ body {
 }
 
 /* Generic section class to use Google Sans for interface sections */
-.p {
+p {
     font-family: 'Google Sans', Arial, sans-serif;
 }
 
