@@ -133,7 +133,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
 
         const parsedFeatures = (() => {
             // Prioritize the prepared array/value in initialData.features (EditPage overwrites this)
-            const v = initialData.features; 
+            const v = initialData.features;
             if (Array.isArray(v)) return v;
             // Fallback
             if (typeof v === 'string') {
