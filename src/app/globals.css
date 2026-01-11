@@ -23,7 +23,7 @@
 
     --color-border: #e2e8f0;
 
-    --font-family-display: Inter, sans-serif;
+    --font-family-display: Arvo, serif;
 }
 
 /* =========================================================
@@ -488,7 +488,12 @@
 
 html,
 body {
-    font-family: Inter, sans-serif;
+    font-family: Arvo, serif;
+}
+
+/* Blog content should use Google Sans for a cleaner UI */
+.blog-content {
+    font-family: 'Google Sans', Arial, sans-serif;
 }
 
 /* Thin, subtle scrollbar for admin sidebar */

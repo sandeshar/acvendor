@@ -23,7 +23,7 @@ const config: Config = {
                 "border-dark": "#374151",
             },
             fontFamily: {
-                display: ["Inter", "sans-serif"],
+                display: ["Arvo", "serif"],
             },
             borderRadius: {
                 DEFAULT: "0.25rem",

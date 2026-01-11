@@ -265,7 +265,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1">
+                                    {/* <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Availability Label</label>
                                         <input
                                             value={product.availabilityLabel || ''}
@@ -274,7 +274,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             placeholder="e.g. Available for installation in"
                                         />
                                         <p className="text-xs text-gray-400">Optional text shown before the locations list on the product page.</p>
-                                    </div>
+                                    </div> */}
 
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Product Content</label>
