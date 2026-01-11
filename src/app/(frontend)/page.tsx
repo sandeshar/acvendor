@@ -111,14 +111,16 @@ export default async function Home() {
                     </>
                 )}
                 {/* Product showcase (featured products) */}
+                <Contact data={data.contactSection} />
+
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
-                <ProductShowcase products={data.products || []} brand="midea" section={data.productsSection || undefined} />
-                <BlogSection posts={data.blogPosts || []} section={data.blogSection} />
+                {/* <ProductShowcase products={data.products || []} brand="midea" section={data.productsSection || undefined} /> */}
                 <ProjectGallery projects={data.projects || []} section={data.projectsSection} />
                 {(!data.testimonialsSection || (data.testimonialsSection?.is_active ?? 1) === 1) && (
                     <TestimonialSlider filter="homepage" title={data.testimonialsSection?.title} subtitle={data.testimonialsSection?.subtitle} />
                 )}
-                <Contact data={data.contactSection} />
+                <BlogSection posts={data.blogPosts || []} section={data.blogSection} />
+
             </div>
         </main>
     );
