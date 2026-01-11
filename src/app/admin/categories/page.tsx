@@ -95,7 +95,7 @@ export default function CategoriesManagerPage() {
     const addSubcategory = () => {
         setSelectedSubcategory({
             // use existing category id or its _id as fallback; keep as string if necessary
-            category_id: categories[0]?.id ?? categories[0]?._id ?? '',
+            category_id: Number(categories[0]?.id ?? 0),
             name: "",
             ac_type: '',
             slug: "",
@@ -387,7 +387,7 @@ export default function CategoriesManagerPage() {
                             ) : (
                                 <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-200">
                                     {filteredSubcategories.map((subcategory) => {
-                                        const parentCategory = categories.find(c => String(c.id ?? c._id) === String(subcategory.category_id));
+                                        const parentCategory = categories.find(c => String(c.id) === String(subcategory.category_id));
                                         return (
                                             <div
                                                 key={subcategory.id}
@@ -527,7 +527,7 @@ export default function CategoriesManagerPage() {
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Parent Category</label>
                                 <select
                                     value={String(selectedSubcategory.category_id ?? '')}
-                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: e.target.value })}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: Number(e.target.value) })}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
                                     <option value="">Select Category</option>

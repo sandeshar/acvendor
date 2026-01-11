@@ -247,9 +247,9 @@ export default function EditBlogPage() {
     const addImageFromFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            const loadingImg = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">Uploading...</text></svg>';
             try {
                 // Show loading state
-                const loadingImg = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">Uploading...</text></svg>';
                 editor?.chain().focus().setImage({ src: loadingImg }).run();
 
                 // Upload the image
@@ -268,16 +268,44 @@ export default function EditBlogPage() {
 
                 const data = await response.json();
 
-                // Replace loading image with actual image
-                // Remove the loading image first
-                editor?.commands.deleteSelection();
-                // Insert the uploaded image
-                editor?.chain().focus().setImage({ src: data.url }).run();
+                // Replace any image node using the temporary loading image with the uploaded image URL.
+                const loadingSrc = loadingImg;
+                let foundPos: number | null = null;
+                editor?.state.doc.descendants((node, pos) => {
+                    if (node.type.name === 'image' && node.attrs.src === loadingSrc) {
+                        foundPos = pos;
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (foundPos !== null) {
+                    editor?.chain().focus().setNodeSelection(foundPos).updateAttributes('image', { src: data.url }).run();
+                } else {
+                    editor?.chain().focus().setImage({ src: data.url }).run();
+                }
             } catch (error) {
                 console.error('Error uploading image:', error);
                 showToast('Failed to upload image. Please try again.', { type: 'error' });
-                // Remove loading image on error
-                editor?.commands.deleteSelection();
+                // Attempt to remove any temporary loading image node
+                try {
+                    const loadingSrcErr = loadingImg;
+                    let foundPosErr: number | null = null;
+                    editor?.state.doc.descendants((node, pos) => {
+                        if (node.type.name === 'image' && node.attrs.src === loadingSrcErr) {
+                            foundPosErr = pos;
+                            return false;
+                        }
+                        return true;
+                    });
+                    if (foundPosErr !== null) {
+                        editor?.chain().focus().setNodeSelection(foundPosErr).deleteSelection().run();
+                    } else {
+                        editor?.commands.deleteSelection();
+                    }
+                } catch (e) {
+                    // ignore cleanup errors
+                }
             }
         }
 

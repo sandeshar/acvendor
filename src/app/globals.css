@@ -658,3 +658,69 @@ h6 {
     font-size: 1em;
     opacity: 1;
 }
+
+/* Consistent spacing for rendered editor content (frontend pages) */
+.prose p,
+.prose-sm p {
+    margin: 0.75rem 0;
+    line-height: 1.7;
+}
+
+.prose h1,
+.prose-sm h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+}
+
+.prose h2,
+.prose-sm h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem;
+}
+
+.prose h3,
+.prose-sm h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+}
+
+.prose img,
+.prose-sm img,
+.prose figure,
+.prose-sm figure {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+}
+
+.prose figure img,
+.prose-sm figure img {
+    width: 100%;
+    height: auto;
+}
+
+.prose figcaption,
+.prose-sm figcaption {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.prose blockquote,
+.prose-sm blockquote {
+    margin: 1rem 0;
+    padding-left: 1rem;
+    border-left: 4px solid #e5e7eb;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.prose pre,
+.prose-sm pre {
+    margin: 1rem 0;
+}

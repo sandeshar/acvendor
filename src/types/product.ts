@@ -46,6 +46,8 @@ export interface ProductPost {
     thumbnail?: string | null;
     price?: string | null;
     compare_at_price?: string | null;
+    discount_percent?: number | null;
+    discounted_price?: string | null;
     currency?: string | null;
     statusId?: number;
     category_id?: number | null;

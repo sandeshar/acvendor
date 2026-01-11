@@ -26,7 +26,9 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
                 }
                 const qs = finalBrand ? `?category=${encodeURIComponent(finalBrand)}` : '';
                 const catsRes = await fetch(`/api/pages/services/categories${qs}`);
-                const cats = catsRes.ok ? await catsRes.json() : [];
+                let cats = catsRes.ok ? await catsRes.json() : [];
+                // If brand is provided, show only brand-specific categories (exclude global categories)
+                if (finalBrand) cats = (cats || []).filter((c: any) => String(c.brand || '').toLowerCase() === String(finalBrand).toLowerCase());
                 if (mounted) setCategories(cats || []);
 
                 const subsRes = await fetch(`/api/pages/services/subcategories${qs}`);

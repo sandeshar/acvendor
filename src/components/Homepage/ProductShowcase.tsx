@@ -8,6 +8,8 @@ interface Product {
     excerpt?: string;
     thumbnail?: string | null;
     price?: string | number | { $numberDecimal?: string } | null;
+    compare_at_price?: string | number | null;
+    discount_percent?: number | null;
 }
 
 interface Props {
@@ -75,7 +77,11 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
                                         <p className="text-sm text-[#617589] line-clamp-2">{stripHtml(p.excerpt || '')}</p>
                                         <div className="mt-2 flex items-center justify-between">
                                             {priceNum > 0 ? (
-                                                <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
+                                                <div className="flex items-center gap-3">
+                                                        <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
+                                                        {p.compare_at_price ? <div className="text-sm text-[#617589] line-through">NPR {formatPrice(p.compare_at_price)}</div> : null}
+                                                        {p.discount_percent ? <div className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded font-bold">-{p.discount_percent}%</div> : null}
+                                                    </div>
                                             ) : (
                                                 <div className="text-primary/80 font-bold border-b border-primary/20 pb-0.5">Contact for price</div>
                                             )}

@@ -83,6 +83,9 @@ export const HomepageExpertiseItems = models.HomepageExpertiseItems || model('Ho
 const homepageContactSectionSchema = new Schema({
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, maxlength: 1024 },
+    // About block (heading + rich text paragraph)
+    about_heading: { type: String, required: false, default: '', maxlength: 256 },
+    about_paragraph: { type: String, required: false, default: '', maxlength: 10000 },
     name_placeholder: { type: String, required: true, maxlength: 100 },
     email_placeholder: { type: String, required: true, maxlength: 100 },
     phone_placeholder: { type: String, maxlength: 100, default: '' },

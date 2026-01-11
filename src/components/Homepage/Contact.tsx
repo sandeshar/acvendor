@@ -4,6 +4,8 @@ interface ContactSectionData {
     id: number;
     title: string;
     description: string;
+    about_heading?: string;
+    about_paragraph?: string; // rich HTML
     name_placeholder: string;
     email_placeholder: string;
     phone_placeholder?: string;
@@ -26,8 +28,22 @@ const Contact = ({ data }: ContactProps) => {
     return (
         <section className="px-4 md:px-10 py-20 sm:py-32">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-white border border-gray-200 rounded-xl p-8 sm:p-12">
-                <div className="flex flex-col gap-4">
-                    <h2 className="text-3xl md:text-4xl font-black text-[#111418]">{data.title}</h2>
+                <div>
+                    {data.about_heading ? (
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#111418]">{data.about_heading}</h1>
+                    ) : (
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#111418]">About Us</h1>
+                    )}
+
+                    {data.about_paragraph ? (
+                        <div className="prose max-w-none text-[#617589] mt-3" dangerouslySetInnerHTML={{ __html: data.about_paragraph }} />
+                    ) : (
+                        <p className="text-[#617589] text-base mt-3">We are committed to providing top-notch air conditioning solutions tailored to your needs. Reach out to us for inquiries, support, or to schedule a service.</p>
+                    )}
+                </div>
+                <div>
+                <div className="flex flex-col gap-4 py-10">
+                    <h2 className="text-2xl md:text-4xl font-black text-[#111418]">{data.title}</h2>
                     <p className="text-[#617589] text-base">{data.description}</p>
                 </div>
                 <ContactFormSection
@@ -39,6 +55,7 @@ const Contact = ({ data }: ContactProps) => {
                     submitButtonText={data.submit_button_text}
                     variant="labeled"
                 />
+                </div>
             </div>
         </section>
     );

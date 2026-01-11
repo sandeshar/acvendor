@@ -9,6 +9,9 @@ const productSchema = new Schema({
     thumbnail: { type: String, maxlength: 512, default: '' },
     price: { type: mongoose.Schema.Types.Decimal128, default: null },
     compare_at_price: { type: mongoose.Schema.Types.Decimal128, default: null },
+    // Discount percentage (e.g. 10 for 10%) and computed discounted price
+    discount_percent: { type: Number, default: 0 },
+    discounted_price: { type: mongoose.Schema.Types.Decimal128, default: null },
     currency: { type: String, default: 'NPR', maxlength: 10 },
     statusId: { type: Number, default: 1, required: true },
     featured: { type: Number, default: 0, required: true },

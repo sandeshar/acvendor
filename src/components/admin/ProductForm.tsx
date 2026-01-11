@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import ImageUploader from '@/components/shared/ImageUploader';
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -45,6 +46,8 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         locations: [],
         price: '',
         compare_at_price: '',
+        discount_percent: 0,
+        discounted_price: '',
         currency: 'NPR',
         model: '',
         technical: {
@@ -564,16 +567,38 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-6">
                                             <h3 className="text-xs font-bold text-gray-900 uppercase border-b pb-2">Pricing</h3>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-3 gap-4">
                                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Selling Price</label><input value={product.price || ''} onChange={e => setProduct({ ...product, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-md font-bold" /></div>
-                                                <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Status</label>
-                                                    <select value={product.inventory_status} onChange={e => setProduct({ ...product, inventory_status: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-bold">
-                                                        <option value="in_stock">In Stock</option>
-                                                        <option value="out_of_stock">Out of Stock</option>
-                                                        <option value="preorder">Pre-order</option>
-                                                    </select>
-                                                </div>
+                                                <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Original MRP</label><input value={product.compare_at_price || ''} onChange={e => {
+                                                    const val = e.target.value;
+                                                    const disc = Number(product.discount_percent || 0);
+                                                    const parsed = val === '' ? '' : Number(val);
+                                                    if (parsed !== '' && !isNaN(parsed) && disc > 0) {
+                                                        const newPrice = Number((parsed * (1 - (disc / 100))).toFixed(2));
+                                                        setProduct({ ...product, compare_at_price: val, discounted_price: String(newPrice), price: String(newPrice) });
+                                                    } else {
+                                                        setProduct({ ...product, compare_at_price: val, discounted_price: '', });
+                                                    }
+                                                }} className="w-full px-4 py-2 border border-gray-300 rounded-md" /></div>
+                                                <div className="space-y-1"><label className="text-xs font-bold text-gray-500 uppercase">Discount (%)</label><input type="number" min={0} max={100} value={product.discount_percent ?? 0} onChange={e => {
+                                                    const val = Number(e.target.value || 0);
+                                                    const base = Number(product.compare_at_price || 0);
+                                                    if (base && val > 0) {
+                                                        const newPrice = Number((base * (1 - (val / 100))).toFixed(2));
+                                                        setProduct({ ...product, discount_percent: val, discounted_price: String(newPrice), price: String(newPrice) });
+                                                    } else {
+                                                        setProduct({ ...product, discount_percent: val, discounted_price: '' });
+                                                    }
+                                                }} className="w-full px-4 py-2 border border-gray-300 rounded-md" /></div>
                                             </div>
+
+                                            {/* Discount preview */}
+                                            {(product.compare_at_price && product.discount_percent && Number(product.discount_percent) > 0) ? (
+                                                <div className="mt-3 px-3 py-2 bg-green-50 border border-green-100 rounded text-sm text-green-700 flex items-center gap-4">
+                                                    <div className="font-bold">New Price: NPR {formatPrice(product.price)}</div>
+                                                    <div className="text-sm">You save NPR {formatPrice((Number(product.compare_at_price || 0) - Number(product.price || 0)) || 0)} ({Number(product.discount_percent)}% off)</div>
+                                                </div>
+                                            ) : null}
                                             <div className="pt-4 flex gap-3">
                                                 <button onClick={() => setProduct({ ...product, statusId: 1 })} className={`flex-1 py-2 text-xs font-bold uppercase rounded border ${product.statusId === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>Public</button>
                                                 <button onClick={() => setProduct({ ...product, statusId: 2 })} className={`flex-1 py-2 text-xs font-bold uppercase rounded border ${product.statusId === 2 ? 'bg-gray-800 border-gray-800 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>Draft</button>

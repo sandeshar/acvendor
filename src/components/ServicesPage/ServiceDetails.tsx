@@ -14,6 +14,8 @@ interface ServiceDetailData {
     updatedAt: Date;
 }
 
+import { stripHtml } from '@/utils/stripHtml';
+
 interface ServiceDetailsProps {
     services?: ServiceDetailData[];
 }
@@ -31,7 +33,7 @@ const ServiceDetails = ({ services = [] }: ServiceDetailsProps) => {
                         const isReversed = idx % 2 === 1;
                         let bullets: string[] = [];
                         try {
-                            bullets = JSON.parse(s.bullets);
+                            bullets = JSON.parse(s.bullets || '[]');
                         } catch (e) {
                             console.error("Failed to parse bullets JSON", e);
                         }
@@ -56,12 +58,12 @@ const ServiceDetails = ({ services = [] }: ServiceDetailsProps) => {
                                         </div>
                                         <h2 className="text-3xl font-bold tracking-tight">{s.title}</h2>
                                     </div>
-                                    <p className="mt-4 text-lg text-slate-600">{s.description}</p>
+                                    <p className="mt-4 text-lg text-slate-600">{stripHtml(s.description || '')}</p>
                                     <ul className="mt-6 space-y-4 text-slate-600">
                                         {bullets.map(b => (
                                             <li key={b} className="flex items-start gap-3">
                                                 <span className="material-symbols-outlined mt-1 text-lg text-primary">check_circle</span>
-                                                <span>{b}</span>
+                                                <span>{stripHtml(b)}</span>
                                             </li>
                                         ))}
                                     </ul>

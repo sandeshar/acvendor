@@ -1,4 +1,5 @@
 import ProcessStep from './ProcessStep';
+import { stripHtml } from '@/utils/stripHtml';
 
 interface ProcessSectionData {
     id: number;
@@ -37,7 +38,7 @@ const ProcessSection = ({ section, steps = [] }: ProcessSectionProps) => {
                         {section.title}
                     </h2>
                     <p className="max-w-3xl text-base text-slate-600 sm:text-lg">
-                        {section.description}
+                        {stripHtml(section.description || '')}
                     </p>
                 </div>
                 <div className="relative mt-12">

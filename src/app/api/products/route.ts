@@ -429,7 +429,9 @@ export async function GET(request: NextRequest) {
             ...r,
             id: r._id.toString(),
             price: r.price ? r.price.toString() : null,
-            compare_at_price: r.compare_at_price ? r.compare_at_price.toString() : null
+            compare_at_price: r.compare_at_price ? r.compare_at_price.toString() : null,
+            discount_percent: r.discount_percent ?? 0,
+            discounted_price: r.discounted_price ? (r.discounted_price.toString ? r.discounted_price.toString() : String(r.discounted_price)) : null
         }));
 
         // If client requested meta information with pagination, include total count
@@ -537,7 +539,22 @@ export async function POST(request: NextRequest) {
             features: features ? (typeof features === 'string' ? features : JSON.stringify(features)) : '[]',
             // accept custom specs (camelCase or snake_case), store as JSON string
             custom_specs: (typeof body.customSpecs !== 'undefined') ? (Array.isArray(body.customSpecs) ? JSON.stringify(body.customSpecs) : (typeof body.customSpecs === 'string' ? body.customSpecs : JSON.stringify(body.customSpecs))) : (typeof body.custom_specs !== 'undefined' ? (typeof body.custom_specs === 'string' ? body.custom_specs : JSON.stringify(body.custom_specs)) : '[]'),
+            // discount fields
+            discount_percent: (typeof body.discount_percent !== 'undefined' && body.discount_percent !== null && body.discount_percent !== '') ? Number(body.discount_percent) : 0,
         };
+
+        // compute discounted price from compare_at_price when discount provided
+        try {
+            const disc = (typeof body.discount_percent !== 'undefined' && body.discount_percent !== null && body.discount_percent !== '') ? Number(body.discount_percent) : 0;
+            if (productData.compare_at_price && disc > 0) {
+                const base = Number(productData.compare_at_price);
+                const discounted = Number((base * (1 - (disc / 100))).toFixed(2));
+                productData.discounted_price = discounted;
+                productData.price = discounted;
+            } else {
+                productData.discounted_price = null;
+            }
+        } catch (e) { productData.discounted_price = null; }
 
         const newProduct = await Product.create(productData);
         const insertId = newProduct._id;
@@ -635,6 +652,21 @@ export async function PUT(request: NextRequest) {
         if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
         if (price !== undefined) updateData.price = (price === '' ? null : price);
         if (compare_at_price !== undefined) updateData.compare_at_price = (compare_at_price === '' ? null : compare_at_price);
+        if (typeof body.discount_percent !== 'undefined') {
+            const d = (body.discount_percent === '' || body.discount_percent === null) ? 0 : Number(body.discount_percent);
+            updateData.discount_percent = isNaN(d) ? 0 : d;
+            // compute discounted price when both compare_at_price and discount available
+            try {
+                const base = (typeof updateData.compare_at_price !== 'undefined' && updateData.compare_at_price !== null && updateData.compare_at_price !== '') ? Number(updateData.compare_at_price) : (typeof compare_at_price !== 'undefined' ? (compare_at_price === '' ? null : Number(compare_at_price)) : undefined);
+                if (base && updateData.discount_percent > 0) {
+                    const discounted = Number((base * (1 - (updateData.discount_percent / 100))).toFixed(2));
+                    updateData.discounted_price = discounted;
+                    updateData.price = discounted;
+                } else {
+                    updateData.discounted_price = null;
+                }
+            } catch (e) { updateData.discounted_price = null; }
+        }
         if (currency !== undefined) updateData.currency = currency;
         if (statusId !== undefined) updateData.statusId = statusId;
         if (category_id !== undefined) updateData.category_id = category_id;
@@ -680,6 +712,18 @@ export async function PUT(request: NextRequest) {
         }
 
         await Product.findByIdAndUpdate(id, updateData, { new: true });
+
+        // If compare_at_price changed but discount_percent not provided, recompute discounted_price using existing discount_percent
+        try {
+            if (typeof compare_at_price !== 'undefined' && (typeof body.discount_percent === 'undefined')) {
+                const db = await Product.findById(id).lean();
+                if (db && db.discount_percent && db.compare_at_price) {
+                    const base = Number(compare_at_price === '' ? db.compare_at_price : compare_at_price);
+                    const discounted = Number((base * (1 - (Number(db.discount_percent) / 100))).toFixed(2));
+                    await Product.findByIdAndUpdate(id, { discounted_price: discounted, price: discounted });
+                }
+            }
+        } catch (e) { /* ignore */ }
 
         // handle images - if images array provided, replace existing images
         if (images && Array.isArray(images)) {

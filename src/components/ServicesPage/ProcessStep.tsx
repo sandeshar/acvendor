@@ -1,4 +1,5 @@
 import React from 'react';
+import { stripHtml } from '@/utils/stripHtml';
 
 interface ProcessStepProps {
     number: number;
@@ -13,7 +14,7 @@ const ProcessStep = ({ number, title, description }: ProcessStepProps) => {
                 {number}
             </div>
             <h3 className="text-lg font-bold text-body">{title}</h3>
-            <p className="text-sm text-subtext">{description}</p>
+            <p className="text-sm text-subtext">{stripHtml(description)}</p>
         </div>
     );
 };

@@ -158,6 +158,8 @@ export async function POST() {
         await HomepageContactSection.create({
             title: 'Need Help Choosing?',
             description: "Our support team can help you pick the right AC and schedule installation. Fill out the form and we'll respond within 24 hours.",
+            about_heading: 'About Us',
+            about_paragraph: '<p>We are committed to providing top-notch air conditioning solutions tailored to your needs. Reach out to us for inquiries, support, or to schedule a service.</p>',
             name_placeholder: 'Your Name',
             email_placeholder: 'Your Email',
             phone_placeholder: 'Phone Number',

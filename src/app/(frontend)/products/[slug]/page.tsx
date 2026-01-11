@@ -176,6 +176,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                 {parsePriceNumber(post.compare_at_price) > 0 ? (
                                     <span className="text-lg text-[#617589] line-through decoration-1">NPR {formatPrice(post.compare_at_price)}</span>
                                 ) : null}
+                                {post.discount_percent ? (
+                                    <span className="ml-2 inline-flex items-center text-sm bg-red-50 text-red-600 px-2 py-1 rounded font-bold">-{post.discount_percent}%</span>
+                                ) : null}
+                                {post.discounted_price && post.compare_at_price ? (
+                                    <div className="text-sm text-green-600 ml-2">You save NPR {formatPrice(Number(post.compare_at_price) - Number(post.price))}</div>
+                                ) : null}
                             </div>
                         </div>
 

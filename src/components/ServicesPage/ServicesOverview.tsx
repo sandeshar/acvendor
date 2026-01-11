@@ -1,3 +1,5 @@
+import { stripHtml } from '@/utils/stripHtml';
+
 interface ServiceCardProps {
     title: string;
     description: string;
@@ -11,7 +13,7 @@ const ServiceCard = ({ title, description, icon = 'build', href = '#' }: Service
             <span className="material-symbols-outlined text-3xl">{icon}</span>
         </div>
         <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-        <p className="text-slate-500 text-sm leading-relaxed mb-4">{description}</p>
+        <p className="text-slate-500 text-sm leading-relaxed mb-4">{stripHtml(description)}</p>
         <a className="text-primary font-bold text-sm flex items-center gap-1 hover:underline" href={href}>Learn more <span className="material-symbols-outlined text-sm">arrow_forward</span></a>
     </div>
 );

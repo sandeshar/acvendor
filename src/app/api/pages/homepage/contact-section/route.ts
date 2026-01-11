@@ -39,15 +39,17 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active = 1 } = body;
+        const { title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active = 1 } = body;
 
         if (!title || !description || !name_placeholder || !email_placeholder || !service_placeholder || !message_placeholder || !submit_button_text) {
-            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+            return NextResponse.json({ error: 'All required fields are required' }, { status: 400 });
         }
 
         const result = await HomepageContactSection.create({
             title,
             description,
+            about_heading: about_heading || '',
+            about_paragraph: about_paragraph || '',
             name_placeholder,
             email_placeholder,
             phone_placeholder: phone_placeholder || null,
@@ -73,7 +75,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, title, description, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active } = body;
+        const { id, title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -82,6 +84,8 @@ export async function PUT(request: NextRequest) {
         const updateData: any = {};
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
+        if (about_heading !== undefined) updateData.about_heading = about_heading;
+        if (about_paragraph !== undefined) updateData.about_paragraph = about_paragraph;
         if (name_placeholder !== undefined) updateData.name_placeholder = name_placeholder;
         if (email_placeholder !== undefined) updateData.email_placeholder = email_placeholder;
         if (phone_placeholder !== undefined) updateData.phone_placeholder = phone_placeholder;

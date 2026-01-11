@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { showToast } from '@/components/Toast';
 import ImageUploader from '@/components/shared/ImageUploader';
 import IconSelector from "@/components/admin/IconSelector";
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 export default function HomePageUI() {
     const [activeTab, setActiveTab] = useState("hero");
@@ -796,6 +797,12 @@ export default function HomePageUI() {
                                 <div className="space-y-5">
                                     <InputGroup label="Title" value={contactData.title || ''} onChange={(v) => setContactData({ ...contactData, title: v })} />
                                     <TextAreaGroup label="Description" value={contactData.description || ''} onChange={(v) => setContactData({ ...contactData, description: v })} />
+
+                                    <InputGroup label="About Heading" value={contactData.about_heading || ''} onChange={(v) => setContactData({ ...contactData, about_heading: v })} />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">About Paragraph</label>
+                                        <RichTextEditor value={contactData.about_paragraph || ''} onChange={(v) => setContactData({ ...contactData, about_paragraph: v })} />
+                                    </div>
 
                                     <div className="grid grid-cols-2 gap-5">
                                         <InputGroup label="Name Placeholder" value={contactData.name_placeholder || ''} onChange={(v) => setContactData({ ...contactData, name_placeholder: v })} />

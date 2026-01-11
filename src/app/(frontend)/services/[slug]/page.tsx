@@ -7,6 +7,7 @@ import TestimonialSlider from "@/components/shared/TestimonialSlider";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 import type { ServiceRecord, ServiceDetail, ServicePostPageProps } from "@/types/pages";
+import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 async function getServicePost(slug: string): Promise<ServiceRecord | null> {
     try {
@@ -159,7 +160,7 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                             <div className="space-y-12">
                                 {/* About Section */}
                                 <div>
-                                    <h2 className="text-3xl font-bold text-[#0f172a] mb-6">How It Works</h2>
+                                    {/* <h2 className="text-3xl font-bold text-[#0f172a] mb-6">How It Works</h2> */}
                                     <div
                                         className="prose prose-lg max-w-none 
                                             prose-headings:font-bold prose-headings:text-[#0f172a] prose-headings:mt-6 prose-headings:mb-3
@@ -180,9 +181,9 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                                         <div className="flex items-center justify-between gap-4 mb-4">
                                             <div>
                                                 <div className="text-sm font-semibold uppercase tracking-wide mb-1 text-white/90">{post.price_label || 'Pricing'}</div>
-                                                {post.price ? (
+                                                {parsePriceNumber(post.price) > 0 ? (
                                                     <div className="text-3xl font-extrabold text-white">
-                                                        {getCurrencySymbol(post.currency)}{post.price}
+                                                        {getCurrencySymbol(post.currency)}{formatPrice(post.price)}
                                                     </div>
                                                 ) : (
                                                     <div className="text-lg font-semibold text-white">Pricing on request</div>
