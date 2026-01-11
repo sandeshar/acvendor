@@ -64,12 +64,14 @@ export default function CategoriesManagerPage() {
 
             if (categoriesRes.ok) {
                 const cats = await categoriesRes.json();
-                setCategories(cats);
+                // Normalize IDs so we always have an `id` field (some APIs return `_id`)
+                setCategories(Array.isArray(cats) ? cats.map((c: any) => ({ ...c, id: c.id ?? c._id })) : []);
             }
 
             if (subcategoriesRes.ok) {
                 const subs = await subcategoriesRes.json();
-                setSubcategories(subs);
+                // Ensure category_id is present and consistent (may come as ObjectId or _id)
+                setSubcategories(Array.isArray(subs) ? subs.map((s: any) => ({ ...s, category_id: s.category_id ?? s.category?._id ?? s.category_id })) : []);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -92,7 +94,8 @@ export default function CategoriesManagerPage() {
 
     const addSubcategory = () => {
         setSelectedSubcategory({
-            category_id: categories[0]?.id || 0,
+            // use existing category id or its _id as fallback; keep as string if necessary
+            category_id: categories[0]?.id ?? categories[0]?._id ?? '',
             name: "",
             ac_type: '',
             slug: "",
@@ -384,7 +387,7 @@ export default function CategoriesManagerPage() {
                             ) : (
                                 <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-200">
                                     {filteredSubcategories.map((subcategory) => {
-                                        const parentCategory = categories.find(c => c.id === subcategory.category_id);
+                                        const parentCategory = categories.find(c => String(c.id ?? c._id) === String(subcategory.category_id));
                                         return (
                                             <div
                                                 key={subcategory.id}
@@ -523,12 +526,13 @@ export default function CategoriesManagerPage() {
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Parent Category</label>
                                 <select
-                                    value={selectedSubcategory.category_id}
-                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: Number(e.target.value) })}
+                                    value={String(selectedSubcategory.category_id ?? '')}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: e.target.value })}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 >
+                                    <option value="">Select Category</option>
                                     {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        <option key={String(cat.id)} value={String(cat.id)}>{cat.name}</option>
                                     ))}
                                 </select>
                             </div>
