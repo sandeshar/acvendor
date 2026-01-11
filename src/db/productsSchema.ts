@@ -29,6 +29,10 @@ const productSchema = new Schema({
     noise: { type: String, maxlength: 64, default: '' },
     dimensions: { type: String, maxlength: 128, default: '' },
     voltage: { type: String, maxlength: 64, default: '' },
+    // Persisted JSON for custom technical specs (array of {name, value})
+    custom_specs: { type: String, default: '' },
+    // Persisted JSON for key features (array of {icon, label})
+    features: { type: String, default: '' },
     locations: { type: String, default: '' },
     application_areas: { type: String, default: '' }, // JSON array of {icon, label}
     // Human friendly availability label displayed before locations list

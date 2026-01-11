@@ -43,6 +43,24 @@ export async function GET(request: NextRequest) {
 
             if (product) {
                 const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
+                // normalize custom specs and features for easier consumption and provide nested `technical` for clients
+                try {
+                    const parsed = product.customSpecs || (product.custom_specs ? (typeof product.custom_specs === 'string' ? JSON.parse(product.custom_specs) : product.custom_specs) : []);
+                    (product as any).customSpecs = parsed;
+                    // parse features if present
+                    try { (product as any).features = product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : []; } catch (er) { (product as any).features = []; }
+                    (product as any).technical = {
+                        power: product.power || null,
+                        iseer: product.iseer || null,
+                        refrigerant: product.refrigerant || null,
+                        noise: product.noise || null,
+                        dimensions: product.dimensions || null,
+                        voltage: product.voltage || null,
+                        capacity: product.capacity || null,
+                        warranty: product.warranty || null,
+                        customSpecs: parsed
+                    };
+                } catch (e) { (product as any).customSpecs = []; (product as any).technical = (product as any).technical || { customSpecs: [] }; }
 
                 // attach category/subcategory objects when available
                 try {
@@ -105,6 +123,24 @@ export async function GET(request: NextRequest) {
             const product = await Product.findOne({ slug }).lean();
             if (product) {
                 const images = await ProductImage.find({ product_id: product._id }).sort({ display_order: -1 }).lean();
+                // normalize custom specs and features for easier consumption and provide nested `technical` for clients
+                try {
+                    const parsed = product.customSpecs || (product.custom_specs ? (typeof product.custom_specs === 'string' ? JSON.parse(product.custom_specs) : product.custom_specs) : []);
+                    (product as any).customSpecs = parsed;
+                    // parse features if present
+                    try { (product as any).features = product.features ? (typeof product.features === 'string' ? JSON.parse(product.features) : product.features) : []; } catch (er) { (product as any).features = []; }
+                    (product as any).technical = {
+                        power: product.power || null,
+                        iseer: product.iseer || null,
+                        refrigerant: product.refrigerant || null,
+                        noise: product.noise || null,
+                        dimensions: product.dimensions || null,
+                        voltage: product.voltage || null,
+                        capacity: product.capacity || null,
+                        warranty: product.warranty || null,
+                        customSpecs: parsed
+                    };
+                } catch (e) { (product as any).customSpecs = []; (product as any).technical = (product as any).technical || { customSpecs: [] }; }
 
                 // attach category/subcategory objects when available
                 try {
@@ -454,6 +490,8 @@ export async function POST(request: NextRequest) {
             locations,
             application_areas,
             availabilityLabel,
+            // key features (array)
+            features,
             // technical enabled flag (accept both variants) -- normalized below
         } = body;
         // Normalize technical flag: accept camelCase or snake_case from incoming body
@@ -495,6 +533,10 @@ export async function POST(request: NextRequest) {
             meta_title: metaTitle || null,
             meta_description: metaDescription || null,
             technical_enabled: typeof technicalEnabledNormalized !== 'undefined' ? (technicalEnabledNormalized ? 1 : 0) : 1,
+            // accept key features (array) and persist them as JSON string
+            features: features ? (typeof features === 'string' ? features : JSON.stringify(features)) : '[]',
+            // accept custom specs (camelCase or snake_case), store as JSON string
+            custom_specs: (typeof body.customSpecs !== 'undefined') ? (Array.isArray(body.customSpecs) ? JSON.stringify(body.customSpecs) : (typeof body.customSpecs === 'string' ? body.customSpecs : JSON.stringify(body.customSpecs))) : (typeof body.custom_specs !== 'undefined' ? (typeof body.custom_specs === 'string' ? body.custom_specs : JSON.stringify(body.custom_specs)) : '[]'),
         };
 
         const newProduct = await Product.create(productData);
@@ -579,6 +621,8 @@ export async function PUT(request: NextRequest) {
             availabilityLabel,
             // technical enabled flag
             technicalEnabled,
+            // key features (array)
+            features,
         } = body;
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -615,6 +659,19 @@ export async function PUT(request: NextRequest) {
         if (rating !== undefined) updateData.rating = (rating === '' ? '0' : rating);
         if (metaTitle !== undefined) updateData.meta_title = metaTitle;
         if (metaDescription !== undefined) updateData.meta_description = metaDescription;
+        // accept key features updates
+        if (typeof features !== 'undefined') {
+            if (features === null) updateData.features = '[]';
+            else if (Array.isArray(features)) updateData.features = JSON.stringify(features);
+            else updateData.features = (typeof features === 'string') ? features : JSON.stringify(features);
+        }
+        // accept custom specs updates (camelCase or snake_case)
+        const customSpecsIncoming = (typeof body.customSpecs !== 'undefined') ? body.customSpecs : (typeof body.custom_specs !== 'undefined' ? body.custom_specs : undefined);
+        if (typeof customSpecsIncoming !== 'undefined') {
+            if (customSpecsIncoming === null) updateData.custom_specs = '[]';
+            else if (Array.isArray(customSpecsIncoming)) updateData.custom_specs = JSON.stringify(customSpecsIncoming);
+            else updateData.custom_specs = (typeof customSpecsIncoming === 'string') ? customSpecsIncoming : JSON.stringify(customSpecsIncoming);
+        }
         // accept either camelCase or snake_case in updates
         const technicalEnabledIncoming = (typeof body.technicalEnabled !== 'undefined') ? body.technicalEnabled : (typeof body.technical_enabled !== 'undefined' ? body.technical_enabled : undefined);
         if (typeof technicalEnabledIncoming !== 'undefined') {

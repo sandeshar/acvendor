@@ -267,9 +267,9 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                 {/* CTA Section */}
                 <section className="py-16 sm:py-24 bg-linear-to-r from-primary/5 to-indigo-500/5 border-y border-slate-200">
                     <div className="mx-auto w-full max-w-3xl text-center">
-                        <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">
+                        <h4 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">
                             Let's Bring Your Vision to Life
-                        </h2>
+                        </h4>
                         <p className="text-lg text-[#4b5563] mb-8">
                             Schedule a free consultation to explore how {post.title} can benefit your business.
                         </p>

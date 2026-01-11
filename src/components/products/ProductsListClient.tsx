@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import Star from '@/components/icons/Star';
 import useCompare from './useCompare';
 import CompareTray from './CompareTray';
 import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
+import { stripHtml } from '@/utils/stripHtml';
 
 
 export default function ProductsListClient({ products, productPathPrefix, searchContext }: { products: any[], productPathPrefix?: string, searchContext?: { category?: string, subcategory?: string, minPrice?: string, maxPrice?: string, status?: string } }) {
@@ -14,6 +16,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
 
     const [remoteProducts, setRemoteProducts] = useState<any[] | null>(null);
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     // Compare hook for inline buttons and tray (so grid/list can show + beside price and tray uses same state)
     const { items, addItem, removeItem, clear, contains } = useCompare();
@@ -93,6 +96,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
     }
     function onCompareClick(e: any, product: any) {
         e.preventDefault();
+        e.stopPropagation();
         const pid = product?._id ?? product?.id;
         if (!pid) return;
         if (contains(pid)) removeItem(pid);
@@ -105,6 +109,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
         const selected = pid ? contains(pid) : false;
         const onClick = (e: any) => {
             e.preventDefault();
+            e.stopPropagation();
             if (!pid) return;
             if (selected) removeItem(pid);
             else addItem({ _id: product._id, id: product.id, slug: product.slug, title: product.title, thumbnail: product.thumbnail, price: product.price });
@@ -135,7 +140,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
             ) : view === 'grid' ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {displayedProducts.map((p: any) => (
-                        <article key={p.id ?? p._id ?? p.slug} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300">
+                        <article key={p.id ?? p._id ?? p.slug} onClick={() => router.push(`${productPathPrefix || '/products'}/${p.slug}`)} className="group flex flex-col bg-white rounded-xl border border-[#e5e7eb] overflow-hidden hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer">
                             <div className="relative h-48 w-full bg-[#f3f6f9] flex items-center justify-center p-4">
                                 {p.inventory_status === 'in_stock' && (
                                     <div className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded">IN STOCK</div>
@@ -159,7 +164,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                     <span className="text-xs font-medium text-gray-500">{(p.technical_enabled ?? 1) !== 0 ? (p.model || p.capacity || '') : ''}</span>
                                 </div>
                                 <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
-                                <p className="text-sm text-[#617589] line-clamp-2">{p.excerpt || p.description || ''}</p>
+                                <p className="text-sm text-[#617589] line-clamp-2">{stripHtml(p.excerpt || p.description || '')}</p>
 
                                 {/* Price row: show price and compare add button */}
                                 <div className="flex items-center justify-between mt-3">
@@ -196,7 +201,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                         </thead>
                         <tbody>
                             {displayedProducts.map((p: any) => (
-                                <tr key={p.id ?? p._id ?? p.slug} className="border-t hover:bg-gray-50 transition-colors">
+                                <tr key={p.id ?? p._id ?? p.slug} onClick={() => router.push(`${productPathPrefix || '/products'}/${p.slug}`)} className="border-t hover:bg-gray-50 transition-colors cursor-pointer">
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-4">
                                             <img src={p.thumbnail || '/placeholder-product.png'} alt={p.title} className="h-16 w-28 object-contain rounded" />

@@ -35,11 +35,42 @@ export default function EditProductPage() {
                 return data.application_areas;
             })();
 
+            // parse custom specs into technical.customSpecs and map top-level technical fields into `technical` object
+            const parsedCustomSpecs = (() => {
+                if (!data.custom_specs && !data.customSpecs) return [];
+                const v = data.customSpecs || data.custom_specs;
+                if (!v) return [];
+                if (typeof v === 'string') {
+                    try { return JSON.parse(v); } catch (e) { return []; }
+                }
+                return v;
+            })();
+
+            const parsedFeatures = (() => {
+                if (!data.features) return [];
+                if (typeof data.features === 'string') {
+                    try { return JSON.parse(data.features); } catch (e) { return []; }
+                }
+                return data.features || [];
+            })();
+
             setInitialData({
                 ...data,
                 locations: data.locations ? (typeof data.locations === 'string' ? JSON.parse(data.locations) : data.locations) : [],
                 images: data.images ? data.images.map((img: any) => typeof img === 'string' ? img : img.url) : [],
                 application_areas: applicationAreas,
+                features: parsedFeatures || [],
+                technical: {
+                    power: data.power || '',
+                    iseer: data.iseer || '',
+                    refrigerant: data.refrigerant || '',
+                    noise: data.noise || '',
+                    dimensions: data.dimensions || '',
+                    voltage: data.voltage || '',
+                    capacity: data.capacity || '',
+                    warranty: data.warranty || '',
+                    customSpecs: parsedCustomSpecs || [],
+                }
             });
         } catch (e) {
             console.error(e);
@@ -74,6 +105,10 @@ export default function EditProductPage() {
                 voltage: product.technical?.voltage || null,
                 capacity: product.technical?.capacity || null,
                 warranty: product.technical?.warranty || null,
+                // persist custom specs
+                customSpecs: product.technical?.customSpecs || null,
+                custom_specs: product.technical?.customSpecs ? JSON.stringify(product.technical?.customSpecs || []) : null,
+                features: product.features || null,
                 locations: JSON.stringify(product.locations || []),
             };
 

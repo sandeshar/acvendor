@@ -40,6 +40,10 @@ export default function NewProductPage() {
                 voltage: product.technical?.voltage || null,
                 capacity: product.technical?.capacity || null,
                 warranty: product.technical?.warranty || null,
+                // persist custom specs and features where provided
+                customSpecs: product.technical?.customSpecs || null,
+                custom_specs: product.technical?.customSpecs ? JSON.stringify(product.technical?.customSpecs || []) : null,
+                features: product.features || null,
                 locations: JSON.stringify(product.locations || []),
             };
 

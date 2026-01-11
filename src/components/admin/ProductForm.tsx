@@ -115,7 +115,50 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
             return v;
         })();
 
-        setProduct((prev: any) => ({ ...prev, ...initialData, application_areas: normalizedApplicationAreas }));
+        // Merge top-level technical fields into the nested `technical` object so form controls bind correctly
+        const parsedCustomSpecs = (() => {
+            // Prioritize the prepared array in technical.customSpecs (from EditPage handles)
+            if (initialData.technical && Array.isArray(initialData.technical.customSpecs)) {
+                return initialData.technical.customSpecs;
+            }
+            // Fallback to top-level keys
+            const v = initialData.customSpecs || initialData.custom_specs;
+            if (!v) return [];
+            if (Array.isArray(v)) return v;
+            if (typeof v === 'string') {
+                try { return JSON.parse(v); } catch (e) { return []; }
+            }
+            return [];
+        })();
+
+        const parsedFeatures = (() => {
+            // Prioritize the prepared array/value in initialData.features (EditPage overwrites this)
+            const v = initialData.features; 
+            if (Array.isArray(v)) return v;
+            // Fallback
+            if (typeof v === 'string') {
+                try { return JSON.parse(v); } catch (e) { return []; }
+            }
+            return [];
+        })();
+
+        setProduct((prev: any) => ({
+            ...prev,
+            ...initialData,
+            application_areas: normalizedApplicationAreas,
+            features: parsedFeatures || [],
+            technical: {
+                power: initialData.power ?? (initialData.technical?.power ?? prev.technical?.power ?? ''),
+                iseer: initialData.iseer ?? (initialData.technical?.iseer ?? prev.technical?.iseer ?? ''),
+                refrigerant: initialData.refrigerant ?? (initialData.technical?.refrigerant ?? prev.technical?.refrigerant ?? ''),
+                noise: initialData.noise ?? (initialData.technical?.noise ?? prev.technical?.noise ?? ''),
+                dimensions: initialData.dimensions ?? (initialData.technical?.dimensions ?? prev.technical?.dimensions ?? ''),
+                voltage: initialData.voltage ?? (initialData.technical?.voltage ?? prev.technical?.voltage ?? ''),
+                capacity: initialData.capacity ?? (initialData.technical?.capacity ?? prev.technical?.capacity ?? ''),
+                warranty: initialData.warranty ?? (initialData.technical?.warranty ?? prev.technical?.warranty ?? ''),
+                customSpecs: parsedCustomSpecs.length ? parsedCustomSpecs : (prev.technical?.customSpecs || []),
+            }
+        }));
 
         try {
             if (editor && initialData.content) {
