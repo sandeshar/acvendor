@@ -491,10 +491,27 @@ body {
     font-family: Arvo, serif;
 }
 
+/* Generic section class to use Google Sans for interface sections */
+.p {
+    font-family: 'Google Sans', Arial, sans-serif;
+}
+
+/* Ensure headings use Arvo (serif) */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: Arvo, serif;
+}
+
 /* Blog content should use Google Sans for a cleaner UI */
 .blog-content {
     font-family: 'Google Sans', Arial, sans-serif;
 }
+
+
 
 /* Thin, subtle scrollbar for admin sidebar */
 .admin-sidebar {
