@@ -222,7 +222,7 @@ export default function HomePageUI() {
         { id: "trust", label: "Trust" },
         { id: "about", label: "About" },
         { id: "expertise", label: "Expertise" },
-        { id: "products", label: "Products" },
+        // { id: "products", label: "Products" },
         { id: "blog", label: "Blog" },
         { id: "projects", label: "Projects" },
         { id: "testimonials", label: "Testimonials" },
@@ -795,14 +795,20 @@ export default function HomePageUI() {
                                     Contact Section
                                 </h2>
                                 <div className="space-y-5">
-                                    <InputGroup label="Title" value={contactData.title || ''} onChange={(v) => setContactData({ ...contactData, title: v })} />
-                                    <TextAreaGroup label="Description" value={contactData.description || ''} onChange={(v) => setContactData({ ...contactData, description: v })} />
-
                                     <InputGroup label="About Heading" value={contactData.about_heading || ''} onChange={(v) => setContactData({ ...contactData, about_heading: v })} />
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1.5">About Paragraph</label>
                                         <RichTextEditor value={contactData.about_paragraph || ''} onChange={(v) => setContactData({ ...contactData, about_paragraph: v })} />
                                     </div>
+
+                                   <div className="grid grid-cols-2 gap-5">
+                                        <InputGroup label="CTA Text" value={contactData.cta_text || ''} onChange={(v) => setContactData({ ...contactData, cta_text: v })} />
+                                        <InputGroup label="CTA Link" value={contactData.cta_link || ''} onChange={(v) => setContactData({ ...contactData, cta_link: v })} />
+                                    </div>
+                                    <hr className="my-6"/>
+
+                                                                        <InputGroup label="Title" value={contactData.title || ''} onChange={(v) => setContactData({ ...contactData, title: v })} />
+                                    <TextAreaGroup label="Description" value={contactData.description || ''} onChange={(v) => setContactData({ ...contactData, description: v })} />
 
                                     <div className="grid grid-cols-2 gap-5">
                                         <InputGroup label="Name Placeholder" value={contactData.name_placeholder || ''} onChange={(v) => setContactData({ ...contactData, name_placeholder: v })} />
@@ -812,6 +818,7 @@ export default function HomePageUI() {
                                         <InputGroup label="Message Placeholder" value={contactData.message_placeholder || ''} onChange={(v) => setContactData({ ...contactData, message_placeholder: v })} />
                                     </div>
                                     <InputGroup label="Submit Button Text" value={contactData.submit_button_text || ''} onChange={(v) => setContactData({ ...contactData, submit_button_text: v })} />
+
 
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>

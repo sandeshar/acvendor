@@ -92,6 +92,9 @@ const homepageContactSectionSchema = new Schema({
     service_placeholder: { type: String, required: true, maxlength: 100 },
     message_placeholder: { type: String, required: true, maxlength: 100 },
     submit_button_text: { type: String, required: true, maxlength: 100 },
+    cta_text: { type: String, required: false, default: '', maxlength: 100 },
+    cta_link: { type: String, required: false, default: '/contact', maxlength: 512 },
+    cta_style: { type: String, required: false, default: 'arrow', maxlength: 50 },
     is_active: { type: Number, default: 1, required: true },
 }, {
     timestamps: { createdAt: false, updatedAt: 'updatedAt' },

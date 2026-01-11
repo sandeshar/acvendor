@@ -6,6 +6,9 @@ interface ContactSectionData {
     description: string;
     about_heading?: string;
     about_paragraph?: string; // rich HTML
+    cta_text?: string;
+    cta_link?: string;
+    cta_style?: 'arrow' | 'underline';
     name_placeholder: string;
     email_placeholder: string;
     phone_placeholder?: string;
@@ -40,6 +43,19 @@ const Contact = ({ data }: ContactProps) => {
                     ) : (
                         <p className="text-[#617589] text-base mt-3">We are committed to providing top-notch air conditioning solutions tailored to your needs. Reach out to us for inquiries, support, or to schedule a service.</p>
                     )}
+
+                    {data.cta_text ? (
+                        data.cta_style === 'underline' ? (
+                            <a href={data.cta_link || '/about'} className="mt-6 inline-block text-indigo-600 hover:text-indigo-700 font-semibold underline">
+                                {data.cta_text}
+                            </a>
+                        ) : (
+                            <a href={data.cta_link || '/about'} className="mt-6 inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold">
+                                <span>{data.cta_text}</span>
+                                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                            </a>
+                        )
+                    ) : null}
                 </div>
                 <div>
                 <div className="flex flex-col gap-4 py-10">

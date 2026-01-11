@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active = 1 } = body;
+        const { title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, cta_text, cta_link, cta_style, is_active = 1 } = body;
 
         if (!title || !description || !name_placeholder || !email_placeholder || !service_placeholder || !message_placeholder || !submit_button_text) {
             return NextResponse.json({ error: 'All required fields are required' }, { status: 400 });
@@ -56,6 +56,9 @@ export async function POST(request: NextRequest) {
             service_placeholder,
             message_placeholder,
             submit_button_text,
+            cta_text: cta_text || '',
+            cta_link: cta_link || '/about',
+            cta_style: cta_style || 'arrow',
             is_active,
         });
         revalidateTag('homepage-contact-section', 'max');
@@ -75,7 +78,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, is_active } = body;
+        const { id, title, description, about_heading, about_paragraph, name_placeholder, email_placeholder, phone_placeholder, service_placeholder, message_placeholder, submit_button_text, cta_text, cta_link, cta_style, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -92,6 +95,9 @@ export async function PUT(request: NextRequest) {
         if (service_placeholder !== undefined) updateData.service_placeholder = service_placeholder;
         if (message_placeholder !== undefined) updateData.message_placeholder = message_placeholder;
         if (submit_button_text !== undefined) updateData.submit_button_text = submit_button_text;
+        if (cta_text !== undefined) updateData.cta_text = cta_text;
+        if (cta_link !== undefined) updateData.cta_link = cta_link;
+        if (cta_style !== undefined) updateData.cta_style = cta_style;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await HomepageContactSection.findByIdAndUpdate(id, updateData, { new: true });

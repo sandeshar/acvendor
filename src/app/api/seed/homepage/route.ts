@@ -166,6 +166,9 @@ export async function POST() {
             service_placeholder: 'Choose a service (e.g., installation, warranty)',
             message_placeholder: 'How can we help?',
             submit_button_text: 'Contact Support',
+            cta_text: 'Learn More',
+            cta_link: '/about',
+            cta_style: 'arrow',
             is_active: 1,
         });
 
