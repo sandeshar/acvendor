@@ -164,12 +164,12 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                             )}
                             <h1 data-hero-title={hero?.title} data-hero-highlight={hero?.highlight_text} className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
                                 {renderTitle(hero?.title || '', hero?.highlight_text || '')}
-                                {hero?.subtitle && (
+                                {/* {hero?.subtitle && (
                                     <>
                                         <br />
                                         <span className="text-primary">{hero.subtitle}</span>
                                     </>
-                                )}
+                                )} */}
                             </h1>
 
                             <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">

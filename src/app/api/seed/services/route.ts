@@ -181,9 +181,9 @@ export async function POST(request: Request) {
                 await ShopPageHero.create({
                     tagline: 'OFFICIAL DISTRIBUTORS',
                     title: 'Shop By Brand',
-                    subtitle: "Compare features and prices across trusted brands",
+                    subtitle: '',
                     description: 'Explore top brands and handpicked models for Nepali homes and businesses.',
-                    card_overlay_text: 'Compare features and prices across trusted brands',
+                    card_overlay_text: '',
                     card_cta_text: 'Browse Catalog',
                     card_cta_link: '/midea-ac',
                     cta_text: 'Browse Catalog',
