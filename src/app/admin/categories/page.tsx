@@ -186,7 +186,7 @@ export default function CategoriesManagerPage() {
         }
     };
 
-    const deleteSubcategory = async (id: number) => {
+    const deleteSubcategory = async (id: string | number) => {
         if (!confirm('Are you sure you want to delete this subcategory?')) return;
 
         setSaving(true);
