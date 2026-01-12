@@ -161,7 +161,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                     ) : (
                                         <span className="text-xs font-semibold text-primary bg-primary-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
                                     )}
-                                    <span className="text-xs font-medium text-gray-500">{(p.technical_enabled ?? 1) !== 0 ? (p.model || p.capacity || '') : ''}</span>
+                                    <span className="text-xs font-medium text-gray-500">{(p.technical_enabled ?? 1) !== 0 ? (p.model || (p.capacity && p.capacity !== 'N/A' ? p.capacity : '') || '') : ''}</span>
                                 </div>
                                 <h3 className="text-lg font-bold text-[#111418] group-hover:text-primary transition-colors">{p.title}</h3>
                                 <p className="text-sm text-[#617589] line-clamp-2">{stripHtml(p.excerpt || p.description || '')}</p>
@@ -214,7 +214,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                         </div>
                                     </td>
                                     <td className="px-4 py-4 font-bold">{parsePriceNumber(p.price) > 0 ? `NPR ${formatPrice(p.price)}` : <span className="text-xs text-primary/80">Contact for Price</span>}</td>
-                                    <td className="px-4 py-4">{p.model || p.capacity || '-'}</td>
+                                    <td className="px-4 py-4">{p.model || (p.capacity && p.capacity !== 'N/A' ? p.capacity : '') || '-'}</td>
                                     <td className="px-4 py-4"><span className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${p.inventory_status === 'in_stock' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-gray-50 text-gray-700 border border-gray-100'}`}>{p.inventory_status === 'in_stock' ? 'In Stock' : (p.inventory_status || '—')}</span></td>
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-2">

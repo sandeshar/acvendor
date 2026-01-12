@@ -313,24 +313,36 @@ export default function NavbarManagerPage() {
 
     const moveItem = async (id: string | number, direction: 'up' | 'down') => {
         const idStr = String(id);
-        const index = navbarItems.findIndex(item => String(item.id) === idStr);
+        const currentItems = [...navbarItems];
+
+        // 1. Get and sort ONLY root items to determine actual visible order
+        const rootItems = currentItems
+            .filter(item => !item.parent_id || String(item.parent_id) === 'null')
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        const index = rootItems.findIndex(item => String(item.id) === idStr);
         if (index === -1) return;
         if (direction === 'up' && index === 0) return;
-        if (direction === 'down' && index === navbarItems.length - 1) return;
+        if (direction === 'down' && index === rootItems.length - 1) return;
 
         const newIndex = direction === 'up' ? index - 1 : index + 1;
-        const newItems = [...navbarItems];
-        [newItems[index], newItems[newIndex]] = [newItems[newIndex], newItems[index]];
+        const newRoots = [...rootItems];
+        // 2. Perform the swap
+        [newRoots[index], newRoots[newIndex]] = [newRoots[newIndex], newRoots[index]];
 
-        // Update order values
-        const updates = newItems.map((item, idx) => ({
-            ...item,
-            order: idx,
+        // 3. Assign new ordered indices [0, 1, 2...]
+        const updates = newRoots.map((item, idx) => ({ ...item, order: idx }));
+
+        // 4. Update state immediately (optimistic UI)
+        setNavbarItems(prev => prev.map(item => {
+            if (!item.parent_id || String(item.parent_id) === 'null') {
+                const found = updates.find(u => String(u.id) === String(item.id));
+                return found || item;
+            }
+            return item;
         }));
 
-        setNavbarItems(updates);
-
-        // Save the reordered items
+        // 5. Save background updates and final sync
         try {
             await Promise.all(
                 updates.map(item =>
@@ -341,36 +353,65 @@ export default function NavbarManagerPage() {
                     })
                 )
             );
+            await fetchData();
         } catch (error) {
             console.error('Error reordering items:', error);
-            fetchData(); // Reload on error
+            fetchData();
         }
     };
 
     const moveChildItem = async (parentId: string | number, childId: string | number, direction: 'up' | 'down') => {
-        const children = navbarItems.filter(n => String(n.parent_id) === String(parentId)).sort((a, b) => a.order - b.order);
-        const index = children.findIndex(c => String(c.id) === String(childId));
+        const pidStr = String(parentId);
+        const cidStr = String(childId);
+        const currentItems = [...navbarItems];
+
+        // 1. Get and sort children of this parent
+        const children = currentItems
+            .filter(n => String(n.parent_id) === pidStr)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        const index = children.findIndex(c => String(c.id) === cidStr);
         if (index === -1) return;
         if (direction === 'up' && index === 0) return;
         if (direction === 'down' && index === children.length - 1) return;
 
         const newIndex = direction === 'up' ? index - 1 : index + 1;
         const newChildren = [...children];
+        // 2. Swap
         [newChildren[index], newChildren[newIndex]] = [newChildren[newIndex], newChildren[index]];
+
+        // 3. Assign new orders
         const updates = newChildren.map((item, idx) => ({ ...item, order: idx }));
+
+        // 4. Update state immediately
+        setNavbarItems(prev => prev.map(item => {
+            if (String(item.parent_id) === pidStr) {
+                const found = updates.find(u => String(u.id) === String(item.id));
+                return found || item;
+            }
+            return item;
+        }));
 
         try {
             await Promise.all(
-                updates.map(item => fetch('/api/navbar', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) }))
+                updates.map(item =>
+                    fetch('/api/navbar', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(item),
+                    })
+                )
             );
-            fetchData();
+            await fetchData();
         } catch (error) {
             console.error('Error reordering child items:', error);
             fetchData();
         }
     };
 
-    const rootItems = navbarItems.filter(item => !item.parent_id || String(item.parent_id) === 'null');
+    const rootItems = navbarItems
+        .filter(item => !item.parent_id || String(item.parent_id) === 'null')
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const filteredItems = rootItems.filter(root => {
         const q = searchQuery.toLowerCase();

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import ProductForm from "@/components/admin/ProductForm";
 import { showToast } from "@/components/Toast";
+import { stripHtml } from "@/utils/stripHtml";
 
 export default function EditProductPage() {
     const router = useRouter();
@@ -93,7 +94,7 @@ export default function EditProductPage() {
                 id: productId,
                 images: imagesPayload,
                 metaTitle: product.meta_title || product.title,
-                metaDescription: product.meta_description || product.excerpt,
+                metaDescription: product.meta_description || stripHtml(product.excerpt),
                 // include rich content so frontend shows tables and other markup
                 content: product.content || null,
                 excerpt: product.excerpt || null,

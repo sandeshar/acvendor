@@ -263,7 +263,10 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                         <div className="p-4 flex flex-col gap-2">
                                             <h3 className="font-bold text-lg text-text-main-light line-clamp-1">{p.title}</h3>
                                             <div className="flex items-center gap-2 text-xs text-text-sub-light">
-                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity || 'N/A'}</span>                                            {p.category?.slug ? (
+                                                {p.capacity && p.capacity !== 'N/A' && (
+                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity}</span>
+                                                )}
+                                                {p.category?.slug ? (
                                                     <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || 'Category'}</span>
                                                 ) : (
                                                     <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || ''}</span>
