@@ -3,13 +3,15 @@
 import React, { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+interface CategoryOption { name: string; slug: string }
+
 interface BlogSearchProps {
-    categories: string[];
-    currentCategory: string;
+    categories: CategoryOption[];
+    currentCategorySlug: string;
     currentSearch: string;
 }
 
-const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchProps) => {
+const BlogSearch = ({ categories, currentCategorySlug, currentSearch }: BlogSearchProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [searchValue, setSearchValue] = useState(currentSearch);
@@ -25,21 +27,21 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
         params.delete('page'); // Reset to page 1 on search
 
         startTransition(() => {
-            router.push(`/midea-ac?${params.toString()}`);
+            router.push(`/blog?${params.toString()}`);
         });
     };
 
-    const handleCategoryClick = (category: string) => {
+    const handleCategoryClick = (slug: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        if (category === 'All') {
+        if (!slug) {
             params.delete('category');
         } else {
-            params.set('category', category);
+            params.set('category', slug);
         }
         params.delete('page'); // Reset to page 1 on category change
 
         startTransition(() => {
-            router.push(`/midea-ac?${params.toString()}`);
+            router.push(`/blog?${params.toString()}`);
         });
     };
 
@@ -75,16 +77,16 @@ const BlogSearch = ({ categories, currentCategory, currentSearch }: BlogSearchPr
                 <div className="flex gap-2 p-1 flex-wrap justify-center">
                     {categories.map((category) => (
                         <button
-                            key={category}
-                            onClick={() => handleCategoryClick(category)}
+                            key={category.slug}
+                            onClick={() => handleCategoryClick(category.slug)}
                             disabled={isPending}
-                            className={`flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full pl-4 pr-4 transition-colors ${category === currentCategory
+                            className={`flex h-9 shrink-0 cursor-pointer items-center justify-center gap-x-2 rounded-full pl-4 pr-4 transition-colors ${category.slug === currentCategorySlug
                                 ? 'bg-primary/20 text-primary'
                                 : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
                                 } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                         >
                             <p className="text-sm font-medium leading-normal">
-                                {category}
+                                {category.name}
                             </p>
                         </button>
                     ))}

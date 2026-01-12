@@ -34,8 +34,8 @@ interface BrandHeroData extends HeroData {
 export default function AdminShopPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [brands, setBrands] = useState<any[]>([]);
-    const [selectedBrand, setSelectedBrand] = useState('');
+    const [categories, setCategories] = useState<any[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
 
     // Global Hero State
     const [globalHero, setGlobalHero] = useState<HeroData>({
@@ -75,6 +75,29 @@ export default function AdminShopPage() {
         is_active: 1
     });
 
+    // Dedicated Midea Hero State (for /midea-ac page)
+    const [mideaHero, setMideaHero] = useState<BrandHeroData>({
+        brand_slug: 'midea',
+        badge_text: '',
+        tagline: '',
+        title: 'Midea Air Conditioning',
+        highlight_text: 'Midea',
+        subtitle: '',
+        description: '',
+        card_overlay_text: '',
+        cta_text: '',
+        cta_link: '',
+        cta2_text: '',
+        cta2_link: '',
+        background_image: '',
+        hero_image_alt: 'Midea Hero Image',
+        display_order: 0,
+        is_active: 1
+    });
+
+    // UI Tab state: controls which editor panel is visible
+    const [activeTab, setActiveTab] = useState<'global' | 'midea' | 'category'>('global');
+
     useEffect(() => {
         fetchInitialData();
     }, []);
@@ -82,28 +105,40 @@ export default function AdminShopPage() {
     const fetchInitialData = async () => {
         setLoading(true);
         try {
-            const [heroRes, brandsRes] = await Promise.all([
+            const [heroRes, categoriesRes] = await Promise.all([
                 fetch('/api/pages/shop/hero'),
-                fetch('/api/pages/services/brands?admin=1')
+                fetch('/api/pages/services/categories?admin=1')
             ]);
 
             const heroData = await heroRes.json();
-            const brandsData = await brandsRes.json();
+            const categoriesData = await categoriesRes.json();
 
             if (heroData?._id || heroData?.id) setGlobalHero({ ...heroData, id: heroData.id ?? heroData._id });
 
-            let finalBrands = brandsData || [];
-            // Ensure 'midea' is available for management as it has a dedicated page
-            if (!finalBrands.find((b: any) => b.slug === 'midea')) {
-                finalBrands.push({ id: 'midea-manual', name: 'Midea (Dedicated Page)', slug: 'midea' });
-            }
-            setBrands(finalBrands);
+            const finalCategories = categoriesData || [];
+            // Exclude 'midea' from the general category list — it has a dedicated editor
+            const adminCategories = finalCategories.filter((c: any) => String(c.slug).toLowerCase() !== 'midea');
+            setCategories(adminCategories);
 
-            // Default to 'midea' if it exists
-            const midea = finalBrands.find((b: any) => b.slug === 'midea');
-            if (midea) {
-                setSelectedBrand('midea');
-                fetchBrandHero('midea');
+            // Default to first non-midea category if available
+            if (adminCategories.length > 0) {
+                setSelectedCategory(adminCategories[0].slug);
+                fetchCategoryHero(adminCategories[0].slug);
+            }
+
+            // Fetch dedicated Midea hero (for /midea-ac)
+            try {
+                const mRes = await fetch(`/api/pages/shop/category-hero?category=midea`);
+                if (mRes.ok) {
+                    const mData = await mRes.json();
+                    if (mData?._id || mData?.id) {
+                        setMideaHero({ ...mData, id: mData.id ?? mData._id });
+                    } else {
+                        // fallback: keep defaults already set on state
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching midea hero:', err);
             }
         } catch (error) {
             console.error('Error fetching initial data:', error);
@@ -113,7 +148,7 @@ export default function AdminShopPage() {
         }
     };
 
-    const fetchBrandHero = async (slug: string) => {
+    const fetchCategoryHero = async (slug: string) => {
         if (!slug) {
             setBrandHero({
                 brand_slug: '',
@@ -139,29 +174,29 @@ export default function AdminShopPage() {
             if (data?._id || data?.id) {
                 setBrandHero({ ...data, id: data.id ?? data._id });
             } else {
-                // Find brand name from the brands list
-                const brandObj = brands.find(b => b.slug === slug);
-                const brandName = brandObj?.name || slug.toUpperCase();
+                // Find category name from the categories list
+                const catObj = categories.find(b => b.slug === slug);
+                const catName = catObj?.name || slug.toUpperCase();
 
-                // Autofill with global hero data as a starting point if no brand-specific data exists
+                // Autofill with global hero data as a starting point if no category-specific data exists
                 setBrandHero({
                     brand_slug: slug,
                     badge_text: globalHero.badge_text || '',
                     tagline: globalHero.tagline || '',
-                    title: `${brandName} Air Conditioning`,
-                    highlight_text: brandName,
+                    title: `${catName} Air Conditioning`,
+                    highlight_text: catName,
                     subtitle: globalHero.subtitle || '',
                     description: globalHero.description || '',
                     cta_text: globalHero.cta_text || '',
                     cta_link: globalHero.cta_link || '', cta2_text: globalHero.cta2_text || '',
                     cta2_link: globalHero.cta2_link || '', background_image: globalHero.background_image || '',
-                    hero_image_alt: `${brandName} Hero Image`,
+                    hero_image_alt: `${catName} Hero Image`,
                     display_order: 0,
                     is_active: 1
                 });
             }
         } catch (error) {
-            console.error('Error fetching brand hero:', error);
+            console.error('Error fetching category hero:', error);
         }
     };
 
@@ -189,9 +224,9 @@ export default function AdminShopPage() {
         }
     };
 
-    const handleSaveBrandHero = async () => {
-        if (!selectedBrand) {
-            showToast('Please select a brand', { type: 'error' });
+    const handleSaveCategoryHero = async () => {
+        if (!selectedCategory) {
+            showToast('Please select a category', { type: 'error' });
             return;
         }
         setSaving(true);
@@ -200,18 +235,43 @@ export default function AdminShopPage() {
             const res = await fetch('/api/pages/shop/category-hero', {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...brandHero, brand_slug: selectedBrand })
+                body: JSON.stringify({ ...brandHero, brand_slug: selectedCategory })
             });
 
             if (res.ok) {
                 const data = await res.json();
                 if (method === 'POST') setBrandHero({ ...brandHero, id: data.id });
-                showToast(`Hero for ${selectedBrand} updated`, { type: 'success' });
+                showToast(`Hero for ${selectedCategory} updated`, { type: 'success' });
             } else {
                 throw new Error('Save failed');
             }
         } catch (error) {
-            showToast('Failed to save brand hero', { type: 'error' });
+            showToast('Failed to save category hero', { type: 'error' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Save handler specifically for the dedicated /midea-ac hero
+    const handleSaveMideaHero = async () => {
+        setSaving(true);
+        try {
+            const method = mideaHero.id ? 'PUT' : 'POST';
+            const res = await fetch('/api/pages/shop/category-hero', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...mideaHero, brand_slug: 'midea' })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (method === 'POST') setMideaHero({ ...mideaHero, id: data.id });
+                showToast('Midea hero updated', { type: 'success' });
+            } else {
+                throw new Error('Save failed');
+            }
+        } catch (error) {
+            showToast('Failed to save Midea hero', { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -226,128 +286,142 @@ export default function AdminShopPage() {
                 <p className="text-slate-500">Manage global and category-specific hero sections for the shop page.</p>
             </div>
 
+            {/* Tabs */}
+            <div role="tablist" aria-label="Shop editors" className="flex gap-3">
+                <button role="tab" aria-selected={activeTab === 'global'} onClick={() => setActiveTab('global')} className={`px-4 py-2 rounded-lg font-bold ${activeTab === 'global' ? 'bg-primary text-white' : 'bg-white border border-slate-200 text-slate-700'}`}>
+                    Global Shop
+                </button>
+                <button role="tab" aria-selected={activeTab === 'midea'} onClick={() => setActiveTab('midea')} className={`px-4 py-2 rounded-lg font-bold ${activeTab === 'midea' ? 'bg-primary text-white' : 'bg-white border border-slate-200 text-slate-700'}`}>
+                    Midea AC
+                </button>
+                <button role="tab" aria-selected={activeTab === 'category'} onClick={() => setActiveTab('category')} className={`px-4 py-2 rounded-lg font-bold ${activeTab === 'category' ? 'bg-primary text-white' : 'bg-white border border-slate-200 text-slate-700'}`}>
+                    Category Hero
+                </button>
+            </div>
+
             {/* Global Shop Hero */}
-            <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-800">Global Shop Hero</h2>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Default content for the Shop page</p>
-                    </div>
-                    <button
-                        onClick={handleSaveGlobalHero}
-                        disabled={saving}
-                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                    >
-                        {saving ? 'Saving...' : 'Save Global Hero'}
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        {/* Badge & Tagline */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Badge & Tagline</h3>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Badge Text</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Official Distributor — short label shown above the title"
-                                value={globalHero.badge_text}
-                                onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
-                            <p className="text-xs text-slate-400 mt-2">Short, eye-catching label shown above the main headline.</p>
-
-
+            {activeTab === 'global' && (
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800">Global Shop Hero</h2>
+                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Default content for the Shop page</p>
                         </div>
-
-                        {/* Headline */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Headline</h3>
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Title</label>
-                            <input
-                                type="text"
-                                placeholder="Main headline (e.g., Gree Air Conditioners: Nepal's #1 Choice)"
-                                value={globalHero.title}
-                                onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
-                            />
-                            <p className="text-xs text-slate-400 mt-2">Use <strong>Highlight Text</strong> to emphasize a substring of the title.</p>
-
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Highlight Text</label>
-                            <input
-                                type="text"
-                                placeholder="Substring to highlight (case-insensitive)"
-                                value={globalHero.highlight_text}
-                                onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
-
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
-                            <textarea
-                                value={globalHero.description}
-                                onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
-                                placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
-                            />
-                        </div>
-
-                        {/* CTA */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Call to Action</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Shop Gree Series"
-                                        value={globalHero.cta_text}
-                                        onChange={e => setGlobalHero({ ...globalHero, cta_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. /shop/category/gree or external URL"
-                                        value={globalHero.cta_link}
-                                        onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. View Catalog"
-                                        value={globalHero.cta2_text}
-                                        onChange={e => setGlobalHero({ ...globalHero, cta2_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. /catalog.pdf or external URL"
-                                        value={globalHero.cta2_link}
-                                        onChange={e => setGlobalHero({ ...globalHero, cta2_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                            </div>
-                            <p className="text-xs text-slate-400 mt-2">Keep CTAs short and action-oriented.</p>
-                        </div>
+                        <button
+                            onClick={handleSaveGlobalHero}
+                            disabled={saving}
+                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                        >
+                            {saving ? 'Saving...' : 'Save Global Hero'}
+                        </button>
                     </div>
 
-                    <div className="space-y-6">
-                        {/* Card */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Image Card</h3>
-                            {/* 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-6">
+                            {/* Badge & Tagline */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <h3 className="text-sm font-semibold mb-3">Badge & Tagline</h3>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Badge Text</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Official Distributor — short label shown above the title"
+                                    value={globalHero.badge_text}
+                                    onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                />
+                                <p className="text-xs text-slate-400 mt-2">Short, eye-catching label shown above the main headline.</p>
+
+
+                            </div>
+
+                            {/* Headline */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <h3 className="text-sm font-semibold mb-3">Headline</h3>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Title</label>
+                                <input
+                                    type="text"
+                                    placeholder="Main headline (e.g., Gree Air Conditioners: Nepal's #1 Choice)"
+                                    value={globalHero.title}
+                                    onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                />
+                                <p className="text-xs text-slate-400 mt-2">Use <strong>Highlight Text</strong> to emphasize a substring of the title.</p>
+
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Highlight Text</label>
+                                <input
+                                    type="text"
+                                    placeholder="Substring to highlight (case-insensitive)"
+                                    value={globalHero.highlight_text}
+                                    onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                />
+
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
+                                <textarea
+                                    value={globalHero.description}
+                                    onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
+                                    placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
+                                />
+                            </div>
+
+                            {/* CTA */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <h3 className="text-sm font-semibold mb-3">Call to Action</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Shop Gree Series"
+                                            value={globalHero.cta_text}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. /shop/category/gree or external URL"
+                                            value={globalHero.cta_link}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. View Catalog"
+                                            value={globalHero.cta2_text}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. /catalog.pdf or external URL"
+                                            value={globalHero.cta2_link}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta2_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-2">Keep CTAs short and action-oriented.</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {/* Card */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <h3 className="text-sm font-semibold mb-3">Image Card</h3>
+                                {/* 
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
                             <input
                                 type="text"
@@ -357,137 +431,110 @@ export default function AdminShopPage() {
                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                             /> */}
 
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Premium Air Conditioning — short supporting phrase"
-                                value={globalHero.tagline}
-                                onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Premium Air Conditioning — short supporting phrase"
+                                    value={globalHero.tagline}
+                                    onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                />
 
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Card Overlay Text</label>
-                            <input
-                                type="text"
-                                placeholder="Short text shown in card overlay (e.g., short benefit)"
-                                value={globalHero.card_overlay_text}
-                                onChange={e => setGlobalHero({ ...globalHero, card_overlay_text: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Card Overlay Text</label>
+                                <input
+                                    type="text"
+                                    placeholder="Short text shown in card overlay (e.g., short benefit)"
+                                    value={globalHero.card_overlay_text}
+                                    onChange={e => setGlobalHero({ ...globalHero, card_overlay_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                />
 
-                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Text</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Browse Catalog"
-                                        value={globalHero.card_cta_text}
-                                        onChange={e => setGlobalHero({ ...globalHero, card_cta_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Text</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. Browse Catalog"
+                                            value={globalHero.card_cta_text}
+                                            onChange={e => setGlobalHero({ ...globalHero, card_cta_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Link</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. /shop or external URL"
+                                            value={globalHero.card_cta_link}
+                                            onChange={e => setGlobalHero({ ...globalHero, card_cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Link</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. /shop or external URL"
-                                        value={globalHero.card_cta_link}
-                                        onChange={e => setGlobalHero({ ...globalHero, card_cta_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
+                                <p className="text-xs text-slate-400 mt-2">Used in the image card overlay on the right side of the /shop hero. Falls back to the main CTA if not set.</p>
+
                             </div>
-                            <p className="text-xs text-slate-400 mt-2">Used in the image card overlay on the right side of the /shop hero. Falls back to the main CTA if not set.</p>
 
-                        </div>
+                            {/* Image & accessibility */}
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                                <h3 className="text-sm font-semibold mb-3">Image & Accessibility</h3>
+                                <ImageUploader
+                                    value={globalHero.background_image}
+                                    onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
+                                    folder="shop"
+                                    label="Background Image"
+                                    ratio="16:9"
+                                />
 
-                        {/* Image & accessibility */}
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-sm font-semibold mb-3">Image & Accessibility</h3>
-                            <ImageUploader
-                                value={globalHero.background_image}
-                                onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
-                                folder="shop"
-                                label="Background Image"
-                                ratio="16:9"
-                            />
-
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Alt Text</label>
-                            <input
-                                type="text"
-                                placeholder="Alt text for the hero image (accessibility)"
-                                value={globalHero.hero_image_alt}
-                                onChange={e => setGlobalHero({ ...globalHero, hero_image_alt: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            />
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Alt Text</label>
+                                <input
+                                    type="text"
+                                    placeholder="Alt text for the hero image (accessibility)"
+                                    value={globalHero.hero_image_alt}
+                                    onChange={e => setGlobalHero({ ...globalHero, hero_image_alt: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
-            {/* Category Hero Selection */}
-            <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                    <div className="flex flex-col gap-1">
-                        <h2 className="text-lg font-bold text-slate-800">{selectedBrand ? `${selectedBrand.toUpperCase()} Hero Section` : 'Category Hero Section'}</h2>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage branding for {selectedBrand ? `/${selectedBrand}-ac` : 'category-specific'} pages</p>
-                        <div className="flex items-center gap-3 mt-3">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Category:</label>
-                            <select
-                                value={selectedBrand}
-                                onChange={(e) => {
-                                    setSelectedBrand(e.target.value);
-                                    fetchBrandHero(e.target.value);
-                                }}
-                                className="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 text-sm font-bold text-slate-700"
-                            >
-                                <option value="">Select a Category</option>
-                                {brands.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
-                            </select>
+            {/* Dedicated Midea AC Page Hero */}
+            {activeTab === 'midea' && (
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800">Midea AC Page (Dedicated)</h2>
+                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content specifically for <code>/midea-ac</code></p>
                         </div>
+                        <button
+                            onClick={handleSaveMideaHero}
+                            disabled={saving}
+                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                        >
+                            {saving ? 'Saving...' : 'Save Midea Hero'}
+                        </button>
                     </div>
-                    <button
-                        onClick={handleSaveBrandHero}
-                        disabled={saving || !selectedBrand}
-                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                    >
-                        {saving ? 'Saving...' : 'Save Category Hero'}
-                    </button>
-                </div>
 
-                {!selectedBrand ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                        <span className="material-symbols-outlined text-4xl mb-2">category</span>
-                        <p>Select a category to manage its unique hero content</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
                                 <input
                                     type="text"
-                                    value={brandHero.badge_text}
-                                    onChange={e => setBrandHero({ ...brandHero, badge_text: e.target.value })}
+                                    value={mideaHero.badge_text}
+                                    onChange={e => setMideaHero({ ...mideaHero, badge_text: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     placeholder="e.g. Authorized Partner"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Tagline</label>
-                                <input
-                                    type="text"
-                                    value={brandHero.tagline}
-                                    onChange={e => setBrandHero({ ...brandHero, tagline: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
                                 <input
                                     type="text"
-                                    value={brandHero.title}
-                                    onChange={e => setBrandHero({ ...brandHero, title: e.target.value })}
+                                    value={mideaHero.title}
+                                    onChange={e => setMideaHero({ ...mideaHero, title: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
                                 />
                             </div>
@@ -495,53 +542,18 @@ export default function AdminShopPage() {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
                                 <input
                                     type="text"
-                                    value={brandHero.highlight_text}
-                                    onChange={e => setBrandHero({ ...brandHero, highlight_text: e.target.value })}
+                                    value={mideaHero.highlight_text}
+                                    onChange={e => setMideaHero({ ...mideaHero, highlight_text: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
-                                <input
-                                    type="text"
-                                    value={brandHero.subtitle}
-                                    onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+                                <textarea
+                                    value={mideaHero.description}
+                                    onChange={e => setMideaHero({ ...mideaHero, description: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
                                 />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
-                                <input
-                                    type="text"
-                                    value={brandHero.card_overlay_text}
-                                    onChange={e => setBrandHero({ ...brandHero, card_overlay_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    placeholder="Short text shown in card overlay"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Text</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.card_cta_text}
-                                        onChange={e => setBrandHero({ ...brandHero, card_cta_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        placeholder="Button text shown on overlay"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Link</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.card_cta_link}
-                                        onChange={e => setBrandHero({ ...brandHero, card_cta_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        placeholder="Button link (relative or external)"
-                                    />
-                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mt-3">
@@ -549,8 +561,8 @@ export default function AdminShopPage() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
                                     <input
                                         type="text"
-                                        value={brandHero.cta_text}
-                                        onChange={e => setBrandHero({ ...brandHero, cta_text: e.target.value })}
+                                        value={mideaHero.cta_text}
+                                        onChange={e => setMideaHero({ ...mideaHero, cta_text: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
@@ -558,29 +570,8 @@ export default function AdminShopPage() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
                                     <input
                                         type="text"
-                                        value={brandHero.cta_link}
-                                        onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.cta2_text}
-                                        onChange={e => setBrandHero({ ...brandHero, cta2_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.cta2_link}
-                                        onChange={e => setBrandHero({ ...brandHero, cta2_link: e.target.value })}
+                                        value={mideaHero.cta_link}
+                                        onChange={e => setMideaHero({ ...mideaHero, cta_link: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
@@ -588,44 +579,252 @@ export default function AdminShopPage() {
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
-                                <textarea
-                                    value={brandHero.description}
-                                    onChange={e => setBrandHero({ ...brandHero, description: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
+                                <input
+                                    type="text"
+                                    value={mideaHero.card_overlay_text}
+                                    onChange={e => setMideaHero({ ...mideaHero, card_overlay_text: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    placeholder="Short text shown in card overlay"
                                 />
                             </div>
+
                             <ImageUploader
-                                value={brandHero.background_image}
-                                onChange={url => setBrandHero({ ...brandHero, background_image: url })}
+                                value={mideaHero.background_image}
+                                onChange={url => setMideaHero({ ...mideaHero, background_image: url })}
                                 folder="shop"
-                                label="Brand Background"
+                                label="Background Image"
                                 ratio="16:9"
                             />
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Display Order</label>
                                     <input
                                         type="number"
-                                        value={brandHero.display_order}
-                                        onChange={e => setBrandHero({ ...brandHero, display_order: parseInt(e.target.value) })}
+                                        value={mideaHero.display_order}
+                                        onChange={e => setMideaHero({ ...mideaHero, display_order: parseInt(e.target.value) })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
                                 <div className="flex items-center gap-2 mt-6">
                                     <input
                                         type="checkbox"
-                                        id="bh-active"
-                                        checked={brandHero.is_active === 1}
-                                        onChange={e => setBrandHero({ ...brandHero, is_active: e.target.checked ? 1 : 0 })}
+                                        id="mh-active"
+                                        checked={mideaHero.is_active === 1}
+                                        onChange={e => setMideaHero({ ...mideaHero, is_active: e.target.checked ? 1 : 0 })}
                                     />
-                                    <label htmlFor="bh-active" className="text-sm font-bold text-slate-700">Active</label>
+                                    <label htmlFor="mh-active" className="text-sm font-bold text-slate-700">Active</label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                )}
-            </section>
+                </section>
+            )}
+
+            {/* Category Hero Selection */}
+            {activeTab === 'category' && (
+                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                        <div className="flex flex-col gap-1">
+                            <h2 className="text-lg font-bold text-slate-800">{selectedCategory ? `${selectedCategory.toUpperCase()} Hero Section` : 'Category Hero Section'}</h2>
+                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content for {selectedCategory ? `/shop/category/${selectedCategory}` : 'category-specific'} pages</p>
+                            <div className="flex items-center gap-3 mt-3">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Category:</label>
+                                <select
+                                    value={selectedCategory}
+                                    onChange={(e) => {
+                                        setSelectedCategory(e.target.value);
+                                        fetchCategoryHero(e.target.value);
+                                    }}
+                                    className="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 text-sm font-bold text-slate-700"
+                                >
+                                    <option value="">Select a Category</option>
+                                    {categories.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleSaveCategoryHero}
+                            disabled={saving || !selectedCategory}
+                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                        >
+                            {saving ? 'Saving...' : 'Save Category Hero'}
+                        </button>
+                    </div>
+
+                    {!selectedCategory ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                            <span className="material-symbols-outlined text-4xl mb-2">category</span>
+                            <p>Select a category to manage its unique hero content</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.badge_text}
+                                        onChange={e => setBrandHero({ ...brandHero, badge_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder="e.g. Authorized Partner"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Tagline</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.tagline}
+                                        onChange={e => setBrandHero({ ...brandHero, tagline: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.title}
+                                        onChange={e => setBrandHero({ ...brandHero, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.highlight_text}
+                                        onChange={e => setBrandHero({ ...brandHero, highlight_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.subtitle}
+                                        onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
+                                    <input
+                                        type="text"
+                                        value={brandHero.card_overlay_text}
+                                        onChange={e => setBrandHero({ ...brandHero, card_overlay_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder="Short text shown in card overlay"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.card_cta_text}
+                                            onChange={e => setBrandHero({ ...brandHero, card_cta_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="Button text shown on overlay"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Link</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.card_cta_link}
+                                            onChange={e => setBrandHero({ ...brandHero, card_cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="Button link (relative or external)"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.cta_text}
+                                            onChange={e => setBrandHero({ ...brandHero, cta_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.cta_link}
+                                            onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.cta2_text}
+                                            onChange={e => setBrandHero({ ...brandHero, cta2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.cta2_link}
+                                            onChange={e => setBrandHero({ ...brandHero, cta2_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+                                    <textarea
+                                        value={brandHero.description}
+                                        onChange={e => setBrandHero({ ...brandHero, description: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                    />
+                                </div>
+                                <ImageUploader
+                                    value={brandHero.background_image}
+                                    onChange={url => setBrandHero({ ...brandHero, background_image: url })}
+                                    folder="shop"
+                                    label="Background Image"
+                                    ratio="16:9"
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Display Order</label>
+                                        <input
+                                            type="number"
+                                            value={brandHero.display_order}
+                                            onChange={e => setBrandHero({ ...brandHero, display_order: parseInt(e.target.value) })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-6">
+                                        <input
+                                            type="checkbox"
+                                            id="bh-active"
+                                            checked={brandHero.is_active === 1}
+                                            onChange={e => setBrandHero({ ...brandHero, is_active: e.target.checked ? 1 : 0 })}
+                                        />
+                                        <label htmlFor="bh-active" className="text-sm font-bold text-slate-700">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </section>
+            )}
         </div>
     );
 }

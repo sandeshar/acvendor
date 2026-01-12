@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { title, slug, content, tags, thumbnail, metaTitle, metaDescription, status = 'draft' } = body;
+        const { title, slug, content, tags, thumbnail, metaTitle, metaDescription, status = 'draft', category_slug, category_id } = body;
 
         // Validate required fields
         if (!title || !slug || !content) {
@@ -47,6 +47,34 @@ export async function POST(request: NextRequest) {
         const numericStatus = status === 'published' ? 2 : 1;
         const statusId = await resolveStatusId(numericStatus);
 
+        // Resolve category information if provided
+        let resolvedCategoryId = null;
+        let resolvedCategorySlug = '';
+        let resolvedCategoryName = '';
+        try {
+            if (category_id) {
+                const c = await (await import('@/db/blogCategoriesSchema')).BlogCategories.findById(category_id).lean();
+                if (c) {
+                    resolvedCategoryId = c._id;
+                    resolvedCategorySlug = c.slug || '';
+                    resolvedCategoryName = c.name || '';
+                }
+            } else if (category_slug) {
+                const c = await (await import('@/db/blogCategoriesSchema')).BlogCategories.findOne({ slug: category_slug }).lean();
+                if (c) {
+                    resolvedCategoryId = c._id;
+                    resolvedCategorySlug = c.slug || '';
+                    resolvedCategoryName = c.name || '';
+                } else {
+                    // If only slug passed without existing category, use slug as name fallback
+                    resolvedCategorySlug = category_slug;
+                    resolvedCategoryName = category_slug;
+                }
+            }
+        } catch (e) {
+            console.error('Error resolving category in POST:', e);
+        }
+
         // Insert blog post
         const newPost = await BlogPost.create({
             title,
@@ -56,6 +84,9 @@ export async function POST(request: NextRequest) {
             thumbnail: thumbnail || null,
             metaTitle: metaTitle || null,
             metaDescription: metaDescription || null,
+            category_id: resolvedCategoryId,
+            category_name: resolvedCategoryName || '',
+            category_slug: resolvedCategorySlug || '',
             authorId,
             status: statusId || undefined,
         });
@@ -206,20 +237,52 @@ export async function GET(request: NextRequest) {
         }
 
         if (category) {
-            query.tags = { $regex: category, $options: 'i' };
+            // allow filtering by category slug or name
+            query.$or = [
+                { tags: { $regex: category, $options: 'i' } },
+                { category_slug: { $regex: category, $options: 'i' } },
+                { category_name: { $regex: category, $options: 'i' } },
+            ];
         }
 
         const sortOrder = sort === 'oldest' ? 1 : -1;
 
-        // total count
-        const total = publishedStatusId ? await BlogPost.countDocuments({ status: publishedStatusId }) : await BlogPost.countDocuments();
+        // Build a safe query that combines status, search and category filters
+        const andConditions: any[] = [];
+        if (publishedStatusId) andConditions.push({ status: publishedStatusId });
+
+        if (search) {
+            andConditions.push({
+                $or: [
+                    { title: { $regex: search, $options: 'i' } },
+                    { content: { $regex: search, $options: 'i' } },
+                    { tags: { $regex: search, $options: 'i' } }
+                ]
+            });
+        }
+
+        if (category) {
+            andConditions.push({
+                $or: [
+                    { tags: { $regex: category, $options: 'i' } },
+                    { category_slug: { $regex: category, $options: 'i' } },
+                    { category_name: { $regex: category, $options: 'i' } },
+                ]
+            });
+        }
+
+        // Compose final query
+        const finalQuery = andConditions.length === 0 ? {} : (andConditions.length === 1 ? andConditions[0] : { $and: andConditions });
+
+        // total count (respect filters)
+        const total = await BlogPost.countDocuments(finalQuery);
 
         // pagination
         let posts: any[];
         if (limit && !isNaN(parseInt(limit))) {
             const l = parseInt(limit);
             const o = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
-            posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).limit(l).skip(o).populate('status').lean();
+            posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).limit(l).skip(o).populate('status').lean();
             const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
             if (meta === 'true') {
                 return NextResponse.json({ posts: normalizedPosts, total });
@@ -227,7 +290,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(normalizedPosts);
         }
 
-        posts = await BlogPost.find(query).sort({ createdAt: sortOrder }).populate('status').lean();
+        posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).populate('status').lean();
         const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
         console.log('Found posts:', normalizedPosts.length);
         return NextResponse.json(normalizedPosts);
@@ -263,7 +326,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { slug, title, newSlug, content, tags, thumbnail, metaTitle, metaDescription, status = 'draft' } = body;
+        const { slug, title, newSlug, content, tags, thumbnail, metaTitle, metaDescription, status = 'draft', category_id, category_slug } = body;
 
         // Validate required fields
         if (!slug) {
@@ -290,6 +353,37 @@ export async function PUT(request: NextRequest) {
         if (metaTitle !== undefined) updateData.metaTitle = metaTitle || null;
         if (metaDescription !== undefined) updateData.metaDescription = metaDescription || null;
         if (status) updateData.status = statusId || updateData.status;
+
+        // Resolve category if provided on update
+        if (category_id !== undefined || category_slug !== undefined) {
+            try {
+                let c: any = null;
+                if (category_id) {
+                    c = await (await import('@/db/blogCategoriesSchema')).BlogCategories.findById(category_id).lean();
+                }
+                if (!c && category_slug) {
+                    c = await (await import('@/db/blogCategoriesSchema')).BlogCategories.findOne({ slug: category_slug }).lean();
+                }
+                if (c) {
+                    updateData.category_id = c._id;
+                    updateData.category_slug = c.slug || '';
+                    updateData.category_name = c.name || '';
+                } else {
+                    // if slug given but no matching category, set slug/name to given slug
+                    if (category_slug !== undefined) {
+                        updateData.category_id = null;
+                        updateData.category_slug = category_slug || '';
+                        updateData.category_name = category_slug || '';
+                    } else {
+                        updateData.category_id = category_id || null;
+                    }
+                }
+            } catch (e) {
+                console.error('Error resolving category on update:', e);
+                if (category_id !== undefined) updateData.category_id = category_id || null;
+                if (category_slug !== undefined) updateData.category_slug = category_slug || '';
+            }
+        }
 
         // Update blog post
         await BlogPost.findOneAndUpdate(

@@ -254,26 +254,26 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Navigation Sidebar */}
-                    <aside className="lg:w-64 flex-shrink-0">
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden sticky top-24">
-                            {tabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id as any)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium border-l-2 transition-all ${activeTab === tab.id
-                                        ? 'bg-primary-50 border-primary text-primary-800'
-                                        : 'border-transparent text-gray-500 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </aside>
+                {/* Navigation Tabs */}
+                <div className="flex overflow-x-auto border-b border-gray-200 mb-8 sticky top-[64px] bg-gray-50 z-20 -mx-6 px-6 pt-2">
+                    <div className="flex gap-8">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`flex items-center gap-2 py-4 text-sm font-bold transition-all border-b-2 -mb-px ${activeTab === tab.id
+                                    ? 'border-primary text-primary-800'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
+                                    }`}
+                            >
+                                <span className="material-symbols-outlined text-[20px]">{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
+                <div className="flex flex-col gap-8">
                     {/* Form Body */}
                     <main className="flex-1">
                         <div className="bg-white border border-gray-200 rounded-lg p-8 min-h-[500px] section">

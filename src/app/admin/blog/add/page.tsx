@@ -28,7 +28,11 @@ function AddBlogPage() {
         tags: "",
         metaTitle: "",
         metaDescription: "",
+        category_id: null,
+        category_slug: "",
     });
+
+    const [categoriesList, setCategoriesList] = useState<any[]>([]);
     const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
     const [wordCount, setWordCount] = useState(0);
     const [charCount, setCharCount] = useState(0);
@@ -130,6 +134,20 @@ function AddBlogPage() {
         return () => document.removeEventListener('keydown', handler as any);
     }, [editor]);
 
+    // Load categories for the selector
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch('/api/blog/categories');
+                if (!res.ok) throw new Error('Failed to load categories');
+                const body = await res.json();
+                setCategoriesList(Array.isArray(body) ? body : []);
+            } catch (e) {
+                console.warn('Could not fetch blog categories', e);
+            }
+        })();
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent, isDraft: boolean = false) => {
         e.preventDefault();
         setIsSaving(true);
@@ -149,7 +167,9 @@ function AddBlogPage() {
                     thumbnail: thumbnailUrl || null,
                     metaTitle: formData.metaTitle || formData.title,
                     metaDescription: formData.metaDescription,
-                    status: isDraft ? 'draft' : 'published'
+                    status: isDraft ? 'draft' : 'published',
+                    category_id: formData.category_id,
+                    category_slug: formData.category_slug,
                 }),
             });
 
@@ -592,6 +612,26 @@ function AddBlogPage() {
                                             </span>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                                    <select
+                                        id="category"
+                                        value={formData.category_id || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const selected = categoriesList.find(c => String(c._id) === String(val));
+                                            setFormData({ ...formData, category_id: selected?._id || null, category_slug: selected?.slug || '' });
+                                        }}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="">None</option>
+                                        {categoriesList.map((c) => (
+                                            <option key={c._id} value={c._id}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-slate-500 mt-1">Assign a category to this post (optional)</p>
                                 </div>
 
                                 <div>

@@ -12,6 +12,7 @@ export * from './contactPageSchema';
 export * from './faqPageSchema';
 export * from './termsPageSchema';
 export * from './blogPageSchema';
+export * from './blogCategoriesSchema';
 export * from './reviewSchema';
 export * from './reviewTestimonialServicesSchema';
 export * from './reviewTestimonialProductsSchema';

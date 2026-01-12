@@ -5,6 +5,14 @@ import { ServiceCategories } from "@/db/serviceCategoriesSchema";
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
+        // If `slug` is passed, return a single category by slug (useful for metadata lookup on frontend)
+        const slug = request.nextUrl.searchParams.get('slug');
+        if (slug) {
+            const cat = await ServiceCategories.findOne({ slug }).lean();
+            if (!cat) return NextResponse.json(null);
+            return NextResponse.json({ ...cat, id: cat._id.toString() });
+        }
+
         const category = request.nextUrl.searchParams.get('category') || request.nextUrl.searchParams.get('brand');
         // Include both category-specific (brand) categories and global (empty-brand) categories so category pages show shared categories too
         const categories = category ? await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
@@ -14,13 +22,13 @@ export async function GET(request: NextRequest) {
         console.error("Error fetching service categories:", error);
         return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
     }
-}
+} 
 
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { name, slug, description, icon, brand } = body;
+        const { name, slug, description, icon, brand, meta_title, meta_description, thumbnail } = body;
 
         if (!name || !slug) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -32,6 +40,9 @@ export async function POST(request: NextRequest) {
             brand: brand || '',
             description: description || null,
             icon: icon || null,
+            thumbnail: thumbnail || null,
+            meta_title: meta_title || null,
+            meta_description: meta_description || null,
         });
 
         return NextResponse.json({ id: result._id, message: "Category created successfully" });
@@ -39,13 +50,13 @@ export async function POST(request: NextRequest) {
         console.error("Error creating category:", error);
         return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
     }
-}
+} 
 
 export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, name, slug, description, icon, brand } = body;
+        const { id, name, slug, description, icon, brand, meta_title, meta_description, thumbnail } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -57,6 +68,9 @@ export async function PUT(request: NextRequest) {
             brand: brand || '',
             description: description || null,
             icon: icon || null,
+            thumbnail: thumbnail || null,
+            meta_title: meta_title || null,
+            meta_description: meta_description || null,
             updatedAt: new Date(),
         }, { new: true });
 

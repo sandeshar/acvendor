@@ -32,6 +32,10 @@ const blogPostSchema = new Schema({
     thumbnail: { type: String, maxlength: 512, default: '' },
     metaTitle: { type: String, maxlength: 256, default: '' },
     metaDescription: { type: String, maxlength: 512, default: '' },
+    // Category (optional): links to `blog_categories`
+    category_id: { type: Schema.Types.ObjectId, ref: 'BlogCategories', default: null },
+    category_name: { type: String, maxlength: 256, default: '' },
+    category_slug: { type: String, maxlength: 256, default: '' },
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     status: { type: Schema.Types.ObjectId, ref: 'Status', required: true },
 }, {

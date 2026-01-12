@@ -30,6 +30,36 @@ async function getProducts(limit = 12, brand?: string, category?: string, subcat
     }
 }
 
+import type { Metadata } from 'next';
+
+export async function generateMetadata(ctx?: { searchParams?: { category?: string } }): Promise<Metadata> {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const categoryParam = (ctx?.searchParams as any)?.category || '';
+
+    if (categoryParam) {
+        try {
+            const res = await fetch(`${API_BASE}/api/pages/services/categories?slug=${encodeURIComponent(categoryParam)}`, { cache: 'no-store' });
+            if (res.ok) {
+                const cat = await res.json();
+                if (cat) {
+                    return {
+                        title: cat.meta_title || `${cat.name} | Midea AC`,
+                        description: cat.meta_description || `Browse ${cat.name} products and parts`,
+                        openGraph: {
+                            title: cat.meta_title || `${cat.name} | Midea AC`,
+                            description: cat.meta_description || `Browse ${cat.name} products and parts`,
+                        }
+                    };
+                }
+            }
+        } catch (e) {
+            // ignore and fall back
+        }
+    }
+
+    return { title: 'Midea AC', description: 'Browse Midea AC products and parts' };
+}
+
 export default async function MideaPage({ searchParams }: { searchParams?: { subcategory?: string, page?: string, category?: string, sort?: string } }) {
     // Force brand to 'midea' for this page
     const brand = 'midea';
@@ -153,11 +183,11 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                         </div>
                         <CategoriesList brand={brand} selectedCategory={category} selectedSubcategory={subcategory ?? ''} />
                     </div>
-                    <div className="mt-6 pt-6 border-t border-[#f0f2f4]">
+                    {/* <div className="mt-6 pt-6 border-t border-[#f0f2f4]">
                         <button className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#111418] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity">
                             <span className="truncate">Download Midea Catalog</span>
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </aside>
 

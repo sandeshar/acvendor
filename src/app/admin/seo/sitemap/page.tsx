@@ -6,7 +6,7 @@ import { showToast } from '@/components/Toast';
 export default function SitemapPage() {
     const [generating, setGenerating] = useState(false);
     const [lastGenerated, setLastGenerated] = useState<string | null>(null);
-    const [stats, setStats] = useState({ totalUrls: 0, pages: 0, blogPosts: 0 });
+    const [stats, setStats] = useState({ totalUrls: 0, pages: 0, blogPosts: 0, products: 0, services: 0 });
 
     useEffect(() => {
         const load = async () => {
@@ -14,7 +14,7 @@ export default function SitemapPage() {
                 const res = await fetch('/api/seo/sitemap/stats');
                 const json = await res.json();
                 if (json?.success) {
-                    setStats(json.stats || { totalUrls: 0, pages: 0, blogPosts: 0 });
+                    setStats(json.stats || { totalUrls: 0, pages: 0, blogPosts: 0, products: 0, services: 0 });
                     setLastGenerated(json.lastGenerated || null);
                 }
             } catch (e) {
@@ -66,7 +66,7 @@ export default function SitemapPage() {
                         {/* Stats Card */}
                         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
                             <h2 className="text-lg font-semibold text-slate-900 mb-4">Sitemap Statistics</h2>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 <div className="bg-primary-50 rounded-lg p-4">
                                     <div className="text-2xl font-bold text-primary">{stats.totalUrls}</div>
                                     <div className="text-sm text-slate-600">Total URLs</div>
@@ -78,6 +78,14 @@ export default function SitemapPage() {
                                 <div className="bg-purple-50 rounded-lg p-4">
                                     <div className="text-2xl font-bold text-purple-600">{stats.blogPosts}</div>
                                     <div className="text-sm text-slate-600">Blog Posts</div>
+                                </div>
+                                <div className="bg-blue-50 rounded-lg p-4">
+                                    <div className="text-2xl font-bold text-blue-600">{stats.products}</div>
+                                    <div className="text-sm text-slate-600">Products</div>
+                                </div>
+                                <div className="bg-orange-50 rounded-lg p-4">
+                                    <div className="text-2xl font-bold text-orange-600">{stats.services}</div>
+                                    <div className="text-sm text-slate-600">Services</div>
                                 </div>
                             </div>
                             {lastGenerated && (

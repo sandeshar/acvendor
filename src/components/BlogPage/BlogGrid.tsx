@@ -20,8 +20,9 @@ interface BlogGridProps {
 }
 
 const BlogGrid = ({ posts }: BlogGridProps) => {
-    // Helper function to extract first category from tags
-    const getCategory = (tags: string | null) => {
+    // Helper function to extract category: prefer assigned category, then fallback to first tag
+    const getCategory = (tags: string | null, categoryName?: string | null) => {
+        if (categoryName) return categoryName;
         if (!tags) return 'Article';
         const tagArray = tags.split(',');
         return tagArray[0]?.trim() || 'Article';
@@ -64,7 +65,7 @@ const BlogGrid = ({ posts }: BlogGridProps) => {
             {posts.map((post) => (
                 <Link key={post.id} href={`/blog/${post.slug}`}>
                     <ArticleCard
-                        category={getCategory(post.tags)}
+                        category={getCategory(post.tags, (post as any).category_name)}
                         title={post.title}
                         excerpt={createExcerpt(post.content)}
                         author="Content Solution Nepal"

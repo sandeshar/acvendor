@@ -80,7 +80,8 @@ export default function BlogPage() {
         const matchesSearch = (
             post.title?.toLowerCase().includes(query) ||
             post.slug?.toLowerCase().includes(query) ||
-            (post.tags && post.tags.toLowerCase().includes(query))
+            (post.tags && post.tags.toLowerCase().includes(query)) ||
+            ((post as any).category_name && (post as any).category_name.toLowerCase().includes(query))
         );
         const matchesStatus = statusFilter === null || post.status === statusFilter;
         return matchesSearch && matchesStatus;
@@ -136,6 +137,7 @@ export default function BlogPage() {
                                 <tr>
                                     <th className="px-6 py-3" scope="col">Title</th>
                                     <th className="px-6 py-3" scope="col">Author</th>
+                                    <th className="px-6 py-3" scope="col">Category</th>
                                     <th className="px-6 py-3" scope="col">Status</th>
                                     <th className="px-6 py-3" scope="col">Date Published</th>
                                     <th className="px-6 py-3 text-right" scope="col">Actions</th>
@@ -161,6 +163,7 @@ export default function BlogPage() {
                                         <tr key={post.id} className="border-b border-slate-200 hover:bg-slate-50">
                                             <td className="px-6 py-4 font-semibold text-slate-900">{post.title}</td>
                                             <td className="px-6 py-4 text-slate-700">Admin User</td>
+                                            <td className="px-6 py-4 text-slate-700">{(post as any).category_name || '-'}</td>
                                             <td className="px-6 py-4">
                                                 <select
                                                     value={post.status}
@@ -179,7 +182,7 @@ export default function BlogPage() {
                                                     year: 'numeric'
                                                 })}
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-4 py-4 text-right">
                                                 <Link
                                                     href={`/admin/blog/edit/${post.slug}`}
                                                     className="p-1 text-slate-500 hover:text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-primary inline-block"

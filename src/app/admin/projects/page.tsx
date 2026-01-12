@@ -229,7 +229,7 @@ export default function AdminProjectsPage() {
 
             {/* Tabs */}
             <div className="w-full mx-auto px-6 py-6 max-w-7xl">
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center">
                     <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 inline-flex gap-1">
                         <button
                             onClick={() => setActiveTab('hero')}

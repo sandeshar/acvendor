@@ -52,11 +52,11 @@ export default async function DashboardLayout({
 }) {
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row">
+        <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc]">
             <AdminHeader />
             <div className="flex flex-1 min-w-0">
                 <SideBar />
-                <main className="admin-main flex-1 min-w-0">{children}</main>
+                <main className="admin-main flex-1 min-w-0 p-4 animate-in fade-in duration-500">{children}</main>
             </div>
         </div>
 

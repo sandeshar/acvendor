@@ -57,8 +57,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         day: 'numeric',
     });
 
-    // Get category from tags for breadcrumb
-    const category = post.tags ? post.tags.split(',')[0]?.trim() : 'Blog';
+    // Get category: prefer assigned category_name then fallback to tags
+    const category = post.category_name || (post.tags ? post.tags.split(',')[0]?.trim() : 'Blog');
 
     // Fetch related articles via API and filter out current post
     let relatedFiltered: any[] = [];

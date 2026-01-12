@@ -157,9 +157,9 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                     <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
                         <div className="flex-1 flex flex-col gap-6 text-left z-10">
                             {hero?.badge_text && (
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit">
-                                    <span className="material-symbols-outlined text-primary text-sm">verified</span>
-                                    <span className="text-primary text-xs font-bold uppercase tracking-wide">{hero.badge_text}</span>
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
+                                    <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
+                                    <span className="text-primary text-[11px] font-extrabold uppercase tracking-[0.1em] leading-none">{hero.badge_text}</span>
                                 </div>
                             )}
                             <h1 data-hero-title={hero?.title} data-hero-highlight={hero?.highlight_text} className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
@@ -194,16 +194,21 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                         </div>
 
                         <div className="flex-1 w-full relative group perspective-1000">
-                            <div className="relative z-10 w-full aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gray-100">
-                                <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-700 group-hover:scale-105" data-alt={hero?.hero_image_alt || ''} style={{ backgroundImage: `url('${hero?.background_image || ''}')` }} />
-                                <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-60"></div>
-                                <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white flex justify-between items-center">
-                                    <div>
-                                        <p className="font-bold text-lg">{hero?.tagline}</p>
-                                        <p className="text-sm opacity-80">{hero?.card_overlay_text || hero?.subtitle || hero?.description}</p>
+                            <div className="relative z-10 w-full aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gray-100 border border-gray-200/50">
+                                <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-1000 group-hover:scale-110" data-alt={hero?.hero_image_alt || ''} style={{ backgroundImage: `url('${hero?.background_image || ''}')` }} />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
+                                <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex justify-between items-center shadow-2xl transition-all duration-300 group-hover:bottom-5">
+                                    <div className="max-w-[70%]">
+                                        <p className="font-black text-xl tracking-tight leading-tight">{hero?.tagline}</p>
+                                        <p className="text-xs md:text-sm font-medium opacity-80 mt-1.5 line-clamp-2 leading-relaxed">
+                                            {hero?.card_overlay_text || hero?.subtitle || hero?.description}
+                                        </p>
                                     </div>
                                     {(hero?.card_cta_text || hero?.cta_text) ? (
-                                        <Link href={hero?.card_cta_link || hero?.cta_link || '/shop'} className="ml-4 inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full font-bold">
+                                        <Link
+                                            href={hero?.card_cta_link || hero?.cta_link || '/shop'}
+                                            className="flex-shrink-0 ml-4 h-11 px-6 inline-flex items-center justify-center bg-white text-black hover:bg-primary hover:text-white rounded-xl font-bold text-sm transition-all duration-300 shadow-lg active:scale-95"
+                                        >
                                             {hero.card_cta_text || hero.cta_text}
                                         </Link>
                                     ) : null}

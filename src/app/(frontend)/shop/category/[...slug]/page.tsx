@@ -5,6 +5,35 @@ import ProductsPagination from '@/components/products/ProductsPagination';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
+    const p = await params;
+    const categorySlug = (p.slug || [])[0];
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+    if (categorySlug) {
+        try {
+            const res = await fetch(`${API_BASE}/api/pages/services/categories?slug=${encodeURIComponent(categorySlug)}`, { cache: 'no-store' });
+            if (res.ok) {
+                const cat = await res.json();
+                if (cat) {
+                    return {
+                        title: cat.meta_title || `${cat.name} | Shop`,
+                        description: cat.meta_description || `Shop ${cat.name} products`,
+                        openGraph: {
+                            title: cat.meta_title || `${cat.name} | Shop`,
+                            description: cat.meta_description || `Shop ${cat.name} products`,
+                        }
+                    };
+                }
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    return { title: 'Shop' };
+}
+
 export default async function CategoryPage(props: { params: Promise<{ slug: string[] }>, searchParams?: Promise<{ page?: string, sort?: string, minPrice?: string, maxPrice?: string, status?: string }> }) {
     const params = await props.params;
     const searchParams = await props.searchParams;
@@ -79,9 +108,10 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                             <div className="space-y-6">
                                 {categoryHero.badge_text && (
-                                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest rounded-full">
-                                        {categoryHero.badge_text}
-                                    </span>
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
+                                        <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
+                                        <span className="text-primary text-[11px] font-extrabold uppercase tracking-[0.1em] leading-none">{categoryHero.badge_text}</span>
+                                    </div>
                                 )}
                                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-[1.1]">
                                     {renderTitle(categoryHero.title, categoryHero.highlight_text)}
@@ -103,18 +133,22 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                 </div>
                             </div>
                             {categoryHero.background_image && (
-                                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-gray-200">
+                                <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-gray-200 group">
                                     <img
                                         src={categoryHero.background_image}
                                         alt={categoryHero.hero_image_alt || category.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
                                     {categoryHero.card_overlay_text && (
-                                        <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-6 rounded-xl border border-white/50 shadow-xl">
-                                            <p className="text-sm font-bold text-gray-900">{categoryHero.card_overlay_text}</p>
+                                        <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex flex-col items-start shadow-2xl transition-all duration-300 group-hover:bottom-5">
+                                            <p className="text-xs md:text-sm font-bold text-white leading-relaxed opacity-90">{categoryHero.card_overlay_text}</p>
                                             {categoryHero.card_cta_text && (
-                                                <Link href={categoryHero.card_cta_link || '#'} className="inline-flex items-center gap-2 text-primary text-xs font-black uppercase tracking-widest mt-3 hover:gap-3 transition-all">
-                                                    {categoryHero.card_cta_text} <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                                <Link
+                                                    href={categoryHero.card_cta_link || '#'}
+                                                    className="inline-flex items-center gap-2 text-primary font-black text-[11px] uppercase tracking-widest mt-3 hover:gap-3 transition-all focus:outline-none group/link"
+                                                >
+                                                    {categoryHero.card_cta_text}
+                                                    <span className="material-symbols-outlined text-sm transition-transform group-hover/link:translate-x-1">arrow_forward</span>
                                                 </Link>
                                             )}
                                         </div>

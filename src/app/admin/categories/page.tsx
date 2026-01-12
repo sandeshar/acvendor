@@ -12,6 +12,9 @@ type Category = {
     brand?: string | null;
     description?: string | null;
     icon?: string | null;
+    // Optional SEO fields
+    meta_title?: string | null;
+    meta_description?: string | null;
     isNew?: boolean;
 };
 
@@ -87,6 +90,8 @@ export default function CategoriesManagerPage() {
             slug: "",
             description: "",
             icon: "",
+            meta_title: "",
+            meta_description: "",
             isNew: true,
         });
         setIsCategoryModalOpen(true);
@@ -482,6 +487,32 @@ export default function CategoriesManagerPage() {
                                     onChange={(v) => setSelectedCategory({ ...selectedCategory, icon: v })}
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
+                                <input
+                                    type="text"
+                                    value={selectedCategory.meta_title || ''}
+                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, meta_title: e.target.value })}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    maxLength={60}
+                                    placeholder="Optional — SEO title"
+                                />
+                                <p className="text-xs text-slate-500 mt-1">Optional — used for SEO title (recommended 50-60 chars)</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
+                                <textarea
+                                    value={selectedCategory.meta_description || ''}
+                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, meta_description: e.target.value })}
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    maxLength={160}
+                                    placeholder="Optional — used for search snippets and social previews"
+                                />
+                                <p className="text-xs text-slate-500 mt-1">Optional — used for search engines and social previews (recommended 150-160 chars)</p>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                                 <textarea
