@@ -34,12 +34,12 @@ const Trust = ({ section, logos = [] }: TrustProps) => {
                     <p className="text-center text-lg font-bold uppercase tracking-wider text-gray-400">
                         {section.heading || 'Authorized Dealer For Top Brands'}
                     </p>
-                    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-60 ">
                         {logos.map((logo, i) => (
                             <img
                                 key={logo._id ?? logo.id ?? logo.logo_url ?? i}
                                 alt={logo.alt_text}
-                                className="h-10 md:h-16 w-auto object-contain"
+                                className="h-10 md:h-16 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-500"
                                 src={logo.logo_url}
                             />
                         ))}

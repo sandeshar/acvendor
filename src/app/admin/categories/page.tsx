@@ -85,7 +85,6 @@ export default function CategoriesManagerPage() {
         setSelectedCategory({
             name: "",
             slug: "",
-            brand: '',
             description: "",
             icon: "",
             isNew: true,
@@ -282,13 +281,13 @@ export default function CategoriesManagerPage() {
                                             placeholder="Search categories..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
                                 </div>
                                 <button
                                     onClick={addCategory}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                                    className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Add Category
@@ -311,8 +310,8 @@ export default function CategoriesManagerPage() {
                                             <div className="flex items-start justify-between">
                                                 <div className="flex items-start gap-3 flex-1">
                                                     <div className="shrink-0">
-                                                        <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center">
-                                                            <span className="material-symbols-outlined text-indigo-600 text-2xl">
+                                                        <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-primary text-2xl">
                                                                 {category.icon || "category"}
                                                             </span>
                                                         </div>
@@ -365,14 +364,14 @@ export default function CategoriesManagerPage() {
                                             placeholder="Search subcategories..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
                                 </div>
                                 <button
                                     onClick={addSubcategory}
                                     disabled={categories.length === 0}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
+                                    className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Add Subcategory
@@ -448,7 +447,7 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedCategory.name}
                                     onChange={(e) => setSelectedCategory({ ...selectedCategory, name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -457,22 +456,24 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedCategory.slug}
                                     onChange={(e) => setSelectedCategory({ ...selectedCategory, slug: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
-                                <select
-                                    value={selectedCategory.brand || ''}
-                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, brand: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                >
-                                    <option value="">(none)</option>
-                                    {availableBrands.map((b) => (
-                                        <option key={b.id} value={b.slug}>{b.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {!selectedCategory.isNew && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
+                                    <select
+                                        value={selectedCategory.brand || ''}
+                                        onChange={(e) => setSelectedCategory({ ...selectedCategory, brand: e.target.value })}
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    >
+                                        <option value="">(none)</option>
+                                        {availableBrands.map((b) => (
+                                            <option key={b.id} value={b.slug}>{b.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
@@ -487,7 +488,7 @@ export default function CategoriesManagerPage() {
                                     value={selectedCategory.description || ''}
                                     onChange={(e) => setSelectedCategory({ ...selectedCategory, description: e.target.value })}
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </div>
@@ -495,7 +496,7 @@ export default function CategoriesManagerPage() {
                             <button
                                 onClick={saveCategory}
                                 disabled={saving}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                className="flex-1 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                             >
                                 {saving ? 'Saving...' : 'Save Category'}
                             </button>
@@ -529,7 +530,7 @@ export default function CategoriesManagerPage() {
                                 <select
                                     value={String(selectedSubcategory.category_id ?? '')}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, category_id: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 >
                                     <option value="">Select Category</option>
                                     {categories.map((cat) => (
@@ -543,7 +544,7 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedSubcategory.name}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -553,7 +554,7 @@ export default function CategoriesManagerPage() {
                                     value={selectedSubcategory.ac_type || ''}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, ac_type: e.target.value })}
                                     placeholder="Inverter, Window, Split, Cassette..."
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -562,7 +563,7 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedSubcategory.slug}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, slug: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -571,7 +572,7 @@ export default function CategoriesManagerPage() {
                                     value={selectedSubcategory.description || ''}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, description: e.target.value })}
                                     rows={3}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </div>
@@ -579,7 +580,7 @@ export default function CategoriesManagerPage() {
                             <button
                                 onClick={saveSubcategory}
                                 disabled={saving}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                className="flex-1 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                             >
                                 {saving ? 'Saving...' : 'Save Subcategory'}
                             </button>

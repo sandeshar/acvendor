@@ -237,7 +237,7 @@ export default function AboutPageUI() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -276,7 +276,7 @@ export default function AboutPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">flag</span>
+                                    <span className="material-symbols-outlined text-primary">flag</span>
                                     Hero Configuration
                                 </h2>
                                 <div className="space-y-5">
@@ -325,7 +325,7 @@ export default function AboutPageUI() {
                                     <div className="mt-4 space-y-3">
                                         <div className="flex items-center justify-between px-2">
                                             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Highlights</h3>
-                                            <button onClick={() => setJourneyData({ ...journeyData, highlights: [...(Array.isArray(journeyData.highlights) ? journeyData.highlights : []), ''] })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                            <button onClick={() => setJourneyData({ ...journeyData, highlights: [...(Array.isArray(journeyData.highlights) ? journeyData.highlights : []), ''] })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Highlight
                                             </button>
                                         </div>
@@ -361,7 +361,7 @@ export default function AboutPageUI() {
                                 <div className="mt-8 space-y-4">
                                     <div className="flex items-center justify-between px-2">
                                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Stats</h3>
-                                        <button onClick={() => addItem(stats, setStats, { label: "", value: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(stats, setStats, { label: "", value: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Stat
                                         </button>
                                     </div>
@@ -405,7 +405,7 @@ export default function AboutPageUI() {
                                 <div className="mt-8 space-y-4">
                                     <div className="flex items-center justify-between px-2">
                                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Features</h3>
-                                        <button onClick={() => addItem(features, setFeatures, { title: "", description: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(features, setFeatures, { title: "", description: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Feature
                                         </button>
                                     </div>
@@ -462,7 +462,7 @@ export default function AboutPageUI() {
                                 <div className="mt-8 space-y-4">
                                     <div className="flex items-center justify-between px-2">
                                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Principles</h3>
-                                        <button onClick={() => addItem(principles, setPrinciples, { title: "", description: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(principles, setPrinciples, { title: "", description: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Principle
                                         </button>
                                     </div>
@@ -503,7 +503,7 @@ export default function AboutPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">groups</span>
+                                    <span className="material-symbols-outlined text-primary">groups</span>
                                     Team Section Header
                                 </h2>
                                 <div className="space-y-5 mb-8">
@@ -513,7 +513,7 @@ export default function AboutPageUI() {
 
                                 <div className="flex items-center justify-between mb-6 border-t pt-6">
                                     <h3 className="text-lg font-semibold text-gray-900">Team Members</h3>
-                                    <button onClick={() => addItem(teamMembers, setTeamMembers, { name: "", role: "", image: "", image_alt: "", description: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(teamMembers, setTeamMembers, { name: "", role: "", image: "", image_alt: "", description: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Member
                                     </button>
                                 </div>
@@ -567,7 +567,7 @@ export default function AboutPageUI() {
 
                                 <div className="flex items-center justify-between px-2 mb-4">
                                     <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Badges</h3>
-                                    <button onClick={() => addItem(badges, setBadges, { name: '', logo: '', link: '' })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(badges, setBadges, { name: '', logo: '', link: '' })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Badge
                                     </button>
                                 </div>
@@ -619,7 +619,7 @@ export default function AboutPageUI() {
                                 <div className="mt-4">
                                     <div className="flex items-center justify-between px-2 mb-4">
                                         <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Certifications</h3>
-                                        <button onClick={() => addItem(certifications, setCertifications, { name: '', logo: '', link: '' })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(certifications, setCertifications, { name: '', logo: '', link: '' })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Certification
                                         </button>
                                     </div>
@@ -698,7 +698,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string, va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
             />
         </div>
     );
@@ -713,7 +713,7 @@ function TextAreaGroup({ label, value, onChange, placeholder }: { label: string,
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={3}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
             />
         </div>
     );
@@ -723,7 +723,7 @@ function Toggle({ checked, onChange }: { checked: boolean, onChange: (c: boolean
     return (
         <button
             onClick={() => onChange(!checked)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'
                 }`}
         >
             <span

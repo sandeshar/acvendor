@@ -236,7 +236,7 @@ export default function AdminShopPage() {
                     <button
                         onClick={handleSaveGlobalHero}
                         disabled={saving}
-                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
                     >
                         {saving ? 'Saving...' : 'Save Global Hero'}
                     </button>
@@ -449,7 +449,7 @@ export default function AdminShopPage() {
                     <button
                         onClick={handleSaveBrandHero}
                         disabled={saving || !selectedBrand}
-                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                        className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
                     >
                         {saving ? 'Saving...' : 'Save Category Hero'}
                     </button>

@@ -70,7 +70,7 @@ const Hero = ({ data }: HeroProps) => {
                                 return (
                                     <>
                                         {t.substring(0, idx)}
-                                        <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-blue-400 to-indigo-400">
+                                        <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
                                             {highlight}
                                         </span>
                                         {t.substring(idx + highlight.length)}
@@ -85,7 +85,7 @@ const Hero = ({ data }: HeroProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-4">
-                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-blue-600 transition-all hover:scale-105">
+                        <a href={data.cta_link || '#'} aria-label={data.cta_text || 'Get a Free Quote'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-primary px-6 text-white text-base font-bold shadow-lg hover:bg-primary/90 transition-all hover:scale-105">
                             {data.cta_text || 'Get a Free Quote'}
                         </a>
                         <a href={data.secondary_cta_link || '#'} aria-label={data.secondary_cta_text || 'WhatsApp Us'} className="flex h-12 min-w-40 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-white text-base font-bold hover:bg-white/20 transition-all">

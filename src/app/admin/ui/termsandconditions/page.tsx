@@ -110,7 +110,7 @@ export default function TermsPageUI() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -149,7 +149,7 @@ export default function TermsPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">article</span>
+                                    <span className="material-symbols-outlined text-primary">article</span>
                                     Header Configuration
                                 </h2>
                                 <div className="space-y-5">
@@ -170,12 +170,12 @@ export default function TermsPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-blue-500">segment</span>
+                                    <span className="material-symbols-outlined text-primary">segment</span>
                                     Content Sections
                                 </h2>
                                 <div className="flex items-center justify-between mb-6">
                                     <p className="text-sm text-gray-500">Manage terms sections</p>
-                                    <button onClick={() => addItem(sections, setSections, { title: "", content: "", has_email: 0 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(sections, setSections, { title: "", content: "", has_email: 0 })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Section
                                     </button>
                                 </div>
@@ -237,7 +237,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string, va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
             />
         </div>
     );
@@ -252,7 +252,7 @@ function TextAreaGroup({ label, value, onChange, placeholder }: { label: string,
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={5}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
             />
         </div>
     );
@@ -262,7 +262,7 @@ function Toggle({ checked, onChange }: { checked: boolean, onChange: (c: boolean
     return (
         <button
             onClick={() => onChange(!checked)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'
                 }`}
         >
             <span

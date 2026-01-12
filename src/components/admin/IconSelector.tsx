@@ -62,10 +62,10 @@ export default function IconSelector({ value = '', onChange, className = '' }: I
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all min-w-[120px] ${open ? 'border-blue-500 bg-white shadow-sm' : 'border-gray-200 bg-gray-50 hover:bg-white'
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md border transition-all min-w-[120px] ${open ? 'border-primary bg-white shadow-sm' : 'border-gray-200 bg-gray-50 hover:bg-white'
                     }`}
             >
-                <span className="material-symbols-outlined text-[20px] text-indigo-600">{value || 'category'}</span>
+                <span className="material-symbols-outlined text-[20px] text-primary">{value || 'category'}</span>
                 <span className="text-[12px] font-medium text-gray-700 truncate">{value || 'Select Icon'}</span>
                 <span className="material-symbols-outlined text-[16px] text-gray-400 ml-auto">expand_more</span>
             </button>
@@ -81,7 +81,7 @@ export default function IconSelector({ value = '', onChange, className = '' }: I
                                 placeholder="Search icons..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full px-8 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-8 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                             <span className="material-symbols-outlined absolute left-2 top-2 text-gray-400 text-[18px]">search</span>
                         </div>
@@ -93,7 +93,7 @@ export default function IconSelector({ value = '', onChange, className = '' }: I
                                         key={icon}
                                         onClick={() => handleSelect(icon)}
                                         title={icon}
-                                        className={`p-2.0 rounded flex items-center justify-center transition-all ${value === icon ? 'bg-blue-600 text-white shadow-md scale-110 z-10' : 'hover:bg-white hover:text-blue-600 text-gray-500'}`}
+                                        className={`p-2.0 rounded flex items-center justify-center transition-all ${value === icon ? 'bg-primary text-white shadow-md scale-110 z-10' : 'hover:bg-white hover:text-primary text-gray-500'}`}
                                     >
                                         <span className="material-symbols-outlined text-[24px]">{icon}</span>
                                     </button>
@@ -104,7 +104,7 @@ export default function IconSelector({ value = '', onChange, className = '' }: I
                                     {searchTerm && (
                                         <button
                                             onClick={() => handleSelect(searchTerm.toLowerCase().replace(/\s+/g, '_'))}
-                                            className="mt-2 text-xs text-blue-600 hover:underline font-medium"
+                                            className="mt-2 text-xs text-primary hover:underline font-medium"
                                         >
                                             Use "{searchTerm}" anyway
                                         </button>

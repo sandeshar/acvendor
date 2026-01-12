@@ -60,7 +60,7 @@ const Page = async () => {
                             <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
                             <p className="text-slate-500 mt-1">Overview of your content and activity.</p>
                         </div>
-                        <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
+                        <button className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
                             <span className="material-symbols-outlined text-lg">download</span>
                             Export Report
                         </button>

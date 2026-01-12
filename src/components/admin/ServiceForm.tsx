@@ -97,8 +97,8 @@ export default function ServiceForm({
             {/* Header / Actions */}
             <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm sticky top-0 z-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                        <span className="material-symbols-outlined text-indigo-600">
+                    <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary">
                             {service.icon || "design_services"}
                         </span>
                     </div>
@@ -122,7 +122,7 @@ export default function ServiceForm({
                     <button
                         type="submit"
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
+                        className="bg-primary hover:bg-primary-800 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
                     >
                         {saving ? (
                             <>
@@ -149,7 +149,7 @@ export default function ServiceForm({
                     className="w-full px-6 py-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-500">info</span>
+                        <span className="material-symbols-outlined text-primary">info</span>
                         <span className="font-semibold text-slate-700">Basic Details</span>
                     </div>
                     <span className={`material-symbols-outlined transition-transform ${openSections.details ? 'rotate-180' : ''}`}>
@@ -167,7 +167,7 @@ export default function ServiceForm({
                                         type="text"
                                         value={service.title}
                                         onChange={(e) => updateItem('title', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         placeholder="e.g. AC Installation"
                                         required
                                     />
@@ -178,7 +178,7 @@ export default function ServiceForm({
                                         type="text"
                                         value={service.slug}
                                         onChange={(e) => updateItem('slug', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         placeholder="ac-installation"
                                         required
                                     />
@@ -196,7 +196,7 @@ export default function ServiceForm({
                                         <select
                                             value={service.category_id || ''}
                                             onChange={(e) => updateItem('category_id', e.target.value || null)}
-                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         >
                                             <option value="">No Category</option>
                                             {categories.map((cat: any) => (
@@ -210,7 +210,7 @@ export default function ServiceForm({
                                             value={service.subcategory_id || ''}
                                             onChange={(e) => updateItem('subcategory_id', e.target.value || null)}
                                             disabled={!service.category_id}
-                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                                         >
                                             <option value="">No Subcategory</option>
                                             {subcategories
@@ -228,7 +228,7 @@ export default function ServiceForm({
                                         <select
                                             value={service.statusId}
                                             onChange={(e) => updateItem('statusId', Number(e.target.value))}
-                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         >
                                             <option value={1}>Draft</option>
                                             <option value={2}>Published</option>
@@ -257,7 +257,7 @@ export default function ServiceForm({
                                         type="text"
                                         value={service.image_alt}
                                         onChange={(e) => updateItem('image_alt', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         placeholder="Installation process image"
                                     />
                                 </div>
@@ -275,7 +275,7 @@ export default function ServiceForm({
                     className="w-full px-6 py-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-500">payments</span>
+                        <span className="material-symbols-outlined text-primary">payments</span>
                         <span className="font-semibold text-slate-700">Pricing Information</span>
                     </div>
                     <span className={`material-symbols-outlined transition-transform ${openSections.pricing ? 'rotate-180' : ''}`}>
@@ -293,7 +293,7 @@ export default function ServiceForm({
                                     value={service.price || ''}
                                     onChange={(e) => updateItem('price', e.target.value)}
                                     placeholder="e.g. 500.00"
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -301,7 +301,7 @@ export default function ServiceForm({
                                 <select
                                     value={service.currency || 'NPR'}
                                     onChange={(e) => updateItem('currency', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 >
                                     <option value="NPR">NPR (Rs.)</option>
                                     <option value="USD">USD ($)</option>
@@ -313,7 +313,7 @@ export default function ServiceForm({
                                 <select
                                     value={service.price_type || 'fixed'}
                                     onChange={(e) => updateItem('price_type', e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 >
                                     <option value="fixed">Fixed</option>
                                     <option value="starting">Starting At</option>
@@ -328,7 +328,7 @@ export default function ServiceForm({
                                     value={service.price_label || ''}
                                     onChange={(e) => updateItem('price_label', e.target.value)}
                                     placeholder="e.g. Per unit"
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div className="md:col-span-2">
@@ -338,7 +338,7 @@ export default function ServiceForm({
                                     onChange={(e) => updateItem('price_description', e.target.value)}
                                     rows={1}
                                     placeholder="e.g. Pricing varies by scope and deliverables."
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </div>
@@ -354,7 +354,7 @@ export default function ServiceForm({
                     className="w-full px-6 py-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-500">article</span>
+                        <span className="material-symbols-outlined text-primary">article</span>
                         <span className="font-semibold text-slate-700">Service Content</span>
                     </div>
                     <span className={`material-symbols-outlined transition-transform ${openSections.content ? 'rotate-180' : ''}`}>
@@ -373,7 +373,7 @@ export default function ServiceForm({
                                     updateItem('description', e.target.value);
                                 }}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="Brief summary of the service..."
                             />
                         </div>
@@ -396,7 +396,7 @@ export default function ServiceForm({
                     className="w-full px-6 py-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-500">search</span>
+                        <span className="material-symbols-outlined text-primary">search</span>
                         <span className="font-semibold text-slate-700">SEO Settings</span>
                     </div>
                     <span className={`material-symbols-outlined transition-transform ${openSections.seo ? 'rotate-180' : ''}`}>
@@ -412,7 +412,7 @@ export default function ServiceForm({
                                 type="text"
                                 value={service.metaTitle}
                                 onChange={(e) => updateItem('metaTitle', e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="SEO Title"
                             />
                         </div>
@@ -422,7 +422,7 @@ export default function ServiceForm({
                                 value={service.metaDescription}
                                 onChange={(e) => updateItem('metaDescription', e.target.value)}
                                 rows={3}
-                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 placeholder="SEO Description"
                             />
                         </div>
@@ -440,7 +440,7 @@ export default function ServiceForm({
                     className="w-full px-6 py-4 flex items-center justify-between bg-slate-50/50 hover:bg-slate-50 transition-colors border-b border-slate-100"
                 >
                     <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-500">list_alt</span>
+                        <span className="material-symbols-outlined text-primary">list_alt</span>
                         <span className="font-semibold text-slate-700">Features & Highlights</span>
                     </div>
                     <button
@@ -450,7 +450,7 @@ export default function ServiceForm({
                             addBullet();
                             if (!openSections.bullets) toggleSection('bullets');
                         }}
-                        className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center gap-1"
+                        className="text-primary hover:text-primary-800 text-sm font-medium flex items-center gap-1"
                     >
                         <span className="material-symbols-outlined text-[18px]">add</span>
                         Add Item
@@ -468,7 +468,7 @@ export default function ServiceForm({
                                             value={bullet}
                                             onChange={(e) => updateBullet(idx, e.target.value)}
                                             placeholder={`Feature ${idx + 1}`}
-                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
                                     </div>
                                     <button
@@ -486,7 +486,7 @@ export default function ServiceForm({
                                     <button
                                         type="button"
                                         onClick={addBullet}
-                                        className="text-indigo-600 font-medium text-sm inline-flex items-center gap-1"
+                                        className="text-primary font-medium text-sm inline-flex items-center gap-1"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">add</span>
                                         Add your first highlight

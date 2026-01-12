@@ -48,7 +48,7 @@ const AboutHero = ({ data }: AboutHeroProps) => {
                             return (
                                 <>
                                     {t.substring(0, idx)}
-                                    <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-blue-400 to-indigo-400">
+                                    <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
                                         {highlight}
                                     </span>
                                     {t.substring(idx + highlight.length)}
@@ -65,7 +65,7 @@ const AboutHero = ({ data }: AboutHeroProps) => {
 
                 <div className="flex gap-4 mt-4">
                     {data.button1_text && data.button1_link ? (
-                        <a href={data.button1_link} className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-700 transition-colors shadow-lg">
+                        <a href={data.button1_link} className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-all scale-100 hover:scale-105 shadow-lg">
                             <span className="truncate">{data.button1_text}</span>
                         </a>
                     ) : null}

@@ -255,7 +255,7 @@ export default function AdminProductsPage() {
 
                         <NextLink
                             href="/admin/products/new"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center gap-2"
+                            className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center gap-2"
                         >
                             <span className="material-symbols-outlined text-[18px]">add</span>
                             New Product
@@ -274,7 +274,7 @@ export default function AdminProductsPage() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => router.push(`/admin/quotation?productIds=${selectedIds.join(',')}`)}
-                                className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 transition-colors"
+                                className="px-3 py-1.5 bg-primary text-white rounded text-xs font-bold hover:bg-primary/90 transition-colors"
                             >
                                 Make Quotation
                             </button>
@@ -306,7 +306,7 @@ export default function AdminProductsPage() {
                                             type="checkbox"
                                             checked={selectedIds.length === products.length && products.length > 0}
                                             onChange={toggleSelectAll}
-                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                         />
                                     </th>
                                     <th className="px-4 py-4 font-bold text-gray-500 text-[11px] uppercase tracking-wider">Product</th>
@@ -340,7 +340,7 @@ export default function AdminProductsPage() {
                                                     type="checkbox"
                                                     checked={selectedIds.includes(p.id)}
                                                     onChange={() => toggleSelect(p.id)}
-                                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
                                                 />
                                             </td>
                                             <td className="px-4 py-4">
@@ -360,7 +360,7 @@ export default function AdminProductsPage() {
                                                         {p.inventory_status === 'in_stock' ? 'In Stock' : 'Out of Stock'}
                                                     </span>
                                                     {p.statusId === 1 && (
-                                                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold uppercase">
+                                                        <span className="px-2 py-0.5 rounded bg-primary-100 text-blue-700 text-[10px] font-bold uppercase">
                                                             Public
                                                         </span>
                                                     )}
@@ -374,7 +374,7 @@ export default function AdminProductsPage() {
                                                     <button onClick={() => router.push(`/admin/quotation?productIds=${p.id}`)} className="p-1.5 text-gray-400 hover:text-green-600 transition-colors" title="Make Quotation">
                                                         <span className="material-symbols-outlined text-[20px]">request_quote</span>
                                                     </button>
-                                                    <NextLink href={`/admin/products/${p.id}`} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors">
+                                                    <NextLink href={`/admin/products/${p.id}`} className="p-1.5 text-gray-400 hover:text-primary transition-colors">
                                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                                     </NextLink>
                                                     <button onClick={() => deleteProduct(p)} className="p-1.5 text-gray-400 hover:text-red-600 transition-colors">

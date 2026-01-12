@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import NextLink from "next/link";
@@ -361,7 +361,7 @@ export default function ServicesManagerPage() {
             <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                 <div className="w-full mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-indigo-600">settings_applications</span>
+                        <span className="material-symbols-outlined text-primary">settings_applications</span>
                         <h1 className="text-lg font-bold text-slate-800">Services Manager</h1>
                     </div>
                     <div className="flex gap-2">
@@ -369,7 +369,7 @@ export default function ServicesManagerPage() {
                             <button
                                 onClick={handleSavePageBuilder}
                                 disabled={saving}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
+                                className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
                             >
                                 {saving ? (
                                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -391,8 +391,8 @@ export default function ServicesManagerPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === tab.id
-                                    ? "bg-indigo-600 text-white shadow-md"
-                                    : "text-slate-600 hover:text-indigo-600 hover:bg-slate-50"
+                                    ? "bg-primary text-white shadow-md"
+                                    : "text-slate-600 hover:text-primary hover:bg-slate-50"
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-[18px]">{tab.icon}</span>
@@ -436,7 +436,7 @@ export default function ServicesManagerPage() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
                             <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200">
                                 <p className="text-sm text-slate-500 font-medium">Manage top-level features displayed on the services page.</p>
-                                <button onClick={addFeature} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                                <button onClick={addFeature} className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
                                     <span className="material-symbols-outlined">add</span> Add Feature
                                 </button>
                             </div>
@@ -468,12 +468,12 @@ export default function ServicesManagerPage() {
                                         placeholder="Search by title or slug..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     />
                                 </div>
                                 <NextLink
                                     href="/admin/services/new"
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+                                    className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
                                 >
                                     <span className="material-symbols-outlined">add_circle</span>
                                     Create New Service
@@ -485,16 +485,16 @@ export default function ServicesManagerPage() {
                                     <NextLink
                                         key={service.slug || service.postId || service.id}
                                         href={`/admin/services/edit/${service.slug}`}
-                                        className="group bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-400 transition-all flex items-start gap-4"
+                                        className="group bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-primary-400 transition-all flex items-start gap-4"
                                     >
-                                        <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-600 transition-colors">
-                                            <span className="material-symbols-outlined text-indigo-600 text-2xl group-hover:text-white transition-colors">
+                                        <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary transition-colors">
+                                            <span className="material-symbols-outlined text-primary text-2xl group-hover:text-white transition-colors">
                                                 {service.icon || "design_services"}
                                             </span>
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start">
-                                                <h3 className="font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{service.title}</h3>
+                                                <h3 className="font-bold text-slate-800 truncate group-hover:text-primary transition-colors">{service.title}</h3>
                                             </div>
                                             <p className="text-sm text-slate-500 line-clamp-2 mt-1">{stripHtml(service.description || service.excerpt || '')}</p>
                                         </div>
@@ -514,7 +514,7 @@ export default function ServicesManagerPage() {
 
                             <div className="flex justify-between items-center px-2">
                                 <h3 className="font-bold text-slate-800">Workflow Steps</h3>
-                                <button onClick={addProcessStep} className="text-indigo-600 hover:bg-indigo-50 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
+                                <button onClick={addProcessStep} className="text-primary hover:bg-primary-50 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors">
                                     <span className="material-symbols-outlined">add</span> Add Process Step
                                 </button>
                             </div>
@@ -525,8 +525,8 @@ export default function ServicesManagerPage() {
                                         <div className="flex flex-col items-center gap-2">
                                             <IconSelector value={step.icon || ""} onChange={(v) => updateProcessStep(idx, "icon", v)} />
                                             <div className="flex gap-1">
-                                                <button onClick={() => moveProcessStep(idx, "up")} disabled={idx === 0} className="p-1 text-slate-400 hover:text-indigo-600 disabled:opacity-20"><span className="material-symbols-outlined text-sm">expand_less</span></button>
-                                                <button onClick={() => moveProcessStep(idx, "down")} disabled={idx === processSteps.length - 1} className="p-1 text-slate-400 hover:text-indigo-600 disabled:opacity-20"><span className="material-symbols-outlined text-sm">expand_more</span></button>
+                                                <button onClick={() => moveProcessStep(idx, "up")} disabled={idx === 0} className="p-1 text-slate-400 hover:text-primary disabled:opacity-20"><span className="material-symbols-outlined text-sm">expand_less</span></button>
+                                                <button onClick={() => moveProcessStep(idx, "down")} disabled={idx === processSteps.length - 1} className="p-1 text-slate-400 hover:text-primary disabled:opacity-20"><span className="material-symbols-outlined text-sm">expand_more</span></button>
                                             </div>
                                         </div>
                                         <div className="flex-1 space-y-4">
@@ -545,7 +545,7 @@ export default function ServicesManagerPage() {
                     {activeTab === "brands" && (
                         <div className="space-y-6">
                             <div className="flex justify-end p-2">
-                                <button onClick={() => setBrands([...brands, { name: "New Brand", logo: "", link: "", display_order: brands.length + 1, is_active: 1 }])} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold">
+                                <button onClick={() => setBrands([...brands, { name: "New Brand", logo: "", link: "", display_order: brands.length + 1, is_active: 1 }])} className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">
                                     Add Brand Logo
                                 </button>
                             </div>
@@ -629,7 +629,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string; va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300"
             />
         </div>
     );
@@ -644,7 +644,7 @@ function TextAreaGroup({ label, value, onChange, placeholder, rows = 3 }: { labe
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={rows}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all resize-none placeholder:text-slate-300"
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all resize-none placeholder:text-slate-300"
             />
         </div>
     );

@@ -144,7 +144,7 @@ export default function AddUserPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white"
+                                    className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white"
                                 >
                                     <span className="material-symbols-outlined text-lg">person_add</span>
                                     Update User

@@ -66,7 +66,7 @@ export default function AdminProjectsPage() {
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                    className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
                 />
             </div>
         );
@@ -80,7 +80,7 @@ export default function AdminProjectsPage() {
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     rows={4}
-                    className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                    className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
                 />
             </div>
         );
@@ -90,7 +90,7 @@ export default function AdminProjectsPage() {
         return (
             <button
                 onClick={() => onChange(!checked)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'}`}
             >
                 <span
                     className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${checked ? 'translate-x-5' : 'translate-x-0'}`}
@@ -215,7 +215,7 @@ export default function AdminProjectsPage() {
                     <button
                         onClick={handleSaveSection}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -565,7 +565,7 @@ export default function AdminProjectsPage() {
                                                             setProjectForm(pWithId);
                                                             setEditingProject(pId);
                                                         }}
-                                                        className="text-blue-600 hover:text-blue-800 text-sm font-bold"
+                                                        className="text-primary hover:text-primary-800 text-sm font-bold"
                                                     >
                                                         Edit
                                                     </button>

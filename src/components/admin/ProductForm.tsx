@@ -246,7 +246,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                     <button
                         onClick={() => onSave(product)}
                         disabled={saving}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+                        className="bg-primary hover:bg-primary-800 text-white px-5 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
                     >
                         {saving ? 'Saving...' : 'Save Product'}
                     </button>
@@ -263,7 +263,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium border-l-2 transition-all ${activeTab === tab.id
-                                        ? 'bg-blue-50 border-blue-600 text-blue-700'
+                                        ? 'bg-primary-50 border-primary text-primary-800'
                                         : 'border-transparent text-gray-500 hover:bg-gray-50'
                                         }`}
                                 >
@@ -285,7 +285,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             <input
                                                 value={product.title}
                                                 onChange={e => setProduct({ ...product, title: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 outline-none transition-all"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-primary-500 outline-none transition-all"
                                                 placeholder="e.g. Panasonic 1.5 Ton AC"
                                             />
                                         </div>
@@ -294,7 +294,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             <input
                                                 value={product.slug}
                                                 onChange={e => setProduct({ ...product, slug: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 outline-none transition-all font-mono text-sm"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-primary-500 outline-none transition-all font-mono text-sm"
                                             />
                                         </div>
                                     </div>
@@ -316,7 +316,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                         <input
                                             value={product.availabilityLabel || ''}
                                             onChange={e => setProduct({ ...product, availabilityLabel: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-blue-500 outline-none transition-all text-sm"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-primary-500 outline-none transition-all text-sm"
                                             placeholder="e.g. Available for installation in"
                                         />
                                         <p className="text-xs text-gray-400">Optional text shown before the locations list on the product page.</p>
@@ -525,7 +525,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                                         application_areas: (product.application_areas || []).map((x: any, i: number) => i === idx ? { ...item, label: e.target.value } : (typeof x === 'string' ? { icon: 'home', label: x } : x))
                                                                     })}
                                                                     placeholder="e.g. Home, Office"
-                                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-1 focus:ring-blue-500 outline-none"
+                                                                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm font-medium focus:ring-1 focus:ring-primary-500 outline-none"
                                                                 />
                                                                 <button onClick={() => setProduct({ ...product, application_areas: (product.application_areas || []).filter((_: any, i: number) => i !== idx) })} className="text-gray-400 hover:text-red-600 p-1 cursor-pointer"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                                                             </div>
@@ -600,7 +600,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                                 </div>
                                             ) : null}
                                             <div className="pt-4 flex gap-3">
-                                                <button onClick={() => setProduct({ ...product, statusId: 1 })} className={`flex-1 py-2 text-xs font-bold uppercase rounded border ${product.statusId === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>Public</button>
+                                                <button onClick={() => setProduct({ ...product, statusId: 1 })} className={`flex-1 py-2 text-xs font-bold uppercase rounded border ${product.statusId === 1 ? 'bg-primary border-primary text-white' : 'bg-white border-gray-300 text-gray-400'}`}>Public</button>
                                                 <button onClick={() => setProduct({ ...product, statusId: 2 })} className={`flex-1 py-2 text-xs font-bold uppercase rounded border ${product.statusId === 2 ? 'bg-gray-800 border-gray-800 text-white' : 'bg-white border-gray-300 text-gray-400'}`}>Draft</button>
                                             </div>
                                         </div>

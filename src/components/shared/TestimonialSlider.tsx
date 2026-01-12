@@ -97,7 +97,7 @@ const TestimonialSlider: React.FC<TestimonialSliderProps> = ({
                                     {[...Array(5)].map((_, i) => (
                                         <svg
                                             key={i}
-                                            className={`h-4 w-4 ${i < testimonial.rating ? 'text-orange-400' : 'text-slate-200'}`}
+                                            className={`h-4 w-4 ${i < testimonial.rating ? 'text-yellow-400' : 'text-slate-200'}`}
                                             fill="currentColor"
                                             viewBox="0 0 20 20"
                                         >

@@ -123,7 +123,7 @@ export default function FAQPageUI() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -162,7 +162,7 @@ export default function FAQPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">title</span>
+                                    <span className="material-symbols-outlined text-primary">title</span>
                                     Header Configuration
                                 </h2>
                                 <div className="space-y-5">
@@ -186,12 +186,12 @@ export default function FAQPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-blue-500">category</span>
+                                    <span className="material-symbols-outlined text-primary">category</span>
                                     Categories
                                 </h2>
                                 <div className="flex items-center justify-between mb-6">
                                     <p className="text-sm text-gray-500">Manage FAQ categories</p>
-                                    <button onClick={() => addItem(categories, setCategories, { name: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(categories, setCategories, { name: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Category
                                     </button>
                                 </div>
@@ -238,7 +238,7 @@ export default function FAQPageUI() {
                                 </h2>
                                 <div className="flex items-center justify-between mb-6">
                                     <p className="text-sm text-gray-500">Manage questions and answers</p>
-                                    <button onClick={() => addItem(faqItems, setFaqItems, { question: "", answer: "", category_id: categories[0]?.id || 0 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(faqItems, setFaqItems, { question: "", answer: "", category_id: categories[0]?.id || 0 })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Question
                                     </button>
                                 </div>
@@ -268,7 +268,7 @@ export default function FAQPageUI() {
                                                     <select
                                                         value={item.category_id || ''}
                                                         onChange={(e) => updateItem(idx, 'category_id', e.target.value || '', faqItems, setFaqItems)}
-                                                        className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                                                        className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
                                                     >
                                                         <option value="">Select Category</option>
                                                         {categories.map(cat => (
@@ -332,7 +332,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string, va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
             />
         </div>
     );
@@ -347,7 +347,7 @@ function TextAreaGroup({ label, value, onChange, placeholder }: { label: string,
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={3}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
             />
         </div>
     );
@@ -357,7 +357,7 @@ function Toggle({ checked, onChange }: { checked: boolean, onChange: (c: boolean
     return (
         <button
             onClick={() => onChange(!checked)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'
                 }`}
         >
             <span

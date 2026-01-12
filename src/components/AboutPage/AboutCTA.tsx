@@ -27,14 +27,14 @@ const AboutCTA = ({ data }: AboutCTAProps) => {
                 <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight max-w-2xl">
                     {data.title}
                 </h2>
-                <p className="text-blue-100 text-lg max-w-xl">
+                <p className="text-primary-100 text-lg max-w-xl">
                     {data.description}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <a href={data.primary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-white text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 transition-colors shadow-lg">
+                    <a href={data.primary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-white text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-white/90 transition-colors shadow-lg">
                         {data.primary_button_text}
                     </a>
-                    <a href={data.secondary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-primary border border-white/30 text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-blue-600 transition-colors">
+                    <a href={data.secondary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-secondary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-secondary/90 transition-colors shadow-lg shadow-secondary/20">
                         {data.secondary_button_text}
                     </a>
                 </div>

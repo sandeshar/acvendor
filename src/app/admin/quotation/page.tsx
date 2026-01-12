@@ -274,7 +274,7 @@ export default function AdminQuotationPage() {
                                 <span className="material-symbols-outlined text-gray-400">add_circle</span>
                             </div>
                             <input value={searchQuery} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (searchResults.length) addProduct(searchResults[0]); else addCustomItem(); } }} onChange={(e) => setSearchQuery(e.target.value)} className="block w-full rounded-lg border-0 py-2.5 pl-10 pr-4 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6 bg-white shadow-sm" placeholder="Search products to add..." type="text" />
-                            <button onClick={() => { if (searchResults.length) addProduct(searchResults[0]); else addCustomItem(); }} className="absolute inset-y-0 right-0 px-4 py-1 m-1 bg-primary text-white text-xs font-bold rounded hover:bg-blue-700 transition-colors">Add</button>
+                            <button onClick={() => { if (searchResults.length) addProduct(searchResults[0]); else addCustomItem(); }} className="absolute inset-y-0 right-0 px-4 py-1 m-1 bg-primary text-white text-xs font-bold rounded hover:bg-primary/90 transition-colors">Add</button>
 
                             {searchResults.length > 0 && (
                                 <div className="absolute left-0 right-0 mt-12 bg-white border border-[#e6e9ef] rounded shadow-md z-10 max-h-60 overflow-auto">
@@ -392,7 +392,7 @@ export default function AdminQuotationPage() {
                     </div>
 
                     <div className="mt-4 flex flex-col gap-3">
-                        <button onClick={saveAndSend} disabled={saving} className="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-base font-bold shadow-lg shadow-primary/30 hover:bg-blue-700 hover:shadow-xl transition-all active:scale-[0.98]">
+                        <button onClick={saveAndSend} disabled={saving} className="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-base font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:shadow-xl transition-all active:scale-[0.98]">
                             <span className="material-symbols-outlined text-[20px]">send</span>
                             {saving ? 'Saving...' : 'Save & Send Quotation'}
                         </button>

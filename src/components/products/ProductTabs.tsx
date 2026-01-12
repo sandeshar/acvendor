@@ -76,7 +76,7 @@ export default function ProductTabs({ post }: { post: ProductWithRelations }) {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                                 {areas.map((a) => (
                                     <div key={a.label} className="bg-white p-4 rounded-xl border border-gray-100 flex flex-col items-center gap-3 text-center shadow-sm">
-                                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">{a.icon}</span></div>
+                                        <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center text-primary"><span className="material-symbols-outlined">{a.icon}</span></div>
                                         <span className="font-semibold text-sm">{a.label}</span>
                                     </div>
                                 ))}

@@ -161,7 +161,7 @@ export const HomepageTestimonialsSection = models.HomepageTestimonialsSection ||
 // Homepage Hero Features (Floating Cards)
 const homepageHeroFeaturesSchema = new Schema({
     icon_name: { type: String, required: true, maxlength: 128 },
-    icon_bg: { type: String, default: 'bg-blue-600', maxlength: 128 },
+    icon_bg: { type: String, default: 'bg-primary', maxlength: 128 },
     title: { type: String, required: true, maxlength: 256 },
     description: { type: String, required: true, default: '', maxlength: 512 },
     display_order: { type: Number, required: true, default: 0 },

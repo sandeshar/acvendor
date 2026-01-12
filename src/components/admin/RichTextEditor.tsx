@@ -171,21 +171,21 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.bold ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.bold ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_bold</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.italic ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.italic ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_italic</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleUnderline().run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.underline ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.underline ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_underlined</span>
                 </button>
@@ -193,21 +193,21 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h1 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h1 ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">looks_one</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h2 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h2 ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">looks_two</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h3 ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.h3 ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">looks_3</span>
                 </button>
@@ -215,14 +215,14 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBulletList().run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.bulletList ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.bulletList ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleOrderedList().run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.orderedList ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.orderedList ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_list_numbered</span>
                 </button>
@@ -230,7 +230,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); addLink(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.link ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.link ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">link</span>
                 </button>
@@ -263,28 +263,28 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('left').run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignLeft ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignLeft ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_align_left</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('center').run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignCenter ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignCenter ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_align_center</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('right').run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignRight ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignRight ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_align_right</span>
                 </button>
                 <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('justify').run(); }}
-                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignJustify ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
+                    className={`p-2 rounded text-sm font-medium transition-colors ${activeStates.alignJustify ? 'bg-primary text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
                 >
                     <span className="material-symbols-outlined text-[18px]">format_align_justify</span>
                 </button>

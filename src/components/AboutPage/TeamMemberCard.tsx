@@ -19,7 +19,7 @@ const TeamMemberCard = ({ name, role, description, image, alt }: TeamMemberCardP
                 />
                 <div>
                     <h3 className="text-lg font-bold text-body">{name}</h3>
-                    <p className="text-sm font-semibold text-primary-var">{role}</p>
+                    <p className="text-sm font-semibold text-primary">{role}</p>
                 </div>
             </div>
             <p className="text-sm leading-relaxed text-subtext">{description}</p>

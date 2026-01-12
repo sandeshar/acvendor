@@ -80,7 +80,7 @@ function ViewModal({ testimonial, onClose, serviceMap, productMap }: { testimoni
                 {/* Content */}
                 <div className="p-6">
                     {/* Author Info */}
-                    <div className="mb-6 flex items-center gap-4 rounded-xl bg-linear-to-r from-blue-50 to-indigo-50 p-4">
+                    <div className="mb-6 flex items-center gap-4 rounded-xl bg-linear-to-r from-primary-50 to-primary-50 p-4">
                         <img
                             src={testimonial.url}
                             alt={testimonial.name}
@@ -123,7 +123,7 @@ function ViewModal({ testimonial, onClose, serviceMap, productMap }: { testimoni
                                 {placements.map((loc) => (
                                     <span
                                         key={loc}
-                                        className="inline-block rounded-full bg-linear-to-r from-blue-500 to-indigo-500 px-3 py-1 text-xs font-medium text-white shadow-md"
+                                        className="inline-block rounded-full bg-linear-to-r from-primary to-primary px-3 py-1 text-xs font-medium text-white shadow-md"
                                     >
                                         {loc}
                                     </span>
@@ -144,7 +144,7 @@ function ViewModal({ testimonial, onClose, serviceMap, productMap }: { testimoni
                                     return (
                                         <span
                                             key={`prod-${pid}`}
-                                            className="inline-block rounded-full bg-indigo-500 px-3 py-1 text-xs font-medium text-white shadow-md"
+                                            className="inline-block rounded-full bg-primary px-3 py-1 text-xs font-medium text-white shadow-md"
                                         >
                                             {prod?.title || `Product #${pid}`}
                                         </span>
@@ -278,7 +278,7 @@ export default function TestimonialPage() {
                 <h1 className="text-3xl font-bold">Testimonials</h1>
                 <Link
                     href="/admin/testimonials/new"
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    className="rounded-lg bg-primary px-4 py-2 text-white hover:bg-primary/90"
                 >
                     Add New Testimonial
                 </Link>
@@ -290,7 +290,7 @@ export default function TestimonialPage() {
                     placeholder="Search by name, role, or link..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                 />
             </div>
 
@@ -390,7 +390,7 @@ export default function TestimonialPage() {
                                                 .map((loc) => (
                                                     <span
                                                         key={loc}
-                                                        className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800"
+                                                        className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-800"
                                                     >
                                                         {loc}
                                                     </span>
@@ -411,7 +411,7 @@ export default function TestimonialPage() {
                                                 return (
                                                     <span
                                                         key={`prod-${pid}`}
-                                                        className="rounded-full bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-800"
+                                                        className="rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-800"
                                                     >
                                                         {prod?.title || `Product #${pid}`}
                                                     </span>
@@ -433,7 +433,7 @@ export default function TestimonialPage() {
                                             </button>
                                             <Link
                                                 href={`/admin/testimonials/edit/${testimonial.id}`}
-                                                className="text-blue-600 hover:text-blue-900"
+                                                className="text-primary hover:text-primary-900"
                                                 title="Edit"
                                             >
                                                 <span className="material-symbols-outlined text-lg">edit</span>

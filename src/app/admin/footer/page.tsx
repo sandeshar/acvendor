@@ -177,7 +177,7 @@ export default function FooterManagerPage() {
 
                     <div className="mb-6 flex items-center gap-3">
                         <button onClick={addSection} className="px-4 py-2 bg-primary text-white rounded">Add Section</button>
-                        <button onClick={saveAll} disabled={saving} className="px-4 py-2 bg-indigo-700 text-white rounded disabled:opacity-60">{saving ? 'Saving…' : 'Save All'}</button>
+                        <button onClick={saveAll} disabled={saving} className="px-4 py-2 bg-primary-800 text-white rounded disabled:opacity-60">{saving ? 'Saving…' : 'Save All'}</button>
                         <button onClick={fetchSections} className="px-4 py-2 border rounded">Reload</button>
                     </div>
 

@@ -116,7 +116,7 @@ export default function ContactPageUI() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -155,7 +155,7 @@ export default function ContactPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">flag</span>
+                                    <span className="material-symbols-outlined text-primary">flag</span>
                                     Hero Configuration
                                 </h2>
                                 <div className="space-y-5">
@@ -181,7 +181,7 @@ export default function ContactPageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-blue-500">contact_phone</span>
+                                    <span className="material-symbols-outlined text-primary">contact_phone</span>
                                     Contact Information
                                 </h2>
                                 <div className="space-y-5">
@@ -220,7 +220,7 @@ export default function ContactPageUI() {
                                             onChange={(e) => setContactInfo({ ...contactInfo, map_url: e.target.value })}
                                             placeholder="Paste your Google Maps embed URL here (e.g., https://www.google.com/maps/embed?pb=...)"
                                             rows={3}
-                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none font-mono text-xs"
+                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none font-mono text-xs"
                                         />
                                         <p className="text-xs text-gray-500 mt-2">To get the embed URL: Open Google Maps → Click Share → Embed a map → Copy the src URL</p>
                                     </div>
@@ -281,7 +281,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string, va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
             />
         </div>
     );
@@ -296,7 +296,7 @@ function TextAreaGroup({ label, value, onChange, placeholder }: { label: string,
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={3}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
             />
         </div>
     );
@@ -306,7 +306,7 @@ function Toggle({ checked, onChange }: { checked: boolean, onChange: (c: boolean
     return (
         <button
             onClick={() => onChange(!checked)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'
                 }`}
         >
             <span

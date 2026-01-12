@@ -2,18 +2,19 @@
 
 :root {
     /* Primary color palette (used across components and utilities) */
-    --color-primary-50: #eaf2ff;
-    --color-primary-100: #d6e7ff;
-    --color-primary-200: #b3d2ff;
-    --color-primary-300: #80b6ff;
-    --color-primary-400: #4d9bff;
-    --color-primary: #135bec;
+    --color-primary-50: #edf0f7;
+    --color-primary-100: #dbe2ef;
+    --color-primary-200: #bac6df;
+    --color-primary-300: #8fa4cb;
+    --color-primary-400: #5d7bb1;
+    --color-primary: #293a6f;
+    --color-secondary: #d37647;
     /* base */
-    --color-primary-600: #0d47b8;
-    --color-primary-700: #093a8e;
-    --color-primary-800: #062c64;
-    --color-primary-900: #041a3a;
-    --color-primary-10: rgba(19, 91, 236, 0.1);
+    --color-primary-600: #22305c;
+    --color-primary-700: #1b2649;
+    --color-primary-800: #141c36;
+    --color-primary-900: #0d1323;
+    --color-primary-10: rgba(41, 58, 111, 0.1);
 
     --color-background: #f8fafc;
     --color-card: #ffffff;
@@ -31,7 +32,8 @@
    ========================================================= */
 
 .theme-default {
-    --color-primary: #2563eb;
+    --color-primary: #293a6f;
+    --color-secondary: #d37647;
     --color-background: #f1f5f9;
     --color-card: #ffffff;
     --color-text: #0f172a;
@@ -85,7 +87,8 @@
 }
 
 .theme-minimal {
-    --color-primary: #2563eb;
+    --color-primary: #293a6f;
+    --color-secondary: #d37647;
     --color-background: #fafafa;
     --color-card: #ffffff;
     --color-text: #0b1220;
@@ -305,7 +308,7 @@
 }
 
 .tiptap a {
-    color: #135bec;
+    color: #293a6f;
     text-decoration: underline;
     cursor: pointer;
 }

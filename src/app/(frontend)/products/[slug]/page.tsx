@@ -200,17 +200,17 @@ export default async function ProductPage({ params }: { params: { slug: string }
                                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">eco</span>{post.energy_saving}</div>
                             ) : null}
                             {!!post.smart ? (
-                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-primary border border-blue-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">wifi</span>Smart Control</div>
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">wifi</span>Smart Control</div>
                             ) : null}
                             {!!post.filtration ? (
                                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">air</span>Dual Filtration</div>
                             ) : null}
-                            {post.warranty && String(post.warranty).trim() !== '00' && String(post.warranty).trim() !== '0' && <div className="inline-flex items-center px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-100 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">bolt</span>{post.warranty}</div>}
+                            {post.warranty && String(post.warranty).trim() !== '00' && String(post.warranty).trim() !== '0' && <div className="inline-flex items-center px-3 py-1 rounded-full bg-secondary/10 text-secondary border border-secondary/20 text-sm font-medium"><span className="material-symbols-outlined text-[18px] mr-1">bolt</span>{post.warranty}</div>}
                         </div>
 
                         {/* Actions */}
                         <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-6 border-t border-gray-100">
-                            <Link className="flex-1 h-12 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20" href={`/contact?product=${encodeURIComponent(post.slug)}`}>
+                            <Link className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20" href={`/contact?product=${encodeURIComponent(post.slug)}`}>
                                 <span className="material-symbols-outlined">request_quote</span> Request Quote
                             </Link>
                             {post.brochure_url ? (

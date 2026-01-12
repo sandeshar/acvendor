@@ -240,7 +240,7 @@ export default function HomePageUI() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {saving ? (
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -279,7 +279,7 @@ export default function HomePageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">web_asset</span>
+                                    <span className="material-symbols-outlined text-primary">web_asset</span>
                                     Hero Configuration
                                 </h2>
                                 <div className="space-y-5">
@@ -300,7 +300,7 @@ export default function HomePageUI() {
                                                         const last = parts.length ? parts[parts.length - 1] : '';
                                                         setHeroData({ ...heroData, colored_word: last });
                                                     }}
-                                                    className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+                                                    className="text-primary hover:text-primary-800 text-sm font-medium"
                                                 >
                                                     Autofill from title
                                                 </button>
@@ -323,7 +323,7 @@ export default function HomePageUI() {
                                                                 return (
                                                                     <span key={i} className="block">
                                                                         {line.substring(0, idx)}
-                                                                        <span className="bg-clip-text text-transparent bg-linear-to-r from-primary via-blue-600 to-indigo-600">{word}</span>
+                                                                        <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">{word}</span>
                                                                         {line.substring(idx + word.length)}
                                                                     </span>
                                                                 );
@@ -406,12 +406,12 @@ export default function HomePageUI() {
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-indigo-500">featured_play_list</span>
+                                        <span className="material-symbols-outlined text-primary">featured_play_list</span>
                                         Hero Floating Features
                                     </h2>
                                     <button
-                                        onClick={() => addItem(heroFeatures, setHeroFeatures, { title: "", description: "", icon_name: "", icon_bg: "bg-blue-600", is_active: 1 })}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                        onClick={() => addItem(heroFeatures, setHeroFeatures, { title: "", description: "", icon_name: "", icon_bg: "bg-primary", is_active: 1 })}
+                                        className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">add</span>
                                         Add Feature
@@ -458,7 +458,7 @@ export default function HomePageUI() {
                                                             type="number"
                                                             value={item.display_order || 0}
                                                             onChange={(e) => updateItem(idx, 'display_order', Number(e.target.value), heroFeatures, setHeroFeatures)}
-                                                            className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                                                            className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-primary"
                                                         />
                                                     </div>
                                                     <div className="flex items-center justify-between pt-2">
@@ -489,7 +489,7 @@ export default function HomePageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-blue-500">verified</span>
+                                    <span className="material-symbols-outlined text-primary">verified</span>
                                     Trust Section
                                 </h2>
                                 <div className="space-y-5 mb-8">
@@ -502,7 +502,7 @@ export default function HomePageUI() {
 
                                 <div className="flex items-center justify-between mb-6 pt-6 border-t border-gray-100">
                                     <p className="text-sm text-gray-500">Manage Logos</p>
-                                    <button onClick={() => addItem(trustLogos, setTrustLogos, { alt_text: "", logo_url: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(trustLogos, setTrustLogos, { alt_text: "", logo_url: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Logo
                                     </button>
                                 </div>
@@ -567,7 +567,7 @@ export default function HomePageUI() {
 
                                 <div className="flex items-center justify-between mb-6 pt-6 border-t border-gray-100">
                                     <p className="text-sm text-gray-500">Manage Expertise Items</p>
-                                    <button onClick={() => addItem(expertiseItems, setExpertiseItems, { icon: "star", title: "", description: "" })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                    <button onClick={() => addItem(expertiseItems, setExpertiseItems, { icon: "star", title: "", description: "" })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Item
                                     </button>
                                 </div>
@@ -619,7 +619,7 @@ export default function HomePageUI() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                                 <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-indigo-500">inventory_2</span>
+                                    <span className="material-symbols-outlined text-primary">inventory_2</span>
                                     Products Section
                                 </h2>
                                 <div className="space-y-5 mb-8">
@@ -682,7 +682,7 @@ export default function HomePageUI() {
                                 <div className="mt-8 pt-6 border-t border-gray-100">
                                     <div className="flex items-center justify-between mb-4">
                                         <p className="text-sm text-gray-500">Manage About Items</p>
-                                        <button onClick={() => addItem(aboutItems, setAboutItems, { title: '', description: '', bullets: '[]', image_url: '', image_alt: '', cta_text: '', cta_link: '', display_order: aboutItems.length + 1, is_active: 1 })} className="text-sm text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">
+                                        <button onClick={() => addItem(aboutItems, setAboutItems, { title: '', description: '', bullets: '[]', image_url: '', image_alt: '', cta_text: '', cta_link: '', display_order: aboutItems.length + 1, is_active: 1 })} className="text-sm text-primary font-medium hover:text-primary flex items-center gap-1">
                                             <span className="material-symbols-outlined text-[18px]">add_circle</span> Add Item
                                         </button>
                                     </div>
@@ -724,7 +724,7 @@ export default function HomePageUI() {
                                                                 type="number"
                                                                 value={item.display_order || 0}
                                                                 onChange={(e) => updateItem(idx, 'display_order', Number(e.target.value), aboutItems, setAboutItems)}
-                                                                className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                                                                className="w-20 px-3 py-1 border border-gray-200 rounded text-right focus:outline-hidden focus:ring-2 focus:ring-primary"
                                                             />
                                                         </div>
                                                         <div className="flex items-center justify-between pt-2">
@@ -801,13 +801,13 @@ export default function HomePageUI() {
                                         <RichTextEditor value={contactData.about_paragraph || ''} onChange={(v) => setContactData({ ...contactData, about_paragraph: v })} />
                                     </div>
 
-                                   <div className="grid grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-2 gap-5">
                                         <InputGroup label="CTA Text" value={contactData.cta_text || ''} onChange={(v) => setContactData({ ...contactData, cta_text: v })} />
                                         <InputGroup label="CTA Link" value={contactData.cta_link || ''} onChange={(v) => setContactData({ ...contactData, cta_link: v })} />
                                     </div>
-                                    <hr className="my-6"/>
+                                    <hr className="my-6" />
 
-                                                                        <InputGroup label="Title" value={contactData.title || ''} onChange={(v) => setContactData({ ...contactData, title: v })} />
+                                    <InputGroup label="Title" value={contactData.title || ''} onChange={(v) => setContactData({ ...contactData, title: v })} />
                                     <TextAreaGroup label="Description" value={contactData.description || ''} onChange={(v) => setContactData({ ...contactData, description: v })} />
 
                                     <div className="grid grid-cols-2 gap-5">
@@ -845,7 +845,7 @@ function InputGroup({ label, value, onChange, placeholder }: { label: string, va
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4"
             />
         </div>
     );
@@ -860,7 +860,7 @@ function TextAreaGroup({ label, value, onChange, placeholder }: { label: string,
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
                 rows={3}
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
+                className="block w-full rounded-lg border-gray-200 bg-gray-50 focus:bg-white focus:border-primary focus:ring-primary sm:text-sm transition-all duration-200 py-2.5 px-4 resize-none"
             />
         </div>
     );
@@ -870,7 +870,7 @@ function Toggle({ checked, onChange }: { checked: boolean, onChange: (c: boolean
     return (
         <button
             onClick={() => onChange(!checked)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-indigo-600' : 'bg-gray-200'
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${checked ? 'bg-primary' : 'bg-gray-200'
                 }`}
         >
             <span

@@ -71,7 +71,7 @@ export default function ImageUploader({
             <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-medium text-gray-700">{label}</label>
                 {ratio && (
-                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-indigo-100">
+                    <span className="text-[10px] font-bold text-primary bg-primary-50 px-1.5 py-0.5 rounded uppercase tracking-wider border border-primary-100">
                         {ratio} Ratio
                     </span>
                 )}
@@ -99,7 +99,7 @@ export default function ImageUploader({
                 }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={onDrop}
-                className={`relative rounded-lg border ${dragOver ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-gray-50"} transition-colors`}
+                className={`relative rounded-lg border ${dragOver ? "border-primary-400 bg-primary-50" : "border-gray-200 bg-gray-50"} transition-colors`}
             >
                 <div className="flex items-center justify-between gap-3 p-3">
                     <div className="text-sm text-gray-600">
@@ -107,7 +107,7 @@ export default function ImageUploader({
                         <button
                             type="button"
                             onClick={openPicker}
-                            className="ml-1 text-indigo-600 hover:text-indigo-700 font-medium"
+                            className="ml-1 text-primary hover:text-primary-800 font-medium"
                             disabled={uploading}
                         >
                             browse
@@ -133,7 +133,7 @@ export default function ImageUploader({
                 {uploading ? (
                     <div className="px-3 pb-3">
                         <div className="w-full h-2 rounded bg-gray-200 overflow-hidden">
-                            <div className="h-2 bg-indigo-600 transition-all" style={{ width: `${Math.max(5, progress)}%` }} />
+                            <div className="h-2 bg-primary transition-all" style={{ width: `${Math.max(5, progress)}%` }} />
                         </div>
                         <div className="mt-1 text-xs text-gray-600">Uploading {Math.round(progress)}%</div>
                     </div>

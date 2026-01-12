@@ -387,7 +387,7 @@ export default function NavbarManagerPage() {
         return (
             <div className="flex-1 flex items-center justify-center min-h-screen">
                 <div className="flex flex-col items-center gap-3">
-                    <span className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                     <p className="text-slate-600 text-sm">Loading...</p>
                 </div>
             </div>
@@ -418,13 +418,13 @@ export default function NavbarManagerPage() {
                                     placeholder="Search navbar items..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </div>
                         <button
                             onClick={addItem}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                            className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
                         >
                             <span className="material-symbols-outlined text-[18px]">add</span>
                             Add Navbar Item
@@ -438,7 +438,7 @@ export default function NavbarManagerPage() {
                             <p className="text-slate-500 text-sm">No navbar items found</p>
                             <button
                                 onClick={addItem}
-                                className="mt-4 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                                className="mt-4 text-primary hover:underline text-sm font-medium"
                             >
                                 Create your first navbar item
                             </button>
@@ -475,7 +475,7 @@ export default function NavbarManagerPage() {
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="text-base font-semibold text-slate-900">{item.label}</h3>
                                                 {item.is_button === 1 && (
-                                                    <span className="px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 rounded">
+                                                    <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-800 rounded">
                                                         Button
                                                     </span>
                                                 )}
@@ -538,9 +538,9 @@ export default function NavbarManagerPage() {
                                                     placeholder="Search categories..."
                                                     value={manageSearch}
                                                     onChange={(e) => setManageSearch(e.target.value)}
-                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                                 />
-                                                <button className="text-sm text-indigo-600 hover:underline" onClick={() => {
+                                                <button className="text-sm text-primary hover:underline" onClick={() => {
                                                     const newSel: Record<number, boolean> = {};
                                                     const visible = categories.filter(c => c.name.toLowerCase().includes(manageSearch.toLowerCase()));
                                                     visible.forEach((v: any) => newSel[v.id] = true);
@@ -618,7 +618,7 @@ export default function NavbarManagerPage() {
                                                                 type="checkbox"
                                                                 checked={!!selectedCategories[cat.id]}
                                                                 onChange={(e) => setSelectedCategories(prev => ({ ...prev, [cat.id]: e.target.checked }))}
-                                                                className="w-4 h-4 text-indigo-600 rounded"
+                                                                className="w-4 h-4 text-primary rounded"
                                                             />
                                                             {cat.thumbnail ? (
                                                                 <img src={cat.thumbnail} alt={cat.name} className="w-8 h-8 rounded object-cover" />
@@ -636,7 +636,7 @@ export default function NavbarManagerPage() {
                                                                             <span className="text-xs text-slate-400">Order: {existing.order}</span>
                                                                             <button
                                                                                 onClick={() => { setSelectedItem(existing); setIsModalOpen(true); }}
-                                                                                className="text-indigo-600 hover:underline"
+                                                                                className="text-primary hover:underline"
                                                                             >
                                                                                 Edit
                                                                             </button>
@@ -658,10 +658,10 @@ export default function NavbarManagerPage() {
                                             <div className="mt-3 flex gap-2">
                                                 <button
                                                     onClick={() => { const iid = item.id ?? item._id; if (iid) addSelectedCategories(iid as string | number); }}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+                                                    className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
                                                 >
                                                     <span>Attach selected</span>
-                                                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">{Object.values(selectedCategories).filter(Boolean).length}</span>
+                                                    <span className="text-xs bg-primary-100 text-primary-800 px-2 py-0.5 rounded">{Object.values(selectedCategories).filter(Boolean).length}</span>
                                                 </button>
                                                 <button
                                                     onClick={() => { const iid = item.id ?? item._id; if (iid) removeAllChildren(iid as string | number); }}
@@ -696,7 +696,7 @@ export default function NavbarManagerPage() {
                                     value={selectedItem.label}
                                     onChange={(e) => setSelectedItem({ ...selectedItem, label: e.target.value })}
                                     placeholder="Home"
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
@@ -706,7 +706,7 @@ export default function NavbarManagerPage() {
                                     value={selectedItem.href}
                                     onChange={(e) => setSelectedItem({ ...selectedItem, href: e.target.value })}
                                     placeholder="/"
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -716,7 +716,7 @@ export default function NavbarManagerPage() {
                                         type="number"
                                         value={selectedItem.order}
                                         onChange={(e) => setSelectedItem({ ...selectedItem, order: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                                 <div>
@@ -726,7 +726,7 @@ export default function NavbarManagerPage() {
                                         value={selectedItem.parent_id || ''}
                                         onChange={(e) => setSelectedItem({ ...selectedItem, parent_id: e.target.value || null })}
                                         placeholder="ObjectId string"
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                     />
                                 </div>
                             </div>
@@ -736,7 +736,7 @@ export default function NavbarManagerPage() {
                                         type="checkbox"
                                         checked={selectedItem.is_button === 1}
                                         onChange={(e) => setSelectedItem({ ...selectedItem, is_button: e.target.checked ? 1 : 0 })}
-                                        className="w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+                                        className="w-4 h-4 text-primary rounded focus:ring-2 focus:ring-primary"
                                     />
                                     <span className="text-sm text-slate-700">Display as Button</span>
                                 </label>
@@ -745,7 +745,7 @@ export default function NavbarManagerPage() {
                                         type="checkbox"
                                         checked={selectedItem.is_active === 1}
                                         onChange={(e) => setSelectedItem({ ...selectedItem, is_active: e.target.checked ? 1 : 0 })}
-                                        className="w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+                                        className="w-4 h-4 text-primary rounded focus:ring-2 focus:ring-primary"
                                     />
                                     <span className="text-sm text-slate-700">Active (Visible)</span>
                                 </label>
@@ -754,7 +754,7 @@ export default function NavbarManagerPage() {
                                         type="checkbox"
                                         checked={selectedItem.is_dropdown === 1}
                                         onChange={(e) => setSelectedItem({ ...selectedItem, is_dropdown: e.target.checked ? 1 : 0 })}
-                                        className="w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+                                        className="w-4 h-4 text-primary rounded focus:ring-2 focus:ring-primary"
                                     />
                                     <span className="text-sm text-slate-700">Dropdown (has children)</span>
                                 </label>
@@ -764,7 +764,7 @@ export default function NavbarManagerPage() {
                             <button
                                 onClick={saveItem}
                                 disabled={saving}
-                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                className="flex-1 bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                             >
                                 {saving ? 'Saving...' : 'Save Item'}
                             </button>

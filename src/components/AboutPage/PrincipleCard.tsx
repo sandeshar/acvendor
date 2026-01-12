@@ -8,8 +8,8 @@ interface PrincipleCardProps {
 
 const PrincipleCard = ({ number, title, description }: PrincipleCardProps) => {
     return (
-        <div className="flex flex-col gap-4 rounded-xl bg-card p-6 shadow-sm ring-1 ring-muted transition-shadow hover:shadow-md">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-20 text-xl font-black text-primary-var">
+        <div className="flex flex-col gap-4 rounded-xl bg-card p-6 shadow-sm ring-1 ring-muted transition-shadow hover:shadow-md group">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-xl font-black text-primary group-hover:bg-secondary group-hover:text-white transition-all">
                 {number}
             </div>
             <h3 className="text-xl font-bold text-body">{title}</h3>

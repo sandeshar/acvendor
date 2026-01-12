@@ -157,7 +157,7 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                     <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
                         <div className="flex-1 flex flex-col gap-6 text-left z-10">
                             {hero?.badge_text && (
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit bg-blue-100 text-blue-500">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 w-fit">
                                     <span className="material-symbols-outlined text-primary text-sm">verified</span>
                                     <span className="text-primary text-xs font-bold uppercase tracking-wide">{hero.badge_text}</span>
                                 </div>
@@ -284,16 +284,16 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
             <section className="py-16 px-4 md:px-10">
                 {/* Compare tray (client) */}
                 <CompareTrayWrapper />
-                <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-blue-500/20">
+                <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
                     <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
                         <div className="max-w-xl text-white">
                             <h2 className="text-3xl font-black mb-4">Unsure which brand fits your room?</h2>
-                            <p className="text-blue-100 text-lg mb-8">Get a free professional site survey. Our experts will inspect your space and recommend the perfect cooling solution.</p>
-                            <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8 text-blue-50 font-medium">
+                            <p className="text-primary-100 text-lg mb-8">Get a free professional site survey. Our experts will inspect your space and recommend the perfect cooling solution.</p>
+                            <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
                                 <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Free Consultation</span></li>
                                 <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Accurate BTU Sizing</span></li>
                             </ul>
-                            <button className="bg-white text-primary hover:bg-blue-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">Book Site Survey</button>
+                            <button className="bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">Book Site Survey</button>
                         </div>
                         <div className="hidden md:block">
                             <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">

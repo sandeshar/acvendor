@@ -466,7 +466,7 @@ export default function EditBlogPage() {
                                                         <button
                                                             type="button"
                                                             onClick={() => editor.chain().focus().toggleHighlight({ color: '#bfdbfe' }).run()}
-                                                            className="w-6 h-6 rounded bg-blue-200 hover:ring-2 ring-slate-400"
+                                                            className="w-6 h-6 rounded bg-primary-200 hover:ring-2 ring-slate-400"
                                                             title="Blue"
                                                         />
                                                         <button
@@ -718,7 +718,7 @@ export default function EditBlogPage() {
                                     <button
                                         type="button"
                                         onClick={(e) => handleSubmit(e, true)}
-                                        className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-primary"
+                                        className="px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary"
                                         disabled={isSaving || !formData.title || !formData.slug || wordCount === 0}
                                     >
                                         Save as Draft
@@ -726,7 +726,7 @@ export default function EditBlogPage() {
                                     <button
                                         type="button"
                                         onClick={(e) => handleSubmit(e, false)}
-                                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed"
                                         disabled={isSaving || !formData.title || !formData.slug || wordCount === 0}
                                     >
                                         <span className="material-symbols-outlined text-lg">send</span>

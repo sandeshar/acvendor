@@ -46,11 +46,11 @@ const Contact = ({ data }: ContactProps) => {
 
                     {data.cta_text ? (
                         data.cta_style === 'underline' ? (
-                            <a href={data.cta_link || '/about'} className="mt-6 inline-block text-indigo-600 hover:text-indigo-700 font-semibold underline">
+                            <a href={data.cta_link || '/about'} className="mt-6 inline-block text-primary hover:opacity-90 font-semibold underline">
                                 {data.cta_text}
                             </a>
                         ) : (
-                            <a href={data.cta_link || '/about'} className="mt-6 inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold">
+                            <a href={data.cta_link || '/about'} className="mt-6 inline-flex items-center gap-2 text-primary hover:opacity-90 font-semibold">
                                 <span>{data.cta_text}</span>
                                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                             </a>
@@ -58,19 +58,19 @@ const Contact = ({ data }: ContactProps) => {
                     ) : null}
                 </div>
                 <div>
-                <div className="flex flex-col gap-4 py-10">
-                    <h2 className="text-2xl md:text-4xl font-black text-[#111418]">{data.title}</h2>
-                    <p className="text-[#617589] text-base">{data.description}</p>
-                </div>
-                <ContactFormSection
-                    namePlaceholder={data.name_placeholder}
-                    emailPlaceholder={data.email_placeholder}
-                    phonePlaceholder={data.phone_placeholder}
-                    servicePlaceholder={data.service_placeholder}
-                    messagePlaceholder={data.message_placeholder}
-                    submitButtonText={data.submit_button_text}
-                    variant="labeled"
-                />
+                    <div className="flex flex-col gap-4 py-10">
+                        <h2 className="text-2xl md:text-4xl font-black text-[#111418]">{data.title}</h2>
+                        <p className="text-[#617589] text-base">{data.description}</p>
+                    </div>
+                    <ContactFormSection
+                        namePlaceholder={data.name_placeholder}
+                        emailPlaceholder={data.email_placeholder}
+                        phonePlaceholder={data.phone_placeholder}
+                        servicePlaceholder={data.service_placeholder}
+                        messagePlaceholder={data.message_placeholder}
+                        submitButtonText={data.submit_button_text}
+                        variant="labeled"
+                    />
                 </div>
             </div>
         </section>

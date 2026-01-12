@@ -40,7 +40,7 @@ export default function UsersPage() {
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                                 <input className="pl-10 pr-4 py-2 w-full border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search users..." type="text" onChange={(e) => setSearchTerm(e.target.value)} />
                             </div>
-                            <a href="/admin/users/add" className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
+                            <a href="/admin/users/add" className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
                                 <span className="material-symbols-outlined text-lg">add</span>
                                 Add User
                             </a>

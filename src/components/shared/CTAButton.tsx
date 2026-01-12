@@ -25,7 +25,7 @@ const CTAButton: React.FC<CTAButtonProps> = ({
 
     const variantClasses: Record<string, string> = {
         primary: "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20 hover:shadow-primary/30",
-        secondary: "bg-slate-200 text-slate-900 hover:bg-slate-300",
+        secondary: "bg-secondary text-white hover:bg-secondary/90 shadow-lg shadow-secondary/20 hover:shadow-secondary/30",
         outline: "border-2 border-primary text-primary hover:bg-primary hover:text-white"
     };
 

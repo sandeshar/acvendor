@@ -202,7 +202,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
         );
     }
@@ -213,7 +213,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 <p className="text-slate-500">Service not found.</p>
                 <button 
                     onClick={() => router.push('/admin/services/manager')}
-                    className="mt-4 text-indigo-600 hover:underline"
+                    className="mt-4 text-primary hover:underline"
                 >
                     Back to Manager
                 </button>

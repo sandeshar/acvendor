@@ -37,13 +37,13 @@ export default function StoreSettingPage() {
 
     // Preset themes for quick selection (colors mirror globals.css variables)
     const presetThemes = [
-        { id: 'default', name: 'Default', colors: { primary: '#2563eb', background: '#f8fafc', card: '#ffffff' } },
+        { id: 'default', name: 'Default', colors: { primary: '#293a6f', background: '#f8fafc', card: '#ffffff' } },
         { id: 'ocean', name: 'Ocean', colors: { primary: '#0ea5a4', background: '#ecfeff', card: '#ffffff' } },
         { id: 'corporate', name: 'Corporate', colors: { primary: '#0f172a', background: '#f8fafc', card: '#ffffff' } },
         { id: 'sunset', name: 'Sunset', colors: { primary: '#ff6b6b', background: '#fff7f5', card: '#fff1f0' } },
         { id: 'forest', name: 'Forest', colors: { primary: '#16a34a', background: '#f0fff5', card: '#ffffff' } },
         { id: 'lavender', name: 'Lavender', colors: { primary: '#7c3aed', background: '#fbf5ff', card: '#ffffff' } },
-        { id: 'minimal', name: 'Minimal', colors: { primary: '#2563eb', background: '#ffffff', card: '#ffffff' } },
+        { id: 'minimal', name: 'Minimal', colors: { primary: '#293a6f', background: '#ffffff', card: '#ffffff' } },
     ];
 
     useEffect(() => {
@@ -291,7 +291,7 @@ export default function StoreSettingPage() {
                                                             }
                                                         }
                                                     }}
-                                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-800"
                                                 />
                                             </div>
                                             {formData.logo && (
@@ -345,7 +345,7 @@ export default function StoreSettingPage() {
                                                             }
                                                         }
                                                     }}
-                                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-800"
                                                 />
                                             </div>
                                             {formData.favicon && (
@@ -609,7 +609,7 @@ export default function StoreSettingPage() {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className="bg-primary text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60"
+                                className="bg-primary text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60"
                             >
                                 <span className="material-symbols-outlined text-lg">save</span>
                                 {saving ? 'Saving…' : 'Save Settings'}

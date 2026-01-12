@@ -104,7 +104,7 @@ export default function RobotsPage() {
                                     <button
                                         onClick={handleSave}
                                         disabled={saving}
-                                        className="bg-primary text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 disabled:opacity-60"
+                                        className="bg-primary text-white px-6 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 disabled:opacity-60"
                                     >
                                         <span className="material-symbols-outlined text-lg">save</span>
                                         {saving ? 'Saving...' : 'Save Changes'}

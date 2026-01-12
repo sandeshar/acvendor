@@ -125,7 +125,7 @@ export default function BlogPage() {
                             <option value="2">Published</option>
                             <option value="3">In Review</option>
                         </select>
-                        <Link href="/admin/blog/add" className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
+                        <Link href="/admin/blog/add" className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-white">
                             <span className="material-symbols-outlined text-lg">add</span>
                             New Post
                         </Link>

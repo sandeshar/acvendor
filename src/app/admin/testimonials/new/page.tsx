@@ -236,7 +236,7 @@ export default function AddTestimonialPage() {
                             value={formData.name}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                             placeholder="John Doe"
                         />
                     </div>
@@ -256,7 +256,7 @@ export default function AddTestimonialPage() {
                             value={formData.role}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                             placeholder="CEO, Company Name"
                         />
                     </div>
@@ -276,7 +276,7 @@ export default function AddTestimonialPage() {
                             onChange={handleChange}
                             required
                             rows={5}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                             placeholder="Share your experience..."
                         />
                     </div>
@@ -295,7 +295,7 @@ export default function AddTestimonialPage() {
                             value={formData.rating}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                         >
                             <option value={5}>5 Stars</option>
                             <option value={4}>4 Stars</option>
@@ -322,7 +322,7 @@ export default function AddTestimonialPage() {
                                         type="checkbox"
                                         checked={displayLocations.includes(location.value)}
                                         onChange={() => handleLocationToggle(location.value)}
-                                        className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                                     />
                                     <span className="text-sm text-gray-700">{location.label}</span>
                                 </label>
@@ -339,7 +339,7 @@ export default function AddTestimonialPage() {
                                             setFormData((prev) => ({ ...prev, service: 1 }));
                                         }
                                     }}
-                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                                 />
                                 <span className="text-sm text-gray-700">Services Page</span>
                             </label>
@@ -354,7 +354,7 @@ export default function AddTestimonialPage() {
                                             setProductSearch('');
                                         }
                                     }}
-                                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary"
                                 />
                                 <span className="text-sm text-gray-700">Products</span>
                             </label>
@@ -367,13 +367,13 @@ export default function AddTestimonialPage() {
                                 {displayLocations.map((loc) => (
                                     <span
                                         key={loc}
-                                        className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+                                        className="inline-flex items-center gap-1 rounded-full bg-primary-100 px-3 py-1 text-xs font-medium text-primary-800"
                                     >
                                         {loc}
                                         <button
                                             type="button"
                                             onClick={() => handleLocationToggle(loc)}
-                                            className="hover:text-blue-900"
+                                            className="hover:text-primary-900"
                                         >
                                             ×
                                         </button>
@@ -398,7 +398,7 @@ export default function AddTestimonialPage() {
                                 value={serviceSearch}
                                 onChange={(e) => setServiceSearch(e.target.value)}
                                 placeholder="Type to search or click to see all services..."
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                             />
                             {showServiceDropdown && filteredServices.length > 0 && (
                                 <div className="absolute bottom-full z-20 mb-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-300 bg-white shadow-lg">
@@ -407,7 +407,7 @@ export default function AddTestimonialPage() {
                                             key={service.id}
                                             type="button"
                                             onClick={() => handleServiceSelect(service)}
-                                            className="w-full px-4 py-3 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
+                                            className="w-full px-4 py-3 text-left hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
                                         >
                                             <div className="font-medium text-gray-900">
                                                 {service.title}
@@ -420,19 +420,19 @@ export default function AddTestimonialPage() {
                                 </div>
                             )}
                             {selectedServices.length > 0 && (
-                                <div className="mt-2 rounded-lg bg-blue-50 p-3 border border-blue-200">
-                                    <div className="mb-2 text-sm font-semibold text-blue-900">Selected Services</div>
+                                <div className="mt-2 rounded-lg bg-primary-50 p-3 border border-primary-200">
+                                    <div className="mb-2 text-sm font-semibold text-primary-900">Selected Services</div>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedServices.map((service) => (
                                             <span
                                                 key={service.id}
-                                                className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-blue-800 shadow-sm border border-blue-200"
+                                                className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-primary-800 shadow-sm border border-primary-200"
                                             >
                                                 {service.title}
                                                 <button
                                                     type="button"
                                                     onClick={() => setSelectedServices((prev) => prev.filter((s) => s.id !== service.id))}
-                                                    className="hover:text-blue-900"
+                                                    className="hover:text-primary-900"
                                                     aria-label={`Remove ${service.title}`}
                                                 >
                                                     ×
@@ -460,7 +460,7 @@ export default function AddTestimonialPage() {
                                 value={productSearch}
                                 onChange={(e) => setProductSearch(e.target.value)}
                                 placeholder="Type to search or click to see all products..."
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none"
                             />
                             {showProductDropdown && filteredProducts.length > 0 && (
                                 <div className="absolute bottom-full z-20 mb-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-300 bg-white shadow-lg">
@@ -469,7 +469,7 @@ export default function AddTestimonialPage() {
                                             key={product.id}
                                             type="button"
                                             onClick={() => handleProductSelect(product)}
-                                            className="w-full px-4 py-3 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none"
+                                            className="w-full px-4 py-3 text-left hover:bg-primary-50 focus:bg-primary-50 focus:outline-none"
                                         >
                                             <div className="font-medium text-gray-900">
                                                 {product.title}
@@ -482,19 +482,19 @@ export default function AddTestimonialPage() {
                                 </div>
                             )}
                             {selectedProducts.length > 0 && (
-                                <div className="mt-2 rounded-lg bg-blue-50 p-3 border border-blue-200">
-                                    <div className="mb-2 text-sm font-semibold text-blue-900">Selected Products</div>
+                                <div className="mt-2 rounded-lg bg-primary-50 p-3 border border-primary-200">
+                                    <div className="mb-2 text-sm font-semibold text-primary-900">Selected Products</div>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedProducts.map((product) => (
                                             <span
                                                 key={product.id}
-                                                className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-blue-800 shadow-sm border border-blue-200"
+                                                className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-medium text-primary-800 shadow-sm border border-primary-200"
                                             >
                                                 {product.title}
                                                 <button
                                                     type="button"
                                                     onClick={() => setSelectedProducts((prev) => prev.filter((s) => s.id !== product.id))}
-                                                    className="hover:text-blue-900"
+                                                    className="hover:text-primary-900"
                                                     aria-label={`Remove ${product.title}`}
                                                 >
                                                     ×
@@ -512,7 +512,7 @@ export default function AddTestimonialPage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:bg-gray-400"
+                            className="rounded-lg bg-primary px-6 py-2 text-white hover:bg-primary/90 disabled:bg-gray-400"
                         >
                             {isSaving ? 'Creating...' : 'Create Testimonial'}
                         </button>

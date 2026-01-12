@@ -20,7 +20,7 @@ type StatusKey = "new" | "read" | "replied" | "archived" | string;
 const statusOptions: StatusKey[] = ["new", "read", "replied", "archived"];
 
 const statusConfig = {
-    new: { bg: "bg-blue-50", text: "text-blue-700", icon: "mail", dot: "bg-blue-500" },
+    new: { bg: "bg-primary-50", text: "text-blue-700", icon: "mail", dot: "bg-primary" },
     read: { bg: "bg-amber-50", text: "text-amber-700", icon: "drafts", dot: "bg-amber-500" },
     replied: { bg: "bg-emerald-50", text: "text-emerald-700", icon: "done_all", dot: "bg-emerald-500" },
     archived: { bg: "bg-slate-50", text: "text-slate-700", icon: "archive", dot: "bg-slate-400" },
@@ -129,7 +129,7 @@ export default function ContactAdminPage() {
                         label="Total"
                         count={stats.total}
                         icon="mail"
-                        color="from-blue-500 to-blue-600"
+                        color="from-primary to-blue-600"
                     />
                     <StatCard
                         label="New"

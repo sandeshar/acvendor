@@ -70,7 +70,7 @@ const HeroSection = ({ data }: HeroSectionProps) => {
 
                         <div className="flex flex-wrap gap-4">
                             {data.primary_cta_text && (
-                                <a href={data.primary_cta_link || '#'} className="bg-primary hover:bg-blue-600 text-white text-base font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-primary/30 inline-flex items-center gap-2">
+                                <a href={data.primary_cta_link || '#'} className="bg-primary hover:bg-primary/90 text-white text-base font-bold py-3 px-8 rounded-lg transition-all shadow-lg hover:shadow-primary/30 inline-flex items-center gap-2">
                                     {data.primary_cta_text} <span className="material-symbols-outlined">arrow_forward</span>
                                 </a>
                             )}

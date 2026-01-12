@@ -46,7 +46,7 @@ const Expertise = ({ section, items = [] }: ExpertiseProps) => {
                                 key={item._id ?? item.id ?? item.title ?? i}
                                 className="group flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
                             >
-                                <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary bg-blue-100 text-blue-500 transition-colors">
+                                <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors">
                                     <span className="material-symbols-outlined">{item.icon}</span>
                                 </div>
                                 <div className="flex flex-col gap-2">

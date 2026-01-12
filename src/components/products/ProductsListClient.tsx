@@ -157,9 +157,9 @@ export default function ProductsListClient({ products, productPathPrefix, search
                             <div className="p-4 flex flex-col flex-1 gap-2">
                                 <div className="flex items-center gap-2 mb-1">
                                     {p.category?.slug ? (
-                                        <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category?.name || p.category_name || 'Category'}</Link>
+                                        <Link href={`/shop/category/${encodeURIComponent(p.category.slug)}`} className="text-xs font-semibold text-primary bg-primary-50 px-2 py-0.5 rounded">{p.category?.name || p.category_name || 'Category'}</Link>
                                     ) : (
-                                        <span className="text-xs font-semibold text-primary bg-blue-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
+                                        <span className="text-xs font-semibold text-primary bg-primary-50 px-2 py-0.5 rounded">{p.category_name || 'Category'}</span>
                                     )}
                                     <span className="text-xs font-medium text-gray-500">{(p.technical_enabled ?? 1) !== 0 ? (p.model || p.capacity || '') : ''}</span>
                                 </div>
@@ -183,7 +183,7 @@ export default function ProductsListClient({ products, productPathPrefix, search
                                 </div>
 
                                 <div className="mt-3 pt-3 border-t border-[#f0f2f4] flex gap-2 items-center">
-                                    <Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-blue-600 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
+                                    <Link href={`${productPathPrefix || '/products'}/${p.slug}`} className="flex-1 h-9 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-colors flex items-center justify-center">View Details</Link>
                                 </div>
                             </div>
                         </article>

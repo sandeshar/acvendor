@@ -289,10 +289,10 @@ export async function POST() {
 
         // Seed Hero Features (floating cards)
         const heroFeatures = [
-            { icon_name: 'local_shipping', icon_bg: 'bg-blue-600', title: 'Fast Delivery', description: 'Timely delivery across Nepal.', display_order: 1, is_active: 1 },
-            { icon_name: 'engineering', icon_bg: 'bg-green-600', title: 'Expert Technicians', description: 'Certified HVAC technicians for installation & repair.', display_order: 2, is_active: 1 },
-            { icon_name: 'verified', icon_bg: 'bg-orange-600', title: 'Warranty Plans', description: 'Extended warranty and parts support.', display_order: 3, is_active: 1 },
-            { icon_name: 'support_agent', icon_bg: 'bg-indigo-600', title: '24/7 Support', description: 'Round-the-clock assistance for service requests.', display_order: 4, is_active: 1 },
+            { icon_name: 'local_shipping', icon_bg: 'bg-primary', title: 'Fast Delivery', description: 'Timely delivery across Nepal.', display_order: 1, is_active: 1 },
+            { icon_name: 'engineering', icon_bg: 'bg-primary', title: 'Expert Technicians', description: 'Certified HVAC technicians for installation & repair.', display_order: 2, is_active: 1 },
+            { icon_name: 'verified', icon_bg: 'bg-secondary', title: 'Warranty Plans', description: 'Extended warranty and parts support.', display_order: 3, is_active: 1 },
+            { icon_name: 'support_agent', icon_bg: 'bg-secondary', title: '24/7 Support', description: 'Round-the-clock assistance for service requests.', display_order: 4, is_active: 1 },
         ];
 
         for (const f of heroFeatures) {

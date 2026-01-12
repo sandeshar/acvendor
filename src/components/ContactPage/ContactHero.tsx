@@ -42,7 +42,7 @@ const ContactHero = ({ data }: ContactHeroProps) => {
         const parts = title.split(new RegExp(`(${highlight})`, 'gi'));
         return parts.map((part, i) =>
             part.toLowerCase() === highlight.toLowerCase() ? (
-                <span key={i} className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-300">
+                <span key={i} className="text-transparent bg-clip-text bg-linear-to-r from-primary to-secondary">
                     {part}
                 </span>
             ) : (
