@@ -5,6 +5,7 @@ import { ReviewTestimonialServices } from '@/db/reviewTestimonialServicesSchema'
 import { ReviewTestimonials } from '@/db/reviewSchema';
 import { Status } from '@/db/schema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
+import { isValidSlug } from '@/utils/slug';
 import { revalidateTag } from 'next/cache';
 
 async function resolveStatusId(statusId: any) {
@@ -174,6 +175,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Required fields: slug, title, excerpt, content, statusId' }, { status: 400 });
         }
 
+        // Validate slug format
+        if (!isValidSlug(slug)) {
+            return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+        }
+
         const finalStatusId = await resolveStatusId(statusId);
 
         const newPost = await ServicePosts.create({
@@ -232,7 +238,10 @@ export async function PUT(request: NextRequest) {
         }
 
         const updateData: any = {};
-        if (slug !== undefined) updateData.slug = slug;
+        if (slug !== undefined) {
+            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            updateData.slug = slug;
+        }
         if (title !== undefined) updateData.title = title;
         if (excerpt !== undefined) updateData.excerpt = excerpt;
         if (content !== undefined) updateData.content = content;

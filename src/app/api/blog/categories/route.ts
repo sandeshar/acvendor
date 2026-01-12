@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/db';
 import { BlogCategories } from '@/db/blogCategoriesSchema';
+import { isValidSlug } from '@/utils/slug';
 
 export async function GET(request: NextRequest) {
     try {
@@ -28,6 +29,9 @@ export async function POST(request: NextRequest) {
 
         if (!name || !slug) return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
 
+        // Validate slug format
+        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+
         const result = await BlogCategories.create({
             name,
             slug,
@@ -40,8 +44,11 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ id: result._id, message: 'Category created successfully' });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating blog category:', error);
+        if (error.code === 11000 && error.keyPattern?.slug) {
+            return NextResponse.json({ error: 'A category with this slug already exists. Please use a different slug.' }, { status: 409 });
+        }
         return NextResponse.json({ error: 'Failed to create category' }, { status: 500 });
     }
 }
@@ -53,6 +60,8 @@ export async function PUT(request: NextRequest) {
         const { id, name, slug, description, thumbnail, display_order, is_active, meta_title, meta_description } = body;
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+
+        if (slug !== undefined && !isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
 
         await BlogCategories.findByIdAndUpdate(id, {
             name,
@@ -67,8 +76,11 @@ export async function PUT(request: NextRequest) {
         }, { new: true });
 
         return NextResponse.json({ message: 'Category updated successfully' });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error updating blog category:', error);
+        if (error.code === 11000 && error.keyPattern?.slug) {
+            return NextResponse.json({ error: 'A category with this slug already exists. Please use a different slug.' }, { status: 409 });
+        }
         return NextResponse.json({ error: 'Failed to update category' }, { status: 500 });
     }
 }

@@ -9,6 +9,7 @@ const STATUS_MAP = {
     3: 'In Review'
 };
 import { getUserIdFromToken } from '@/utils/authHelper';
+import { isValidSlug } from '@/utils/slug';
 import { revalidateTag } from 'next/cache';
 
 export async function POST(request: NextRequest) {
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
                 { error: 'Title, slug, and content are required' },
                 { status: 400 }
             );
+        }
+
+        // Validate slug format
+        if (!isValidSlug(slug)) {
+            return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens (no leading/trailing hyphens).' }, { status: 400 });
         }
 
         // Status mapping: draft = 1, published = 2, in-review = 3
@@ -334,6 +340,16 @@ export async function PUT(request: NextRequest) {
                 { error: 'Slug is required' },
                 { status: 400 }
             );
+        }
+
+        // Validate slug format
+        if (!isValidSlug(slug)) {
+            return NextResponse.json({ error: 'Invalid slug format.' }, { status: 400 });
+        }
+
+        // Validate newSlug if provided
+        if (newSlug && !isValidSlug(newSlug)) {
+            return NextResponse.json({ error: 'Invalid newSlug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
         }
 
         // Status mapping: draft = 1, published = 2, in-review = 3

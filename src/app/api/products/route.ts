@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/db';
 import { Product, ProductImage } from '@/db/productsSchema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
+import { isValidSlug } from '@/utils/slug';
 import { revalidateTag } from 'next/cache';
 import { ReviewTestimonials } from '@/db/reviewSchema';
 import { ReviewTestimonialProducts } from '@/db/reviewTestimonialProductsSchema';
@@ -502,6 +503,10 @@ export async function POST(request: NextRequest) {
         // Log incoming technical flag for debugging
         console.log('Creating product, technicalEnabled (normalized):', (typeof body.technicalEnabled !== 'undefined' ? body.technicalEnabled : body.technical_enabled));
 
+        // Require slug and validate
+        if (!slug || !title) return NextResponse.json({ error: 'Required fields: slug, title' }, { status: 400 });
+        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+
         const productData: any = {
             slug,
             title,
@@ -645,7 +650,10 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
         const updateData: any = {};
-        if (slug !== undefined) updateData.slug = slug;
+        if (slug !== undefined) {
+            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            updateData.slug = slug;
+        }
         if (title !== undefined) updateData.title = title;
         if (excerpt !== undefined) updateData.excerpt = excerpt;
         if (content !== undefined) updateData.content = content;
