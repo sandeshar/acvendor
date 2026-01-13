@@ -13,9 +13,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ ...cat, id: cat._id.toString() });
         }
 
-        const category = request.nextUrl.searchParams.get('category') || request.nextUrl.searchParams.get('brand');
-        // Include both category-specific (brand) categories and global (empty-brand) categories so category pages show shared categories too
-        const categories = category ? await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean() : await ServiceCategories.find().lean();
+        const categories = await ServiceCategories.find().sort({ name: 1 }).lean();
         const formatted = categories.map((c: any) => ({ ...c, id: c._id.toString() }));
         return NextResponse.json(formatted);
     } catch (error) {
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { name, slug, description, icon, brand, meta_title, meta_description, thumbnail } = body;
+        const { name, slug, description, icon, meta_title, meta_description, thumbnail } = body;
 
         if (!name || !slug) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -37,7 +35,7 @@ export async function POST(request: NextRequest) {
         const result = await ServiceCategories.create({
             name,
             slug,
-            brand: brand || '',
+            brand: '',
             description: description || null,
             icon: icon || null,
             thumbnail: thumbnail || null,
@@ -56,7 +54,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, name, slug, description, icon, brand, meta_title, meta_description, thumbnail } = body;
+        const { id, name, slug, description, icon, meta_title, meta_description, thumbnail } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -65,7 +63,7 @@ export async function PUT(request: NextRequest) {
         await ServiceCategories.findByIdAndUpdate(id, {
             name,
             slug,
-            brand: brand || '',
+            brand: '',
             description: description || null,
             icon: icon || null,
             thumbnail: thumbnail || null,

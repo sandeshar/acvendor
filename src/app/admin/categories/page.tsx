@@ -5,11 +5,9 @@ import { showToast } from '@/components/Toast';
 import IconSelector from "@/components/admin/IconSelector";
 
 type Category = {
-    id?: number;
+    id?: string | number;
     name: string;
     slug: string;
-    // brand slug (e.g., 'midea')
-    brand?: string | null;
     description?: string | null;
     icon?: string | null;
     // Optional SEO fields
@@ -47,14 +45,6 @@ export default function CategoriesManagerPage() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
-
-    // Brands available for selection on category (display list of known brands)
-    const [availableBrands, setAvailableBrands] = useState<any[]>([]);
-
-    useEffect(() => {
-        // Load brands for selection (include inactive for management)
-        fetch('/api/pages/services/brands?admin=1').then(r => r.ok ? r.json() : []).then(d => setAvailableBrands(d || [])).catch(() => { });
-    }, []);
 
     useEffect(() => {
         fetchData();
@@ -121,10 +111,7 @@ export default function CategoriesManagerPage() {
         setSaving(true);
         try {
             const method = selectedCategory.isNew ? 'POST' : 'PUT';
-            // Only send brand property if present (server handles empty string)
-            const payload: any = {
-                ...selectedCategory,
-            };
+            const payload = { ...selectedCategory };
             const response = await fetch('/api/pages/services/categories', {
                 method,
                 headers: { 'Content-Type': 'application/json' },
@@ -172,7 +159,7 @@ export default function CategoriesManagerPage() {
         }
     };
 
-    const deleteCategory = async (id: number) => {
+    const deleteCategory = async (id: string | number) => {
         if (!confirm('Are you sure you want to delete this category?')) return;
 
         setSaving(true);
@@ -330,7 +317,7 @@ export default function CategoriesManagerPage() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>
-                                                        <p className="text-xs text-slate-500 mt-1">{category.slug}{category.brand ? ` • Brand: ${category.brand.toUpperCase()}` : ''}</p>
+                                                        <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
                                                         {category.description && (
                                                             <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
                                                         )}
@@ -483,21 +470,6 @@ export default function CategoriesManagerPage() {
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
-                            {!selectedCategory.isNew && (
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Brand</label>
-                                    <select
-                                        value={selectedCategory.brand || ''}
-                                        onChange={(e) => setSelectedCategory({ ...selectedCategory, brand: e.target.value })}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    >
-                                        <option value="">(none)</option>
-                                        {availableBrands.map((b) => (
-                                            <option key={b.id} value={b.slug}>{b.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>

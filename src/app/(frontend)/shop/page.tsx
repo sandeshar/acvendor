@@ -13,121 +13,25 @@ export const fetchCache = 'force-no-store';
 
 export default async function ShopPage({ searchParams }: { searchParams?: { brand?: string, page?: string } }) {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    // Fetch Shop hero content, brands and categories
-    const [heroRes, brandsRes, categoriesRes] = await Promise.all([
+    // Fetch Shop hero content and categories
+    const [heroRes, categoriesRes] = await Promise.all([
         fetch(`${API_BASE}/api/pages/shop/hero`, { cache: 'no-store', next: { tags: ['shop-hero'] } }),
-        fetch(`${API_BASE}/api/pages/services/brands`, { cache: 'no-store' }),
         fetch(`${API_BASE}/api/pages/services/categories`, { cache: 'no-store' }),
     ]);
     const hero = heroRes.ok ? await heroRes.json() : null;
-    const brands = brandsRes.ok ? await brandsRes.json() : [];
     const categories = categoriesRes.ok ? await categoriesRes.json() : [];
 
-    // If a brand is requested, render a brand-specific listing view
-    let brandParam: string | null = null;
+    // Simple category listing - no more brand-specific overrides here
+    const categorySet = Array.from(new Set(categories.map((c: any) => c.slug).filter(Boolean))) as string[];
 
-    // QUICK SAFETY: avoid accessing properties on potentially hostile Proxy-like objects that throw
-    try {
-        // Handle Promise-shaped searchParams that Next may pass in dev/server: await if necessary
-        let sp: any = searchParams;
-        try {
-            const initialTag = Object.prototype.toString.call(sp);
-            if (initialTag === '[object Promise]') {
-                try {
-                    sp = await sp;
-                } catch (awaitErr) {
-                    // eslint-disable-next-line no-console
-                    console.warn('ShopPage: failed to resolve searchParams promise', awaitErr);
-                }
-            }
-        } catch (tagErr) {
-            // proceed - will be handled below
-        }
-
-        const tag = Object.prototype.toString.call(sp);
-        const isSafe = tag === '[object Object]' || tag === '[object URLSearchParams]';
-        if (!isSafe) {
-            // eslint-disable-next-line no-console
-            console.warn('ShopPage: unsafe searchParams shape detected, skipping brand parsing', { tag, searchParams: sp });
-        } else {
-            try {
-                // Safe-path: URLSearchParams-like object with .get or plain object
-                if (typeof (sp as any).get === 'function') {
-                    const v = (sp as any).get('brand');
-                    brandParam = v == null ? null : String(v);
-                } else {
-                    const raw = (sp as any)['brand'];
-                    brandParam = raw == null ? null : String(raw);
-                }
-            } catch (errInner) {
-                // Last-resort catch; log and move on without throwing
-                // eslint-disable-next-line no-console
-                console.error('Error accessing searchParams brand in ShopPage', errInner, { searchParams: sp });
-                brandParam = null;
-            }
-        }
-    } catch (errTag) {
-        // If even Object.prototype.toString.call throws, bail silently and avoid throwing
-        // eslint-disable-next-line no-console
-        console.error('ShopPage: failed to inspect searchParams', errTag, { searchParams });
-        brandParam = null;
-    }
-
-    if (brandParam) {
-        const page = (() => {
-            try {
-                let rawPage: any = undefined;
-                try {
-                    rawPage = (searchParams as any)['page'];
-                } catch (e) {
-                    try {
-                        const getter = (searchParams as any).get;
-                        if (typeof getter === 'function') rawPage = getter.call(searchParams, 'page');
-                    } catch (e2) {
-                        rawPage = undefined;
-                    }
-                }
-                return rawPage ? parseInt(String(rawPage)) || 1 : 1;
-            } catch (e) {
-                return 1;
-            }
-        })();
-        const limit = 12;
-        const offset = (Math.max(1, page) - 1) * limit;
-        const qParam = (searchParams as any)?.q || undefined;
-        const productsRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(brandParam)}&limit=${limit}&offset=${offset}${qParam ? `&q=${encodeURIComponent(qParam)}` : ''}`, { cache: 'no-store' });
-        const brandProducts = productsRes.ok ? await productsRes.json() : [];
-        const hasMore = Array.isArray(brandProducts) && brandProducts.length === limit;
-
-        return (
-            <main className="flex-1">
-                <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
-                    <div className="flex items-center gap-2 text-sm mb-4">
-                        <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary transition-colors">Home</Link>
-                        <span className="text-[#617589]">/</span>
-                        <span className="text-[#111418] font-medium leading-normal">Shop</span>
-                        <span className="text-[#617589]">/</span>
-                        <span className="text-[#111418] font-medium leading-normal">{brandParam.toUpperCase()}</span>
-                    </div>
-                    <h1 className="text-3xl font-bold mb-2">{brandParam.toUpperCase()} Products</h1>
-                    <ProductsListClient products={brandProducts} productPathPrefix="/products" />
-                    <ProductsPagination currentPage={page} hasMore={hasMore} basePath={`/shop/category/${encodeURIComponent(brandParam)}`} />
-                </div>
-            </main>
-        );
-    }
-
-    // Build brand map from categories.brand -> category row
-    const brandSet = Array.from(new Set(categories.map((c: any) => c.brand).filter(Boolean))) as string[];
-
-    // For each brand slug, fetch up to 4 products
-    const brandProductsMap: Record<string, any[]> = {};
-    await Promise.all(brandSet.map(async (slug: string) => {
+    // For each category slug, fetch up to 4 products
+    const categoryProductsMap: Record<string, any[]> = {};
+    await Promise.all(categorySet.map(async (slug: string) => {
         try {
             const pRes = await fetch(`${API_BASE}/api/products?category=${encodeURIComponent(slug)}&limit=4`, { cache: 'no-store' });
-            const productsForBrand = pRes.ok ? await pRes.json() : [];
-            brandProductsMap[slug] = Array.isArray(productsForBrand) ? productsForBrand : [];
-        } catch (e) { brandProductsMap[slug] = []; }
+            const productsForCat = pRes.ok ? await pRes.json() : [];
+            categoryProductsMap[slug] = Array.isArray(productsForCat) ? productsForCat : [];
+        } catch (e) { categoryProductsMap[slug] = []; }
     }));
 
     const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -218,74 +122,69 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                 </div>
             </section>
 
-            {/* Brand Filter Bar */}
+            {/* Category Filter Bar */}
             <div className="sticky top-[65px] z-40 bg-background-light/95 backdrop-blur-sm border-b border-[#e5e7eb] py-4 overflow-x-auto hide-scrollbar">
                 <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
                     <div className="flex items-center gap-4 min-w-max">
                         <span className="text-sm font-semibold text-text-sub-light mr-2">Jump to:</span>
-                        {brandSet.map((b: string) => (
-                            <a key={b} className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-light border border-gray-200 text-text-main-light hover:border-primary hover:text-primary transition-colors" href={`#${b}`}>
-                                <span className="font-medium">{b.toUpperCase()}</span>
-                            </a>
-                        ))}
-                        <a className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-light border border-gray-200 text-text-main-light hover:border-primary hover:text-primary transition-colors" href="#all">
-                            <span className="font-medium">All Brands</span>
-                        </a>
+                        {categorySet.map((slug: string) => {
+                            const cat = categories.find((c: any) => c.slug === slug);
+                            return (
+                                <a key={slug} className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-light border border-gray-200 text-text-main-light hover:border-primary hover:text-primary transition-colors" href={`#${slug}`}>
+                                    <span className="font-medium">{cat?.name || slug.toUpperCase()}</span>
+                                </a>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
 
-            {/* Brand Sections */}
-            {brandSet.map((slug) => (
-                <section key={slug} className="py-12 bg-white" id={slug}>
-                    <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
-                        <div className="flex items-end justify-between mb-8">
-                            <div>
-                                {/* <div className="flex items-center gap-2 text-primary mb-2">
-                                    <span className="material-symbols-outlined">star</span>
-                                    <span className="font-bold text-sm tracking-widest uppercase">Featured Brand</span>
-                                </div> */}
-                                <h2 className="text-3xl font-bold text-text-main-light">{(slug || '').toUpperCase()} Series</h2>
-                                <p className="text-text-sub-light mt-1">Explore popular models and best sellers</p>
+            {/* Category Sections */}
+            {categorySet.map((slug) => {
+                const cat = categories.find((c: any) => c.slug === slug);
+                return (
+                    <section key={slug} className="py-12 bg-white" id={slug}>
+                        <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
+                            <div className="flex items-end justify-between mb-8">
+                                <div>
+                                    <h2 className="text-3xl font-bold text-text-main-light">{cat?.name || slug.toUpperCase()}</h2>
+                                    <p className="text-text-sub-light mt-1">{cat?.description || 'Explore popular models and best sellers'}</p>
+                                </div>
+                                <Link href={`/shop/category/${encodeURIComponent(slug)}`} className="hidden sm:flex items-center gap-1 text-primary font-bold text-sm hover:gap-2 transition-all">
+                                    View All {cat?.name || slug.toUpperCase()} <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                                </Link>
                             </div>
-                            <Link href={`/shop/category/${encodeURIComponent(slug)}`} className="hidden sm:flex items-center gap-1 text-primary font-bold text-sm hover:gap-2 transition-all">
-                                View All {slug.toUpperCase()} <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {(brandProductsMap[slug] || []).length ? (brandProductsMap[slug] || []).map((p: any, pIdx: number) => (
-                                <div key={`${p._id ?? p.id ?? p.slug ?? pIdx}`} className="group bg-surface-light rounded-xl border border-[#f0f2f4] overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
-                                    <Link href={`/products/${p.slug || p.id}`} className="block">
-                                        <div className="relative aspect-square overflow-hidden bg-gray-50">
-                                            <div className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url('${p.thumbnail || '/placeholder-product.png'}')` }} />
-                                        </div>
-                                        <div className="p-4 flex flex-col gap-2">
-                                            <h3 className="font-bold text-lg text-text-main-light line-clamp-1">{p.title}</h3>
-                                            <div className="flex items-center gap-2 text-xs text-text-sub-light">
-                                                {p.capacity && p.capacity !== 'N/A' && (
-                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity}</span>
-                                                )}
-                                                {p.category?.slug ? (
-                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || 'Category'}</span>
-                                                ) : (
-                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.category?.name || ''}</span>
-                                                )}                                                <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.subcategory?.name || ''}</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {(categoryProductsMap[slug] || []).length ? (categoryProductsMap[slug] || []).map((p: any, pIdx: number) => (
+                                    <div key={`${p._id ?? p.id ?? p.slug ?? pIdx}`} className="group bg-surface-light rounded-xl border border-[#f0f2f4] overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
+                                        <Link href={`/products/${p.slug || p.id}`} className="block">
+                                            <div className="relative aspect-square overflow-hidden bg-gray-50">
+                                                <div className="w-full h-full bg-center bg-cover transition-transform duration-500 group-hover:scale-110" style={{ backgroundImage: `url('${p.thumbnail || '/placeholder-product.png'}')` }} />
+                                            </div>
+                                            <div className="p-4 flex flex-col gap-2">
+                                                <h3 className="font-bold text-lg text-text-main-light line-clamp-1">{p.title}</h3>
+                                                <div className="flex items-center gap-2 text-xs text-text-sub-light">
+                                                    {p.capacity && p.capacity !== 'N/A' && (
+                                                        <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.capacity}</span>
+                                                    )}
+                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{cat?.name || 'Category'}</span>
+                                                    <span className="bg-background-light px-2 py-1 rounded border border-gray-200">{p.subcategory?.name || ''}</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                        <div className="p-4 border-t border-[#f0f2f4] flex items-center justify-between">
+                                            <span className="text-primary font-bold text-lg">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</span>
+                                            <div className="relative z-10">
+                                                <CompareAddButton product={p} />
                                             </div>
                                         </div>
-                                    </Link>
-                                    <div className="p-4 border-t border-[#f0f2f4] flex items-center justify-between">
-                                        <span className="text-primary font-bold text-lg">{p.price ? `NPR ${formatPrice(p.price)}` : 'NPR 0'}</span>
-                                        {/* Compare add button (client) */}
-                                        <div className="relative z-10">
-                                            <CompareAddButton product={p} />
-                                        </div>
                                     </div>
-                                </div>
-                            )) : (<div className="text-sm text-slate-500">No products found for {slug}</div>)}
+                                )) : (<div className="text-sm text-slate-500">No products found for {cat?.name || slug}</div>)}
+                            </div>
                         </div>
-                    </div>
-                </section>
-            ))}
+                    </section>
+                );
+            })}
 
             {/* Consultation Banner */}
             <section className="py-16 px-4 md:px-10">

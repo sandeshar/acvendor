@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
         await connectDB();
         const searchParams = request.nextUrl.searchParams;
         const slug = searchParams.get('slug');
-        const category = searchParams.get('category') || searchParams.get('brand');
+        const category = searchParams.get('category');
 
         if (slug) {
             const sub = await ServiceSubcategories.findOne({ slug }).lean();
@@ -18,11 +18,10 @@ export async function GET(request: NextRequest) {
         }
 
         if (category) {
-            // fetch categories with this brand/category OR global categories, then return subcategories for those categories
-            const cats = await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean();
-            const catIds = cats.map((c: any) => c._id).filter(Boolean);
-            if (catIds.length) {
-                const subs = await ServiceSubcategories.find({ category_id: { $in: catIds } }).lean();
+            // Find the category by slug
+            const cat = await ServiceCategories.findOne({ slug: category }).lean();
+            if (cat) {
+                const subs = await ServiceSubcategories.find({ category_id: cat._id }).lean();
                 const formatted = subs.map((s: any) => ({ ...s, id: s._id.toString(), category_id: s.category_id?.toString() }));
                 return NextResponse.json(formatted);
             }

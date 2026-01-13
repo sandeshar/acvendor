@@ -18,7 +18,6 @@ export async function GET(request: NextRequest) {
         const slug = searchParams.get('slug');
         const category = searchParams.get('category');
         const subcategory = searchParams.get('subcategory');
-        const brand = searchParams.get('brand');
         const limit = searchParams.get('limit');
         const status = searchParams.get('status');
         const featured = searchParams.get('featured');
@@ -261,66 +260,11 @@ export async function GET(request: NextRequest) {
                         query.category_id = cat._id;
                     }
                 } else {
-                    // Fallback: see if "category" is actually a brand name (case-insensitive)
-                    const brandCats = await ServiceCategories.find({
-                        brand: { $regex: new RegExp(`^${category}$`, 'i') }
-                    }).lean();
-                    const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
-                    if (catIds.length) {
-                        query.category_id = { $in: catIds };
-                    } else {
-                        // If category/brand not found, force empty result by providing a non-existent ID
-                        query._id = new mongoose.Types.ObjectId();
-                    }
+                    // If category not found, force empty result by providing a non-existent ID
+                    query._id = new mongoose.Types.ObjectId();
                 }
             } catch (e) {
                 // ignore
-            }
-        }
-
-        // If brand parameter is provided, restrict products to categories tagged with that brand or global categories.
-        // Also support when `brand` is actually a category slug or ObjectId: in that case return products only for that category.
-        if (brand) {
-            const { ServiceCategories } = await import('@/db/serviceCategoriesSchema');
-
-            // Try interpreting `brand` as a category id first, then as a slug
-            let matchedCat = null;
-            try {
-                matchedCat = await ServiceCategories.findById(brand).lean();
-            } catch (e) { }
-
-            if (!matchedCat) {
-                matchedCat = await ServiceCategories.findOne({ slug: brand }).lean();
-            }
-
-            if (matchedCat) {
-                // `brand` refers to a specific category -> restrict to that single category and its subcategories
-                try {
-                    const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
-                    const subs = await ServiceSubcategories.find({ category_id: matchedCat._id }).lean();
-                    const subIds = subs.map((s: any) => s._id);
-                    query.$or = [
-                        { category_id: matchedCat._id },
-                        { subcategory_id: { $in: subIds } }
-                    ];
-                } catch (e) {
-                    query.category_id = matchedCat._id;
-                }
-            } else {
-                // Fallback: find categories that are tagged with this brand, or global categories (brand = '')
-                const brandCats = await ServiceCategories.find({
-                    $or: [
-                        { brand: brand },
-                        { brand: '' }
-                    ]
-                }).lean();
-                const catIds = brandCats.map((c: any) => c._id).filter(Boolean);
-                if (catIds.length) {
-                    query.category_id = { $in: catIds };
-                } else {
-                    // If no categories for brand, return empty set
-                    return NextResponse.json([]);
-                }
             }
         }
 
