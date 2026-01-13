@@ -11,18 +11,44 @@ export default function BlogPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<number | null>(null);
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [totalPosts, setTotalPosts] = useState(0);
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [page, statusFilter]);
+
+    // Use a delay for search to avoid too many requests
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page !== 1) setPage(1);
+            else fetchPosts();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     const fetchPosts = async () => {
+        setLoading(true);
         try {
-            const response = await fetch('/api/blog');
+            const offset = (page - 1) * limit;
+            let url = `/api/blog?admin=true&limit=${limit}&offset=${offset}`;
+            if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+            if (statusFilter) url += `&status=${statusFilter}`;
+
+            const response = await fetch(url);
             const data = await response.json();
-            setPosts(data);
+
+            if (data.posts) {
+                setPosts(data.posts);
+                setTotalPosts(data.total);
+            } else {
+                setPosts(Array.isArray(data) ? data : []);
+                setTotalPosts(Array.isArray(data) ? data.length : 0);
+            }
         } catch (error) {
             console.error('Error fetching posts:', error);
+            setPosts([]);
         } finally {
             setLoading(false);
         }
@@ -75,19 +101,11 @@ export default function BlogPage() {
         }
     };
 
-    const filteredPosts = posts.filter(post => {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = (
-            post.title?.toLowerCase().includes(query) ||
-            post.slug?.toLowerCase().includes(query) ||
-            (post.tags && post.tags.toLowerCase().includes(query)) ||
-            ((post as any).category_name && (post as any).category_name.toLowerCase().includes(query))
-        );
-        const matchesStatus = statusFilter === null || post.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+    const filteredPosts = posts;
 
-    if (loading) {
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    if (loading && posts.length === 0) {
         return (
             <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
@@ -119,7 +137,10 @@ export default function BlogPage() {
                         <select
                             className="px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
                             value={statusFilter ?? ''}
-                            onChange={(e) => setStatusFilter(e.target.value ? Number(e.target.value) : null)}
+                            onChange={(e) => {
+                                setStatusFilter(e.target.value ? Number(e.target.value) : null);
+                                setPage(1);
+                            }}
                         >
                             <option value="">All Status</option>
                             <option value="1">Draft</option>
@@ -131,7 +152,12 @@ export default function BlogPage() {
                             New Post
                         </Link>
                     </div>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto relative min-h-[200px]">
+                        {loading && (
+                            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            </div>
+                        )}
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-slate-500 uppercase bg-slate-50">
                                 <tr>
@@ -146,23 +172,23 @@ export default function BlogPage() {
                             <tbody>
                                 {filteredPosts.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                                            {posts.length === 0 ? (
+                                        <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                            {searchQuery === '' && statusFilter === null && posts.length === 0 ? (
                                                 <>
                                                     <span className="material-symbols-outlined text-5xl text-slate-300 mb-2 block">article</span>
                                                     <p className="text-lg">No blog posts yet</p>
                                                     <p className="text-sm mt-1">Create your first post to get started</p>
                                                 </>
                                             ) : (
-                                                <p>No posts found matching "{searchQuery}"</p>
+                                                <p>No posts found matching your criteria</p>
                                             )}
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredPosts.map((post) => (
                                         <tr key={post.id} className="border-b border-slate-200 hover:bg-slate-50">
-                                            <td className="px-6 py-4 font-semibold text-slate-900">{post.title}</td>
-                                            <td className="px-6 py-4 text-slate-700">Admin User</td>
+                                            <td className="px-6 py-4 font-semibold text-slate-900 max-w-xs truncate">{post.title}</td>
+                                            <td className="px-6 py-4 text-slate-700">Admin</td>
                                             <td className="px-6 py-4 text-slate-700">{(post as any).category_name || '-'}</td>
                                             <td className="px-6 py-4">
                                                 <select
@@ -202,15 +228,45 @@ export default function BlogPage() {
                             </tbody>
                         </table>
                     </div>
-                    <div className="p-6 flex justify-between items-center text-sm text-slate-500">
-                        <span>Showing {filteredPosts.length} of {posts.length} results</span>
+                    <div className="p-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500 border-t border-slate-200">
+                        <span>Showing {Math.min((page - 1) * limit + 1, totalPosts)} to {Math.min(page * limit, totalPosts)} of {totalPosts} posts</span>
                         <div className="flex items-center gap-2">
                             <button
-                                onClick={fetchPosts}
-                                className="px-3 py-1 border border-slate-300 rounded-md hover:bg-slate-100 flex items-center gap-1"
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1 || loading}
+                                className="px-3 py-1 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <span className="material-symbols-outlined text-sm">refresh</span>
-                                Refresh
+                                Previous
+                            </button>
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                    // simple pagination logic: show first 5 pages for now
+                                    return (
+                                        <button
+                                            key={i + 1}
+                                            onClick={() => setPage(i + 1)}
+                                            className={`w-8 h-8 rounded-md border ${page === i + 1 ? 'bg-primary text-white border-primary' : 'border-slate-300 hover:bg-slate-100'}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    );
+                                })}
+                                {totalPages > 5 && <span className="px-1">...</span>}
+                                {totalPages > 5 && (
+                                    <button
+                                        onClick={() => setPage(totalPages)}
+                                        className={`w-8 h-8 rounded-md border ${page === totalPages ? 'bg-primary text-white border-primary' : 'border-slate-300 hover:bg-slate-100'}`}
+                                    >
+                                        {totalPages}
+                                    </button>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages || totalPages === 0 || loading}
+                                className="px-3 py-1 border border-slate-300 rounded-md hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
                             </button>
                         </div>
                     </div>
@@ -218,4 +274,4 @@ export default function BlogPage() {
             </div>
         </div >
     );
-}
+} 

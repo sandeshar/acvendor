@@ -6,6 +6,9 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true, maxlength: 256 },
     password: { type: String, required: true, maxlength: 512 },
     role: { type: String, required: true, default: 'admin', maxlength: 50 },
+    designation: { type: String, maxlength: 256, default: '' },
+    photo: { type: String, maxlength: 512, default: '' },
+    signature: { type: String, maxlength: 512, default: '' },
 }, {
     timestamps: true,
     collection: 'users'
@@ -50,7 +53,9 @@ const storeSettingsSchema = new Schema({
     store_name: { type: String, required: true, maxlength: 256 },
     store_description: { type: String, required: true, maxlength: 1024 },
     store_logo: { type: String, required: true, maxlength: 512 },
+    footer_logo: { type: String, required: false, default: '', maxlength: 512 },
     logo_size: { type: String, required: false, default: 'small', maxlength: 20 },
+    footer_logo_size: { type: String, required: false, default: 'small', maxlength: 20 },
     favicon: { type: String, required: true, maxlength: 512 },
     contact_email: { type: String, required: true, maxlength: 256 },
     contact_phone: { type: String, required: true, maxlength: 50 },

@@ -12,11 +12,11 @@ function formatCurrency(n: number) { return n.toLocaleString(undefined, { minimu
 export default function AdminQuotationPage() {
     const router = useRouter();
     const search = useSearchParams();
-    const editId = search?.get('id') ? Number(search.get('id')) : undefined;
+    const editId = search?.get('id') || undefined;
     const productIdsParam = search?.get('productIds');
 
     const [saving, setSaving] = useState(false);
-    const [id, setId] = useState<number | undefined>(editId);
+    const [id, setId] = useState<string | number | undefined>(editId);
     const [number, setNumber] = useState<string | undefined>(undefined);
     const [status, setStatus] = useState<'draft' | 'sent' | 'cancelled'>('draft');
 
@@ -27,6 +27,7 @@ export default function AdminQuotationPage() {
     });
     const [referenceNo, setReferenceNo] = useState('');
     const [notes, setNotes] = useState('');
+    const [includeSignature, setIncludeSignature] = useState(false);
     const [items, setItems] = useState<QuotationItem[]>([]);
     const [globalDiscount, setGlobalDiscount] = useState<number>(0);
     const [taxPercent, setTaxPercent] = useState<number>(13);
@@ -65,6 +66,7 @@ export default function AdminQuotationPage() {
                 setValidUntil(q.validUntil ? q.validUntil.substring(0, 10) : (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().substring(0, 10); })());
                 setReferenceNo(q.referenceNo || '');
                 setNotes(q.notes || '');
+                setIncludeSignature(q.include_signature || false);
                 // normalize items so inputs are always controlled (no undefined values)
                 setItems((q.items || []).map(it => ({ description: it.description ?? '', qty: (it.qty ?? 1), unitPrice: (it.unitPrice ?? 0), discountPercent: (it.discountPercent ?? 0) })));
                 setGlobalDiscount(q.totals?.discount ? Number((q.totals?.discount / (q.totals?.subtotal || 1) * 100).toFixed(2)) : 0);
@@ -134,6 +136,7 @@ export default function AdminQuotationPage() {
                 referenceNo: referenceNo || '',
                 items,
                 notes: notes || '',
+                include_signature: includeSignature,
                 totals: { subtotal: totals.subtotal, discount: totals.discount, tax: totals.tax, grandTotal: totals.grandTotal }
             };
             console.debug('Saving quotation payload', payload);
@@ -354,6 +357,18 @@ export default function AdminQuotationPage() {
             <div className="flex flex-col md:flex-row gap-6 justify-end items-start md:items-end">
                 {/* Notes Section (Optional Left Side) */}
                 <div className="w-full md:flex-1">
+                    <div className="mb-4 flex items-center gap-3">
+                        <input
+                            id="includeSignature"
+                            type="checkbox"
+                            checked={includeSignature}
+                            onChange={(e) => setIncludeSignature(e.target.checked)}
+                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        />
+                        <label htmlFor="includeSignature" className="text-sm font-semibold text-gray-700 cursor-pointer">
+                            Include Digital Signature on Print
+                        </label>
+                    </div>
                     <label className="block mb-2 text-sm font-medium text-[#616f89]">Notes / Payment Terms</label>
                     <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-xl border border-[#dbdfe6] bg-white p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none" placeholder="Enter notes for the client..." rows={4}></textarea>                    </div>                {/* Calculation Card */}
                 <div className="w-full md:w-[400px] bg-white rounded-xl shadow-sm border border-[#f0f2f4] p-6 flex flex-col gap-4">
@@ -394,7 +409,7 @@ export default function AdminQuotationPage() {
                     <div className="mt-4 flex flex-col gap-3">
                         <button onClick={saveAndSend} disabled={saving} className="w-full flex items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary text-white text-base font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 hover:shadow-xl transition-all active:scale-[0.98]">
                             <span className="material-symbols-outlined text-[20px]">send</span>
-                            {saving ? 'Saving...' : 'Save & Send Quotation'}
+                            {saving ? 'Saving...' : 'Save'}
                         </button>
 
                         <button onClick={() => router.back()} className="w-full text-center text-sm font-medium text-[#616f89] hover:text-[#111318] transition-colors">

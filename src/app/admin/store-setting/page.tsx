@@ -23,6 +23,7 @@ export default function StoreSettingPage() {
         logo: "",
         logoSize: "small",
         favicon: "",
+        footerLogo: "",
         theme: "default",
         hideSiteNameOnMobile: false,
         hideSiteName: false,
@@ -70,6 +71,7 @@ export default function StoreSettingPage() {
                         logo: d.storeLogo || "",
                         logoSize: d.logoSize || "small",
                         favicon: d.favicon || "",
+                        footerLogo: d.footer_logo || "",
                         theme: d.theme || "default",
                         hideSiteNameOnMobile: !!d.hideSiteNameOnMobile,
                         hideSiteName: !!d.hideSiteName,
@@ -144,6 +146,7 @@ export default function StoreSettingPage() {
                 storeLogo: formData.logo,
                 logoSize: formData.logoSize,
                 favicon: formData.favicon,
+                footer_logo: formData.footerLogo,
                 contactEmail: formData.contactEmail,
                 contactPhone: formData.contactPhone,
                 address: formData.address,
@@ -157,6 +160,8 @@ export default function StoreSettingPage() {
                 theme: formData.theme,
                 hideSiteNameOnMobile: !!formData.hideSiteNameOnMobile,
                 hideSiteName: !!formData.hideSiteName,
+                pan: formData.pan,
+                authorizedPerson: formData.authorizedPerson,
             };
             const res = await fetch('/api/store-settings', {
                 method: 'PUT',
@@ -350,6 +355,42 @@ export default function StoreSettingPage() {
                                             </div>
                                             {formData.favicon && (
                                                 <img src={formData.favicon} alt="Favicon preview" className="w-8 h-8 object-contain border border-slate-200 rounded-lg" />
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="footerLogo" className="block text-sm font-medium text-slate-700 mb-2">
+                                            Footer Logo (Optional)
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex-1">
+                                                <input
+                                                    type="file"
+                                                    id="footerLogo"
+                                                    accept="image/*"
+                                                    onChange={async (e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            try {
+                                                                const fd = new FormData();
+                                                                fd.append('file', file);
+                                                                fd.append('folder', 'logos');
+                                                                const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                                                const json = await res.json();
+                                                                if (!res.ok || !json?.url) throw new Error(json?.error || 'Upload failed');
+                                                                setFormData({ ...formData, footerLogo: json.url });
+                                                            } catch (err: any) {
+                                                                console.error('Footer logo upload failed', err);
+                                                                showToast(err.message || 'Footer logo upload failed', { type: 'error' });
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-800"
+                                                />
+                                            </div>
+                                            {formData.footerLogo && (
+                                                <img src={formData.footerLogo} alt="Footer logo preview" className="w-16 h-16 object-contain border border-slate-200 rounded-lg" />
                                             )}
                                         </div>
                                     </div>

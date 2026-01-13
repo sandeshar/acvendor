@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { showToast } from '@/components/Toast';
+import ImageUploader from "@/components/shared/ImageUploader";
 
 type FooterLink = { id?: number; label: string; href: string; isExternal?: boolean; order?: number };
 type FooterSection = { id?: number; title: string; order?: number; links?: FooterLink[] };
@@ -11,6 +12,7 @@ export default function FooterManagerPage() {
     const [saving, setSaving] = useState(false);
     const [sections, setSections] = useState<FooterSection[]>([]);
     const [footerText, setFooterText] = useState('');
+    const [footerLogo, setFooterLogo] = useState('');
     const [hideStoreNameInFooter, setHideStoreNameInFooter] = useState(false);
     const [logoSize, setLogoSize] = useState('small');
 
@@ -30,8 +32,9 @@ export default function FooterManagerPage() {
             if (storeJson?.success && storeJson.data) {
                 setSections(storeJson.data.footerSections || []);
                 setFooterText(storeJson.data.footerText || storeJson.data.footer_text || '');
+                setFooterLogo(storeJson.data.footerLogo || '');
                 setHideStoreNameInFooter(storeJson.data.hideStoreNameInFooter || false);
-                setLogoSize(storeJson.data.logoSize || 'small');
+                setLogoSize(storeJson.data.footerLogoSize || storeJson.data.logoSize || 'small');
                 setLoading(false);
                 return;
             }
@@ -108,7 +111,8 @@ export default function FooterManagerPage() {
         setSections((s) => {
             const copy = [...s];
             if (!copy[sectionIdx].links) return copy;
-            copy[sectionIdx].links = move(copy[sectionIdx].links!, linkIdx, dir === 'up' ? linkIdx - 1 : linkIdx + 1).map((l, i) => ({ ...l, order: i }));
+            const newLinks = move(copy[sectionIdx].links!, linkIdx, dir === 'up' ? linkIdx - 1 : linkIdx + 1).map((l, i) => ({ ...l, order: i }));
+            copy[sectionIdx] = { ...copy[sectionIdx], links: newLinks };
             return copy;
         });
     };
@@ -137,8 +141,9 @@ export default function FooterManagerPage() {
                     }))
                 })),
                 footerText: footerText,
+                footerLogo: footerLogo,
                 hideStoreNameInFooter: hideStoreNameInFooter,
-                logoSize: logoSize,
+                footerLogoSize: logoSize,
             };
 
             console.log('payload:', payload);
@@ -151,8 +156,9 @@ export default function FooterManagerPage() {
             showToast('Footer sections saved', { type: 'success' });
             setSections(json.data?.footerSections || []);
             setFooterText(json.data?.footerText || json.data?.footer_text || '');
+            setFooterLogo(json.data?.footerLogo || '');
             setHideStoreNameInFooter(json.data?.hideStoreNameInFooter || false);
-            setLogoSize(json.data?.logoSize || 'small');
+            setLogoSize(json.data?.footerLogoSize || json.data?.logoSize || 'small');
             // Server response should contain the canonical saved data. Only re-fetch if it's missing to avoid
             // overriding fresh state with a potentially stale GET result immediately after writes.
             if (!json.data?.footerSections) {
@@ -177,13 +183,23 @@ export default function FooterManagerPage() {
 
                     <div className="mb-6 flex items-center gap-3">
                         <button onClick={addSection} className="px-4 py-2 bg-primary text-white rounded">Add Section</button>
-                        <button onClick={saveAll} disabled={saving} className="px-4 py-2 bg-primary-800 text-white rounded disabled:opacity-60">{saving ? 'Saving…' : 'Save All'}</button>
+                        <button onClick={saveAll} disabled={saving} className="px-4 py-2 bg-primary-800 rounded disabled:opacity-60 border border-black text-black">{saving ? 'Saving…' : 'Save All'}</button>
                         <button onClick={fetchSections} className="px-4 py-2 border rounded">Reload</button>
                     </div>
 
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-slate-700 mb-2">Footer Text</label>
                         <input value={footerText} onChange={(e) => setFooterText(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Copyright text or footer message" />
+                    </div>
+
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Footer Logo</label>
+                        <ImageUploader
+                            value={footerLogo}
+                            onChange={(url) => setFooterLogo(url)}
+                            label="Upload Footer Logo"
+                            folder="logos"
+                        />
                     </div>
 
                     <div className="mb-6">

@@ -4,10 +4,13 @@ export interface StoreSettings {
     storeDescription: string;
     storeLogo: string;
     logoSize?: 'small' | 'medium' | 'large';
+    footerLogoSize?: 'small' | 'medium' | 'large';
     favicon: string;
     contactEmail: string;
     contactPhone: string;
     address: string;
+    pan?: string;
+    authorizedPerson?: string;
     facebook: string;
     twitter: string;
     instagram: string;

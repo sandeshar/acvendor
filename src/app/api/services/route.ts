@@ -7,22 +7,7 @@ import { Status } from '@/db/schema';
 import { getUserIdFromToken, returnRole } from '@/utils/authHelper';
 import { isValidSlug } from '@/utils/slug';
 import { revalidateTag } from 'next/cache';
-
-async function resolveStatusId(statusId: any) {
-    if (!statusId) return null;
-    if (typeof statusId === 'string' && statusId.length === 24) return statusId;
-
-    let statusName = '';
-    if (statusId === 1 || statusId === '1') statusName = 'Published';
-    else if (statusId === 2 || statusId === '2') statusName = 'Published';
-    else if (statusId === 3 || statusId === '3') statusName = 'Draft';
-
-    if (statusName) {
-        const s = await Status.findOne({ name: new RegExp(statusName, 'i') }).lean();
-        if (s) return s._id;
-    }
-    return statusId;
-}
+import { resolveStatusId, statusNameToNumeric } from '@/utils/resolveStatus';
 
 // GET - Fetch service posts
 export async function GET(request: NextRequest) {
@@ -177,7 +162,7 @@ export async function POST(request: NextRequest) {
 
         // Validate slug format
         if (!isValidSlug(slug)) {
-            return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
         }
 
         const finalStatusId = await resolveStatusId(statusId);
@@ -239,7 +224,7 @@ export async function PUT(request: NextRequest) {
 
         const updateData: any = {};
         if (slug !== undefined) {
-            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
             updateData.slug = slug;
         }
         if (title !== undefined) updateData.title = title;

@@ -129,7 +129,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                             </div>
                             <ShareButtons
                                 title={post.title}
-                                url={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/blog/${post.slug}`}
+                                url={`${base}/blog/${post.slug}`}
                             />
                         </div>
 

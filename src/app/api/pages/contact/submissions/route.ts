@@ -3,11 +3,22 @@ import { connectDB } from '@/db';
 import { ContactFormSubmissions } from '@/db/contactPageSchema';
 import { StoreSettings } from '@/db/schema';
 import { sendMail } from '@/utils/mailer';
+import { returnRole } from '@/utils/authHelper';
 
 // GET - Fetch form submissions
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
+        const cookie = request.cookies.get('admin_auth')?.value || '';
+        const role = returnRole(cookie);
+
+        if (!role) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
         const status = searchParams.get('status');
@@ -106,6 +117,16 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         await connectDB();
+        const cookie = request.cookies.get('admin_auth')?.value || '';
+        const role = returnRole(cookie);
+
+        if (!role) {
+            return NextResponse.json(
+                { error: 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
         const body = await request.json();
         const { id, status, phone } = body;
 
@@ -130,6 +151,16 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     try {
         await connectDB();
+        const cookie = request.cookies.get('admin_auth')?.value || '';
+        const role = returnRole(cookie);
+
+        if (role !== 'superadmin') {
+            return NextResponse.json(
+                { error: 'Forbidden: Insufficient permissions' },
+                { status: 403 }
+            );
+        }
+
         const searchParams = request.nextUrl.searchParams;
         const id = searchParams.get('id');
 

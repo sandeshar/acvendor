@@ -43,12 +43,12 @@ const Footer = ({ storeName, storeLogo, store }: FooterProps) => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2">
-                            {storeLogo ? (
+                            {(store?.footerLogo || storeLogo) ? (
                                 <img
-                                    src={storeLogo}
+                                    src={store?.footerLogo || storeLogo}
                                     alt={storeName}
-                                    className={`${store?.logoSize === 'large' ? 'h-10' :
-                                        store?.logoSize === 'small' ? 'h-6' :
+                                    className={`${store?.footerLogoSize === 'large' ? 'h-10' :
+                                        store?.footerLogoSize === 'small' ? 'h-6' :
                                             'h-8'
                                         } w-auto object-contain rounded`}
                                     style={{ filter: 'drop-shadow(0 0 2.5px rgba(255,255,255,1)) drop-shadow(0 0 1px rgba(255,255,255,1))' }}
@@ -149,7 +149,7 @@ const Footer = ({ storeName, storeLogo, store }: FooterProps) => {
                             ) : null}
                         </div>
                         <div className="text-center md:text-right">
-                            <p className="mb-0">© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
+                            <p className="mb-0" suppressHydrationWarning={true}>© {new Date().getFullYear()} {storeName}. All rights reserved.</p>
                         </div>
                     </div>
                 </div>

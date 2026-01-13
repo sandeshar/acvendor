@@ -1,5 +1,5 @@
 export type QuotationItem = {
-    id?: number;
+    id?: string | number;
     description: string;
     qty: number | string;
     unitPrice: number | string;
@@ -16,7 +16,7 @@ export type ClientInfo = {
 };
 
 export type Quotation = {
-    id?: number;
+    id?: string | number;
     number?: string; // human readable like QT-2025-001
     status?: 'draft' | 'sent' | 'cancelled';
     client?: ClientInfo;
@@ -25,6 +25,8 @@ export type Quotation = {
     referenceNo?: string;
     items?: QuotationItem[];
     notes?: string;
+    include_signature?: boolean;
+    created_by?: any;
     totals?: {
         subtotal: number;
         discount: number;

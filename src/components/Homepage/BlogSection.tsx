@@ -52,7 +52,7 @@ const BlogSection = ({ posts, section }: BlogSectionProps) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {displayPosts.length ? displayPosts.map((post, i) => (
                             <Link key={i} href={`/blog/${post.slug || post.id}`} className="block group overflow-hidden rounded-xl border border-gray-100">
-                                <div className="aspect-[16/9] bg-cover bg-center" style={{ backgroundImage: `url('${post.thumbnail || 'https://via.placeholder.com/600x400?text=Blog'}')` }} />
+                                <div className="aspect-video bg-cover bg-center" style={{ backgroundImage: `url('${post.thumbnail || 'https://via.placeholder.com/600x400?text=Blog'}')` }} />
                                 <div className="p-4">
                                     <h3 className="text-lg font-bold text-[#111418]">{post.title}</h3>
                                     {post.metaDescription && <p className="text-sm text-slate-600 mt-2">{post.metaDescription}</p>}

@@ -56,7 +56,7 @@ export default function UsersPage() {
                                 </thead>
                                 <tbody>
                                     {filteredUsers.length > 0 ? filteredUsers.map((user) => {
-                                        const avatarUrl = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(user.email || String(user.id))}`;
+                                        const avatarUrl = user.photo || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(user.email || String(user.id))}`;
                                         const handleDelete = async () => {
                                             if (confirm(`Are you sure you want to delete ${user.name}?`)) {
                                                 await fetch(`/api/users?id=${user.id}`, { method: 'DELETE' });

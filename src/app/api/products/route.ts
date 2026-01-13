@@ -248,7 +248,18 @@ export async function GET(request: NextRequest) {
                 }
 
                 if (cat) {
-                    query.category_id = cat._id;
+                    // Include products directly in this category OR in any of its subcategories
+                    try {
+                        const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                        const subs = await ServiceSubcategories.find({ category_id: cat._id }).lean();
+                        const subIds = subs.map((s: any) => s._id);
+                        query.$or = [
+                            { category_id: cat._id },
+                            { subcategory_id: { $in: subIds } }
+                        ];
+                    } catch (e) {
+                        query.category_id = cat._id;
+                    }
                 } else {
                     // Fallback: see if "category" is actually a brand name (case-insensitive)
                     const brandCats = await ServiceCategories.find({
@@ -283,8 +294,18 @@ export async function GET(request: NextRequest) {
             }
 
             if (matchedCat) {
-                // `brand` refers to a specific category -> restrict to that single category
-                query.category_id = matchedCat._id;
+                // `brand` refers to a specific category -> restrict to that single category and its subcategories
+                try {
+                    const { ServiceSubcategories } = await import('@/db/serviceCategoriesSchema');
+                    const subs = await ServiceSubcategories.find({ category_id: matchedCat._id }).lean();
+                    const subIds = subs.map((s: any) => s._id);
+                    query.$or = [
+                        { category_id: matchedCat._id },
+                        { subcategory_id: { $in: subIds } }
+                    ];
+                } catch (e) {
+                    query.category_id = matchedCat._id;
+                }
             } else {
                 // Fallback: find categories that are tagged with this brand, or global categories (brand = '')
                 const brandCats = await ServiceCategories.find({
@@ -505,7 +526,7 @@ export async function POST(request: NextRequest) {
 
         // Require slug and validate
         if (!slug || !title) return NextResponse.json({ error: 'Required fields: slug, title' }, { status: 400 });
-        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
 
         const productData: any = {
             slug,
@@ -651,7 +672,7 @@ export async function PUT(request: NextRequest) {
 
         const updateData: any = {};
         if (slug !== undefined) {
-            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
             updateData.slug = slug;
         }
         if (title !== undefined) updateData.title = title;

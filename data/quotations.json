@@ -200,7 +200,7 @@
     "validUntil": "2026-02-08",
     "referenceNo": "",
     "items": [],
-    "notes": "",
+    "notes": "lkdlksadjal",
     "totals": {
       "subtotal": 0,
       "discount": 0,
@@ -210,6 +210,6 @@
     "id": 8,
     "number": "QT-2026-008",
     "createdAt": "2026-01-09T08:42:41.010Z",
-    "updatedAt": "2026-01-12T08:04:30.795Z"
+    "updatedAt": "2026-01-13T09:49:52.902Z"
   }
 ]

@@ -26,6 +26,8 @@ type Subcategory = {
     ac_type?: string | null;
     slug: string;
     description?: string | null;
+    meta_title?: string | null;
+    meta_description?: string | null;
     isNew?: boolean;
 };
 
@@ -44,6 +46,7 @@ export default function CategoriesManagerPage() {
     const [isSubcategoryModalOpen, setIsSubcategoryModalOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("all");
 
     // Brands available for selection on category (display list of known brands)
     const [availableBrands, setAvailableBrands] = useState<any[]>([]);
@@ -99,12 +102,14 @@ export default function CategoriesManagerPage() {
 
     const addSubcategory = () => {
         setSelectedSubcategory({
-            // use existing category id or its _id as fallback; keep as string if necessary
-            category_id: String(categories[0]?.id ?? ''),
+            // Use the current filter category if one is selected, otherwise default to first category
+            category_id: categoryFilter !== "all" ? categoryFilter : String(categories[0]?.id ?? ''),
             name: "",
             ac_type: '',
             slug: "",
             description: "",
+            meta_title: "",
+            meta_description: "",
             isNew: true,
         });
         setIsSubcategoryModalOpen(true);
@@ -217,9 +222,11 @@ export default function CategoriesManagerPage() {
         cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const filteredSubcategories = subcategories.filter(sub =>
-        sub.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredSubcategories = subcategories.filter(sub => {
+        const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = categoryFilter === "all" || String(sub.category_id) === String(categoryFilter);
+        return matchesSearch && matchesCategory;
+    });
 
     if (loading) {
         return (
@@ -359,8 +366,8 @@ export default function CategoriesManagerPage() {
                         <div className="space-y-6">
                             {/* Search and Add */}
                             <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-                                <div className="flex-1">
-                                    <div className="relative">
+                                <div className="flex-1 flex flex-col sm:flex-row gap-4">
+                                    <div className="relative flex-1">
                                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">
                                             search
                                         </span>
@@ -371,6 +378,18 @@ export default function CategoriesManagerPage() {
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         />
+                                    </div>
+                                    <div className="min-w-[200px]">
+                                        <select
+                                            value={categoryFilter}
+                                            onChange={(e) => setCategoryFilter(e.target.value)}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary appearance-none bg-white cursor-pointer"
+                                        >
+                                            <option value="all">All Categories</option>
+                                            {categories.map(cat => (
+                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                                 <button
@@ -605,6 +624,28 @@ export default function CategoriesManagerPage() {
                                     rows={3}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Meta Title</label>
+                                    <input
+                                        type="text"
+                                        value={selectedSubcategory.meta_title || ''}
+                                        onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, meta_title: e.target.value })}
+                                        placeholder="SEO Title"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Meta Description</label>
+                                    <input
+                                        type="text"
+                                        value={selectedSubcategory.meta_description || ''}
+                                        onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, meta_description: e.target.value })}
+                                        placeholder="SEO Description"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="px-6 py-4 border-t border-slate-200 flex gap-3">

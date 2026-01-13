@@ -5,7 +5,18 @@ import { ServiceSubcategories, ServiceCategories } from "@/db/serviceCategoriesS
 export async function GET(request: NextRequest) {
     try {
         await connectDB();
-        const category = request.nextUrl.searchParams.get('category') || request.nextUrl.searchParams.get('brand');
+        const searchParams = request.nextUrl.searchParams;
+        const slug = searchParams.get('slug');
+        const category = searchParams.get('category') || searchParams.get('brand');
+
+        if (slug) {
+            const sub = await ServiceSubcategories.findOne({ slug }).lean();
+            if (sub) {
+                return NextResponse.json({ ...sub, id: sub._id.toString(), category_id: sub.category_id?.toString() });
+            }
+            return NextResponse.json(null);
+        }
+
         if (category) {
             // fetch categories with this brand/category OR global categories, then return subcategories for those categories
             const cats = await ServiceCategories.find({ $or: [{ brand: category }, { brand: '' }] }).lean();
@@ -31,7 +42,7 @@ export async function POST(request: Request) {
     try {
         await connectDB();
         const body = await request.json();
-        const { category_id, name, slug, description, ac_type } = body;
+        const { category_id, name, slug, description, ac_type, meta_title, meta_description } = body;
 
         if (!category_id || !name || !slug) {
             return NextResponse.json({ error: "Category ID, name, and slug are required" }, { status: 400 });
@@ -43,6 +54,8 @@ export async function POST(request: Request) {
             ac_type: ac_type || null,
             slug,
             description: description || null,
+            meta_title: meta_title || '',
+            meta_description: meta_description || '',
         });
 
         return NextResponse.json({ id: result._id, message: "Subcategory created successfully" });
@@ -56,7 +69,7 @@ export async function PUT(request: Request) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, category_id, name, slug, description, ac_type } = body;
+        const { id, category_id, name, slug, description, ac_type, meta_title, meta_description } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -70,6 +83,8 @@ export async function PUT(request: Request) {
                 ac_type: ac_type || null,
                 slug,
                 description: description || null,
+                meta_title: meta_title || '',
+                meta_description: meta_description || '',
                 updatedAt: new Date(),
             },
             { new: true }

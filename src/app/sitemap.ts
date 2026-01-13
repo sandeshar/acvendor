@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         let productPages: MetadataRoute.Sitemap = [];
         let blogPages: MetadataRoute.Sitemap = [];
         let servicePages: MetadataRoute.Sitemap = [];
+        let categoryPages: MetadataRoute.Sitemap = [];
 
         // 1. Fetch Products
         try {
@@ -25,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 const products = await res.json();
                 if (Array.isArray(products)) {
                     productPages = products.map((p: any) => ({
-                        url: `${baseUrl}/midea-ac/${p.slug}`,
+                        url: `${baseUrl}/products/${p.slug}`,
                         lastModified: new Date(p.updatedAt || p.createdAt || new Date()),
                         changeFrequency: 'weekly',
                         priority: 0.8,
@@ -36,7 +37,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             console.error('Error fetching products for sitemap:', e);
         }
 
-        // 2. Fetch Blogs
+        // 2. Fetch Categories and Subcategories
+        try {
+            const [catsRes, subsRes] = await Promise.all([
+                fetch(`${apiBase}/api/pages/services/categories`),
+                fetch(`${apiBase}/api/pages/services/subcategories`)
+            ]);
+
+            if (catsRes.ok) {
+                const cats = await catsRes.ok ? await catsRes.json() : [];
+                const subs = await subsRes.ok ? await subsRes.json() : [];
+
+                if (Array.isArray(cats)) {
+                    cats.forEach((cat: any) => {
+                        // Main category page
+                        categoryPages.push({
+                            url: `${baseUrl}/shop/category/${cat.slug}`,
+                            lastModified: new Date(cat.updatedAt || cat.createdAt || new Date()),
+                            changeFrequency: 'weekly',
+                            priority: 0.7,
+                        });
+
+                        // Filter subcategories for this category
+                        const catSubs = Array.isArray(subs) ? subs.filter((s: any) => s.category_id === cat.id || s.category_id === cat._id) : [];
+                        catSubs.forEach((sub: any) => {
+                            categoryPages.push({
+                                url: `${baseUrl}/shop/category/${cat.slug}/${sub.slug}`,
+                                lastModified: new Date(sub.updatedAt || sub.createdAt || new Date()),
+                                changeFrequency: 'weekly',
+                                priority: 0.6,
+                            });
+                        });
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching categories for sitemap:', e);
+        }
+
+        // 3. Fetch Blogs
         try {
             const res = await fetch(`${apiBase}/api/blog`);
             if (res.ok) {
@@ -72,7 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             console.error('Error fetching services for sitemap:', e);
         }
 
-        return [...staticPages, ...productPages, ...blogPages, ...servicePages];
+        return [...staticPages, ...productPages, ...blogPages, ...servicePages, ...categoryPages];
     } catch (error) {
         console.error('Error generating sitemap:', error);
         return staticPages;

@@ -5,6 +5,9 @@ export interface User {
     email: string;
     password?: string; // optional when listing
     role: string; // e.g. 'admin' | 'superadmin'
+    designation?: string;
+    photo?: string;
+    signature?: string;
     createdAt: string;
     updatedAt: string;
 }

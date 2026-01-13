@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { showToast } from '@/components/Toast';
 import ImageUploader from '@/components/shared/ImageUploader';
 import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
+import { isValidSlug, normalizeSlug } from "@/utils/slug";
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -244,7 +246,13 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                         <h1 className="text-xl font-bold text-gray-900">{title}</h1>
                     </div>
                     <button
-                        onClick={() => onSave(product)}
+                        onClick={() => {
+                            if (product.slug && !isValidSlug(product.slug)) {
+                                showToast('Please fix the invalid slug before saving', { type: 'error' });
+                                return;
+                            }
+                            onSave(product);
+                        }}
                         disabled={saving}
                         className="bg-primary hover:bg-primary-800 text-white px-5 py-2 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
                     >
@@ -255,7 +263,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
 
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {/* Navigation Tabs */}
-                <div className="flex overflow-x-auto border-b border-gray-200 mb-8 sticky top-[64px] bg-gray-50 z-20 -mx-6 px-6 pt-2">
+                <div className="flex overflow-x-auto border-b border-gray-200 mb-8 sticky top-16 bg-gray-50 z-20 -mx-6 px-6 pt-2">
                     <div className="flex gap-8">
                         {tabs.map(tab => (
                             <button
@@ -294,8 +302,11 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             <input
                                                 value={product.slug}
                                                 onChange={e => setProduct({ ...product, slug: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-primary-500 outline-none transition-all font-mono text-sm"
+                                                className={`w-full px-4 py-2 border rounded-md focus:border-primary-500 outline-none transition-all font-mono text-sm ${product.slug && !isValidSlug(product.slug) ? 'border-red-500' : 'border-gray-300'}`}
                                             />
+                                            {product.slug && !isValidSlug(product.slug) && (
+                                                <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
+                                            )}
                                         </div>
                                     </div>
 

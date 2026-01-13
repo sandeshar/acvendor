@@ -20,6 +20,7 @@ export * from './navbarSchema';
 export * from './shopPageSchema';
 export * from './projectsSchema';
 export * from './productsSchema';
+export * from './quotationsSchema';
 
 // Singleton pattern for database connection to prevent "Too many connections" error in development
 const globalForDb = global as unknown as { mongoose: typeof mongoose | undefined };

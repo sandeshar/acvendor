@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         if (!name || !slug) return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
 
         // Validate slug format
-        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+        if (!isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
 
         const result = await BlogCategories.create({
             name,
@@ -61,7 +61,7 @@ export async function PUT(request: NextRequest) {
 
         if (!id) return NextResponse.json({ error: 'ID is required' }, { status: 400 });
 
-        if (slug !== undefined && !isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+        if (slug !== undefined && !isValidSlug(slug)) return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
 
         await BlogCategories.findByIdAndUpdate(id, {
             name,

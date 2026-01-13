@@ -31,7 +31,7 @@ export default function DraftsPage() {
 
     useEffect(() => { load(); }, []);
 
-    const send = async (id: number) => {
+    const send = async (id: string | number) => {
         try {
             const res = await fetch('/api/admin/quotations', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: 'sent' }) });
             if (!res.ok) {
@@ -47,7 +47,7 @@ export default function DraftsPage() {
         }
     };
 
-    const remove = async (id: number) => {
+    const remove = async (id: string | number) => {
         if (!confirm('Delete this draft?')) return;
         try {
             const res = await fetch(`/api/admin/quotations?id=${id}`, { method: 'DELETE' });

@@ -200,7 +200,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
         const cacheKey = `${type}:${slug}`;
         if (!subServices[cacheKey]) {
             const param = type === 'category' ? 'category' : 'subcategory';
-            fetch(`/api/products?${param}=${encodeURIComponent(slug)}&limit=${MAX_SERVICES_PREVIEW}`)
+            fetch(`/api/products?${param}=${encodeURIComponent(slug)}&limit=${MAX_SERVICES_PREVIEW}&featured=1`)
                 .then((r) => (r.ok ? r.json() : []))
                 .then((data) => setSubServices((prev) => ({ ...prev, [cacheKey]: Array.isArray(data) ? data : [] })))
                 .catch((err) => console.error('Failed to fetch dropdown products', err));

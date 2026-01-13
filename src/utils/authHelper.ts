@@ -31,7 +31,7 @@ export const returnRole = (token: string) => {
     return (decoded as any).role;
 }
 
-export const getUserIdFromToken = (token: string): number | null => {
+export const getUserIdFromToken = (token: string): string | null => {
     const decoded = verifyJWT(token);
     if (!decoded) {
         return null;

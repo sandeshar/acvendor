@@ -1,65 +1,63 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { connectDB } from '@/db';
+import { User } from '@/db/schema';
+import { Quotations } from '@/db/quotationsSchema';
 import { Quotation } from '@/types/quotation';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'quotations.json');
-
-async function ensureDataFile() {
-    try {
-        await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-        await fs.access(DATA_FILE);
-    } catch (err) {
-        await fs.writeFile(DATA_FILE, '[]', 'utf-8');
-    }
-}
-
 export async function readAll(): Promise<Quotation[]> {
-    await ensureDataFile();
-    const raw = await fs.readFile(DATA_FILE, 'utf-8');
-    try {
-        return JSON.parse(raw || '[]');
-    } catch (e) {
-        return [];
-    }
-}
-
-export async function writeAll(list: Quotation[]) {
-    await ensureDataFile();
-    await fs.writeFile(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    await connectDB();
+    const list = await Quotations.find().sort({ createdAt: -1 }).lean();
+    return (list as any[]).map(q => ({ ...q, id: q._id.toString() }));
 }
 
 export async function createQuotation(q: Quotation): Promise<Quotation> {
-    const list = await readAll();
-    const id = list.length ? Math.max(...list.map(x => x.id || 0)) + 1 : 1;
-    const number = q.number || `QT-${new Date().getFullYear()}-${String(id).padStart(3, '0')}`;
-    const now = new Date().toISOString();
-    // default new quotations to draft unless status explicitly provided
-    const item: Quotation = { ...q, id, number, status: q.status || 'draft', createdAt: now, updatedAt: now };
-    list.push(item);
-    await writeAll(list);
-    return item;
+    await connectDB();
+
+    // Auto-generate number if not provided
+    let number = q.number;
+    if (!number) {
+        const count = await Quotations.countDocuments();
+        number = `QT-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+    }
+
+    const item = await Quotations.create({
+        ...q,
+        number,
+        status: q.status || 'draft',
+    });
+
+    const obj = item.toObject();
+    return { ...obj, id: obj._id.toString() };
 }
 
-export async function updateQuotation(id: number, q: Partial<Quotation>): Promise<Quotation | null> {
-    const list = await readAll();
-    const idx = list.findIndex(x => x.id === id);
-    if (idx === -1) return null;
-    const updated: Quotation = { ...list[idx], ...q, updatedAt: new Date().toISOString() };
-    list[idx] = updated;
-    await writeAll(list);
-    return updated;
+export async function updateQuotation(id: string | number, q: Partial<Quotation>): Promise<Quotation | null> {
+    await connectDB();
+    // In Mongoose version, ID is a string (ObjectId)
+    const updated = await Quotations.findByIdAndUpdate(id, q, { new: true }).lean();
+    if (!updated) return null;
+    return { ...updated, id: (updated as any)._id.toString() };
 }
 
-export async function deleteQuotation(id: number): Promise<boolean> {
-    const list = await readAll();
-    const idx = list.findIndex(x => x.id === id);
-    if (idx === -1) return false;
-    list.splice(idx, 1);
-    await writeAll(list);
-    return true;
+export async function deleteQuotation(id: string | number): Promise<boolean> {
+    await connectDB();
+    const result = await Quotations.findByIdAndDelete(id);
+    return !!result;
 }
 
-export async function findById(id: number): Promise<Quotation | null> {
-    const list = await readAll();
-    return list.find(x => x.id === id) || null;
+export async function findById(id: string | number): Promise<Quotation | null> {
+    try {
+        await connectDB();
+        // Try searching by ID first
+        let q = await Quotations.findById(id).populate('created_by', 'name signature').lean();
+
+        // If not found by ID, try searching by quotation number as a fallback
+        if (!q) {
+            q = await Quotations.findOne({ number: id }).populate('created_by', 'name signature').lean();
+        }
+
+        if (!q) return null;
+        return { ...q, id: (q as any)._id.toString() } as any;
+    } catch (error) {
+        console.error('Error in findById:', error);
+        return null;
+    }
 }

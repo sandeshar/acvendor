@@ -11,8 +11,11 @@ export default function AddUserPage() {
     const [formData, setFormData] = useState({
         name: "",
         email: "",
+        designation: "",
         password: "",
         role: "admin",
+        photo: "",
+        signature: "",
     });
     const [user, setUser] = useState<User | null>(null);
     const getUserData = async () => {
@@ -34,8 +37,11 @@ export default function AddUserPage() {
             setFormData({
                 name: user.name,
                 email: user.email,
+                designation: user.designation || "",
                 password: "",
                 role: user.role,
+                photo: user.photo || "",
+                signature: user.signature || "",
             });
         }
     }, [user]);
@@ -87,6 +93,20 @@ export default function AddUserPage() {
                                 </div>
 
                                 <div>
+                                    <label htmlFor="designation" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Designation / Official Role
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="designation"
+                                        value={formData.designation}
+                                        onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        placeholder="e.g. Sales Manager, CEO"
+                                    />
+                                </div>
+
+                                <div>
                                     <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
                                         Email Address
                                     </label>
@@ -131,6 +151,70 @@ export default function AddUserPage() {
                                         <option value="super admin">Super Admin</option>
                                         <option value="viewer">Viewer</option>
                                     </select>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="photo" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Profile Photo
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="file"
+                                            id="photo"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const fd = new FormData();
+                                                    fd.append('file', file);
+                                                    fd.append('folder', 'users');
+                                                    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                                    const json = await res.json();
+                                                    if (res.ok && json.url) {
+                                                        setFormData({ ...formData, photo: json.url });
+                                                    } else {
+                                                        showToast('Upload failed', { type: 'error' });
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        />
+                                        {formData.photo && (
+                                            <img src={formData.photo} alt="Preview" className="w-12 h-12 rounded-full object-cover border border-slate-200" />
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="signature" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Signature
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <input
+                                            type="file"
+                                            id="signature"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const fd = new FormData();
+                                                    fd.append('file', file);
+                                                    fd.append('folder', 'users/signatures');
+                                                    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                                                    const json = await res.json();
+                                                    if (res.ok && json.url) {
+                                                        setFormData({ ...formData, signature: json.url });
+                                                    } else {
+                                                        showToast('Upload failed', { type: 'error' });
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        />
+                                        {formData.signature && (
+                                            <img src={formData.signature} alt="Signature Preview" className="h-12 w-auto object-contain border border-slate-200" />
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 

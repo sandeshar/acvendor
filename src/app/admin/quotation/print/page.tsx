@@ -11,6 +11,7 @@ export default function AdminQuotationPrintPage() {
     const search = useSearchParams();
     const id = search?.get('id');
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [quotation, setQuotation] = useState<Quotation | null>(null);
     const [storeSettings, setStoreSettings] = useState<any>(null);
 
@@ -19,11 +20,17 @@ export default function AdminQuotationPrintPage() {
         (async () => {
             try {
                 const res = await fetch(`/api/admin/quotations?id=${id}`);
-                if (!res.ok) { setQuotation(null); return; }
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setError(data.error || `Error ${res.status}`);
+                    setQuotation(null);
+                    return;
+                }
                 const json = await res.json();
                 setQuotation(json as Quotation);
             } catch (e) {
                 console.error(e);
+                setError("Failed to fetch quotation");
             } finally { setLoading(false); }
         })();
     }, [id]);
@@ -81,6 +88,13 @@ export default function AdminQuotationPrintPage() {
                 <div id="quotation-paper" className="relative flex min-h-[1123px] w-full max-w-[794px] flex-col bg-white p-8 shadow-2xl sm:p-12 text-slate-900">
                     {loading ? (
                         <div className="py-12 text-center">Loading...</div>
+                    ) : error ? (
+                        <div className="py-12 text-center flex flex-col items-center gap-4">
+                            <span className="material-symbols-outlined text-red-500 text-5xl">error</span>
+                            <div className="text-xl font-bold">{error}</div>
+                            <p className="text-gray-500">The quotation you are looking for could not be retrieved.</p>
+                            <Link href="/admin/quotation/drafts" className="text-primary hover:underline font-bold">Back to Drafts</Link>
+                        </div>
                     ) : !quotation ? (
                         <div className="py-12 text-center">Quotation not found</div>
                     ) : (
@@ -215,14 +229,29 @@ export default function AdminQuotationPrintPage() {
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-8 text-right items-end">
-                                        <div className="h-16 w-32 border-b border-dashed border-slate-300 relative">
-                                            {/* Placeholder for digital stamp/signature */}
-                                            <div className="absolute bottom-2 right-0 opacity-20" data-alt="Company Stamp Placeholder">
-                                                <span className="material-symbols-outlined text-[64px] text-primary">verified</span>
-                                            </div>
+                                        <div className="min-h-20 w-48 border-b border-dashed border-slate-300 relative flex items-end justify-end">
+                                            {/* Digital Signature */}
+                                            {quotation.include_signature && (quotation.created_by as any)?.signature ? (
+                                                <img
+                                                    src={(quotation.created_by as any).signature}
+                                                    alt="Authorized Signature"
+                                                    className="max-h-24 max-w-full object-contain mb-1"
+                                                />
+                                            ) : (
+                                                <div className="absolute bottom-2 right-0 opacity-20" data-alt="Company Stamp Placeholder">
+                                                    <span className="material-symbols-outlined text-[64px] text-primary">verified</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-col">
-                                            <p className="text-sm font-bold text-slate-900">{storeSettings?.authorizedPerson || storeSettings?.officeName || storeSettings?.storeName || 'Nepal Cooling Solutions'}</p>
+                                            <p className="text-sm font-bold text-slate-900">
+                                                {quotation.include_signature && (quotation.created_by as any)?.name
+                                                    ? (quotation.created_by as any).name
+                                                    : (storeSettings?.authorizedPerson || storeSettings?.officeName || storeSettings?.storeName || 'Nepal Cooling Solutions')}
+                                            </p>
+                                            {quotation.include_signature && (quotation.created_by as any)?.designation && (
+                                                <p className="text-xs text-slate-600 font-medium">{(quotation.created_by as any).designation}</p>
+                                            )}
                                             <p className="text-xs text-slate-500">{storeSettings?.contactEmail || 'Authorized Signature'}</p>
                                         </div>
                                     </div>

@@ -3,7 +3,7 @@ export function normalizeSlug(text: string) {
         .toLowerCase()
         .trim()
         .replace(/[^\w\s-]/g, '')
-        .replace(/[\s_-]+/g, '-')
+        .replace(/\s+/g, '-')
         .replace(/^-+|-+$/g, '');
 }
 
@@ -11,8 +11,8 @@ export function isValidSlug(slug: any, maxLen = 256) {
     if (typeof slug !== 'string') return false;
     if (!slug.length) return false;
     if (slug.length > maxLen) return false;
-    // allow lower-case letters, numbers, and hyphen-separated words
-    return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+    // allow alphanumeric, underscore, and hyphen
+    return /^[a-zA-Z0-9_-]+$/.test(slug);
 }
 
 export default isValidSlug;

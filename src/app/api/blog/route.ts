@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
         // Validate slug format
         if (!isValidSlug(slug)) {
-            return NextResponse.json({ error: 'Invalid slug. Use only lowercase letters, numbers and hyphens (no leading/trailing hyphens).' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
         }
 
         // Status mapping: draft = 1, published = 2, in-review = 3
@@ -230,32 +230,23 @@ export async function GET(request: NextRequest) {
         // Get posts with optional search, category and pagination
         console.log('Fetching all posts via API');
         const sort = searchParams.get('sort') || 'newest';
-        const publishedStatusId = await resolveStatusId(2);
-        let query: any = publishedStatusId ? { status: publishedStatusId } : {}; // default to published if resolved
-
-        if (search) {
-            // search across title, content, tags
-            query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { content: { $regex: search, $options: 'i' } },
-                { tags: { $regex: search, $options: 'i' } }
-            ];
-        }
-
-        if (category) {
-            // allow filtering by category slug or name
-            query.$or = [
-                { tags: { $regex: category, $options: 'i' } },
-                { category_slug: { $regex: category, $options: 'i' } },
-                { category_name: { $regex: category, $options: 'i' } },
-            ];
-        }
+        const isAdmin = searchParams.get('admin') === 'true';
+        const statusParam = searchParams.get('status');
 
         const sortOrder = sort === 'oldest' ? 1 : -1;
 
         // Build a safe query that combines status, search and category filters
         const andConditions: any[] = [];
-        if (publishedStatusId) andConditions.push({ status: publishedStatusId });
+
+        if (isAdmin) {
+            if (statusParam) {
+                const sid = await resolveStatusId(Number(statusParam));
+                if (sid) andConditions.push({ status: sid });
+            }
+        } else {
+            const publishedStatusId = await resolveStatusId(2);
+            if (publishedStatusId) andConditions.push({ status: publishedStatusId });
+        }
 
         if (search) {
             andConditions.push({
@@ -290,14 +281,14 @@ export async function GET(request: NextRequest) {
             const o = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
             posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).limit(l).skip(o).populate('status').lean();
             const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
-            if (meta === 'true') {
-                return NextResponse.json({ posts: normalizedPosts, total });
-            }
-            return NextResponse.json(normalizedPosts);
+            return NextResponse.json({ posts: normalizedPosts, total });
         }
 
         posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).populate('status').lean();
         const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
+        if (isAdmin) {
+            return NextResponse.json({ posts: normalizedPosts, total });
+        }
         console.log('Found posts:', normalizedPosts.length);
         return NextResponse.json(normalizedPosts);
     } catch (error: any) {
@@ -349,7 +340,7 @@ export async function PUT(request: NextRequest) {
 
         // Validate newSlug if provided
         if (newSlug && !isValidSlug(newSlug)) {
-            return NextResponse.json({ error: 'Invalid newSlug. Use only lowercase letters, numbers and hyphens.' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid newSlug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
         }
 
         // Status mapping: draft = 1, published = 2, in-review = 3

@@ -7,8 +7,31 @@ export const fetchCache = 'force-no-store';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
     const p = await params;
-    const categorySlug = (p.slug || [])[0];
+    const slugs = p.slug || [];
+    const categorySlug = slugs[0];
+    const subcategorySlug = slugs[1];
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+    if (subcategorySlug) {
+        try {
+            const res = await fetch(`${API_BASE}/api/pages/services/subcategories?slug=${encodeURIComponent(subcategorySlug)}`, { cache: 'no-store' });
+            if (res.ok) {
+                const sub = await res.json();
+                // Subcategories API usually returns an array unless fetched specifically by slug as a query param
+                const subObj = Array.isArray(sub) ? sub.find((s: any) => s.slug === subcategorySlug) : sub;
+                if (subObj) {
+                    return {
+                        title: subObj.meta_title || `${subObj.name} | ${categorySlug.toUpperCase()} | Shop`,
+                        description: subObj.meta_description || `Shop ${subObj.name} products`,
+                        openGraph: {
+                            title: subObj.meta_title || `${subObj.name} | ${categorySlug.toUpperCase()} | Shop`,
+                            description: subObj.meta_description || `Shop ${subObj.name} products`,
+                        }
+                    };
+                }
+            }
+        } catch (e) { /* ignore */ }
+    }
 
     if (categorySlug) {
         try {
@@ -103,31 +126,45 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
         <main className="flex-1 bg-gray-50/50 min-h-screen">
             {/* Category Hero Section (Optional) */}
             {categoryHero && Object.keys(categoryHero).length > 0 && !subcategory && (
-                <div className="bg-white border-b border-gray-100">
-                    <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-12">
+                <div className="bg-surface-light border-b border-gray-100">
+                    <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-12 lg:py-16">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                             <div className="space-y-6">
-                                {categoryHero.badge_text && (
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
-                                        <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
-                                        <span className="text-primary text-[11px] font-extrabold uppercase tracking-[0.1em] leading-none">{categoryHero.badge_text}</span>
-                                    </div>
-                                )}
-                                <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-[1.1]">
-                                    {renderTitle(categoryHero.title, categoryHero.highlight_text)}
-                                </h1>
+                                <div className="flex flex-col gap-2">
+                                    {categoryHero.badge_text && (
+                                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
+                                            <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
+                                            <span className="text-primary text-[11px] font-extrabold uppercase tracking-widest leading-none">{categoryHero.badge_text}</span>
+                                        </div>
+                                    )}
+                                    {categoryHero.tagline && (
+                                        <div className="text-primary font-bold text-sm uppercase tracking-widest">{categoryHero.tagline}</div>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-[1.1]">
+                                        {renderTitle(categoryHero.title, categoryHero.highlight_text)}
+                                    </h1>
+                                    {categoryHero.subtitle && (
+                                        <p className="text-xl md:text-2xl font-bold text-gray-700/80 tracking-tight">
+                                            {categoryHero.subtitle}
+                                        </p>
+                                    )}
+                                </div>
                                 <p className="text-lg text-gray-600 leading-relaxed max-w-xl">
                                     {categoryHero.description}
                                 </p>
-                                <div className="flex flex-wrap gap-4 pt-2">
+                                <div className="flex flex-wrap gap-4 pt-4">
                                     {categoryHero.cta_text && (
-                                        <Link href={categoryHero.cta_link || '#'} className="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                            {categoryHero.cta_text}
+                                        <Link href={categoryHero.cta_link || '#'} className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-600 text-white font-bold text-base transition-all shadow-lg flex items-center gap-2">
+                                            <span>{categoryHero.cta_text}</span>
+                                            <span className="material-symbols-outlined">arrow_forward</span>
                                         </Link>
                                     )}
                                     {categoryHero.cta2_text && (
-                                        <Link href={categoryHero.cta2_link || '#'} className="bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all">
-                                            {categoryHero.cta2_text}
+                                        <Link href={categoryHero.cta2_link || '#'} className="h-12 px-6 rounded-lg bg-background-light hover:bg-gray-200 text-text-main-light font-bold text-base transition-all flex items-center gap-2">
+                                            <span className="material-symbols-outlined">grid_view</span>
+                                            <span>{categoryHero.cta2_text}</span>
                                         </Link>
                                     )}
                                 </div>
@@ -139,18 +176,20 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                         alt={categoryHero.hero_image_alt || category.name}
                                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                     />
-                                    {categoryHero.card_overlay_text && (
-                                        <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex flex-col items-start shadow-2xl transition-all duration-300 group-hover:bottom-5">
-                                            <p className="text-xs md:text-sm font-bold text-white leading-relaxed opacity-90">{categoryHero.card_overlay_text}</p>
-                                            {categoryHero.card_cta_text && (
+                                    {(categoryHero.card_overlay_text || categoryHero.tagline || categoryHero.card_cta_text || categoryHero.cta_text) && (
+                                        <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex justify-between items-center shadow-2xl transition-all duration-300 group-hover:bottom-5">
+                                            <div className="max-w-[70%]">
+                                                {categoryHero.tagline && <p className="text-xs font-black uppercase tracking-widest text-primary mb-1">{categoryHero.tagline}</p>}
+                                                <p className="text-xs md:text-sm font-bold text-white leading-relaxed opacity-90">{categoryHero.card_overlay_text || categoryHero.subtitle || categoryHero.description}</p>
+                                            </div>
+                                            {(categoryHero.card_cta_text || categoryHero.cta_text) ? (
                                                 <Link
-                                                    href={categoryHero.card_cta_link || '#'}
-                                                    className="inline-flex items-center gap-2 text-primary font-black text-[11px] uppercase tracking-widest mt-3 hover:gap-3 transition-all focus:outline-none group/link"
+                                                    href={categoryHero.card_cta_link || categoryHero.cta_link || '#'}
+                                                    className="shrink-0 ml-4 h-11 px-6 inline-flex items-center justify-center bg-white text-black hover:bg-primary hover:text-white rounded-xl font-bold text-sm transition-all duration-300 shadow-lg active:scale-95"
                                                 >
-                                                    {categoryHero.card_cta_text}
-                                                    <span className="material-symbols-outlined text-sm transition-transform group-hover/link:translate-x-1">arrow_forward</span>
+                                                    {categoryHero.card_cta_text || categoryHero.cta_text}
                                                 </Link>
-                                            )}
+                                            ) : null}
                                         </div>
                                     )}
                                 </div>
