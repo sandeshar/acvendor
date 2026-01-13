@@ -412,367 +412,367 @@ export default function EditBlogPage() {
                                         <p className="text-xs text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
                                     )}
                                 </div>
-                            </div>
 
-                            <div>
-                                <label htmlFor="metaTitle" className="block text-sm font-medium text-slate-700 mb-2">
-                                    Meta Title (SEO)
-                                </label>
-                                <input
-                                    type="text"
-                                    id="metaTitle"
-                                    value={formData.metaTitle}
-                                    onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
-                                    placeholder="Leave empty to use post title"
-                                    maxLength={100}
-                                />
-                                <p className="text-xs text-slate-500 mt-1">{formData.metaTitle.length}/100 characters (optimal for search engines)</p>
-                            </div>
+                                <div>
+                                    <label htmlFor="metaTitle" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Meta Title (SEO)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="metaTitle"
+                                        value={formData.metaTitle}
+                                        onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        placeholder="Leave empty to use post title"
+                                        maxLength={100}
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">{formData.metaTitle.length}/100 characters (optimal for search engines)</p>
+                                </div>
 
-                            <div>
-                                <label htmlFor="metaDescription" className="block text-sm font-medium text-slate-700 mb-2">
-                                    Meta Description (SEO)
-                                </label>
-                                <textarea
-                                    id="metaDescription"
-                                    value={formData.metaDescription}
-                                    onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
-                                    placeholder="Brief description for search results"
-                                    rows={3}
-                                    maxLength={250}
-                                />
-                                <p className="text-xs text-slate-500 mt-1">{formData.metaDescription.length}/250 characters (optimal for search engines)</p>
-                            </div>
+                                <div>
+                                    <label htmlFor="metaDescription" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Meta Description (SEO)
+                                    </label>
+                                    <textarea
+                                        id="metaDescription"
+                                        value={formData.metaDescription}
+                                        onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        placeholder="Brief description for search results"
+                                        rows={3}
+                                        maxLength={250}
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">{formData.metaDescription.length}/250 characters (optimal for search engines)</p>
+                                </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Content</label>
-                                {editor && (
-                                    <div className="border border-slate-300 rounded-lg overflow-hidden bg-white">
-                                        {/* Toolbar */}
-                                        <div className="bg-slate-50 border-b border-slate-300 p-2 flex items-center gap-1 flex-wrap">
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleBold().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("bold") ? "bg-slate-200" : ""}`}
-                                                title="Bold (Ctrl/Cmd+B)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_bold</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleItalic().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("italic") ? "bg-slate-200" : ""}`}
-                                                title="Italic (Ctrl/Cmd+I)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_italic</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleUnderline().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("underline") ? "bg-slate-200" : ""}`}
-                                                title="Underline (Ctrl/Cmd+U)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_underlined</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleStrike().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("strike") ? "bg-slate-200" : ""}`}
-                                                title="Strikethrough (Ctrl/Cmd+Shift+S)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">strikethrough_s</span>
-                                            </button>
-                                            <div className="relative group">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Content</label>
+                                    {editor && (
+                                        <div className="border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                            {/* Toolbar */}
+                                            <div className="bg-slate-50 border-b border-slate-300 p-2 flex items-center gap-1 flex-wrap">
                                                 <button
                                                     type="button"
-                                                    onClick={() => exec(() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run())}
-                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("highlight") ? "bg-slate-200" : ""}`}
-                                                    title="Highlight"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleBold().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("bold") ? "bg-slate-200" : ""}`}
+                                                    title="Bold (Ctrl/Cmd+B)"
                                                 >
-                                                    <span className="material-symbols-outlined text-lg">highlighter_size_2</span>
+                                                    <span className="material-symbols-outlined text-lg">format_bold</span>
                                                 </button>
-                                                <div className="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border border-slate-300 rounded-lg shadow-lg p-2 gap-1 z-10">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleItalic().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("italic") ? "bg-slate-200" : ""}`}
+                                                    title="Italic (Ctrl/Cmd+I)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_italic</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleUnderline().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("underline") ? "bg-slate-200" : ""}`}
+                                                    title="Underline (Ctrl/Cmd+U)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_underlined</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleStrike().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("strike") ? "bg-slate-200" : ""}`}
+                                                    title="Strikethrough (Ctrl/Cmd+Shift+S)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">strikethrough_s</span>
+                                                </button>
+                                                <div className="relative group">
                                                     <button
                                                         type="button"
                                                         onClick={() => exec(() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run())}
-                                                        className="w-6 h-6 rounded bg-yellow-200 hover:ring-2 ring-slate-400"
-                                                        title="Yellow"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => editor.chain().focus().toggleHighlight({ color: '#bfdbfe' }).run()}
-                                                        className="w-6 h-6 rounded bg-primary-200 hover:ring-2 ring-slate-400"
-                                                        title="Blue"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => editor.chain().focus().toggleHighlight({ color: '#bbf7d0' }).run()}
-                                                        className="w-6 h-6 rounded bg-green-200 hover:ring-2 ring-slate-400"
-                                                        title="Green"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => editor.chain().focus().toggleHighlight({ color: '#fecaca' }).run()}
-                                                        className="w-6 h-6 rounded bg-red-200 hover:ring-2 ring-slate-400"
-                                                        title="Red"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => editor.chain().focus().toggleHighlight({ color: '#e9d5ff' }).run()}
-                                                        className="w-6 h-6 rounded bg-purple-200 hover:ring-2 ring-slate-400"
-                                                        title="Purple"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => editor.chain().focus().unsetHighlight().run()}
-                                                        className="w-6 h-6 rounded bg-slate-100 hover:ring-2 ring-slate-400 flex items-center justify-center"
-                                                        title="Remove"
+                                                        className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("highlight") ? "bg-slate-200" : ""}`}
+                                                        title="Highlight"
                                                     >
-                                                        <span className="material-symbols-outlined text-sm">close</span>
+                                                        <span className="material-symbols-outlined text-lg">highlighter_size_2</span>
                                                     </button>
+                                                    <div className="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border border-slate-300 rounded-lg shadow-lg p-2 gap-1 z-10">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => exec(() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run())}
+                                                            className="w-6 h-6 rounded bg-yellow-200 hover:ring-2 ring-slate-400"
+                                                            title="Yellow"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editor.chain().focus().toggleHighlight({ color: '#bfdbfe' }).run()}
+                                                            className="w-6 h-6 rounded bg-primary-200 hover:ring-2 ring-slate-400"
+                                                            title="Blue"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editor.chain().focus().toggleHighlight({ color: '#bbf7d0' }).run()}
+                                                            className="w-6 h-6 rounded bg-green-200 hover:ring-2 ring-slate-400"
+                                                            title="Green"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fecaca' }).run()}
+                                                            className="w-6 h-6 rounded bg-red-200 hover:ring-2 ring-slate-400"
+                                                            title="Red"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editor.chain().focus().toggleHighlight({ color: '#e9d5ff' }).run()}
+                                                            className="w-6 h-6 rounded bg-purple-200 hover:ring-2 ring-slate-400"
+                                                            title="Purple"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => editor.chain().focus().unsetHighlight().run()}
+                                                            className="w-6 h-6 rounded bg-slate-100 hover:ring-2 ring-slate-400 flex items-center justify-center"
+                                                            title="Remove"
+                                                        >
+                                                            <span className="material-symbols-outlined text-sm">close</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <select
-                                                onChange={(e) => {
-                                                    const level = parseInt(e.target.value);
-                                                    if (level === 0) {
-                                                        exec(() => editor.chain().focus().setParagraph().run());
-                                                    } else {
-                                                        exec(() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run());
-                                                    }
-                                                }}
-                                                className="px-2 py-1 border border-slate-300 rounded text-sm hover:bg-slate-100"
-                                                title="Text Style"
-                                            >
-                                                <option value="0">Paragraph</option>
-                                                <option value="1">Heading 1</option>
-                                                <option value="2">Heading 2</option>
-                                                <option value="3">Heading 3</option>
-                                            </select>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleBulletList().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("bulletList") ? "bg-slate-200" : ""}`}
-                                                title="Bullet List (Ctrl/Cmd+Shift+8)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_list_bulleted</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleOrderedList().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("orderedList") ? "bg-slate-200" : ""}`}
-                                                title="Numbered List (Ctrl/Cmd+Shift+7)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_list_numbered</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleBlockquote().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("blockquote") ? "bg-slate-200" : ""}`}
-                                                title="Quote"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_quote</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().toggleCodeBlock().run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("codeBlock") ? "bg-slate-200" : ""}`}
-                                                title="Code Block"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">code</span>
-                                            </button>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().setTextAlign("left").run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "left" }) ? "bg-slate-200" : ""}`}
-                                                title="Align Left"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_align_left</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().setTextAlign("center").run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "center" }) ? "bg-slate-200" : ""}`}
-                                                title="Align Center"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_align_center</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().setTextAlign("right").run())}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "right" }) ? "bg-slate-200" : ""}`}
-                                                title="Align Right"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">format_align_right</span>
-                                            </button>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <button
-                                                type="button"
-                                                onClick={setLink}
-                                                className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("link") ? "bg-slate-200" : ""}`}
-                                                title="Insert Link"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">link</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().unsetLink().run())}
-                                                disabled={!editor.isActive("link")}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
-                                                title="Remove Link"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">link_off</span>
-                                            </button>
-                                            <input
-                                                ref={imageInputRef}
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={addImageFromFile}
-                                                className="hidden"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => imageInputRef.current?.click()}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors"
-                                                title="Insert Image"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">image</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={addImage}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors"
-                                                title="Insert Image URL"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">add_photo_alternate</span>
-                                            </button>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <div className="relative group">
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <select
+                                                    onChange={(e) => {
+                                                        const level = parseInt(e.target.value);
+                                                        if (level === 0) {
+                                                            exec(() => editor.chain().focus().setParagraph().run());
+                                                        } else {
+                                                            exec(() => editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run());
+                                                        }
+                                                    }}
+                                                    className="px-2 py-1 border border-slate-300 rounded text-sm hover:bg-slate-100"
+                                                    title="Text Style"
+                                                >
+                                                    <option value="0">Paragraph</option>
+                                                    <option value="1">Heading 1</option>
+                                                    <option value="2">Heading 2</option>
+                                                    <option value="3">Heading 3</option>
+                                                </select>
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
                                                 <button
                                                     type="button"
-                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("table") ? "bg-slate-200" : ""}`}
-                                                    title="Table"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleBulletList().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("bulletList") ? "bg-slate-200" : ""}`}
+                                                    title="Bullet List (Ctrl/Cmd+Shift+8)"
                                                 >
-                                                    <span className="material-symbols-outlined text-lg">table</span>
+                                                    <span className="material-symbols-outlined text-lg">format_list_bulleted</span>
                                                 </button>
-                                                <div className="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border border-slate-300 rounded-lg shadow-lg p-2 flex-col gap-1 z-10 w-48">
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs flex items-center gap-2">
-                                                        <span className="material-symbols-outlined text-sm">add_table</span> Insert Table
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleOrderedList().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("orderedList") ? "bg-slate-200" : ""}`}
+                                                    title="Numbered List (Ctrl/Cmd+Shift+7)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_list_numbered</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleBlockquote().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("blockquote") ? "bg-slate-200" : ""}`}
+                                                    title="Quote"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_quote</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().toggleCodeBlock().run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("codeBlock") ? "bg-slate-200" : ""}`}
+                                                    title="Code Block"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">code</span>
+                                                </button>
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().setTextAlign("left").run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "left" }) ? "bg-slate-200" : ""}`}
+                                                    title="Align Left"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_align_left</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().setTextAlign("center").run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "center" }) ? "bg-slate-200" : ""}`}
+                                                    title="Align Center"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_align_center</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().setTextAlign("right").run())}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive({ textAlign: "right" }) ? "bg-slate-200" : ""}`}
+                                                    title="Align Right"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">format_align_right</span>
+                                                </button>
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <button
+                                                    type="button"
+                                                    onClick={setLink}
+                                                    className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("link") ? "bg-slate-200" : ""}`}
+                                                    title="Insert Link"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">link</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().unsetLink().run())}
+                                                    disabled={!editor.isActive("link")}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
+                                                    title="Remove Link"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">link_off</span>
+                                                </button>
+                                                <input
+                                                    ref={imageInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={addImageFromFile}
+                                                    className="hidden"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => imageInputRef.current?.click()}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors"
+                                                    title="Insert Image"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">image</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={addImage}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors"
+                                                    title="Insert Image URL"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">add_photo_alternate</span>
+                                                </button>
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <div className="relative group">
+                                                    <button
+                                                        type="button"
+                                                        className={`p-2 hover:bg-slate-200 rounded transition-colors ${editor.isActive("table") ? "bg-slate-200" : ""}`}
+                                                        title="Table"
+                                                    >
+                                                        <span className="material-symbols-outlined text-lg">table</span>
                                                     </button>
-                                                    <div className="h-px bg-slate-200 my-1"></div>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().addColumnBefore().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Column Before</button>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().addColumnAfter().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Column After</button>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().deleteColumn().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Column</button>
-                                                    <div className="h-px bg-slate-200 my-1"></div>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().addRowBefore().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Row Before</button>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().addRowAfter().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Row After</button>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().deleteRow().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Row</button>
-                                                    <div className="h-px bg-slate-200 my-1"></div>
-                                                    <button type="button" onClick={() => exec(() => editor.chain().focus().deleteTable().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Table</button>
+                                                    <div className="hidden group-hover:flex absolute top-full left-0 mt-1 bg-white border border-slate-300 rounded-lg shadow-lg p-2 flex-col gap-1 z-10 w-48">
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run())} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs flex items-center gap-2">
+                                                            <span className="material-symbols-outlined text-sm">add_table</span> Insert Table
+                                                        </button>
+                                                        <div className="h-px bg-slate-200 my-1"></div>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().addColumnBefore().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Column Before</button>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().addColumnAfter().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Column After</button>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().deleteColumn().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Column</button>
+                                                        <div className="h-px bg-slate-200 my-1"></div>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().addRowBefore().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Row Before</button>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().addRowAfter().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50">Add Row After</button>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().deleteRow().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Row</button>
+                                                        <div className="h-px bg-slate-200 my-1"></div>
+                                                        <button type="button" onClick={() => exec(() => editor.chain().focus().deleteTable().run())} disabled={!editor.isActive('table')} className="text-left px-2 py-1 hover:bg-slate-100 rounded text-xs disabled:opacity-50 text-red-600">Delete Table</button>
+                                                    </div>
                                                 </div>
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <input
+                                                    type="color"
+                                                    onChange={(e) => exec(() => editor.chain().focus().setColor(e.target.value).run())}
+                                                    value={editor.getAttributes("textStyle").color || "#000000"}
+                                                    className="w-8 h-8 border-0 rounded cursor-pointer"
+                                                    title="Text Color"
+                                                />
+                                                <div className="w-px h-6 bg-slate-300 mx-1"></div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().setHorizontalRule().run())}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors"
+                                                    title="Horizontal Line"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">horizontal_rule</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().undo().run())}
+                                                    disabled={!editor.can().undo()}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
+                                                    title="Undo (Ctrl/Cmd+Z)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">undo</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => exec(() => editor.chain().focus().redo().run())}
+                                                    disabled={!editor.can().redo()}
+                                                    className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
+                                                    title="Redo (Ctrl/Cmd+Y / Shift+Ctrl/Cmd+Z)"
+                                                >
+                                                    <span className="material-symbols-outlined text-lg">redo</span>
+                                                </button>
                                             </div>
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <input
-                                                type="color"
-                                                onChange={(e) => exec(() => editor.chain().focus().setColor(e.target.value).run())}
-                                                value={editor.getAttributes("textStyle").color || "#000000"}
-                                                className="w-8 h-8 border-0 rounded cursor-pointer"
-                                                title="Text Color"
-                                            />
-                                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().setHorizontalRule().run())}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors"
-                                                title="Horizontal Line"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">horizontal_rule</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().undo().run())}
-                                                disabled={!editor.can().undo()}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
-                                                title="Undo (Ctrl/Cmd+Z)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">undo</span>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => exec(() => editor.chain().focus().redo().run())}
-                                                disabled={!editor.can().redo()}
-                                                className="p-2 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
-                                                title="Redo (Ctrl/Cmd+Y / Shift+Ctrl/Cmd+Z)"
-                                            >
-                                                <span className="material-symbols-outlined text-lg">redo</span>
-                                            </button>
+                                            {/* Editor */}
+                                            <EditorContent editor={editor} />
                                         </div>
-                                        {/* Editor */}
-                                        <EditorContent editor={editor} />
-                                    </div>
-                                )}
-                                <div className="flex items-center justify-between mt-2">
-                                    <p className="text-xs text-slate-500">Use the toolbar to format your content with headings, lists, and links</p>
-                                    <div className="flex items-center gap-4 text-xs text-slate-500">
-                                        <span>{wordCount} words</span>
-                                        <span>{charCount} characters</span>
-                                        <span className="flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-sm">schedule</span>
-                                            Reading time: {Math.max(1, Math.ceil(wordCount / 200))} min
-                                        </span>
+                                    )}
+                                    <div className="flex items-center justify-between mt-2">
+                                        <p className="text-xs text-slate-500">Use the toolbar to format your content with headings, lists, and links</p>
+                                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                                            <span>{wordCount} words</span>
+                                            <span>{charCount} characters</span>
+                                            <span className="flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-sm">schedule</span>
+                                                Reading time: {Math.max(1, Math.ceil(wordCount / 200))} min
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                                <select
-                                    id="category"
-                                    value={formData.category_id || ''}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        const selected = categoriesList.find(c => String(c._id) === String(val));
-                                        setFormData({ ...formData, category_id: selected?._id || null, category_slug: selected?.slug || '' });
-                                    }}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
-                                >
-                                    <option value="">None</option>
-                                    {categoriesList.map((c) => (
-                                        <option key={c._id} value={c._id}>{c.name}</option>
-                                    ))}
-                                </select>
-                                <p className="text-xs text-slate-500 mt-1">Assign a category to this post (optional)</p>
-                            </div>
+                                <div>
+                                    <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                                    <select
+                                        id="category"
+                                        value={formData.category_id || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const selected = categoriesList.find(c => String(c._id) === String(val));
+                                            setFormData({ ...formData, category_id: selected?._id || null, category_slug: selected?.slug || '' });
+                                        }}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                    >
+                                        <option value="">None</option>
+                                        {categoriesList.map((c) => (
+                                            <option key={c._id} value={c._id}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                    <p className="text-xs text-slate-500 mt-1">Assign a category to this post (optional)</p>
+                                </div>
 
-                            <div>
-                                <label htmlFor="tags" className="block text-sm font-medium text-slate-700 mb-2">
-                                    Tags
-                                </label>
-                                <input
-                                    type="text"
-                                    id="tags"
-                                    value={formData.tags}
-                                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
-                                    placeholder="react, nextjs, tailwind, design"
-                                />
-                                <p className="text-xs text-slate-500 mt-1">Comma-separated list of tags for better discoverability</p>
-                            </div>
+                                <div>
+                                    <label htmlFor="tags" className="block text-sm font-medium text-slate-700 mb-2">
+                                        Tags
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="tags"
+                                        value={formData.tags}
+                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary"
+                                        placeholder="react, nextjs, tailwind, design"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">Comma-separated list of tags for better discoverability</p>
+                                </div>
 
-                            <div>
-                                <ImageUploader
-                                    label="Thumbnail Image"
-                                    value={thumbnailUrl}
-                                    onChange={setThumbnailUrl}
-                                    folder="blog/thumbnails"
-                                    buttonText="Upload thumbnail"
-                                />
-                                <p className="text-xs text-slate-500 mt-1">PNG, JPG, GIF up to 5MB (recommended: 1200x630px)</p>
+                                <div>
+                                    <ImageUploader
+                                        label="Thumbnail Image"
+                                        value={thumbnailUrl}
+                                        onChange={setThumbnailUrl}
+                                        folder="blog/thumbnails"
+                                        buttonText="Upload thumbnail"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">PNG, JPG, GIF up to 5MB (recommended: 1200x630px)</p>
+                                </div>
                             </div>
 
                             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-lg">
