@@ -447,7 +447,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             }}
                                                         >
                                                             <div className="py-2 px-3">
-                                                              {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
+                                                                {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
                                                                     <div className="space-y-2">
                                                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Featured Products</div>
                                                                         {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
