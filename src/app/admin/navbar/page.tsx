@@ -23,6 +23,7 @@ export default function NavbarManagerPage() {
     const [navbarItems, setNavbarItems] = useState<NavbarItem[]>([]);
     const [selectedItem, setSelectedItem] = useState<NavbarItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const [manageChildrenId, setManageChildrenId] = useState<string | number | null>(null);
     const [categories, setCategories] = useState<any[]>([]);
     const [subcategories, setSubcategories] = useState<any[]>([]);

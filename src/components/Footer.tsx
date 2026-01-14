@@ -42,16 +42,15 @@ const Footer = ({ storeName, storeLogo, store }: FooterProps) => {
             <div className="max-w-7xl mx-auto py-12 px-4 md:px-10">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <div className="col-span-2 md:col-span-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-2">
                             {(store?.footerLogo || storeLogo) ? (
                                 <img
                                     src={store?.footerLogo || storeLogo}
                                     alt={storeName}
-                                    className={`${store?.footerLogoSize === 'large' ? 'h-10' :
-                                        store?.footerLogoSize === 'small' ? 'h-6' :
-                                            'h-8'
+                                    className={`${store?.footerLogoSize === 'large' ? 'h-16' :
+                                        store?.footerLogoSize === 'small' ? 'h-9' :
+                                            'h-12'
                                         } w-auto object-contain rounded`}
-                                    style={{ filter: 'drop-shadow(0 0 2.5px rgba(255,255,255,1)) drop-shadow(0 0 1px rgba(255,255,255,1))' }}
                                 />
                             ) : (
                                 <span className="material-symbols-outlined text-white text-2xl">hub</span>

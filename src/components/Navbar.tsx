@@ -219,7 +219,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
         const grandchildren = getChildren(firstChild.id);
         if (grandchildren.length > 0) {
-            const info = parseLinkInfo(grandchildren[0].href);
+            const target = grandchildren[0];
+            const info = parseLinkInfo(target.href);
             if (info.slug && info.type) {
                 const key = `${info.type}:${info.slug}`;
                 setHoveredSubSlug(key);
@@ -228,7 +229,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                 setHoveredSubSlug(null);
             }
         } else {
-            const info = parseLinkInfo(firstChild.href);
+            const target = firstChild;
+            const info = parseLinkInfo(target.href);
             if (info.slug && info.type) {
                 const key = `${info.type}:${info.slug}`;
                 setHoveredSubSlug(key);
@@ -341,7 +343,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
                                                                                             // Automatically show first subcategory's services if they exist
                                                                                             if (grandchildren.length > 0) {
-                                                                                                const info = parseLinkInfo(grandchildren[0].href);
+                                                                                                const target = grandchildren[0];
+                                                                                                const info = parseLinkInfo(target.href);
                                                                                                 if (info.slug && info.type) {
                                                                                                     const key = `${info.type}:${info.slug}`;
                                                                                                     setHoveredSubSlug(key);
@@ -444,7 +447,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             }}
                                                         >
                                                             <div className="py-2 px-3">
-                                                                {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
+                                                              {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
                                                                     <div className="space-y-2">
                                                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Featured Products</div>
                                                                         {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
@@ -471,7 +474,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                     </div>
                                                                 ) : (
                                                                     <div className="space-y-2">
-                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">{hoveredSubSlug ? 'No products here' : 'Recommended'}</div>
+                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">{hoveredSubSlug ? 'Loading...' : 'Recommended'}</div>
                                                                         {(defaultProducts.length > 0 ? defaultProducts : []).map((s, sIdx) => (
                                                                             <Link key={`def-${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
                                                                                 {s.thumbnail ? (
