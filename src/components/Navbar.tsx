@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
 interface NavBarProps {
@@ -32,6 +33,7 @@ export const CLOSE_DELAY_MS = 200;
 export const CHILD_CLOSE_DELAY_MS = 150;
 
 const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [navLinks, setNavLinks] = useState<NavbarItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,6 +43,31 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const childCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const serviceCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const isActive = (href: string) => {
+        if (!pathname) return false;
+        
+        // Handle absolute URLs by extracting pathname
+        let targetPath = href;
+        if (href.startsWith('http')) {
+            try {
+                const url = new URL(href);
+                targetPath = url.pathname;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Normalize both paths (remove trailing slashes, handle empty)
+        const normalizedHref = targetPath.replace(/\/$/, '') || '/';
+        const normalizedPathname = pathname.replace(/\/$/, '') || '/';
+
+        if (normalizedHref === '/') {
+            return normalizedPathname === '/';
+        }
+
+        return normalizedPathname === normalizedHref || normalizedPathname.startsWith(normalizedHref + '/');
+    };
 
     const clearAllCloseTimers = () => {
         if (closeTimerRef.current) {
@@ -289,7 +316,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                     >
                                         <Link
                                             href={link.href}
-                                            className={`${navItemSizeClass} font-medium leading-normal text-subtext hover-text-primary transition-colors flex items-center gap-1`}
+                                            className={`${navItemSizeClass} leading-normal transition-colors flex items-center gap-1 ${isActive(link.href) ? 'text-primary font-bold' : 'text-subtext font-medium hover:text-primary'}`}
                                         >
                                             {link.label}
                                             {hasDropdown && <span className={`material-symbols-outlined ${navIconSizeClass}`}>expand_more</span>}
@@ -335,7 +362,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                 >
                                                                                     <Link
                                                                                         href={child.href}
-                                                                                        className={`px-4 py-2 ${navItemSizeClass} text-subtext hover-bg-card hover-text-primary transition-colors flex items-center justify-between`}
+                                                                                        className={`px-4 py-2 ${navItemSizeClass} transition-colors flex items-center justify-between ${isActive(child.href) ? 'text-primary font-bold bg-slate-50' : 'text-subtext font-medium hover:bg-card hover:text-primary'}`}
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
@@ -408,7 +435,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                                 <div key={`g-${gc._id ?? gc.id ?? gc.href}-${gcIdx}`}>
                                                                                     <Link
                                                                                         href={gc.href}
-                                                                                        className={`block px-4 py-2 ${navItemSizeClass} text-slate-700 hover:bg-slate-100 hover:text-primary transition-colors`}
+                                                                                        className={`block px-4 py-2 ${navItemSizeClass} transition-colors ${isActive(gc.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-700 hover:bg-slate-50 hover:text-primary'}`}
                                                                                         onMouseEnter={() => {
                                                                                             clearAllCloseTimers();
                                                                                             if (link.id !== undefined) setOpenDropdown(link.id);
@@ -579,7 +606,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                 <div key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}>
                                     <div className="flex items-center justify-between">
                                         <a
-                                            className={`flex-1 ${navItemSizeClass} font-medium leading-normal text-slate-700 hover:text-primary hover:bg-slate-100 px-4 py-3 rounded-lg transition-colors`}
+                                            className={`flex-1 ${navItemSizeClass} leading-normal transition-colors px-4 py-3 rounded-lg ${isActive(link.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-700 font-medium hover:text-primary hover:bg-slate-100'}`}
                                             href={link.href}
                                             onClick={() => !hasDropdown && setIsMenuOpen(false)}
                                         >
@@ -602,7 +629,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                         <div className="flex items-center justify-between">
                                                             <a
                                                                 href={child.href}
-                                                                className={`${navItemSizeClass} text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors flex-1`}
+                                                                className={`${navItemSizeClass} transition-colors flex-1 px-4 py-2 rounded-lg ${isActive(child.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-600 font-medium hover:text-primary hover:bg-slate-100'}`}
                                                                 onClick={() => setIsMenuOpen(false)}
                                                             >
                                                                 {child.label}
@@ -620,7 +647,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                                     <a
                                                                         key={`g-${gc.id}`}
                                                                         href={gc.href}
-                                                                        className={`${navItemSizeClass} text-slate-600 hover:text-primary hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors`}
+                                                                        className={`${navItemSizeClass} transition-colors px-4 py-2 rounded-lg ${isActive(gc.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-600 font-medium hover:text-primary hover:bg-slate-100'}`}
                                                                         onClick={() => setIsMenuOpen(false)}
                                                                     >
                                                                         {gc.label}
