@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { showToast } from '@/components/Toast';
 import IconSelector from "@/components/admin/IconSelector";
+import { isValidSlug, normalizeSlug } from "@/utils/slug";
 
 type Category = {
     id?: string | number;
@@ -107,6 +108,15 @@ export default function CategoriesManagerPage() {
 
     const saveCategory = async () => {
         if (!selectedCategory) return;
+        if (!selectedCategory.name || !selectedCategory.slug) {
+            showToast("Name and Slug are required", { type: "error" });
+            return;
+        }
+
+        if (selectedCategory.slug && !isValidSlug(selectedCategory.slug)) {
+            showToast("Invalid slug format. Use only letters, numbers, hyphens and underscores.", { type: "error" });
+            return;
+        }
 
         setSaving(true);
         try {
@@ -134,6 +144,15 @@ export default function CategoriesManagerPage() {
 
     const saveSubcategory = async () => {
         if (!selectedSubcategory) return;
+        if (!selectedSubcategory.name || !selectedSubcategory.slug || !selectedSubcategory.category_id) {
+            showToast("Name, Slug and Parent Category are required", { type: "error" });
+            return;
+        }
+
+        if (selectedSubcategory.slug && !isValidSlug(selectedSubcategory.slug)) {
+            showToast("Invalid slug format. Use only letters, numbers, hyphens and underscores.", { type: "error" });
+            return;
+        }
 
         setSaving(true);
         try {
@@ -445,19 +464,26 @@ export default function CategoriesManagerPage() {
             {/* CATEGORY MODAL */}
             {isCategoryModalOpen && selectedCategory && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-                        <div className="px-6 py-4 border-b border-slate-200">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] flex flex-col overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 shrink-0">
                             <h2 className="text-xl font-bold text-slate-900">
                                 {selectedCategory.isNew ? "New Category" : "Edit Category"}
                             </h2>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 space-y-4 overflow-y-auto">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
                                 <input
                                     type="text"
                                     value={selectedCategory.name}
-                                    onChange={(e) => setSelectedCategory({ ...selectedCategory, name: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setSelectedCategory({
+                                            ...selectedCategory,
+                                            name: val,
+                                            slug: selectedCategory.isNew ? normalizeSlug(val) : selectedCategory.slug
+                                        });
+                                    }}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
@@ -467,8 +493,11 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedCategory.slug}
                                     onChange={(e) => setSelectedCategory({ ...selectedCategory, slug: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary ${selectedCategory.slug && !isValidSlug(selectedCategory.slug) ? 'border-red-500' : 'border-slate-300'}`}
                                 />
+                                {selectedCategory.slug && !isValidSlug(selectedCategory.slug) && (
+                                    <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
+                                )}
                             </div>
 
                             <div>
@@ -540,13 +569,13 @@ export default function CategoriesManagerPage() {
             {/* SUBCATEGORY MODAL */}
             {isSubcategoryModalOpen && selectedSubcategory && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-                        <div className="px-6 py-4 border-b border-slate-200">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] flex flex-col overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 shrink-0">
                             <h2 className="text-xl font-bold text-slate-900">
                                 {selectedSubcategory.isNew ? "New Subcategory" : "Edit Subcategory"}
                             </h2>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 space-y-4 overflow-y-auto">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Parent Category</label>
                                 <select
@@ -565,7 +594,14 @@ export default function CategoriesManagerPage() {
                                 <input
                                     type="text"
                                     value={selectedSubcategory.name}
-                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, name: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setSelectedSubcategory({
+                                            ...selectedSubcategory,
+                                            name: val,
+                                            slug: selectedSubcategory.isNew ? normalizeSlug(val) : selectedSubcategory.slug
+                                        });
+                                    }}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
@@ -585,8 +621,11 @@ export default function CategoriesManagerPage() {
                                     type="text"
                                     value={selectedSubcategory.slug}
                                     onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, slug: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary ${selectedSubcategory.slug && !isValidSlug(selectedSubcategory.slug) ? 'border-red-500' : 'border-slate-300'}`}
                                 />
+                                {selectedSubcategory.slug && !isValidSlug(selectedSubcategory.slug) && (
+                                    <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>

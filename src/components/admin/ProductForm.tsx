@@ -292,7 +292,14 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             <label className="text-xs font-bold text-gray-500 uppercase">Product Name</label>
                                             <input
                                                 value={product.title}
-                                                onChange={e => setProduct({ ...product, title: e.target.value })}
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    setProduct({
+                                                        ...product,
+                                                        title: val,
+                                                        slug: initialData?.id ? product.slug : normalizeSlug(val)
+                                                    });
+                                                }}
                                                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:border-primary-500 outline-none transition-all"
                                                 placeholder="e.g. Panasonic 1.5 Ton AC"
                                             />
@@ -562,7 +569,47 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             {(product.images || []).map((img: string, idx: number) => (
                                                 <div key={idx} className="group relative aspect-square rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                                                     <img src={img} className="w-full h-full object-cover" />
-                                                    <button onClick={() => setProduct({ ...product, images: (product.images || []).filter((_: any, i: number) => i !== idx) })} className="absolute top-1 right-1 bg-white/80 rounded p-1 shadow invisible group-hover:visible"><span className="material-symbols-outlined text-red-600 text-[18px]">delete</span></button>
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (idx === 0) return;
+                                                                const newImgs = [...product.images];
+                                                                [newImgs[idx - 1], newImgs[idx]] = [newImgs[idx], newImgs[idx - 1]];
+                                                                setProduct({ ...product, images: newImgs });
+                                                            }}
+                                                            disabled={idx === 0}
+                                                            className={`w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 hover:text-primary transition-colors disabled:opacity-30`}
+                                                            title="Move Left"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newImgs = (product.images || []).filter((_: any, i: number) => i !== idx);
+                                                                setProduct({ ...product, images: newImgs });
+                                                            }}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-red-600 hover:bg-red-50 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (idx === (product.images || []).length - 1) return;
+                                                                const newImgs = [...product.images];
+                                                                [newImgs[idx + 1], newImgs[idx]] = [newImgs[idx], newImgs[idx + 1]];
+                                                                setProduct({ ...product, images: newImgs });
+                                                            }}
+                                                            disabled={idx === (product.images || []).length - 1}
+                                                            className={`w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-700 hover:text-primary transition-colors disabled:opacity-30`}
+                                                            title="Move Right"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             <div className="aspect-square rounded-md border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">

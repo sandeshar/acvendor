@@ -38,10 +38,11 @@ export default function NewServicePage() {
             const postPayload = {
                 title: serviceData.title,
                 slug: finalSlug,
-                excerpt: serviceData.excerpt || serviceData.description,
-                content: serviceData.content || `<p>${serviceData.description}</p>`,
+                excerpt: serviceData.excerpt || serviceData.description || '',
+                content: serviceData.content || (serviceData.description ? `<p>${serviceData.description}</p>` : ''),
                 thumbnail: serviceData.thumbnail || serviceData.image || null,
                 icon: serviceData.icon,
+                statusId: serviceData.statusId || 1,
                 metaTitle: serviceData.metaTitle || serviceData.title,
                 metaDescription: serviceData.metaDescription || serviceData.description,
                 category_id: serviceData.category_id || null,
@@ -50,7 +51,7 @@ export default function NewServicePage() {
                 price_type: serviceData.price_type || 'fixed',
                 price_label: serviceData.price_label || null,
                 price_description: serviceData.price_description || null,
-            }; 
+            };
 
             const postResponse = await fetch('/api/services', {
                 method: 'POST',
@@ -109,7 +110,7 @@ export default function NewServicePage() {
 
     return (
         <div className="p-6">
-            <ServiceForm 
+            <ServiceForm
                 categories={categories}
                 subcategories={subcategories}
                 onSave={handleSave}

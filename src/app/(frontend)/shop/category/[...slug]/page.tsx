@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ProductsListClient from '@/components/products/ProductsListClientWrapper';
 import ProductsPagination from '@/components/products/ProductsPagination';
+import MobileFilterDrawer from '@/components/products/MobileFilterDrawer';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
@@ -124,6 +125,107 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
         );
     };
 
+    const filtersContent = (
+        <>
+            {/* Categories & Subcategories Section */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-lg">grid_view</span>
+                    Shop by Category
+                </h3>
+                <div className="space-y-4">
+                    {categories.map((c: any) => {
+                        const isActiveCategory = c.slug === categorySlug;
+                        const categorySubs = subcategories.filter((s: any) => s.category_id === (c.id || c._id));
+
+                        return (
+                            <div key={c.id || c._id} className="space-y-1">
+                                <Link
+                                    href={`/shop/category/${c.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActiveCategory ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    {c.name}
+                                    <span className={`material-symbols-outlined text-sm transition-transform ${isActiveCategory ? 'rotate-90' : ''}`}>chevron_right</span>
+                                </Link>
+
+                                {isActiveCategory && (
+                                    <div className="pl-4 mt-2 space-y-1 border-l-2 border-gray-100 ml-4 animate-in slide-in-from-top-2 duration-300">
+                                        <Link
+                                            href={`/shop/category/${c.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                            className={`block px-4 py-2 rounded-lg text-xs font-bold transition-all ${!subcategorySlug ? 'text-primary bg-primary/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                        >
+                                            All {c.name}
+                                        </Link>
+                                        {categorySubs.map((s: any) => (
+                                            <Link
+                                                key={s.id || s._id}
+                                                href={`/shop/category/${c.slug}/${s.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                                className={`flex items-center justify-between px-4 py-2 rounded-lg text-xs font-bold transition-all ${s.slug === subcategorySlug ? 'text-primary bg-primary/5' : 'text-gray-400 hover:text-gray-600'}`}
+                                            >
+                                                {s.name}
+                                                {s.slug === subcategorySlug && <span className="material-symbols-outlined text-xs">check</span>}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Price Filter */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-lg">payments</span>
+                    Price Range
+                </h3>
+                <form className="space-y-4">                                {Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams))))
+                    .filter(([k]) => k !== 'minPrice' && k !== 'maxPrice' && k !== 'page')
+                    .map(([k, v]) => (
+                        <input key={k} type="hidden" name={k} value={v as string} />
+                    ))
+                }                                <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Min Price</label>
+                            <input
+                                type="number"
+                                name="minPrice"
+                                defaultValue={minPrice}
+                                placeholder="0"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Max Price</label>
+                            <input
+                                type="number"
+                                name="maxPrice"
+                                defaultValue={maxPrice}
+                                placeholder="Any"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition-all"
+                    >
+                        Apply Range
+                    </button>
+                    {(minPrice || maxPrice) && (
+                        <Link
+                            href={`?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
+                            className="block text-center text-xs font-bold text-primary hover:underline pt-2"
+                        >
+                            Clear Price Filter
+                        </Link>
+                    )}
+                </form>
+            </div>
+        </>
+    );
+
     return (
         <main className="flex-1 bg-gray-50/50 min-h-screen">
             {/* Category Hero Section (Optional) */}
@@ -245,137 +347,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
             <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-12">
                 <div className="flex flex-col lg:flex-row gap-10">
-                    {/* Sidebar Filters */}
-                    <aside className="lg:w-72 shrink-0 space-y-10">
-                        {/* Categories Section */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary text-lg">grid_view</span>
-                                Categories
-                            </h3>
-                            <div className="space-y-2">
-                                {categories.map((c: any) => (
-                                    <Link
-                                        key={c.id}
-                                        href={`/shop/category/${c.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
-                                        className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${c.slug === categorySlug ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'}`}
-                                    >
-                                        {c.name}
-                                        {c.slug === categorySlug && <span className="material-symbols-outlined text-sm">chevron_right</span>}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Subcategories Section */}
-                        {categorySlug && (
-                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-primary text-lg">account_tree</span>
-                                    Sub Categories
-                                </h3>
-                                <div className="space-y-2">
-                                    <Link
-                                        href={`/shop/category/${categorySlug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
-                                        className={`block px-4 py-3 rounded-xl text-sm font-bold transition-all ${!subcategorySlug ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}
-                                    >
-                                        All {category.name}
-                                    </Link>
-                                    {subcategories.filter((s: any) => s.category_id === category.id || s.category_id === category._id).map((s: any) => (
-                                        <Link
-                                            key={s.id}
-                                            href={`/shop/category/${categorySlug}/${s.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
-                                            className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${s.slug === subcategorySlug ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50'}`}
-                                        >
-                                            {s.name}
-                                            {s.slug === subcategorySlug && <span className="material-symbols-outlined text-sm">check</span>}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Price Filter */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary text-lg">payments</span>
-                                Price Range
-                            </h3>
-                            <form className="space-y-4">                                {Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams))))
-                                .filter(([k]) => k !== 'minPrice' && k !== 'maxPrice' && k !== 'page')
-                                .map(([k, v]) => (
-                                    <input key={k} type="hidden" name={k} value={v as string} />
-                                ))
-                            }                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Min Price</label>
-                                        <input
-                                            type="number"
-                                            name="minPrice"
-                                            defaultValue={minPrice}
-                                            placeholder="0"
-                                            className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Max Price</label>
-                                        <input
-                                            type="number"
-                                            name="maxPrice"
-                                            defaultValue={maxPrice}
-                                            placeholder="Any"
-                                            className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                                <button
-                                    type="submit"
-                                    className="w-full py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition-all"
-                                >
-                                    Apply Range
-                                </button>
-                                {(minPrice || maxPrice) && (
-                                    <Link
-                                        href={`?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
-                                        className="block text-center text-xs font-bold text-primary hover:underline pt-2"
-                                    >
-                                        Clear Price Filter
-                                    </Link>
-                                )}
-                            </form>
-                        </div>
-
-                        {/* Availability Filter */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary text-lg">inventory_2</span>
-                                Availability
-                            </h3>
-                            <div className="space-y-2">
-                                <Link
-                                    href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), status: 'in_stock' })}`}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${status === 'in_stock' ? 'bg-green-50 text-green-700' : 'text-gray-500 hover:bg-gray-50'}`}
-                                >
-                                    <span className={`w-2 h-2 rounded-full ${status === 'in_stock' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-                                    In Stock
-                                </Link>
-                                <Link
-                                    href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), status: 'out_of_stock' })}`}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${status === 'out_of_stock' ? 'bg-red-50 text-red-700' : 'text-gray-500 hover:bg-gray-50'}`}
-                                >
-                                    <span className={`w-2 h-2 rounded-full ${status === 'out_of_stock' ? 'bg-red-500' : 'bg-gray-300'}`}></span>
-                                    Out of Stock
-                                </Link>
-                                {status && (
-                                    <Link
-                                        href={`?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'status')))}`}
-                                        className="block text-center text-xs font-bold text-primary hover:underline pt-4 border-t border-gray-50"
-                                    >
-                                        Show All Availability
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
+                    {/* Sidebar Filters - Hidden on Mobile */}
+                    <aside className="hidden lg:flex lg:w-72 shrink-0 flex-col space-y-10">
+                        {filtersContent}
                     </aside>
 
                     {/* Product Grid Area */}
@@ -384,11 +358,9 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                             <h2 className="text-xl font-bold text-gray-900">
                                 {products.length} {products.length === 1 ? 'Product' : 'Products'} Found
                             </h2>
-                            {/* Mobile Filters Trigger Placeholder */}
-                            <button className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold">
-                                <span className="material-symbols-outlined text-sm">tune</span>
-                                Filters
-                            </button>
+                            <MobileFilterDrawer>
+                                {filtersContent}
+                            </MobileFilterDrawer>
                         </div>
 
                         <ProductsListClient

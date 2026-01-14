@@ -5,6 +5,7 @@ import ImageUploader from '@/components/shared/ImageUploader';
 import IconSelector from "@/components/admin/IconSelector";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import { showToast } from '@/components/Toast';
+import { isValidSlug, normalizeSlug } from "@/utils/slug";
 
 interface ServiceFormProps {
     initialData?: any;
@@ -16,14 +17,14 @@ interface ServiceFormProps {
     isNew: boolean;
 }
 
-export default function ServiceForm({ 
-    initialData, 
-    categories, 
-    subcategories, 
-    onSave, 
-    onDelete, 
-    saving, 
-    isNew 
+export default function ServiceForm({
+    initialData,
+    categories,
+    subcategories,
+    onSave,
+    onDelete,
+    saving,
+    isNew
 }: ServiceFormProps) {
     const [service, setService] = useState<any>({
         title: "",
@@ -89,6 +90,12 @@ export default function ServiceForm({
             showToast('Title and Slug are required', { type: 'error' });
             return;
         }
+
+        if (service.slug && !isValidSlug(service.slug)) {
+            showToast('Invalid slug format. Use only letters, numbers, hyphens and underscores.', { type: 'error' });
+            return;
+        }
+
         await onSave(service);
     };
 
@@ -140,7 +147,7 @@ export default function ServiceForm({
             </div>
 
             {/* Collapsible Sections */}
-            
+
             {/* 1. Basic Details */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <button
@@ -156,7 +163,7 @@ export default function ServiceForm({
                         expand_more
                     </span>
                 </button>
-                
+
                 {openSections.details && (
                     <div className="p-6 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -166,7 +173,11 @@ export default function ServiceForm({
                                     <input
                                         type="text"
                                         value={service.title}
-                                        onChange={(e) => updateItem('title', e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            updateItem('title', val);
+                                            if (isNew) updateItem('slug', normalizeSlug(val));
+                                        }}
                                         className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                         placeholder="e.g. AC Installation"
                                         required
@@ -178,10 +189,13 @@ export default function ServiceForm({
                                         type="text"
                                         value={service.slug}
                                         onChange={(e) => updateItem('slug', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                        className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary ${service.slug && !isValidSlug(service.slug) ? 'border-red-500' : 'border-slate-300'}`}
                                         placeholder="ac-installation"
                                         required
                                     />
+                                    {service.slug && !isValidSlug(service.slug) && (
+                                        <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Icon</label>
@@ -192,7 +206,7 @@ export default function ServiceForm({
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Category (Optional)</label>
                                         <select
                                             value={service.category_id || ''}
                                             onChange={(e) => updateItem('category_id', e.target.value || null)}
@@ -205,7 +219,7 @@ export default function ServiceForm({
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Subcategory</label>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Subcategory (Optional)</label>
                                         <select
                                             value={service.subcategory_id || ''}
                                             onChange={(e) => updateItem('subcategory_id', e.target.value || null)}
@@ -235,9 +249,9 @@ export default function ServiceForm({
                                             <option value={3}>In Review</option>
                                         </select>
                                     </div>
-                                )} 
+                                )}
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <ImageUploader

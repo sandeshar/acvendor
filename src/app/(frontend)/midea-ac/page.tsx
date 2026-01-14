@@ -4,13 +4,14 @@ import CategoriesList from '@/components/products/CategoriesList';
 import CategoriesPills from '@/components/products/CategoriesPills';
 import ProductsPagination from '@/components/products/ProductsPagination';
 import SortDropdown from '@/components/products/SortDropdown';
+import MobileFilterDrawer from '@/components/products/MobileFilterDrawer';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1, sort?: string, qParam?: string) {
+async function getProducts(limit = 12, brand?: string, category?: string, subcategory?: string, page: number = 1, sort?: string, qParam?: string, minPrice?: string, maxPrice?: string) {
     try {
         const q = new URLSearchParams();
         if (limit) q.set('limit', String(limit));
@@ -19,6 +20,8 @@ async function getProducts(limit = 12, brand?: string, category?: string, subcat
         if (subcategory) q.set('subcategory', subcategory);
         if (sort) q.set('sort', sort);
         if (qParam) q.set('q', qParam);
+        if (minPrice) q.set('minPrice', minPrice);
+        if (maxPrice) q.set('maxPrice', maxPrice);
         const offset = (Math.max(1, page) - 1) * (limit || 12);
         if (offset) q.set('offset', String(offset));
         const res = await fetch(`${API_BASE}/api/products?${q.toString()}`, { cache: 'no-store', next: { tags: ['products'] } });
@@ -69,6 +72,8 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
     let subcategory: string | undefined = undefined;
     let page: number = 1;
     let sort: string = '';
+    let minPrice: string = '';
+    let maxPrice: string = '';
     try {
         // If searchParams is a Promise, try to await it
         let sp: any = searchParams;
@@ -102,6 +107,10 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     page = p ? parseInt(String(p)) || 1 : 1;
                     const s = (sp as any).get('sort');
                     sort = s == null ? '' : String(s);
+                    const minP = (sp as any).get('minPrice');
+                    minPrice = minP == null ? '' : String(minP);
+                    const maxP = (sp as any).get('maxPrice');
+                    maxPrice = maxP == null ? '' : String(maxP);
                 } else {
                     const rawC = (sp as any)['category'];
                     category = rawC == null ? '' : String(rawC);
@@ -111,6 +120,10 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     page = rawP ? parseInt(String(rawP)) || 1 : 1;
                     const rawS = (sp as any)['sort'];
                     sort = rawS == null ? '' : String(rawS);
+                    const rawMinP = (sp as any)['minPrice'];
+                    minPrice = rawMinP == null ? '' : String(rawMinP);
+                    const rawMaxP = (sp as any)['maxPrice'];
+                    maxPrice = rawMaxP == null ? '' : String(rawMaxP);
                 }
             } catch (innerErr) {
                 // eslint-disable-next-line no-console
@@ -123,7 +136,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
     }
 
     const qParam = (searchParams as any)?.q || undefined;
-    const products = await getProducts(12, brand, category || undefined, subcategory, page, sort, qParam);
+    const products = await getProducts(12, brand, category || undefined, subcategory, page, sort, qParam, minPrice, maxPrice);
 
     const hasMore = (products || []).length === 12;
 
@@ -179,30 +192,92 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
         );
     };
 
+    const filtersContent = (
+        <div className="flex flex-col gap-6">
+            <div className="bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-sm">
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col pb-2 border-b border-[#f0f2f4]">
+                        <h1 className="text-[#111418] text-lg font-bold leading-normal">{brand ? `${brand.toUpperCase()} Categories` : 'Brand Categories'}</h1>
+                        <p className="text-[#617589] text-xs font-normal leading-normal">Browse {brand ? brand.toUpperCase() : 'brand'} AC by Type</p>
+                    </div>
+                    <CategoriesList brand={brand} selectedCategory={category} selectedSubcategory={subcategory ?? ''} />
+                </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary text-lg">payments</span>
+                    Price Range
+                </h3>
+                <form className="space-y-4">
+                    {/* Preserve existing search params */}
+                    {Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams))))
+                        .filter(([k]) => k !== 'minPrice' && k !== 'maxPrice' && k !== 'page')
+                        .map(([k, v]) => (
+                            <input key={k} type="hidden" name={k} value={v as string} />
+                        ))
+                    }
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Min Price</label>
+                            <input
+                                type="number"
+                                name="minPrice"
+                                defaultValue={minPrice}
+                                placeholder="0"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Max Price</label>
+                            <input
+                                type="number"
+                                name="maxPrice"
+                                defaultValue={maxPrice}
+                                placeholder="Any"
+                                className="w-full px-3 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-black transition-all"
+                    >
+                        Apply Range
+                    </button>
+                    {(minPrice || maxPrice) && (
+                        <Link
+                            href={`/midea-ac?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
+                            className="block text-center text-xs font-bold text-primary hover:underline pt-2"
+                        >
+                            Clear Price Filter
+                        </Link>
+                    )}
+                </form>
+            </div>
+        </div>
+    );
+
     return (
         <div className="layout-container flex flex-col md:flex-row grow max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-5 gap-6">
             <aside className="hidden md:flex flex-col w-64 shrink-0 gap-6">
-                <div className="sticky top-24 bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-sm">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col pb-2 border-b border-[#f0f2f4]">
-                            <h1 className="text-[#111418] text-lg font-bold leading-normal">{brand ? `${brand.toUpperCase()} Categories` : 'Brand Categories'}</h1>
-                            <p className="text-[#617589] text-xs font-normal leading-normal">Browse {brand ? brand.toUpperCase() : 'brand'} AC by Type</p>
-                        </div>
-                        <CategoriesList brand={brand} selectedCategory={category} selectedSubcategory={subcategory ?? ''} />
-                    </div>
-                    {/* <div className="mt-6 pt-6 border-t border-[#f0f2f4]">
-                        <button className="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#111418] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-opacity">
-                            <span className="truncate">Download Midea Catalog</span>
-                        </button>
-                    </div> */}
+                <div className="sticky top-24">
+                    {filtersContent}
                 </div>
             </aside>
 
             <main className="flex flex-col flex-1 gap-6 w-full min-w-0">
-                <div className="flex flex-wrap gap-2 text-sm">
-                    <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary transition-colors">Home</Link>
-                    <span className="text-[#617589] font-medium leading-normal">/</span>
-                    <span className="text-[#111418] font-medium leading-normal">Midea AC</span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-2 text-sm">
+                        <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary transition-colors">Home</Link>
+                        <span className="text-[#617589] font-medium leading-normal">/</span>
+                        <span className="text-[#111418] font-medium leading-normal">Midea AC</span>
+                    </div>
+                    <div className="md:hidden">
+                        <MobileFilterDrawer>
+                            {filtersContent}
+                        </MobileFilterDrawer>
+                    </div>
                 </div>
 
                 <div className="relative w-full overflow-hidden rounded-xl">
@@ -235,10 +310,6 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                             </div>
                         );
                     })()}
-                </div>
-
-                <div className="md:hidden overflow-x-auto pb-2 scrollbar-hide">
-                    <CategoriesPills brand={brand} selectedCategory={category} selectedSubcategory={subcategory ?? ''} />
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">

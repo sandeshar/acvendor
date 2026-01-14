@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import ImageUploader from '@/components/shared/ImageUploader';
 import { showToast } from '@/components/Toast';
+import { isValidSlug, normalizeSlug } from "@/utils/slug";
 
 export default function AdminBrandsPage() {
     const [brands, setBrands] = useState<any[]>([]);
@@ -26,6 +27,16 @@ export default function AdminBrandsPage() {
     };
 
     const save = async () => {
+        if (!name || !slug) {
+            showToast('Name and Slug are required', { type: 'error' });
+            return;
+        }
+
+        if (slug && !isValidSlug(slug)) {
+            showToast('Invalid slug format. Use only letters, numbers, hyphens and underscores.', { type: 'error' });
+            return;
+        }
+
         try {
             const payload: any = { name, slug, logo };
             if (editing) payload.id = editing.id;
@@ -59,9 +70,25 @@ export default function AdminBrandsPage() {
             <h1 className="text-2xl font-bold mb-4">Manage Brands</h1>
             <div className="mb-6">
                 <label className="block text-sm font-medium">Name</label>
-                <input value={name} onChange={e => setName(e.target.value)} className="mt-1 p-2 border rounded w-full" />
+                <input
+                    value={name}
+                    onChange={e => {
+                        const val = e.target.value;
+                        setName(val);
+                        if (!editing) setSlug(normalizeSlug(val));
+                    }}
+                    className="mt-1 p-2 border rounded w-full"
+                />
                 <label className="block text-sm font-medium mt-3">Slug</label>
-                <input value={slug} onChange={e => setSlug(e.target.value)} className="mt-1 p-2 border rounded w-full" placeholder="lowercase-slug" />
+                <input
+                    value={slug}
+                    onChange={e => setSlug(e.target.value)}
+                    className={`mt-1 p-2 border rounded w-full ${slug && !isValidSlug(slug) ? 'border-red-500' : ''}`}
+                    placeholder="lowercase-slug"
+                />
+                {slug && !isValidSlug(slug) && (
+                    <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
+                )}
                 <label className="block text-sm font-medium mt-3">Logo (URL)</label>
                 <div className="flex gap-2 items-center">
                     <input value={logo} onChange={e => setLogo(e.target.value)} className="mt-1 p-2 border rounded w-full" />

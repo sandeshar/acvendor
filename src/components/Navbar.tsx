@@ -22,13 +22,7 @@ type NavbarItem = {
     is_dropdown?: number;
 };
 
-/* Layout constants (unchanged) */
-export const ITEMS_PER_COLUMN = 8;
-export const CHILD_COLUMN_WIDTH = 260;
-export const GRANDCHILD_COLUMN_WIDTH = 320;
-export const SERVICE_COLUMN_WIDTH = 420;
-export const DROPDOWN_MIN_WIDTH = 420;
-export const MAX_SERVICES_PREVIEW = 4;
+/* Layout constants */
 export const CLOSE_DELAY_MS = 200;
 export const CHILD_CLOSE_DELAY_MS = 150;
 
@@ -42,7 +36,6 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
     const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const childCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const serviceCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isActive = (href: string) => {
         if (!pathname) return false;
@@ -78,17 +71,10 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
             clearTimeout(childCloseTimerRef.current);
             childCloseTimerRef.current = null;
         }
-        if (serviceCloseTimerRef.current) {
-            clearTimeout(serviceCloseTimerRef.current);
-            serviceCloseTimerRef.current = null;
-        }
     };
 
     const [mobileOpenDropdown, setMobileOpenDropdown] = useState<string | number | null>(null);
     const [mobileOpenChild, setMobileOpenChild] = useState<string | number | null>(null);
-    const [subServices, setSubServices] = useState<Record<string, any[]>>({});
-    const [hoveredSubSlug, setHoveredSubSlug] = useState<string | null>(null);
-    const [defaultProducts, setDefaultProducts] = useState<any[]>([]);
 
     // Logo load state: if the image fails to load, we show a fallback icon
     const [logoError, setLogoError] = useState(false);
@@ -122,7 +108,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                     const items = await response.json();
                     if (!Array.isArray(items)) throw new Error('Invalid navbar data');
                     const activeItems = items
-                        .filter((item: NavbarItem) => item.is_active === 1)
+                        .filter((item: NavbarItem) => item.is_active === 1 && item.label !== 'Products')
                         .map((item: any) => ({
                             ...item,
                             id: item._id || item.id,
@@ -152,19 +138,10 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
         fetchNavItems();
 
-        fetch('/api/products?limit=4&featured=1')
-            .then(r => r.json())
-            .then(data => {
-                if (Array.isArray(data)) setDefaultProducts(data);
-                else if (data && data.rows && Array.isArray(data.rows)) setDefaultProducts(data.rows);
-            })
-            .catch(() => { });
-
         return () => {
             isMounted = false;
             if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
             if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
-            if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
         };
     }, []);
 
@@ -172,7 +149,6 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     useEffect(() => {
         if (openDropdown === null) {
             setOpenChildDropdown(null);
-            setHoveredSubSlug(null);
         }
     }, [openDropdown]);
 
@@ -185,87 +161,6 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
     const hasChildren = (itemId?: string | number) => {
         if (itemId === undefined || itemId === null) return false;
         return navLinks.some((item) => String(item.parent_id ?? '') === String(itemId));
-    };
-
-    const parseLinkInfo = (href: string): { type: 'category' | 'subcategory' | null, slug: string | null } => {
-        try {
-            // Handle absolute or relative URLs
-            const url = new URL(href, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-
-            // 1. Explicit search params
-            const subQ = url.searchParams.get('subcategory');
-            if (subQ) return { type: 'subcategory', slug: subQ };
-            const catQ = url.searchParams.get('category');
-            if (catQ) return { type: 'category', slug: catQ };
-
-            // 2. Path patterns
-            const path = url.pathname.replace(/\/$/, ''); // remove trailing slash
-            const segments = path.split('/').filter(Boolean);
-
-            // Pattern: /shop/category/[slug]/[subslug] or /shop/category/[slug]
-            if ((segments[0] === 'services' || segments[0] === 'shop') && segments[1] === 'category') {
-                if (segments.length >= 4) return { type: 'subcategory', slug: segments[3] };
-                if (segments.length >= 3) return { type: 'category', slug: segments[2] };
-            }
-
-            // Pattern: /shop/[category]/[subcategory] if not using 'category' segment
-            if ((segments[0] === 'services' || segments[0] === 'shop') && segments.length >= 3) {
-                return { type: 'subcategory', slug: segments[2] };
-            }
-            if ((segments[0] === 'services' || segments[0] === 'shop') && segments.length >= 2) {
-                return { type: 'category', slug: segments[1] };
-            }
-
-            return { type: null, slug: null };
-        } catch (err) {
-            return { type: null, slug: null };
-        }
-    };
-
-    // fetch subProducts for a slug if needed
-    const fetchSubProductsIfNeeded = (slug: string, type: 'category' | 'subcategory' = 'subcategory') => {
-        const cacheKey = `${type}:${slug}`;
-        if (!subServices[cacheKey]) {
-            const param = type === 'category' ? 'category' : 'subcategory';
-            fetch(`/api/products?${param}=${encodeURIComponent(slug)}&limit=${MAX_SERVICES_PREVIEW}&featured=1`)
-                .then((r) => (r.ok ? r.json() : []))
-                .then((data) => setSubServices((prev) => ({ ...prev, [cacheKey]: Array.isArray(data) ? data : [] })))
-                .catch((err) => console.error('Failed to fetch dropdown products', err));
-        }
-    };
-
-    const initDesktopRightPanels = (children: NavbarItem[]) => {
-        const firstChild = children.find((c) => getChildren(c.id).length > 0) ?? children[0];
-        if (!firstChild) {
-            setOpenChildDropdown(null);
-            setHoveredSubSlug(null);
-            return;
-        }
-
-        if (firstChild.id !== undefined) setOpenChildDropdown(firstChild.id);
-
-        const grandchildren = getChildren(firstChild.id);
-        if (grandchildren.length > 0) {
-            const target = grandchildren[0];
-            const info = parseLinkInfo(target.href);
-            if (info.slug && info.type) {
-                const key = `${info.type}:${info.slug}`;
-                setHoveredSubSlug(key);
-                fetchSubProductsIfNeeded(info.slug, info.type);
-            } else {
-                setHoveredSubSlug(null);
-            }
-        } else {
-            const target = firstChild;
-            const info = parseLinkInfo(target.href);
-            if (info.slug && info.type) {
-                const key = `${info.type}:${info.slug}`;
-                setHoveredSubSlug(key);
-                fetchSubProductsIfNeeded(info.slug, info.type);
-            } else {
-                setHoveredSubSlug(null);
-            }
-        }
     };
 
     return (
@@ -289,24 +184,19 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                             .filter((link) => link.is_button === 0 && (link.parent_id == null || link.parent_id === 0))
                             .map((link, linkIdx) => {
                                 const children = getChildren(link.id);
-                                const colCount = Math.max(1, Math.ceil(children.length / ITEMS_PER_COLUMN));
-                                const containerMinWidth = Math.max(
-                                    DROPDOWN_MIN_WIDTH,
-                                    colCount * CHILD_COLUMN_WIDTH + GRANDCHILD_COLUMN_WIDTH + SERVICE_COLUMN_WIDTH
-                                );
                                 const hasDropdown = link.is_dropdown === 1 && children.length > 0;
 
                                 return (
                                     <div
                                         key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
-                                        className="static"
+                                        className="relative"
                                         onMouseEnter={() => {
                                             clearAllCloseTimers();
-                                            if (hasDropdown) {
-                                                if (String(openDropdown) !== String(link.id)) {
-                                                    initDesktopRightPanels(children);
-                                                }
-                                                if (link.id !== undefined) setOpenDropdown(link.id);
+                                            if (hasDropdown && link.id !== undefined) {
+                                                setOpenDropdown(link.id);
+                                                // Default to first child with subcategories
+                                                const firstWithSubs = children.find(c => getChildren(c.id).length > 0) || children[0];
+                                                if (firstWithSubs) setOpenChildDropdown(firstWithSubs.id ?? null);
                                             }
                                         }}
                                         onMouseLeave={() => {
@@ -316,246 +206,87 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                     >
                                         <Link
                                             href={link.href}
-                                            className={`${navItemSizeClass} leading-normal transition-colors flex items-center gap-1 ${isActive(link.href) ? 'text-primary font-bold' : 'text-subtext font-medium hover:text-primary'}`}
+                                            className={`${navItemSizeClass} transition-all flex items-center gap-1.5 relative py-2 group/link ${isActive(link.href) ? 'text-primary font-bold' : 'text-slate-600 font-medium hover:text-primary'}`}
                                         >
                                             {link.label}
-                                            {hasDropdown && <span className={`material-symbols-outlined ${navIconSizeClass}`}>expand_more</span>}
+                                            {hasDropdown && (
+                                                <span className={`material-symbols-outlined text-[18px] transition-transform duration-300 ${String(openDropdown) === String(link.id) ? 'rotate-180 text-primary' : 'text-slate-400'}`}>
+                                                    keyboard_arrow_down
+                                                </span>
+                                            )}
                                         </Link>
 
                                         {hasDropdown && String(openDropdown) === String(link.id) && (
                                             <div
-                                                className="absolute top-full left-0 right-0 w-full bg-card shadow-lg border-b border-muted py-2 z-60 pointer-events-auto"
+                                                className="absolute top-full left-0 bg-white z-60 pointer-events-auto border border-slate-100 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 flex"
+                                                style={{ minWidth: '480px' }}
                                                 onMouseEnter={() => {
                                                     clearAllCloseTimers();
                                                     if (link.id !== undefined) setOpenDropdown(link.id);
                                                 }}
                                                 onMouseLeave={() => {
                                                     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-                                                    if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
-                                                    if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
                                                     closeTimerRef.current = setTimeout(() => setOpenDropdown(null), CLOSE_DELAY_MS);
                                                 }}
                                             >
-                                                <div className="mx-auto w-full max-w-7xl px-4">
-                                                    <div className="flex gap-0 flex-nowrap overflow-x-auto" style={{ minWidth: `${containerMinWidth}px` }}>
-                                                        <div className="flex-1 px-0 py-1 flex gap-0 flex-nowrap">
-                                                            {(() => {
-                                                                const perCol = ITEMS_PER_COLUMN;
-                                                                const cols: NavbarItem[][] = [];
-                                                                for (let i = 0; i < children.length; i += perCol) {
-                                                                    cols.push(children.slice(i, i + perCol));
-                                                                }
-                                                                return cols.map((col, colIdx) => (
-                                                                    <div
-                                                                        key={`col-${colIdx}`}
-                                                                        className="flex flex-1 flex-col p-1 gap-0"
-                                                                        style={{ minWidth: `${CHILD_COLUMN_WIDTH}px` }}
-                                                                        onMouseEnter={() => { clearAllCloseTimers(); if (link.id !== undefined) setOpenDropdown(link.id); }}
-                                                                    >
-                                                                        {col.map((child, childIdx) => {
-                                                                            const grandchildren = getChildren(child.id);
-                                                                            const childHasDesc = grandchildren.length > 0;
-                                                                            return (
-                                                                                <div
-                                                                                    key={`${child._id ?? child.id ?? child.href}-${childIdx}`}
-                                                                                    className="relative"
-                                                                                >
-                                                                                    <Link
-                                                                                        href={child.href}
-                                                                                        className={`px-4 py-2 ${navItemSizeClass} transition-colors flex items-center justify-between ${isActive(child.href) ? 'text-primary font-bold bg-slate-50' : 'text-subtext font-medium hover:bg-card hover:text-primary'}`}
-                                                                                        onMouseEnter={() => {
-                                                                                            clearAllCloseTimers();
-                                                                                            if (link.id !== undefined) setOpenDropdown(link.id);
-                                                                                            if (child.id !== undefined) setOpenChildDropdown(child.id);
+                                                {/* Left Column: Categories */}
+                                                <div className="w-1/2 border-r border-slate-50 p-2">
+                                                    <div className="flex flex-col">
+                                                        {children.map((child, childIdx) => {
+                                                            const hasSubs = getChildren(child.id).length > 0;
+                                                            const isFocused = String(openChildDropdown) === String(child.id);
 
-                                                                                            // Automatically show first subcategory's services if they exist
-                                                                                            if (grandchildren.length > 0) {
-                                                                                                const target = grandchildren[0];
-                                                                                                const info = parseLinkInfo(target.href);
-                                                                                                if (info.slug && info.type) {
-                                                                                                    const key = `${info.type}:${info.slug}`;
-                                                                                                    setHoveredSubSlug(key);
-                                                                                                    fetchSubProductsIfNeeded(info.slug, info.type);
-                                                                                                    return;
-                                                                                                }
-                                                                                            }
-
-                                                                                            const info = parseLinkInfo(child.href);
-                                                                                            if (info.slug && info.type) {
-                                                                                                const key = `${info.type}:${info.slug}`;
-                                                                                                setHoveredSubSlug(key);
-                                                                                                fetchSubProductsIfNeeded(info.slug, info.type);
-                                                                                            } else {
-                                                                                                setHoveredSubSlug(null);
-                                                                                            }
-                                                                                        }}
-                                                                                        onMouseLeave={() => {
-                                                                                            if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
-                                                                                            childCloseTimerRef.current = setTimeout(() => setOpenChildDropdown(null), CHILD_CLOSE_DELAY_MS);
-                                                                                        }}
-                                                                                    >
-                                                                                        <span>{child.label}</span>
-                                                                                        {childHasDesc && <span className="material-symbols-outlined text-xs">chevron_right</span>}
-                                                                                    </Link>
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                ));
-                                                            })()}
-                                                        </div>
-
-                                                        <div
-                                                            className="border-l border-slate-100 flex-none overflow-y-auto max-h-[420px]"
-                                                            style={{ width: `${GRANDCHILD_COLUMN_WIDTH}px` }}
-                                                            onMouseEnter={() => {
-                                                                clearAllCloseTimers();
-                                                                if (link.id !== undefined) setOpenDropdown(link.id);
-                                                            }}
-                                                            onMouseLeave={() => {
-                                                                if (childCloseTimerRef.current) clearTimeout(childCloseTimerRef.current);
-                                                                childCloseTimerRef.current = setTimeout(() => setOpenChildDropdown(null), CHILD_CLOSE_DELAY_MS);
-                                                            }}
-                                                        >
-                                                            {children.map((child) => {
-                                                                const grandchildren = getChildren(child.id);
-                                                                if (!grandchildren.length) return null;
-                                                                return (
-                                                                    <div
-                                                                        key={`col-${child.id}`}
-                                                                        onMouseEnter={() => { if (child.id !== undefined) setOpenChildDropdown(child.id); }}
-                                                                        className={`py-1 ${String(openChildDropdown) === String(child.id) ? 'block' : 'hidden'}`}
-                                                                    >
-                                                                        {grandchildren.map((gc, gcIdx) => {
-                                                                            const info = parseLinkInfo(gc.href);
-                                                                            const subSlug = info.slug;
-                                                                            const subType = info.type;
-                                                                            const cacheKey = subSlug && subType ? `${subType}:${subSlug}` : null;
-                                                                            return (
-                                                                                <div key={`g-${gc._id ?? gc.id ?? gc.href}-${gcIdx}`}>
-                                                                                    <Link
-                                                                                        href={gc.href}
-                                                                                        className={`block px-4 py-2 ${navItemSizeClass} transition-colors ${isActive(gc.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-700 hover:bg-slate-50 hover:text-primary'}`}
-                                                                                        onMouseEnter={() => {
-                                                                                            clearAllCloseTimers();
-                                                                                            if (link.id !== undefined) setOpenDropdown(link.id);
-                                                                                            if (child.id !== undefined) setOpenChildDropdown(child.id);
-                                                                                            if (subSlug && subType) {
-                                                                                                const key = `${subType}:${subSlug}`;
-                                                                                                setHoveredSubSlug(key);
-                                                                                                fetchSubProductsIfNeeded(subSlug, subType);
-                                                                                            }
-                                                                                        }}
-                                                                                        onMouseLeave={() => {
-                                                                                            if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
-                                                                                            serviceCloseTimerRef.current = setTimeout(() => setHoveredSubSlug((prev) => (prev === cacheKey ? null : prev)), CHILD_CLOSE_DELAY_MS);
-                                                                                        }}
-                                                                                    >
-                                                                                        {gc.label}
-                                                                                    </Link>
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-
-                                                        <div
-                                                            className="border-l border-slate-100 bg-white flex-none overflow-y-auto max-h-[420px]"
-                                                            style={{ width: `${SERVICE_COLUMN_WIDTH}px` }}
-                                                            onMouseEnter={() => {
-                                                                clearAllCloseTimers();
-                                                                if (link.id !== undefined) setOpenDropdown(link.id);
-                                                            }}
-                                                            onMouseLeave={() => {
-                                                                if (serviceCloseTimerRef.current) clearTimeout(serviceCloseTimerRef.current);
-                                                                serviceCloseTimerRef.current = setTimeout(() => setHoveredSubSlug(null), CHILD_CLOSE_DELAY_MS);
-                                                            }}
-                                                        >
-                                                            <div className="py-2 px-3">
-                                                                {hoveredSubSlug ? (
-                                                                    // We are focused on a specific category/subcategory
-                                                                    subServices[hoveredSubSlug] === undefined ? (
-                                                                        // Loading state
-                                                                        <div className="space-y-2">
-                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
-                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                                                                                <span className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2" />
-                                                                                <p className="text-xs">Loading...</p>
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : subServices[hoveredSubSlug].length > 0 ? (
-                                                                        // Products found
-                                                                        <div className="space-y-2">
-                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
-                                                                            {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
-                                                                                <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
-                                                                                    {s.thumbnail ? (
-                                                                                        // eslint-disable-next-line @next/next/no-img-element
-                                                                                        <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
-                                                                                    ) : (
-                                                                                        <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
-                                                                                            <span className="material-symbols-outlined text-slate-300">image</span>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    <div className="flex-1 min-w-0">
-                                                                                        <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
-                                                                                        {Number(s.price) > 0 && (
-                                                                                            <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
-                                                                                        )}
-                                                                                        {s.model && (
-                                                                                            <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </Link>
-                                                                            ))}
-                                                                        </div>
-                                                                    ) : (
-                                                                        // No products found for this specific category
-                                                                        <div className="space-y-2">
-                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
-                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                                                                                <span className="material-symbols-outlined text-4xl mb-2 opacity-20">inventory_2</span>
-                                                                                <p className="text-xs">No products found</p>
-                                                                            </div>
-                                                                        </div>
-                                                                    )
-                                                                ) : (
-                                                                    // Recommended products (no specific hover)
-                                                                    <div className="space-y-2">
-                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Recommended</div>
-                                                                        {(defaultProducts.length > 0 ? defaultProducts : []).map((s, sIdx) => (
-                                                                            <Link key={`def-${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
-                                                                                {s.thumbnail ? (
-                                                                                    <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
-                                                                                ) : (
-                                                                                    <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
-                                                                                        <span className="material-symbols-outlined text-slate-300">image</span>
-                                                                                    </div>
-                                                                                )}
-                                                                                <div className="flex-1 min-w-0">
-                                                                                    <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
-                                                                                    {Number(s.price) > 0 && (
-                                                                                        <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
-                                                                                    )}
-                                                                                    {s.model && (
-                                                                                        <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </Link>
-                                                                        ))}
-                                                                        {defaultProducts.length === 0 && (
-                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                                                                                <span className="material-symbols-outlined text-4xl mb-2 opacity-20">inventory_2</span>
-                                                                                <p className="text-xs">No products available</p>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
+                                                            return (
+                                                                <Link
+                                                                    key={`${child._id ?? child.id}-${childIdx}`}
+                                                                    href={child.href}
+                                                                    className={`px-4 py-3 rounded-xl transition-all flex items-center justify-between group ${isFocused ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-600 hover:bg-slate-50 hover:text-primary'}`}
+                                                                    onMouseEnter={() => {
+                                                                        if (child.id !== undefined) setOpenChildDropdown(child.id);
+                                                                    }}
+                                                                >
+                                                                    <span className="text-sm font-bold">{child.label}</span>
+                                                                    {hasSubs && (
+                                                                        <span className={`material-symbols-outlined text-[18px] transition-transform ${isFocused ? 'translate-x-1' : 'opacity-40 group-hover:opacity-100'}`}>
+                                                                            chevron_right
+                                                                        </span>
+                                                                    )}
+                                                                </Link>
+                                                            );
+                                                        })}
                                                     </div>
+                                                </div>
+
+                                                {/* Right Column: Subcategories (Dynamic) */}
+                                                <div className="w-1/2 bg-slate-50/30 p-2 min-h-[200px]">
+                                                    {children.map((child) => {
+                                                        const grandchildren = getChildren(child.id);
+                                                        if (grandchildren.length === 0) return null;
+
+                                                        return (
+                                                            <div
+                                                                key={`subs-${child.id}`}
+                                                                className={`${String(openChildDropdown) === String(child.id) ? 'flex flex-col gap-1 animate-in fade-in slide-in-from-left-1 duration-200' : 'hidden'}`}
+                                                            >
+                                                                {grandchildren.map((gc, gcIdx) => (
+                                                                    <Link
+                                                                        key={`gc-${gc.id}-${gcIdx}`}
+                                                                        href={gc.href}
+                                                                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive(gc.href) ? 'text-primary bg-white shadow-sm' : 'text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm'}`}
+                                                                    >
+                                                                        {gc.label}
+                                                                    </Link>
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    })}
+
+                                                    {!openChildDropdown && (
+                                                        <div className="h-full flex flex-col items-center justify-center opacity-20 py-20">
+                                                            <span className="material-symbols-outlined text-3xl">category</span>
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest mt-2">Select a Category</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -595,61 +326,68 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 bg-card backdrop-blur-none border-b border-slate-200/80 shadow-lg">
-                    <nav className="flex flex-col px-4 py-4 gap-1">
+                <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-200 shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <nav className="flex flex-col px-6 py-8 gap-4 max-h-[85vh] overflow-y-auto">
                         {navLinks.filter((link) => link.is_button === 0 && (link.parent_id == null || link.parent_id === 0)).map((link, linkIdx) => {
                             const children = getChildren(link.id);
                             const hasDropdown = link.is_dropdown === 1 && children.length > 0;
                             const isExpanded = mobileOpenDropdown === link.id;
 
                             return (
-                                <div key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}>
+                                <div key={`${link._id ?? link.id ?? link.href}-${linkIdx}`} className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
                                         <a
-                                            className={`flex-1 ${navItemSizeClass} leading-normal transition-colors px-4 py-3 rounded-lg ${isActive(link.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-700 font-medium hover:text-primary hover:bg-slate-100'}`}
+                                            className={`text-lg transition-all ${isActive(link.href) ? 'text-primary font-bold' : 'text-slate-900 font-semibold'}`}
                                             href={link.href}
                                             onClick={() => !hasDropdown && setIsMenuOpen(false)}
                                         >
                                             {link.label}
                                         </a>
                                         {hasDropdown && (
-                                            <button onClick={() => setMobileOpenDropdown(isExpanded ? null : (link.id ?? null))} className="px-2 py-3 text-slate-700 hover:text-primary">
-                                                <span className="material-symbols-outlined text-sm">{isExpanded ? 'expand_less' : 'expand_more'}</span>
+                                            <button
+                                                onClick={() => setMobileOpenDropdown(isExpanded ? null : (link.id ?? null))}
+                                                className={`w-10 h-10 flex items-center justify-center transition-all rounded-full ${isExpanded ? 'bg-slate-100 text-primary' : 'text-slate-400'}`}
+                                            >
+                                                <span className={`material-symbols-outlined text-[24px] transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
                                             </button>
                                         )}
                                     </div>
 
                                     {hasDropdown && isExpanded && (
-                                        <div className="pl-4 mt-1 flex flex-col gap-1">
+                                        <div className="flex flex-col gap-4 pl-4 pt-2 border-l border-slate-100 ml-1">
                                             {children.map((child) => {
                                                 const grandchildren = getChildren(child.id);
                                                 const childOpen = mobileOpenChild === child.id;
                                                 return (
-                                                    <div key={`m-${child.id}`}>
+                                                    <div key={`m-${child.id}`} className="flex flex-col gap-2">
                                                         <div className="flex items-center justify-between">
                                                             <a
                                                                 href={child.href}
-                                                                className={`${navItemSizeClass} transition-colors flex-1 px-4 py-2 rounded-lg ${isActive(child.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-600 font-medium hover:text-primary hover:bg-slate-100'}`}
-                                                                onClick={() => setIsMenuOpen(false)}
+                                                                className={`text-sm tracking-tight transition-all ${isActive(child.href) ? 'text-primary font-bold' : 'text-slate-600 font-medium'}`}
+                                                                onClick={() => !grandchildren.length && setIsMenuOpen(false)}
                                                             >
                                                                 {child.label}
                                                             </a>
                                                             {grandchildren.length > 0 && (
-                                                                <button onClick={() => setMobileOpenChild(childOpen ? null : (child.id ?? null))} className="px-2 py-2 text-slate-700 hover:text-primary">
-                                                                    <span className="material-symbols-outlined text-sm">{childOpen ? 'expand_less' : 'expand_more'}</span>
+                                                                <button
+                                                                    onClick={() => setMobileOpenChild(childOpen ? null : (child.id ?? null))}
+                                                                    className={`w-8 h-8 flex items-center justify-center transition-all ${childOpen ? 'text-primary' : 'text-slate-300'}`}
+                                                                >
+                                                                    <span className={`material-symbols-outlined text-[20px] transition-transform duration-300 ${childOpen ? 'rotate-180' : ''}`}>keyboard_arrow_down</span>
                                                                 </button>
                                                             )}
                                                         </div>
 
                                                         {grandchildren.length > 0 && childOpen && (
-                                                            <div className="pl-4 mt-1 flex flex-col gap-1">
+                                                            <div className="flex flex-col gap-3 pl-4 pt-1 mb-2">
                                                                 {grandchildren.map((gc) => (
                                                                     <a
                                                                         key={`g-${gc.id}`}
                                                                         href={gc.href}
-                                                                        className={`${navItemSizeClass} transition-colors px-4 py-2 rounded-lg ${isActive(gc.href) ? 'text-primary font-bold bg-slate-100' : 'text-slate-600 font-medium hover:text-primary hover:bg-slate-100'}`}
+                                                                        className={`text-[13px] transition-all flex items-center gap-2 ${isActive(gc.href) ? 'text-primary font-bold' : 'text-slate-400 hover:text-primary'}`}
                                                                         onClick={() => setIsMenuOpen(false)}
                                                                     >
+                                                                        <span className="w-1 h-1 rounded-full bg-slate-200" />
                                                                         {gc.label}
                                                                     </a>
                                                                 ))}
@@ -668,7 +406,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                             <a
                                 key={`${link._id ?? link.id ?? link.href}-${linkIdx}`}
                                 href={link.href}
-                                className={`flex items-center justify-center overflow-hidden rounded-lg h-10 px-4 mt-2 bg-primary text-white ${navItemSizeClass} font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors`}
+                                className={`flex items-center justify-center rounded-lg h-12 px-6 mt-6 bg-primary text-white text-sm font-bold shadow-xl shadow-primary/20 hover:brightness-110 transition-all active:scale-[0.98]`}
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 <span className="truncate">{link.label}</span>

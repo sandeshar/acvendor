@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/components/Toast';
+import { isValidSlug, normalizeSlug } from "@/utils/slug";
 
 export default function AddBlogCategory() {
     const [form, setForm] = useState({ name: '', slug: '', description: '', meta_title: '', meta_description: '' });
@@ -11,6 +12,17 @@ export default function AddBlogCategory() {
 
     const submit = async (e: any) => {
         e.preventDefault();
+
+        if (!form.name || !form.slug) {
+            showToast('Name and Slug are required', { type: 'error' });
+            return;
+        }
+
+        if (form.slug && !isValidSlug(form.slug)) {
+            showToast('Invalid slug format', { type: 'error' });
+            return;
+        }
+
         setSaving(true);
         try {
             const res = await fetch('/api/blog/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
@@ -31,11 +43,27 @@ export default function AddBlogCategory() {
                 <form onSubmit={submit} className="bg-white p-6 rounded-lg border border-slate-200">
                     <label className="block mb-3">
                         <div className="text-sm text-slate-600 mb-1">Name</div>
-                        <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2 border rounded" required />
+                        <input
+                            value={form.name}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setForm({ ...form, name: val, slug: normalizeSlug(val) });
+                            }}
+                            className="w-full px-3 py-2 border rounded"
+                            required
+                        />
                     </label>
                     <label className="block mb-3">
                         <div className="text-sm text-slate-600 mb-1">Slug</div>
-                        <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full px-3 py-2 border rounded" required />
+                        <input
+                            value={form.slug}
+                            onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                            className={`w-full px-3 py-2 border rounded ${form.slug && !isValidSlug(form.slug) ? 'border-red-500' : ''}`}
+                            required
+                        />
+                        {form.slug && !isValidSlug(form.slug) && (
+                            <p className="text-[10px] text-red-500 mt-1">Invalid slug.</p>
+                        )}
                     </label>
                     <label className="block mb-3">
                         <div className="text-sm text-slate-600 mb-1">Description</div>

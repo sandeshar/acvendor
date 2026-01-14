@@ -1,8 +1,20 @@
 import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 import ShareButtons from '@/components/BlogPage/ShareButtons';
+import TableOfContents from '@/components/BlogPage/TableOfContents';
 
 import type { BlogPostPageProps } from '@/types/pages';
+
+function extractHeaders(content: string) {
+    const headers: { id: string; text: string; level: number }[] = [];
+    const processedContent = content.replace(/<h([23])([^>]*)>(.*?)<\/h\1>/g, (match, level, attrs, text) => {
+        const rawText = text.replace(/<[^>]*>/g, '').trim();
+        const id = rawText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        headers.push({ id, text: rawText, level: parseInt(level) });
+        return `<h${level}${attrs} id="${id}">${text}</h${level}>`;
+    });
+    return { headers, processedContent };
+}
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
     const { slug } = await params;
@@ -74,9 +86,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         relatedFiltered = [];
     }
 
+    const { headers, processedContent } = extractHeaders(post.content);
+
     return (
         <main className="grow bg-white">
-            <div className="mx-auto max-w-4xl px-4 py-8 md:py-16 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 md:py-16 sm:px-6 lg:px-8">
                 {/* Breadcrumbs */}
                 <div className="flex flex-wrap gap-2 mb-8">
                     <a
@@ -98,129 +112,144 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     </span>
                 </div>
 
-                <article>
-                    {/* Header */}
-                    <header className="mb-8">
-                        <div className="flex flex-col gap-4 mb-8">
-                            {category && (
-                                <p className="text-primary text-base font-bold leading-normal">
-                                    {category}
-                                </p>
+                <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+                    <div className="lg:col-span-8">
+                        <article>
+                            {/* Header */}
+                            <header className="mb-8">
+                                <div className="flex flex-col gap-4 mb-8">
+                                    {category && (
+                                        <p className="text-primary text-base font-bold leading-normal">
+                                            {category}
+                                        </p>
+                                    )}
+                                    <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tight text-slate-900">
+                                        {post.title}
+                                    </h1>
+                                </div>
+
+                                {/* Author Info and Share */}
+                                <div className="flex flex-wrap items-center justify-between gap-6 border-y border-slate-200 py-6 mb-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <span className="material-symbols-outlined text-2xl">person</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-slate-900 text-base font-bold leading-normal">
+                                                {store?.storeName || store?.store_name || 'Author'}
+                                            </p>
+                                            <p className="text-slate-600 text-sm font-normal leading-normal">
+                                                Published on {formattedDate} • {Math.ceil(post.content.split(/\s+/).length / 200)} min read
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ShareButtons
+                                        title={post.title}
+                                        url={`${base}/blog/${post.slug}`}
+                                    />
+                                </div>
+
+                                {/* Featured Image */}
+                                {post.thumbnail && (
+                                    <div className="mb-8">
+                                        <img
+                                            src={post.thumbnail}
+                                            alt={post.title}
+                                            className="w-full h-auto object-cover rounded-xl aspect-video"
+                                        />
+                                    </div>
+                                )}
+                            </header>
+
+                            {/* Mobile TOC */}
+                            {headers.length > 0 && (
+                                <div className="lg:hidden mb-8">
+                                    <TableOfContents headers={headers} />
+                                </div>
                             )}
-                            <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tight text-slate-900">
-                                {post.title}
-                            </h1>
-                        </div>
 
-                        {/* Author Info and Share */}
-                        <div className="flex flex-wrap items-center justify-between gap-6 border-y border-slate-200 py-6 mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                    <span className="material-symbols-outlined text-2xl">person</span>
-                                </div>
-                                <div>
-                                    <p className="text-slate-900 text-base font-bold leading-normal">
-                                        {store?.storeName || store?.store_name || 'Author'}
-                                    </p>
-                                    <p className="text-slate-600 text-sm font-normal leading-normal">
-                                        Published on {formattedDate} • {Math.ceil(post.content.split(/\s+/).length / 200)} min read
-                                    </p>
-                                </div>
-                            </div>
-                            <ShareButtons
-                                title={post.title}
-                                url={`${base}/blog/${post.slug}`}
+                            {/* Article Body */}
+                            <div
+                                className="prose prose-lg prose-slate max-w-none text-slate-900 prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-slate-900 prose-img:rounded-lg blog-content"
+                                dangerouslySetInnerHTML={{ __html: processedContent }}
                             />
-                        </div>
 
-                        {/* Featured Image */}
-                        {post.thumbnail && (
-                            <div className="mb-8">
-                                <img
-                                    src={post.thumbnail}
-                                    alt={post.title}
-                                    className="w-full h-auto object-cover rounded-xl aspect-video"
-                                />
+                            {/* Inline CTA */}
+                            <div className="my-12 p-8 bg-primary/10 rounded-xl flex flex-col md:flex-row items-center gap-8">
+                                <div className="shrink-0">
+                                    <div className="flex items-center justify-center size-16 bg-primary text-white rounded-full">
+                                        <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
+                                            auto_stories
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="grow">
+                                    <h3 className="text-xl font-bold text-slate-900 mb-2">
+                                        Ready to Elevate Your Content?
+                                    </h3>
+                                    <p className="text-slate-600">
+                                        Get in touch with us to discuss how we can help transform your content strategy and drive results.
+                                    </p>
+                                </div>
+                                <div className="shrink-0">
+                                    <a
+                                        href="/contact"
+                                        className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide hover:bg-primary/90 transition-colors"
+                                    >
+                                        <span className="truncate">Get Started</span>
+                                    </a>
+                                </div>
                             </div>
-                        )}
-                    </header>
 
-                    {/* Article Body */}
-                    <div
-                        className="prose prose-lg prose-slate max-w-none text-slate-900 prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-primary hover:prose-a:text-primary/80 prose-strong:text-slate-900 prose-img:rounded-lg blog-content"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                    />
+                            {/* Related Articles */}
+                            {relatedFiltered.length > 0 && (
+                                <section className="mt-16 pt-12 border-t border-slate-200">
+                                    <h2 className="text-3xl font-bold text-slate-900 mb-8">Related Articles</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {relatedFiltered.map((related) => {
+                                            const relatedDate = new Date(related.createdAt).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                            });
+                                            const stripHtml = (html: string) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+                                            const excerpt = stripHtml(related.content).slice(0, 120) + '...';
 
-                    {/* Inline CTA */}
-                    <div className="my-12 p-8 bg-primary/10 rounded-xl flex flex-col md:flex-row items-center gap-8">
-                        <div className="shrink-0">
-                            <div className="flex items-center justify-center size-16 bg-primary text-white rounded-full">
-                                <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
-                                    auto_stories
-                                </span>
-                            </div>
-                        </div>
-                        <div className="grow">
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">
-                                Ready to Elevate Your Content?
-                            </h3>
-                            <p className="text-slate-600">
-                                Get in touch with us to discuss how we can help transform your content strategy and drive results.
-                            </p>
-                        </div>
-                        <div className="shrink-0">
-                            <a
-                                href="/contact"
-                                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-wide hover:bg-primary/90 transition-colors"
-                            >
-                                <span className="truncate">Get Started</span>
-                            </a>
-                        </div>
+                                            return (
+                                                <div key={related.id} className="flex flex-col group">
+                                                    <a
+                                                        href={`/blog/${related.slug}`}
+                                                        className="block overflow-hidden rounded-lg mb-4"
+                                                    >
+                                                        <img
+                                                            src={related.thumbnail || 'https://placehold.co/600x400?text=Blog+Post'}
+                                                            alt={related.title}
+                                                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                    </a>
+                                                    <h3 className="text-xl font-bold leading-tight mb-2">
+                                                        <a
+                                                            href={`/blog/${related.slug}`}
+                                                            className="text-slate-900 hover:text-primary transition-colors"
+                                                        >
+                                                            {related.title}
+                                                        </a>
+                                                    </h3>
+                                                    <p className="text-slate-600 text-sm mb-2">{excerpt}</p>
+                                                    <p className="text-slate-500 text-xs">{relatedDate}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
+                            )}
+                        </article>
                     </div>
 
-                    {/* Related Articles */}
-                    {relatedFiltered.length > 0 && (
-                        <section className="mt-16 pt-12 border-t border-slate-200">
-                            <h2 className="text-3xl font-bold text-slate-900 mb-8">Related Articles</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {relatedFiltered.map((related) => {
-                                    const relatedDate = new Date(related.createdAt).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                    });
-                                    const stripHtml = (html: string) => html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-                                    const excerpt = stripHtml(related.content).slice(0, 120) + '...';
-
-                                    return (
-                                        <div key={related.id} className="flex flex-col group">
-                                            <a
-                                                href={`/blog/${related.slug}`}
-                                                className="block overflow-hidden rounded-lg mb-4"
-                                            >
-                                                <img
-                                                    src={related.thumbnail || 'https://placehold.co/600x400?text=Blog+Post'}
-                                                    alt={related.title}
-                                                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                                                />
-                                            </a>
-                                            <h3 className="text-xl font-bold leading-tight mb-2">
-                                                <a
-                                                    href={`/blog/${related.slug}`}
-                                                    className="text-slate-900 hover:text-primary transition-colors"
-                                                >
-                                                    {related.title}
-                                                </a>
-                                            </h3>
-                                            <p className="text-slate-600 text-sm mb-2">{excerpt}</p>
-                                            <p className="text-slate-500 text-xs">{relatedDate}</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
-                </article>
+                    <aside className="hidden lg:block lg:col-span-4 h-fit sticky top-24">
+                        <TableOfContents headers={headers} />
+                    </aside>
+                </div>
             </div>
         </main>
     );

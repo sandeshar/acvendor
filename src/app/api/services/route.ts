@@ -156,8 +156,8 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { slug, title, excerpt, content, thumbnail, icon, featured, statusId, metaTitle, metaDescription, category_id, subcategory_id, price, price_type, price_label, price_description } = body;
 
-        if (!slug || !title || !excerpt || !content || !statusId) {
-            return NextResponse.json({ error: 'Required fields: slug, title, excerpt, content, statusId' }, { status: 400 });
+        if (!slug || !title) {
+            return NextResponse.json({ error: 'Required fields: slug, title' }, { status: 400 });
         }
 
         // Validate slug format
@@ -165,13 +165,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid slug. Use only letters, numbers, hyphens and underscores.' }, { status: 400 });
         }
 
-        const finalStatusId = await resolveStatusId(statusId);
+        const finalStatusId = await resolveStatusId(statusId || 1);
 
         const newPost = await ServicePosts.create({
             slug,
             title,
-            excerpt,
-            content,
+            excerpt: excerpt || '',
+            content: content || '',
             thumbnail: thumbnail || null,
             icon: icon || null,
             featured: featured || 0,

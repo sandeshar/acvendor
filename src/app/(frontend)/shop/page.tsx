@@ -125,14 +125,14 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
             </section>
 
             {/* Category Filter Bar */}
-            <div className="sticky top-[65px] z-40 bg-background-light/95 backdrop-blur-sm border-b border-[#e5e7eb] py-4 overflow-x-auto hide-scrollbar">
+            <div className="sticky top-[65px] z-40 bg-background-light/95 backdrop-blur-sm border-b border-[#e5e7eb] py-2.5 md:py-4 overflow-x-auto hide-scrollbar">
                 <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
-                    <div className="flex items-center gap-4 min-w-max">
-                        <span className="text-sm font-semibold text-text-sub-light mr-2">Jump to:</span>
+                    <div className="flex items-center gap-3 md:gap-4 min-w-max">
+                        <span className="text-xs md:text-sm font-semibold text-text-sub-light mr-1 md:mr-2">Jump to:</span>
                         {categorySet.map((slug: string) => {
                             const cat = categories.find((c: any) => c.slug === slug);
                             return (
-                                <a key={slug} className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-light border border-gray-200 text-text-main-light hover:border-primary hover:text-primary transition-colors" href={`#${slug}`}>
+                                <a key={slug} className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-surface-light border border-gray-200 text-text-main-light hover:border-primary hover:text-primary transition-colors text-xs md:text-sm" href={`#${slug}`}>
                                     <span className="font-medium">{cat?.name || slug.toUpperCase()}</span>
                                 </a>
                             );

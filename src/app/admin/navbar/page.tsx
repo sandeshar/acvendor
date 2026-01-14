@@ -724,13 +724,13 @@ export default function NavbarManagerPage() {
             {/* EDIT MODAL */}
             {isModalOpen && selectedItem && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
-                        <div className="px-6 py-4 border-b border-slate-200">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] flex flex-col overflow-hidden">
+                        <div className="px-6 py-4 border-b border-slate-200 shrink-0">
                             <h2 className="text-xl font-bold text-slate-900">
                                 {selectedItem.isNew ? "New Navbar Item" : "Edit Navbar Item"}
                             </h2>
                         </div>
-                        <div className="p-6 space-y-4">
+                        <div className="p-6 space-y-4 overflow-y-auto">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Label</label>
                                 <input

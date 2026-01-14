@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
         body = await request.json();
         const { key, slug, icon, title, description, bullets, image, image_alt, display_order, is_active = 1 } = body;
 
-        if (!key || !icon || !title || !description || bullets === undefined || !image || !image_alt || display_order === undefined) {
+        if (!key || !title) {
             return NextResponse.json(
-                { error: 'Key, icon, title, description, bullets, image, image_alt, and display_order are required' },
+                { error: 'Key and title are required' },
                 { status: 400 }
             );
         }
@@ -106,12 +106,12 @@ export async function POST(request: NextRequest) {
         const result = await ServicesPageDetails.create({
             key,
             slug: slug || null,
-            icon,
+            icon: icon || 'design_services',
             title,
-            description,
-            bullets,
-            image,
-            image_alt,
+            description: description || '',
+            bullets: bullets || '[]',
+            image: image || '',
+            image_alt: image_alt || title,
             postId: postId || null,
             locations: locations ? (typeof locations === 'string' ? locations : JSON.stringify(locations)) : null,
             inventory_status: inventory_status || 'in_stock',
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
             meta_title: meta_title || null,
             meta_description: meta_description || null,
             content: content || null,
-            display_order,
+            display_order: display_order ?? 0,
             is_active,
         });
 
