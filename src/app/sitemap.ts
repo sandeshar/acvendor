@@ -1,8 +1,24 @@
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 import { frontendPages } from '@/utils/frontendPages';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    if (!baseUrl) {
+        try {
+            const headersList = await headers();
+            const host = headersList.get('host');
+            const protocol = headersList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+            if (host) {
+                baseUrl = `${protocol}://${host}`;
+            }
+        } catch (error) {
+            console.warn('Could not determine base URL from headers', error);
+        }
+    }
+
+    baseUrl = baseUrl || 'http://localhost:3000';
     const apiBase = process.env.NEXT_PUBLIC_API_URL || baseUrl;
 
     // Dynamic frontend pages
