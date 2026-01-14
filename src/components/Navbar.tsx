@@ -46,7 +46,7 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
     const isActive = (href: string) => {
         if (!pathname) return false;
-        
+
         // Handle absolute URLs by extracting pathname
         let targetPath = href;
         if (href.startsWith('http')) {
