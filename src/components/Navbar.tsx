@@ -447,34 +447,57 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
                                                             }}
                                                         >
                                                             <div className="py-2 px-3">
-                                                                {hoveredSubSlug && subServices[hoveredSubSlug] && subServices[hoveredSubSlug].length > 0 ? (
-                                                                    <div className="space-y-2">
-                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Featured Products</div>
-                                                                        {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
-                                                                            <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
-                                                                                {s.thumbnail ? (
-                                                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                                                    <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
-                                                                                ) : (
-                                                                                    <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
-                                                                                        <span className="material-symbols-outlined text-slate-300">image</span>
+                                                                {hoveredSubSlug ? (
+                                                                    // We are focused on a specific category/subcategory
+                                                                    subServices[hoveredSubSlug] === undefined ? (
+                                                                        // Loading state
+                                                                        <div className="space-y-2">
+                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
+                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                                                                                <span className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2" />
+                                                                                <p className="text-xs">Loading...</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : subServices[hoveredSubSlug].length > 0 ? (
+                                                                        // Products found
+                                                                        <div className="space-y-2">
+                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
+                                                                            {subServices[hoveredSubSlug].slice(0, 4).map((s, sIdx) => (
+                                                                                <Link key={`${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
+                                                                                    {s.thumbnail ? (
+                                                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                                                        <img src={s.thumbnail} alt={s.title} className="w-16 h-12 object-contain rounded shadow-sm group-hover:scale-105 transition-transform" />
+                                                                                    ) : (
+                                                                                        <div className="rounded w-16 h-12 bg-slate-100 flex items-center justify-center">
+                                                                                            <span className="material-symbols-outlined text-slate-300">image</span>
+                                                                                        </div>
+                                                                                    )}
+                                                                                    <div className="flex-1 min-w-0">
+                                                                                        <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
+                                                                                        {Number(s.price) > 0 && (
+                                                                                            <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
+                                                                                        )}
+                                                                                        {s.model && (
+                                                                                            <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
+                                                                                        )}
                                                                                     </div>
-                                                                                )}
-                                                                                <div className="flex-1 min-w-0">
-                                                                                    <div className="text-sm font-semibold text-slate-800 truncate group-hover:text-primary transition-colors">{s.title}</div>
-                                                                                    {Number(s.price) > 0 && (
-                                                                                        <div className="text-xs font-bold text-primary">NPR {Number(s.price).toLocaleString()}</div>
-                                                                                    )}
-                                                                                    {s.model && (
-                                                                                        <div className="text-[10px] text-slate-400 truncate uppercase tracking-wider">{s.model}</div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </Link>
-                                                                        ))}
-                                                                    </div>
+                                                                                </Link>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        // No products found for this specific category
+                                                                        <div className="space-y-2">
+                                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Products</div>
+                                                                            <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                                                                                <span className="material-symbols-outlined text-4xl mb-2 opacity-20">inventory_2</span>
+                                                                                <p className="text-xs">No products found</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    )
                                                                 ) : (
+                                                                    // Recommended products (no specific hover)
                                                                     <div className="space-y-2">
-                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">{hoveredSubSlug ? 'Loading...' : 'Recommended'}</div>
+                                                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">Recommended</div>
                                                                         {(defaultProducts.length > 0 ? defaultProducts : []).map((s, sIdx) => (
                                                                             <Link key={`def-${s._id ?? s.id ?? s.slug}-${sIdx}`} href={`/products/${s.slug}`} className="flex items-center gap-3 hover:bg-slate-50 px-2 py-2 rounded transition-colors group">
                                                                                 {s.thumbnail ? (

@@ -281,12 +281,16 @@ export async function GET(request: NextRequest) {
             const o = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
             posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).limit(l).skip(o).populate('status').lean();
             const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
-            return NextResponse.json({ posts: normalizedPosts, total });
+
+            if (isAdmin || searchParams.get('meta') === 'true') {
+                return NextResponse.json({ posts: normalizedPosts, total });
+            }
+            return NextResponse.json(normalizedPosts);
         }
 
         posts = await BlogPost.find(finalQuery).sort({ createdAt: sortOrder }).populate('status').lean();
         const normalizedPosts = await Promise.all(posts.map((p: any) => normalizePost(p)));
-        if (isAdmin) {
+        if (isAdmin || searchParams.get('meta') === 'true') {
             return NextResponse.json({ posts: normalizedPosts, total });
         }
         console.log('Found posts:', normalizedPosts.length);
