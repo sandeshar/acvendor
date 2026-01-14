@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import ImageUploader from '@/components/shared/ImageUploader';
@@ -29,6 +29,31 @@ interface HeroData {
 interface BrandHeroData extends HeroData {
     brand_slug: string;
     display_order: number;
+}
+
+interface ShopCTAData {
+    id?: string;
+    title: string;
+    description: string;
+    bullets: string;
+    button1_text: string;
+    button1_link: string;
+    button2_text: string;
+    button2_link: string;
+    is_active: number;
+}
+
+interface CategoryCTAData {
+    id?: string;
+    category_slug: string;
+    title: string;
+    description: string;
+    bullets: string;
+    button1_text: string;
+    button1_link: string;
+    button2_text: string;
+    button2_link: string;
+    is_active: number;
 }
 
 export default function AdminShopPage() {
@@ -95,6 +120,44 @@ export default function AdminShopPage() {
         is_active: 1
     });
 
+    // Shop CTA State
+    const [shopCTA, setShopCTA] = useState<ShopCTAData>({
+        title: '',
+        description: '',
+        bullets: '[]',
+        button1_text: '',
+        button1_link: '',
+        button2_text: '',
+        button2_link: '',
+        is_active: 1
+    });
+
+    // Midea CTA State
+    const [mideaCTA, setMideaCTA] = useState<CategoryCTAData>({
+        category_slug: 'midea',
+        title: '',
+        description: '',
+        bullets: '[]',
+        button1_text: '',
+        button1_link: '',
+        button2_text: '',
+        button2_link: '',
+        is_active: 1
+    });
+
+    // Category CTA State
+    const [categoryCTA, setCategoryCTA] = useState<CategoryCTAData>({
+        category_slug: '',
+        title: '',
+        description: '',
+        bullets: '[]',
+        button1_text: '',
+        button1_link: '',
+        button2_text: '',
+        button2_link: '',
+        is_active: 1
+    });
+
     // UI Tab state: controls which editor panel is visible
     const [activeTab, setActiveTab] = useState<'global' | 'midea' | 'category'>('global');
 
@@ -105,40 +168,51 @@ export default function AdminShopPage() {
     const fetchInitialData = async () => {
         setLoading(true);
         try {
-            const [heroRes, categoriesRes] = await Promise.all([
+            const [heroRes, categoriesRes, shopCtaRes] = await Promise.all([
                 fetch('/api/pages/shop/hero'),
-                fetch('/api/pages/services/categories?admin=1')
+                fetch('/api/pages/services/categories?admin=1'),
+                fetch('/api/pages/shop/cta')
             ]);
 
             const heroData = await heroRes.json();
             const categoriesData = await categoriesRes.json();
+            const shopCtaData = await shopCtaRes.json();
 
             if (heroData?._id || heroData?.id) setGlobalHero({ ...heroData, id: heroData.id ?? heroData._id });
+            if (shopCtaData?._id || shopCtaData?.id) setShopCTA({ ...shopCtaData, id: shopCtaData.id ?? shopCtaData._id });
 
             const finalCategories = categoriesData || [];
-            // Exclude 'midea' from the general category list — it has a dedicated editor
+            // Exclude 'midea' from the general category list â€” it has a dedicated editor
             const adminCategories = finalCategories.filter((c: any) => String(c.slug).toLowerCase() !== 'midea');
             setCategories(adminCategories);
 
             // Default to first non-midea category if available
             if (adminCategories.length > 0) {
                 setSelectedCategory(adminCategories[0].slug);
-                fetchCategoryHero(adminCategories[0].slug);
+                fetchCategoryContent(adminCategories[0].slug);
             }
 
             // Fetch dedicated Midea hero (for /midea-ac)
             try {
-                const mRes = await fetch(`/api/pages/shop/category-hero?category=midea`);
+                const [mRes, mCtaRes] = await Promise.all([
+                    fetch(`/api/pages/shop/category-hero?category=midea`),
+                    fetch(`/api/pages/shop/category-cta?category=midea`)
+                ]);
+
                 if (mRes.ok) {
                     const mData = await mRes.json();
                     if (mData?._id || mData?.id) {
                         setMideaHero({ ...mData, id: mData.id ?? mData._id });
-                    } else {
-                        // fallback: keep defaults already set on state
+                    }
+                }
+                if (mCtaRes.ok) {
+                    const mCtaData = await mCtaRes.json();
+                    if (mCtaData?._id || mCtaData?.id) {
+                        setMideaCTA({ ...mCtaData, id: mCtaData.id ?? mCtaData._id });
                     }
                 }
             } catch (err) {
-                console.error('Error fetching midea hero:', err);
+                console.error('Error fetching midea content:', err);
             }
         } catch (error) {
             console.error('Error fetching initial data:', error);
@@ -148,7 +222,7 @@ export default function AdminShopPage() {
         }
     };
 
-    const fetchCategoryHero = async (slug: string) => {
+    const fetchCategoryContent = async (slug: string) => {
         if (!slug) {
             setBrandHero({
                 brand_slug: '',
@@ -165,12 +239,27 @@ export default function AdminShopPage() {
                 display_order: 0,
                 is_active: 1
             });
+            setCategoryCTA({
+                category_slug: '',
+                title: '',
+                description: '',
+                bullets: '[]',
+                button1_text: '',
+                button1_link: '',
+                button2_text: '',
+                button2_link: '',
+                is_active: 1
+            });
             return;
         }
 
         try {
-            const res = await fetch(`/api/pages/shop/category-hero?category=${slug}`);
-            const data = await res.json();
+            const [heroRes, ctaRes] = await Promise.all([
+                fetch(`/api/pages/shop/category-hero?category=${slug}`),
+                fetch(`/api/pages/shop/category-cta?category=${slug}`)
+            ]);
+
+            const data = await heroRes.json();
             if (data?._id || data?.id) {
                 setBrandHero({ ...data, id: data.id ?? data._id });
             } else {
@@ -195,14 +284,32 @@ export default function AdminShopPage() {
                     is_active: 1
                 });
             }
+
+            const ctaData = await ctaRes.json();
+            if (ctaData?._id || ctaData?.id) {
+                setCategoryCTA({ ...ctaData, id: ctaData.id ?? ctaData._id });
+            } else {
+                setCategoryCTA({
+                    category_slug: slug,
+                    title: '',
+                    description: '',
+                    bullets: '[]',
+                    button1_text: '',
+                    button1_link: '',
+                    button2_text: '',
+                    button2_link: '',
+                    is_active: 1
+                });
+            }
         } catch (error) {
-            console.error('Error fetching category hero:', error);
+            console.error('Error fetching category content:', error);
         }
     };
 
     const handleSaveGlobalHero = async () => {
         setSaving(true);
         try {
+            // Save Hero
             const method = globalHero.id ? 'PUT' : 'POST';
             const res = await fetch('/api/pages/shop/hero', {
                 method,
@@ -210,15 +317,22 @@ export default function AdminShopPage() {
                 body: JSON.stringify(globalHero)
             });
 
-            if (res.ok) {
+            // Save CTA
+            const ctaRes = await fetch('/api/pages/shop/cta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(shopCTA)
+            });
+
+            if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setGlobalHero({ ...globalHero, id: data.id });
-                showToast('Global hero updated', { type: 'success' });
+                showToast('Global shop content updated', { type: 'success' });
             } else {
                 throw new Error('Save failed');
             }
         } catch (error) {
-            showToast('Failed to save global hero', { type: 'error' });
+            showToast('Failed to save global shop content', { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -238,15 +352,21 @@ export default function AdminShopPage() {
                 body: JSON.stringify({ ...brandHero, brand_slug: selectedCategory })
             });
 
-            if (res.ok) {
+            const ctaRes = await fetch('/api/pages/shop/category-cta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...categoryCTA, category_slug: selectedCategory })
+            });
+
+            if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setBrandHero({ ...brandHero, id: data.id });
-                showToast(`Hero for ${selectedCategory} updated`, { type: 'success' });
+                showToast(`Content for ${selectedCategory} updated`, { type: 'success' });
             } else {
                 throw new Error('Save failed');
             }
         } catch (error) {
-            showToast('Failed to save category hero', { type: 'error' });
+            showToast('Failed to save category content', { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -263,15 +383,21 @@ export default function AdminShopPage() {
                 body: JSON.stringify({ ...mideaHero, brand_slug: 'midea' })
             });
 
-            if (res.ok) {
+            const ctaRes = await fetch('/api/pages/shop/category-cta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...mideaCTA, category_slug: 'midea' })
+            });
+
+            if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setMideaHero({ ...mideaHero, id: data.id });
-                showToast('Midea hero updated', { type: 'success' });
+                showToast('Midea content updated', { type: 'success' });
             } else {
                 throw new Error('Save failed');
             }
         } catch (error) {
-            showToast('Failed to save Midea hero', { type: 'error' });
+            showToast('Failed to save Midea content', { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -299,81 +425,69 @@ export default function AdminShopPage() {
                 </button>
             </div>
 
-            {/* Global Shop Hero */}
+            {/* Global Shop Section */}
             {activeTab === 'global' && (
-                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                        <div>
-                            <h2 className="text-lg font-bold text-slate-800">Global Shop Hero</h2>
-                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Default content for the Shop page</p>
+                <div className="space-y-8">
+                    {/* Global Hero Section */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800">Global Shop Hero</h2>
+                                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Default content for the Shop page</p>
+                            </div>
+                            <button
+                                onClick={handleSaveGlobalHero}
+                                disabled={saving}
+                                className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                            >
+                                {saving ? 'Saving...' : 'Save Global Hero'}
+                            </button>
                         </div>
-                        <button
-                            onClick={handleSaveGlobalHero}
-                            disabled={saving}
-                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                        >
-                            {saving ? 'Saving...' : 'Save Global Hero'}
-                        </button>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-6">
-                            {/* Badge & Tagline */}
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-semibold mb-3">Badge & Tagline</h3>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Badge Text</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Official Distributor — short label shown above the title"
-                                    value={globalHero.badge_text}
-                                    onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-                                <p className="text-xs text-slate-400 mt-2">Short, eye-catching label shown above the main headline.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
+                                    <input
+                                        type="text"
+                                        value={globalHero.badge_text}
+                                        onChange={e => setGlobalHero({ ...globalHero, badge_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder="e.g. Premium Quality"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
+                                    <input
+                                        type="text"
+                                        value={globalHero.title}
+                                        onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                                    <input
+                                        type="text"
+                                        value={globalHero.highlight_text}
+                                        onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+                                    <textarea
+                                        value={globalHero.description}
+                                        onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                    />
+                                </div>
 
-
-                            </div>
-
-                            {/* Headline */}
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-semibold mb-3">Headline</h3>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Title</label>
-                                <input
-                                    type="text"
-                                    placeholder="Main headline (e.g., Gree Air Conditioners: Nepal's #1 Choice)"
-                                    value={globalHero.title}
-                                    onChange={e => setGlobalHero({ ...globalHero, title: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
-                                />
-                                <p className="text-xs text-slate-400 mt-2">Use <strong>Highlight Text</strong> to emphasize a substring of the title.</p>
-
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Highlight Text</label>
-                                <input
-                                    type="text"
-                                    placeholder="Substring to highlight (case-insensitive)"
-                                    value={globalHero.highlight_text}
-                                    onChange={e => setGlobalHero({ ...globalHero, highlight_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Description</label>
-                                <textarea
-                                    value={globalHero.description}
-                                    onChange={e => setGlobalHero({ ...globalHero, description: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-36 text-sm"
-                                    placeholder="Describe the hero messaging. Keep it concise and benefit-focused."
-                                />
-                            </div>
-
-                            {/* CTA */}
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-semibold mb-3">Call to Action</h3>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-4 mt-3">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
                                         <input
                                             type="text"
-                                            placeholder="e.g. Shop Gree Series"
                                             value={globalHero.cta_text}
                                             onChange={e => setGlobalHero({ ...globalHero, cta_text: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -383,101 +497,15 @@ export default function AdminShopPage() {
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
                                         <input
                                             type="text"
-                                            placeholder="e.g. /shop/category/gree or external URL"
                                             value={globalHero.cta_link}
                                             onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-4 mt-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. View Catalog"
-                                            value={globalHero.cta2_text}
-                                            onChange={e => setGlobalHero({ ...globalHero, cta2_text: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. /catalog.pdf or external URL"
-                                            value={globalHero.cta2_link}
-                                            onChange={e => setGlobalHero({ ...globalHero, cta2_link: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <p className="text-xs text-slate-400 mt-2">Keep CTAs short and action-oriented.</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            {/* Card */}
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-semibold mb-3">Image Card</h3>
-                                {/* 
-                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Subtitle</label>
-                            <input
-                                type="text"
-                                placeholder="Short supporting subtitle"
-                                value={globalHero.subtitle}
-                                onChange={e => setGlobalHero({ ...globalHero, subtitle: e.target.value })}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                            /> */}
-
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Tagline</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Premium Air Conditioning — short supporting phrase"
-                                    value={globalHero.tagline}
-                                    onChange={e => setGlobalHero({ ...globalHero, tagline: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1 mt-4 tracking-wide">Image Card Overlay Text</label>
-                                <input
-                                    type="text"
-                                    placeholder="Short text shown in card overlay (e.g., short benefit)"
-                                    value={globalHero.card_overlay_text}
-                                    onChange={e => setGlobalHero({ ...globalHero, card_overlay_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-
-                                <div className="grid grid-cols-2 gap-4 mt-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Text</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Browse Catalog"
-                                            value={globalHero.card_cta_text}
-                                            onChange={e => setGlobalHero({ ...globalHero, card_cta_text: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Image Card Button Link</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. /shop or external URL"
-                                            value={globalHero.card_cta_link}
-                                            onChange={e => setGlobalHero({ ...globalHero, card_cta_link: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <p className="text-xs text-slate-400 mt-2">Used in the image card overlay on the right side of the /shop hero. Falls back to the main CTA if not set.</p>
-
                             </div>
 
-                            {/* Image & accessibility */}
-                            <div className="p-4 bg-gray-50 rounded-lg">
-                                <h3 className="text-sm font-semibold mb-3">Image & Accessibility</h3>
+                            <div className="space-y-4">
                                 <ImageUploader
                                     value={globalHero.background_image}
                                     onChange={url => setGlobalHero({ ...globalHero, background_image: url })}
@@ -494,198 +522,161 @@ export default function AdminShopPage() {
                                     onChange={e => setGlobalHero({ ...globalHero, hero_image_alt: e.target.value })}
                                     className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                 />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
 
-            {/* Dedicated Midea AC Page Hero */}
-            {activeTab === 'midea' && (
-                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                        <div>
-                            <h2 className="text-lg font-bold text-slate-800">Midea AC Page (Dedicated)</h2>
-                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content specifically for <code>/midea-ac</code></p>
-                        </div>
-                        <button
-                            onClick={handleSaveMideaHero}
-                            disabled={saving}
-                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                        >
-                            {saving ? 'Saving...' : 'Save Midea Hero'}
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
-                                <input
-                                    type="text"
-                                    value={mideaHero.badge_text}
-                                    onChange={e => setMideaHero({ ...mideaHero, badge_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    placeholder="e.g. Authorized Partner"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
-                                <input
-                                    type="text"
-                                    value={mideaHero.title}
-                                    onChange={e => setMideaHero({ ...mideaHero, title: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
-                                <input
-                                    type="text"
-                                    value={mideaHero.highlight_text}
-                                    onChange={e => setMideaHero({ ...mideaHero, highlight_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
-                                <textarea
-                                    value={mideaHero.description}
-                                    onChange={e => setMideaHero({ ...mideaHero, description: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4 mt-3">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
-                                    <input
-                                        type="text"
-                                        value={mideaHero.cta_text}
-                                        onChange={e => setMideaHero({ ...mideaHero, cta_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
-                                    <input
-                                        type="text"
-                                        value={mideaHero.cta_link}
-                                        onChange={e => setMideaHero({ ...mideaHero, cta_link: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
-                                <input
-                                    type="text"
-                                    value={mideaHero.card_overlay_text}
-                                    onChange={e => setMideaHero({ ...mideaHero, card_overlay_text: e.target.value })}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    placeholder="Short text shown in card overlay"
-                                />
-                            </div>
-
-                            <ImageUploader
-                                value={mideaHero.background_image}
-                                onChange={url => setMideaHero({ ...mideaHero, background_image: url })}
-                                folder="shop"
-                                label="Background Image"
-                                ratio="16:9"
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Display Order</label>
-                                    <input
-                                        type="number"
-                                        value={mideaHero.display_order}
-                                        onChange={e => setMideaHero({ ...mideaHero, display_order: parseInt(e.target.value) })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                    />
-                                </div>
                                 <div className="flex items-center gap-2 mt-6">
                                     <input
                                         type="checkbox"
-                                        id="mh-active"
-                                        checked={mideaHero.is_active === 1}
-                                        onChange={e => setMideaHero({ ...mideaHero, is_active: e.target.checked ? 1 : 0 })}
+                                        id="gh-active"
+                                        checked={globalHero.is_active === 1}
+                                        onChange={e => setGlobalHero({ ...globalHero, is_active: e.target.checked ? 1 : 0 })}
                                     />
-                                    <label htmlFor="mh-active" className="text-sm font-bold text-slate-700">Active</label>
+                                    <label htmlFor="gh-active" className="text-sm font-bold text-slate-700">Hero Active</label>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-            )}
+                    </section>
 
-            {/* Category Hero Selection */}
-            {activeTab === 'category' && (
-                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-lg font-bold text-slate-800">{selectedCategory ? `${selectedCategory.toUpperCase()} Hero Section` : 'Category Hero Section'}</h2>
-                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content for {selectedCategory ? `/shop/category/${selectedCategory}` : 'category-specific'} pages</p>
-                            <div className="flex items-center gap-3 mt-3">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Category:</label>
-                                <select
-                                    value={selectedCategory}
-                                    onChange={(e) => {
-                                        setSelectedCategory(e.target.value);
-                                        fetchCategoryHero(e.target.value);
-                                    }}
-                                    className="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 text-sm font-bold text-slate-700"
-                                >
-                                    <option value="">Select a Category</option>
-                                    {categories.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
-                                </select>
+                    {/* Global Shop CTA Section */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800">Bottom CTA Section (Global Shop)</h2>
+                                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage the call-to-action section at the bottom of the shop page</p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleSaveCategoryHero}
-                            disabled={saving || !selectedCategory}
-                            className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
-                        >
-                            {saving ? 'Saving...' : 'Save Category Hero'}
-                        </button>
-                    </div>
 
-                    {!selectedCategory ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                            <span className="material-symbols-outlined text-4xl mb-2">category</span>
-                            <p>Select a category to manage its unique hero content</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Title</label>
+                                    <input
+                                        type="text"
+                                        value={shopCTA.title}
+                                        onChange={e => setShopCTA({ ...shopCTA, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                        placeholder="Ready to experience ultimate comfort?"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Description</label>
+                                    <textarea
+                                        value={shopCTA.description}
+                                        onChange={e => setShopCTA({ ...shopCTA, description: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                        placeholder="Join thousands of satisfied customers who trust AC Vendor for their cooling needs."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
+                                    <input
+                                        type="text"
+                                        value={shopCTA.bullets}
+                                        onChange={e => setShopCTA({ ...shopCTA, bullets: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder='["Expert Installation", "24/7 Support", "Genuine Parts"]'
+                                    />
+                                    <p className="text-[10px] text-slate-400 mt-1">Format as a valid JSON array: <code>["Item 1", "Item 2"]</code></p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={shopCTA.button1_text}
+                                            onChange={e => setShopCTA({ ...shopCTA, button1_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="Contact Us"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Link</label>
+                                        <input
+                                            type="text"
+                                            value={shopCTA.button1_link}
+                                            onChange={e => setShopCTA({ ...shopCTA, button1_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="/contact"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={shopCTA.button2_text}
+                                            onChange={e => setShopCTA({ ...shopCTA, button2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="See Products"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Link</label>
+                                        <input
+                                            type="text"
+                                            value={shopCTA.button2_link}
+                                            onChange={e => setShopCTA({ ...shopCTA, button2_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="/shop"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 mt-6 p-3 bg-slate-50 rounded-lg">
+                                    <input
+                                        type="checkbox"
+                                        id="shop-cta-active"
+                                        className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                                        checked={shopCTA.is_active === 1}
+                                        onChange={e => setShopCTA({ ...shopCTA, is_active: e.target.checked ? 1 : 0 })}
+                                    />
+                                    <label htmlFor="shop-cta-active" className="text-sm font-bold text-slate-700 select-none cursor-pointer">Section is Active</label>
+                                </div>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
+                    </section>
+                </div>
+            )}
+
+            {/* Dedicated Midea Section */}
+            {activeTab === 'midea' && (
+                <div className="space-y-8">
+                    {/* Midea Hero Section */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800">Midea AC Page (Dedicated)</h2>
+                                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content specifically for <code>/midea-ac</code></p>
+                            </div>
+                            <button
+                                onClick={handleSaveMideaHero}
+                                disabled={saving}
+                                className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                            >
+                                {saving ? 'Saving...' : 'Save Midea Content'}
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
                                     <input
                                         type="text"
-                                        value={brandHero.badge_text}
-                                        onChange={e => setBrandHero({ ...brandHero, badge_text: e.target.value })}
+                                        value={mideaHero.badge_text}
+                                        onChange={e => setMideaHero({ ...mideaHero, badge_text: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         placeholder="e.g. Authorized Partner"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Tagline</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.tagline}
-                                        onChange={e => setBrandHero({ ...brandHero, tagline: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
                                     <input
                                         type="text"
-                                        value={brandHero.title}
-                                        onChange={e => setBrandHero({ ...brandHero, title: e.target.value })}
+                                        value={mideaHero.title}
+                                        onChange={e => setMideaHero({ ...mideaHero, title: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
                                     />
                                 </div>
@@ -693,53 +684,18 @@ export default function AdminShopPage() {
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
                                     <input
                                         type="text"
-                                        value={brandHero.highlight_text}
-                                        onChange={e => setBrandHero({ ...brandHero, highlight_text: e.target.value })}
+                                        value={mideaHero.highlight_text}
+                                        onChange={e => setMideaHero({ ...mideaHero, highlight_text: e.target.value })}
                                         className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.subtitle}
-                                        onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+                                    <textarea
+                                        value={mideaHero.description}
+                                        onChange={e => setMideaHero({ ...mideaHero, description: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
                                     />
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Overlay Text</label>
-                                    <input
-                                        type="text"
-                                        value={brandHero.card_overlay_text}
-                                        onChange={e => setBrandHero({ ...brandHero, card_overlay_text: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        placeholder="Short text shown in card overlay"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 mt-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Text</label>
-                                        <input
-                                            type="text"
-                                            value={brandHero.card_cta_text}
-                                            onChange={e => setBrandHero({ ...brandHero, card_cta_text: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                            placeholder="Button text shown on overlay"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Image Card Button Link</label>
-                                        <input
-                                            type="text"
-                                            value={brandHero.card_cta_link}
-                                            onChange={e => setBrandHero({ ...brandHero, card_cta_link: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                            placeholder="Button link (relative or external)"
-                                        />
-                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4 mt-3">
@@ -747,8 +703,8 @@ export default function AdminShopPage() {
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
                                         <input
                                             type="text"
-                                            value={brandHero.cta_text}
-                                            onChange={e => setBrandHero({ ...brandHero, cta_text: e.target.value })}
+                                            value={mideaHero.cta_text}
+                                            onChange={e => setMideaHero({ ...mideaHero, cta_text: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
@@ -756,46 +712,17 @@ export default function AdminShopPage() {
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
                                         <input
                                             type="text"
-                                            value={brandHero.cta_link}
-                                            onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 mt-3">
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
-                                        <input
-                                            type="text"
-                                            value={brandHero.cta2_text}
-                                            onChange={e => setBrandHero({ ...brandHero, cta2_text: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
-                                        <input
-                                            type="text"
-                                            value={brandHero.cta2_link}
-                                            onChange={e => setBrandHero({ ...brandHero, cta2_link: e.target.value })}
+                                            value={mideaHero.cta_link}
+                                            onChange={e => setMideaHero({ ...mideaHero, cta_link: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
-                                    <textarea
-                                        value={brandHero.description}
-                                        onChange={e => setBrandHero({ ...brandHero, description: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
-                                    />
-                                </div>
                                 <ImageUploader
-                                    value={brandHero.background_image}
-                                    onChange={url => setBrandHero({ ...brandHero, background_image: url })}
+                                    value={mideaHero.background_image}
+                                    onChange={url => setMideaHero({ ...mideaHero, background_image: url })}
                                     folder="shop"
                                     label="Background Image"
                                     ratio="16:9"
@@ -805,25 +732,363 @@ export default function AdminShopPage() {
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Display Order</label>
                                         <input
                                             type="number"
-                                            value={brandHero.display_order}
-                                            onChange={e => setBrandHero({ ...brandHero, display_order: parseInt(e.target.value) })}
+                                            value={mideaHero.display_order}
+                                            onChange={e => setMideaHero({ ...mideaHero, display_order: parseInt(e.target.value) })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
                                     <div className="flex items-center gap-2 mt-6">
                                         <input
                                             type="checkbox"
-                                            id="bh-active"
-                                            checked={brandHero.is_active === 1}
-                                            onChange={e => setBrandHero({ ...brandHero, is_active: e.target.checked ? 1 : 0 })}
+                                            id="mh-active"
+                                            checked={mideaHero.is_active === 1}
+                                            onChange={e => setMideaHero({ ...mideaHero, is_active: e.target.checked ? 1 : 0 })}
                                         />
-                                        <label htmlFor="bh-active" className="text-sm font-bold text-slate-700">Active</label>
+                                        <label htmlFor="mh-active" className="text-sm font-bold text-slate-700">Active</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </section>
+
+                    {/* Midea CTA Section */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-800">Bottom CTA Section (Midea AC)</h2>
+                                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage the call-to-action section specifically for the Midea page</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Title</label>
+                                    <input
+                                        type="text"
+                                        value={mideaCTA.title}
+                                        onChange={e => setMideaCTA({ ...mideaCTA, title: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                        placeholder="Ready to experience ultimate comfort with Midea?"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Description</label>
+                                    <textarea
+                                        value={mideaCTA.description}
+                                        onChange={e => setMideaCTA({ ...mideaCTA, description: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                        placeholder="Discover the latest Midea cooling technology for your home."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
+                                    <input
+                                        type="text"
+                                        value={mideaCTA.bullets}
+                                        onChange={e => setMideaCTA({ ...mideaCTA, bullets: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        placeholder='["Energy Efficient", "Smart Control", "Quiet Operation"]'
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={mideaCTA.button1_text}
+                                            onChange={e => setMideaCTA({ ...mideaCTA, button1_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="View Midea Range"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Link</label>
+                                        <input
+                                            type="text"
+                                            value={mideaCTA.button1_link}
+                                            onChange={e => setMideaCTA({ ...mideaCTA, button1_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="/midea-ac"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Text</label>
+                                        <input
+                                            type="text"
+                                            value={mideaCTA.button2_text}
+                                            onChange={e => setMideaCTA({ ...mideaCTA, button2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="Contact Us"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Link</label>
+                                        <input
+                                            type="text"
+                                            value={mideaCTA.button2_link}
+                                            onChange={e => setMideaCTA({ ...mideaCTA, button2_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="/contact"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 mt-6 p-3 bg-slate-50 rounded-lg">
+                                    <input
+                                        type="checkbox"
+                                        id="midea-cta-active"
+                                        className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                                        checked={mideaCTA.is_active === 1}
+                                        onChange={e => setMideaCTA({ ...mideaCTA, is_active: e.target.checked ? 1 : 0 })}
+                                    />
+                                    <label htmlFor="midea-cta-active" className="text-sm font-bold text-slate-700 select-none cursor-pointer">Section is Active</label>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {/* Category Hero Section */}
+            {activeTab === 'category' && (
+                <div className="space-y-8">
+                    {/* Category Hero Selection */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                            <div className="flex flex-col gap-1">
+                                <h2 className="text-lg font-bold text-slate-800">{selectedCategory ? `${selectedCategory.toUpperCase()} Hero Section` : 'Category Hero Section'}</h2>
+                                <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage hero content for {selectedCategory ? `/shop/category/${selectedCategory}` : 'category-specific'} pages</p>
+                                <div className="flex items-center gap-3 mt-3">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">Select Category:</label>
+                                    <select
+                                        value={selectedCategory}
+                                        onChange={(e) => {
+                                            setSelectedCategory(e.target.value);
+                                            fetchCategoryContent(e.target.value);
+                                        }}
+                                        className="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 text-sm font-bold text-slate-700"
+                                    >
+                                        <option value="">Select a Category</option>
+                                        {categories.map((b) => <option key={b.id} value={b.slug}>{b.name}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleSaveCategoryHero}
+                                disabled={saving || !selectedCategory}
+                                className="bg-primary text-white px-6 py-2 rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                            >
+                                {saving ? 'Saving...' : 'Save Category Content'}
+                            </button>
+                        </div>
+
+                        {!selectedCategory ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                                <span className="material-symbols-outlined text-4xl mb-2">category</span>
+                                <p>Select a category to manage its unique hero content</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Badge Text</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.badge_text}
+                                            onChange={e => setBrandHero({ ...brandHero, badge_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder="e.g. Authorized Partner"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Title</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.title}
+                                            onChange={e => setBrandHero({ ...brandHero, title: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.highlight_text}
+                                            onChange={e => setBrandHero({ ...brandHero, highlight_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Description</label>
+                                        <textarea
+                                            value={brandHero.description}
+                                            onChange={e => setBrandHero({ ...brandHero, description: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Text</label>
+                                            <input
+                                                type="text"
+                                                value={brandHero.cta_text}
+                                                onChange={e => setBrandHero({ ...brandHero, cta_text: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Primary CTA Link</label>
+                                            <input
+                                                type="text"
+                                                value={brandHero.cta_link}
+                                                onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <ImageUploader
+                                        value={brandHero.background_image}
+                                        onChange={url => setBrandHero({ ...brandHero, background_image: url })}
+                                        folder="shop"
+                                        label="Background Image"
+                                        ratio="16:9"
+                                    />
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Display Order</label>
+                                            <input
+                                                type="number"
+                                                value={brandHero.display_order}
+                                                onChange={e => setBrandHero({ ...brandHero, display_order: parseInt(e.target.value) })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-6">
+                                            <input
+                                                type="checkbox"
+                                                id="bh-active"
+                                                checked={brandHero.is_active === 1}
+                                                onChange={e => setBrandHero({ ...brandHero, is_active: e.target.checked ? 1 : 0 })}
+                                            />
+                                            <label htmlFor="bh-active" className="text-sm font-bold text-slate-700">Active</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Category CTA Section */}
+                    {selectedCategory && (
+                        <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-8 border-b border-slate-100 pb-4">
+                                <div>
+                                    <h2 className="text-lg font-bold text-slate-800">Bottom CTA Section ({selectedCategory.toUpperCase()})</h2>
+                                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider font-bold">Manage the call-to-action section at the bottom of the page</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Title</label>
+                                        <input
+                                            type="text"
+                                            value={categoryCTA.title}
+                                            onChange={e => setCategoryCTA({ ...categoryCTA, title: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                            placeholder={`Premium ${selectedCategory} Solutions`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">CTA Description</label>
+                                        <textarea
+                                            value={categoryCTA.description}
+                                            onChange={e => setCategoryCTA({ ...categoryCTA, description: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-24 text-sm"
+                                            placeholder={`Explore the best ${selectedCategory} products for your needs.`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
+                                        <input
+                                            type="text"
+                                            value={categoryCTA.bullets}
+                                            onChange={e => setCategoryCTA({ ...categoryCTA, bullets: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            placeholder='["Expert Installation", "Genuine Parts", "Warranty Support"]'
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Text</label>
+                                            <input
+                                                type="text"
+                                                value={categoryCTA.button1_text}
+                                                onChange={e => setCategoryCTA({ ...categoryCTA, button1_text: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                                placeholder="View More"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Primary Button Link</label>
+                                            <input
+                                                type="text"
+                                                value={categoryCTA.button1_link}
+                                                onChange={e => setCategoryCTA({ ...categoryCTA, button1_link: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                                placeholder={`/shop/category/${selectedCategory}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Text</label>
+                                            <input
+                                                type="text"
+                                                value={categoryCTA.button2_text}
+                                                onChange={e => setCategoryCTA({ ...categoryCTA, button2_text: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                                placeholder="Contact Us"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Secondary Button Link</label>
+                                            <input
+                                                type="text"
+                                                value={categoryCTA.button2_link}
+                                                onChange={e => setCategoryCTA({ ...categoryCTA, button2_link: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                                placeholder="/contact"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-6 p-3 bg-slate-50 rounded-lg">
+                                        <input
+                                            type="checkbox"
+                                            id="cat-cta-active"
+                                            className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                                            checked={categoryCTA.is_active === 1}
+                                            onChange={e => setCategoryCTA({ ...categoryCTA, is_active: e.target.checked ? 1 : 0 })}
+                                        />
+                                        <label htmlFor="cat-cta-active" className="text-sm font-bold text-slate-700 select-none cursor-pointer">Section is Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
                     )}
-                </section>
+                </div>
             )}
         </div>
     );

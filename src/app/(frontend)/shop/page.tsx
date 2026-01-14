@@ -13,13 +13,15 @@ export const fetchCache = 'force-no-store';
 
 export default async function ShopPage({ searchParams }: { searchParams?: { brand?: string, page?: string } }) {
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    // Fetch Shop hero content and categories
-    const [heroRes, categoriesRes] = await Promise.all([
+    // Fetch Shop hero content, categories and cta
+    const [heroRes, categoriesRes, ctaRes] = await Promise.all([
         fetch(`${API_BASE}/api/pages/shop/hero`, { cache: 'no-store', next: { tags: ['shop-hero'] } }),
         fetch(`${API_BASE}/api/pages/services/categories`, { cache: 'no-store' }),
+        fetch(`${API_BASE}/api/pages/shop/cta`, { cache: 'no-store', next: { tags: ['shop-cta'] } }),
     ]);
     const hero = heroRes.ok ? await heroRes.json() : null;
     const categories = categoriesRes.ok ? await categoriesRes.json() : [];
+    const shopCTA = ctaRes.ok ? await ctaRes.json() : null;
 
     // Simple category listing - no more brand-specific overrides here
     const categorySet = Array.from(new Set(categories.map((c: any) => c.slug).filter(Boolean))) as string[];
@@ -186,29 +188,59 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                 );
             })}
 
-            {/* Consultation Banner */}
+            {/* Consultation Banner / Dynamic CTA */}
             <section className="py-16 px-4 md:px-10">
                 {/* Compare tray (client) */}
                 <CompareTrayWrapper />
-                <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
-                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-                        <div className="max-w-xl text-white">
-                            <h2 className="text-3xl font-black mb-4">Unsure which brand fits your room?</h2>
-                            <p className="text-primary-100 text-lg mb-8">Get a free professional site survey. Our experts will inspect your space and recommend the perfect cooling solution.</p>
-                            <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
-                                <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Free Consultation</span></li>
-                                <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Accurate BTU Sizing</span></li>
-                            </ul>
-                            <button className="bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">Book Site Survey</button>
-                        </div>
-                        <div className="hidden md:block">
-                            <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                                <span className="material-symbols-outlined text-white text-8xl">support_agent</span>
+                {shopCTA?.is_active ? (
+                    <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                            <div className="max-w-xl text-white">
+                                <h2 className="text-3xl font-black mb-4">{shopCTA.title}</h2>
+                                <p className="text-primary-100 text-lg mb-8">{shopCTA.description}</p>
+                                {shopCTA.bullets && (
+                                    <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
+                                        {(typeof shopCTA.bullets === 'string' ? JSON.parse(shopCTA.bullets) : shopCTA.bullets).map((bullet: string, i: number) => (
+                                            <li key={i} className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined">check_circle</span>
+                                                <span>{bullet}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                <Link href={shopCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                    {shopCTA.button_text || 'Learn More'}
+                                </Link>
+                            </div>
+                            <div className="hidden md:block">
+                                <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                                    <span className="material-symbols-outlined text-white text-8xl">support_agent</span>
+                                </div>
                             </div>
                         </div>
+                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
                     </div>
-                    <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                </div>
+                ) : (
+                    <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+                            <div className="max-w-xl text-white">
+                                <h2 className="text-3xl font-black mb-4">Unsure which brand fits your room?</h2>
+                                <p className="text-primary-100 text-lg mb-8">Get a free professional site survey. Our experts will inspect your space and recommend the perfect cooling solution.</p>
+                                <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
+                                    <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Free Consultation</span></li>
+                                    <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Accurate BTU Sizing</span></li>
+                                </ul>
+                                <button className="bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">Book Site Survey</button>
+                            </div>
+                            <div className="hidden md:block">
+                                <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                                    <span className="material-symbols-outlined text-white text-8xl">support_agent</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+                    </div>
+                )}
             </section>
         </main>
     );

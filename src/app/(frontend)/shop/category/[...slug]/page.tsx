@@ -87,18 +87,20 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     const qParam = (searchParams as any)?.q || undefined;
     if (qParam) url.searchParams.set('q', qParam);
 
-    // Fetch products, categories, subcategories and optional category-hero
-    const [productsRes, catsRes, subsRes, heroRes] = await Promise.all([
+    // Fetch products, categories, subcategories and optional category-hero/cta
+    const [productsRes, catsRes, subsRes, heroRes, ctaRes] = await Promise.all([
         fetch(url.toString(), { cache: 'no-store' }),
         fetch(`${API_BASE}/api/pages/services/categories`, { cache: 'no-store' }),
         fetch(`${API_BASE}/api/pages/services/subcategories`, { cache: 'no-store' }),
-        fetch(`${API_BASE}/api/pages/shop/category-hero?category=${categorySlug}`, { cache: 'no-store' }),
+        fetch(`${API_BASE}/api/pages/shop/category-hero?category=${categorySlug}`, { cache: 'no-store', next: { tags: ['shop-category-hero'] } }),
+        fetch(`${API_BASE}/api/pages/shop/category-cta?category=${categorySlug}`, { cache: 'no-store', next: { tags: ['category-cta'] } }),
     ]);
 
     const products = productsRes.ok ? await productsRes.json() : [];
     const categories = catsRes.ok ? await catsRes.json() : [];
     const subcategories = subsRes.ok ? await subsRes.json() : [];
     const categoryHero = heroRes.ok ? await heroRes.json() : null;
+    const categoryCTA = ctaRes.ok ? await ctaRes.json() : null;
 
     const category = categories.find((c: any) => c.slug === categorySlug) || { name: categorySlug };
     const subcategory = subcategorySlug ? subcategories.find((s: any) => s.slug === subcategorySlug) : null;
@@ -402,6 +404,37 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                 basePath={`/shop/category/${slugs.join('/')}`}
                             />
                         </div>
+
+                        {/* Category CTA */}
+                        {categoryCTA?.is_active && (
+                            <div className="mt-16 bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
+                                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                                    <div className="max-w-xl text-white">
+                                        <h3 className="text-3xl font-black mb-4">{categoryCTA.title}</h3>
+                                        <p className="text-primary-100 text-lg mb-8">{categoryCTA.description}</p>
+                                        {categoryCTA.bullets && (
+                                            <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 mb-8 text-primary-50 font-medium">
+                                                {(typeof categoryCTA.bullets === 'string' ? JSON.parse(categoryCTA.bullets) : categoryCTA.bullets).map((bullet: string, i: number) => (
+                                                    <li key={i} className="flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                        <span>{bullet}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                        <Link href={categoryCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                            {categoryCTA.button_text || 'Contact Now'}
+                                        </Link>
+                                    </div>
+                                    <div className="hidden lg:block relative z-10">
+                                        <div className="w-48 h-48 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                                            <span className="material-symbols-outlined text-white text-7xl">shopping_cart_checkout</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
