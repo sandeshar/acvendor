@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ ...cat, id: cat._id.toString() });
         }
 
-        const categories = await ServiceCategories.find().sort({ name: 1 }).lean();
+        const categories = await ServiceCategories.find().sort({ display_order: 1, name: 1 }).lean();
         const formatted = categories.map((c: any) => ({ ...c, id: c._id.toString() }));
         return NextResponse.json(formatted);
     } catch (error) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { name, slug, description, icon, meta_title, meta_description, thumbnail } = body;
+        const { name, slug, description, icon, meta_title, meta_description, thumbnail, display_order } = body;
 
         if (!name || !slug) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
             thumbnail: thumbnail || null,
             meta_title: meta_title || null,
             meta_description: meta_description || null,
+            display_order: Number(display_order) || 0,
         });
 
         return NextResponse.json({ id: result._id, message: "Category created successfully" });
@@ -54,7 +55,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, name, slug, description, icon, meta_title, meta_description, thumbnail } = body;
+        const { id, name, slug, description, icon, meta_title, meta_description, thumbnail, display_order } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -69,6 +70,7 @@ export async function PUT(request: NextRequest) {
             thumbnail: thumbnail || null,
             meta_title: meta_title || null,
             meta_description: meta_description || null,
+            display_order: Number(display_order) || 0,
             updatedAt: new Date(),
         }, { new: true });
 

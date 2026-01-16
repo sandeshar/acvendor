@@ -141,7 +141,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         return (
                             <div key={c.id || c._id} className="space-y-1">
                                 <Link
-                                    href={`/shop/category/${c.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                    href={`/shop/category/${c.slug}${searchParams && Object.keys(searchParams).length > 0 ? `?${new URLSearchParams(searchParams as any).toString()}` : ''}`}
                                     className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActiveCategory ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'}`}
                                 >
                                     {c.name}
@@ -151,7 +151,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                 {isActiveCategory && (
                                     <div className="pl-4 mt-2 space-y-1 border-l-2 border-gray-100 ml-4 animate-in slide-in-from-top-2 duration-300">
                                         <Link
-                                            href={`/shop/category/${c.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                            href={`/shop/category/${c.slug}${searchParams && Object.keys(searchParams).length > 0 ? `?${new URLSearchParams(searchParams as any).toString()}` : ''}`}
                                             className={`block px-4 py-2 rounded-lg text-xs font-bold transition-all ${!subcategorySlug ? 'text-primary bg-primary/5' : 'text-gray-400 hover:text-gray-600'}`}
                                         >
                                             All {c.name}
@@ -159,7 +159,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                         {categorySubs.map((s: any) => (
                                             <Link
                                                 key={s.id || s._id}
-                                                href={`/shop/category/${c.slug}/${s.slug}${String(new URLSearchParams(String(searchParams))) ? `?${String(new URLSearchParams(String(searchParams)))}` : ''}`}
+                                                href={`/shop/category/${c.slug}/${s.slug}${searchParams && Object.keys(searchParams).length > 0 ? `?${new URLSearchParams(searchParams as any).toString()}` : ''}`}
                                                 className={`flex items-center justify-between px-4 py-2 rounded-lg text-xs font-bold transition-all ${s.slug === subcategorySlug ? 'text-primary bg-primary/5' : 'text-gray-400 hover:text-gray-600'}`}
                                             >
                                                 {s.name}
@@ -180,7 +180,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                     <span className="material-symbols-outlined text-primary text-lg">payments</span>
                     Price Range
                 </h3>
-                <form className="space-y-4">                                {Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams))))
+                <form className="space-y-4">                                {Object.entries(searchParams || {})
                     .filter(([k]) => k !== 'minPrice' && k !== 'maxPrice' && k !== 'page')
                     .map(([k, v]) => (
                         <input key={k} type="hidden" name={k} value={v as string} />
@@ -215,7 +215,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                     </button>
                     {(minPrice || maxPrice) && (
                         <Link
-                            href={`?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
+                            href={`?${new URLSearchParams(Object.fromEntries(Object.entries(searchParams || {}).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
                             className="block text-center text-xs font-bold text-primary hover:underline pt-2"
                         >
                             Clear Price Filter
@@ -335,11 +335,11 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
                             <div className="flex items-center gap-2">
                                 <div className="flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm overflow-x-auto whitespace-nowrap max-w-[calc(100vw-2rem)]">
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'featured' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'featured' || !sort ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Featured</Link>
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'newest' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'newest' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Newest</Link>
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'price_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price Low</Link>
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'price_desc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_desc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price High</Link>
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'name_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'name_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>A-Z</Link>
+                                    <Link href={`?${new URLSearchParams({ ...(searchParams as any), sort: 'featured' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'featured' || !sort ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Featured</Link>
+                                    <Link href={`?${new URLSearchParams({ ...(searchParams as any), sort: 'newest' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'newest' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Newest</Link>
+                                    <Link href={`?${new URLSearchParams({ ...(searchParams as any), sort: 'price_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price Low</Link>
+                                    <Link href={`?${new URLSearchParams({ ...(searchParams as any), sort: 'price_desc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_desc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price High</Link>
+                                    <Link href={`?${new URLSearchParams({ ...(searchParams as any), sort: 'name_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'name_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>A-Z</Link>
                                 </div>
                             </div>
                         </div>

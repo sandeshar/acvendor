@@ -125,14 +125,14 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 <div className="flex flex-wrap gap-2 px-0 text-sm md:text-base">
                     <Link href="/" className="text-[#617589] font-medium leading-normal hover:text-primary">Home</Link>
                     <span className="text-[#617589] font-medium leading-normal">/</span>
-                    <Link href={post.category?.slug ? `/midea-ac?category=${encodeURIComponent(post.category.slug)}` : '/midea-ac'} className="text-[#617589] font-medium leading-normal hover:text-primary">{post.category?.name || 'Residential'}</Link>
+                    <Link href={post.category?.slug ? `/shop/category/${post.category.slug}` : '/shop'} className="text-[#617589] font-medium leading-normal hover:text-primary">{post.category?.name || 'Shop'}</Link>
                     <span className="text-[#617589] font-medium leading-normal">/</span>
                     {post.subcategory?.slug ? (
-                        <Link href={`/midea-ac?category=${encodeURIComponent(post.category?.slug || '')}&subcategory=${encodeURIComponent(post.subcategory.slug)}`} className="text-[#617589] font-medium leading-normal hover:text-primary">{post.subcategory?.name || 'Inverter Series'}</Link>
+                        <Link href={`/shop/category/${post.category?.slug || ''}/${post.subcategory.slug}`} className="text-[#617589] font-medium leading-normal hover:text-primary">{post.subcategory?.name}</Link>
                     ) : (
-                        <span className="text-[#617589] font-medium leading-normal">{post.subcategory?.name || 'Inverter Series'}</span>
+                        post.subcategory?.name ? <span className="text-[#617589] font-medium leading-normal">{post.subcategory.name}</span> : null
                     )}
-                    <span className="text-[#617589] font-medium leading-normal">/</span>
+                    {post.subcategory?.name && <span className="text-[#617589] font-medium leading-normal">/</span>}
                     <span className="text-[#111418] font-medium leading-normal">{post.title}</span>
                 </div>
 

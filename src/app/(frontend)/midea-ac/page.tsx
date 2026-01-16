@@ -211,7 +211,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                 </h3>
                 <form className="space-y-4">
                     {/* Preserve existing search params */}
-                    {Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams))))
+                    {Object.entries(searchParams || {})
                         .filter(([k]) => k !== 'minPrice' && k !== 'maxPrice' && k !== 'page')
                         .map(([k, v]) => (
                             <input key={k} type="hidden" name={k} value={v as string} />
@@ -247,7 +247,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                     </button>
                     {(minPrice || maxPrice) && (
                         <Link
-                            href={`/midea-ac?${new URLSearchParams(Object.fromEntries(Object.entries(Object.fromEntries(new URLSearchParams(String(searchParams)))).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
+                            href={`/midea-ac?${new URLSearchParams(Object.fromEntries(Object.entries(searchParams || {}).filter(([k]) => k !== 'minPrice' && k !== 'maxPrice')))}`}
                             className="block text-center text-xs font-bold text-primary hover:underline pt-2"
                         >
                             Clear Price Filter

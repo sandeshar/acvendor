@@ -11,6 +11,7 @@ type Category = {
     slug: string;
     description?: string | null;
     icon?: string | null;
+    display_order?: number;
     // Optional SEO fields
     meta_title?: string | null;
     meta_description?: string | null;
@@ -25,6 +26,7 @@ type Subcategory = {
     ac_type?: string | null;
     slug: string;
     description?: string | null;
+    display_order?: number;
     meta_title?: string | null;
     meta_description?: string | null;
     isNew?: boolean;
@@ -78,12 +80,97 @@ export default function CategoriesManagerPage() {
         }
     };
 
+    const moveCategory = async (id: string | number, direction: 'up' | 'down') => {
+        const idStr = String(id);
+        const currentCats = [...categories].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+
+        const index = currentCats.findIndex(cat => String(cat.id) === idStr);
+        if (index === -1) return;
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === currentCats.length - 1) return;
+
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        const newCats = [...currentCats];
+        [newCats[index], newCats[newIndex]] = [newCats[newIndex], newCats[index]];
+
+        // Assign new sequential orders
+        const updates = newCats.map((cat, idx) => ({ ...cat, display_order: idx }));
+
+        // Optimistic UI update
+        setCategories(updates);
+
+        try {
+            await Promise.all(
+                updates.map(cat =>
+                    fetch('/api/pages/services/categories', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(cat),
+                    })
+                )
+            );
+            fetchData();
+        } catch (error) {
+            console.error('Error reordering categories:', error);
+            fetchData();
+        }
+    };
+
+    const moveSubcategory = async (categoryId: string | number, subId: string | number, direction: 'up' | 'down') => {
+        const cidStr = String(categoryId);
+        const sidStr = String(subId);
+
+        // Get subcategories for THIS category only
+        const currentSubs = subcategories
+            .filter(s => String(s.category_id) === cidStr)
+            .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+
+        const index = currentSubs.findIndex(s => String(s.id) === sidStr);
+        if (index === -1) return;
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === currentSubs.length - 1) return;
+
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        const newSubs = [...currentSubs];
+        [newSubs[index], newSubs[newIndex]] = [newSubs[newIndex], newSubs[index]];
+
+        // Assign sequential orders
+        const updates = newSubs.map((s, idx) => ({ ...s, display_order: idx }));
+
+        // Optimistic UI: update subcategories array
+        setSubcategories(prev => {
+            const others = prev.filter(s => String(s.category_id) !== cidStr);
+            return [...others, ...updates].sort((a, b) => {
+                // Keep the global array somewhat consistent, though filtered lists depend on category_id
+                if (String(a.category_id) !== String(b.category_id)) return String(a.category_id).localeCompare(String(b.category_id));
+                return (a.display_order || 0) - (b.display_order || 0);
+            });
+        });
+
+        try {
+            await Promise.all(
+                updates.map(s =>
+                    fetch('/api/pages/services/subcategories', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(s),
+                    })
+                )
+            );
+            fetchData();
+        } catch (error) {
+            console.error('Error reordering subcategories:', error);
+            fetchData();
+        }
+    };
+
     const addCategory = () => {
         setSelectedCategory({
             name: "",
             slug: "",
             description: "",
             icon: "",
+            display_order: 0,
             meta_title: "",
             meta_description: "",
             isNew: true,
@@ -99,6 +186,7 @@ export default function CategoriesManagerPage() {
             ac_type: '',
             slug: "",
             description: "",
+            display_order: 0,
             meta_title: "",
             meta_description: "",
             isNew: true,
@@ -320,48 +408,73 @@ export default function CategoriesManagerPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {filteredCategories.map((category) => (
-                                        <div
-                                            key={category.id}
-                                            className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all"
-                                        >
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-start gap-3 flex-1">
-                                                    <div className="shrink-0">
-                                                        <div className="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center">
-                                                            <span className="material-symbols-outlined text-primary text-2xl">
-                                                                {category.icon || "category"}
-                                                            </span>
+                                    {filteredCategories
+                                        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+                                        .map((category, index) => (
+                                            <div
+                                                key={category.id}
+                                                className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    {/* Reorder Arrows */}
+                                                    <div className="flex flex-col gap-1 shrink-0">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); if (category.id) moveCategory(category.id, 'up'); }}
+                                                            disabled={index === 0}
+                                                            className="p-1 text-slate-400 hover:text-primary hover:bg-slate-100 rounded disabled:opacity-20 transition-all"
+                                                            title="Move Up"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px] font-bold">keyboard_arrow_up</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); if (category.id) moveCategory(category.id, 'down'); }}
+                                                            disabled={index === filteredCategories.length - 1}
+                                                            className="p-1 text-slate-400 hover:text-primary hover:bg-slate-100 rounded disabled:opacity-20 transition-all"
+                                                            title="Move Down"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px] font-bold">keyboard_arrow_down</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                        <div className="shrink-0">
+                                                            <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+                                                                <span className="material-symbols-outlined text-primary text-xl">
+                                                                    {category.icon || "category"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#{index + 1}</span>
+                                                                <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>
+                                                            </div>
+                                                            <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
+                                                            {category.description && (
+                                                                <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>
-                                                        <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
-                                                        {category.description && (
-                                                            <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
-                                                        )}
+                                                    <div className="flex gap-1 ml-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCategory(category);
+                                                                setIsCategoryModalOpen(true);
+                                                            }}
+                                                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => category.id && deleteCategory(category.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-1 ml-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedCategory(category);
-                                                            setIsCategoryModalOpen(true);
-                                                        }}
-                                                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => category.id && deleteCategory(category.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                    </button>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
                                 </div>
                             )}
                         </div>
@@ -408,52 +521,86 @@ export default function CategoriesManagerPage() {
                                 </button>
                             </div>
 
-                            {/* Subcategories List */}
+                            {/* Subcategories Grid */}
                             {filteredSubcategories.length === 0 ? (
                                 <div className="text-center py-16 bg-white rounded-lg border border-dashed border-slate-300">
                                     <span className="material-symbols-outlined text-5xl text-slate-300 mb-3">subdirectory_arrow_right</span>
                                     <p className="text-slate-500 text-sm">No subcategories found</p>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-200">
-                                    {filteredSubcategories.map((subcategory) => {
-                                        const parentCategory = categories.find(c => String(c.id) === String(subcategory.category_id));
-                                        return (
-                                            <div
-                                                key={subcategory.id}
-                                                className="p-4 hover:bg-slate-50 transition-colors"
-                                            >
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1">
-                                                        <h3 className="text-base font-semibold text-slate-900">{subcategory.name}</h3>
-                                                        <p className="text-xs text-slate-500 mt-1">
-                                                            {subcategory.slug} • Parent: {parentCategory?.name || 'Unknown'}{subcategory.ac_type ? ` • Type: ${subcategory.ac_type}` : ''}
-                                                        </p>
-                                                        {subcategory.description && (
-                                                            <p className="text-sm text-slate-600 mt-2">{subcategory.description}</p>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex gap-1 ml-4">
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedSubcategory(subcategory);
-                                                                setIsSubcategoryModalOpen(true);
-                                                            }}
-                                                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                                                        >
-                                                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => subcategory.id && deleteSubcategory(subcategory.id)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        >
-                                                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                        </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {filteredSubcategories
+                                        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
+                                        .map((subcategory, index) => {
+                                            const parentCategory = categories.find(c => String(c.id) === String(subcategory.category_id));
+                                            return (
+                                                <div
+                                                    key={subcategory.id}
+                                                    className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all"
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        {/* Reorder Arrows */}
+                                                        <div className="flex flex-col gap-1 shrink-0">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); if (subcategory.id) moveSubcategory(subcategory.category_id, subcategory.id, 'up'); }}
+                                                                disabled={index === 0}
+                                                                className="p-1 text-slate-400 hover:text-primary hover:bg-slate-100 rounded disabled:opacity-20 transition-all font-bold"
+                                                                title="Move Up"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">keyboard_arrow_up</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); if (subcategory.id) moveSubcategory(subcategory.category_id, subcategory.id, 'down'); }}
+                                                                disabled={index === filteredSubcategories.length - 1}
+                                                                className="p-1 text-slate-400 hover:text-primary hover:bg-slate-100 rounded disabled:opacity-20 transition-all font-bold"
+                                                                title="Move Down"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">keyboard_arrow_down</span>
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#{index + 1}</span>
+                                                                <h3 className="text-base font-semibold text-slate-900 truncate">{subcategory.name}</h3>
+                                                            </div>
+                                                            <div className="mt-1 flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                                                    {parentCategory?.name || 'Unknown'}
+                                                                </span>
+                                                                {subcategory.ac_type && (
+                                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-primary-50 text-primary border border-primary-100">
+                                                                        {subcategory.ac_type}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-400 mt-2 font-mono truncate">{subcategory.slug}</p>
+                                                            {subcategory.description && (
+                                                                <p className="text-sm text-slate-600 line-clamp-2 mt-2">{subcategory.description}</p>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex flex-col gap-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedSubcategory(subcategory);
+                                                                    setIsSubcategoryModalOpen(true);
+                                                                }}
+                                                                className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => subcategory.id && deleteSubcategory(subcategory.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
                                 </div>
                             )}
                         </div>
