@@ -10,6 +10,7 @@ interface Product {
     price?: string | number | { $numberDecimal?: string } | null;
     compare_at_price?: string | number | null;
     discount_percent?: number | null;
+    brochure_url?: string | null;
 }
 
 interface Props {
@@ -30,8 +31,8 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
     const brandLabel = brand ? `${brand.charAt(0).toUpperCase()}${brand.slice(1)}` : null;
     const titleText = section?.title || (brandLabel ? `Featured ${brandLabel} Products` : 'Featured Products');
     const descriptionText = section?.description || 'We supply a wide range of energy-efficient air conditioners.';
-    const viewAllLink = brand ? `/${brand}-ac` : '/midea-ac';
-    const productBaseLink = brand ? `/${brand}-ac` : '/midea-ac';
+    const viewAllLink = brand === 'midea' ? '/midea-ac' : (brand ? `/products?category=${brand}` : '/products');
+    const productBaseLink = brand === 'midea' ? '/midea-ac' : '/products';
 
     const defaultImages = [
         "https://lh3.googleusercontent.com/aida-public/AB6AXuBVILAJQ9DwHZBE1JIYDj4keWQtW_BU_zNsyM408VT-70r_05e9RILAOxe6_iWQfc4gjFhCsfJdN6HUcQI0MFZ9iomF0lQsEwM5FQOpFlfW0ermnU_iKa7bORM2A0yFLal1fljhvp7uY4ncg8H-27xtv-RDi4scBAeVl3ng5DKjBhVogN45uJKeD56-3aWLQKMqD0hYTg-kXF-TgiU0YXh-gXCrW4-GhRn7vlTrD6iIvOUtZILV3AE0UinHgUosqEWmyumUQpMUA5A",
@@ -78,10 +79,10 @@ const ProductShowcase = ({ products, brand, section }: Props) => {
                                         <div className="mt-2 flex items-center justify-between">
                                             {priceNum > 0 ? (
                                                 <div className="flex items-center gap-3">
-                                                        <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
-                                                        {p.compare_at_price ? <div className="text-sm text-[#617589] line-through">NPR {formatPrice(p.compare_at_price)}</div> : null}
-                                                        {p.discount_percent ? <div className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded font-bold">-{p.discount_percent}%</div> : null}
-                                                    </div>
+                                                    <div className="text-primary font-bold">NPR {formatPrice(p.price)}</div>
+                                                    {p.compare_at_price ? <div className="text-sm text-[#617589] line-through">NPR {formatPrice(p.compare_at_price)}</div> : null}
+                                                    {p.discount_percent ? <div className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded font-bold">-{p.discount_percent}%</div> : null}
+                                                </div>
                                             ) : (
                                                 <div className="text-primary/80 font-bold border-b border-primary/20 pb-0.5">Contact for price</div>
                                             )}

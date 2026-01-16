@@ -334,10 +334,12 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <div className="flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'featured' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'featured' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Featured</Link>
+                                <div className="flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm overflow-x-auto whitespace-nowrap max-w-[calc(100vw-2rem)]">
+                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'featured' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'featured' || !sort ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Featured</Link>
+                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'newest' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'newest' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Newest</Link>
                                     <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'price_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price Low</Link>
                                     <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'price_desc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'price_desc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>Price High</Link>
+                                    <Link href={`?${new URLSearchParams({ ...Object.fromEntries(new URLSearchParams(String(searchParams))), sort: 'name_asc' })}`} className={`px-4 py-1.5 text-xs font-bold rounded-md ${sort === 'name_asc' ? 'bg-primary text-white' : 'text-gray-500 hover:bg-gray-50'}`}>A-Z</Link>
                                 </div>
                             </div>
                         </div>

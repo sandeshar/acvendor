@@ -45,6 +45,8 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         thumbnail: '',
         images: [],
         inventory_status: 'in_stock',
+        featured: 0,
+        priority: 0,
         locations: [],
         price: '',
         compare_at_price: '',
@@ -66,6 +68,7 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
         subcategory_id: null,
         statusId: 1,
         application_areas: [],
+        brochure_url: '',
         ...initialData
     });
 
@@ -316,7 +319,23 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             )}
                                         </div>
                                     </div>
-
+                                    <div className="flex items-center gap-6 p-4 bg-primary/5 border border-primary/10 rounded-lg">
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-bold text-primary">Featured Product</h4>
+                                            <p className="text-xs text-primary/70">Featured products are highlighted and appear first in listings.</p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setProduct({ ...product, featured: product.featured === 1 ? 0 : 1 })}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${product.featured === 1 ? 'bg-primary' : 'bg-gray-200'}`}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${product.featured === 1 ? 'translate-x-6' : 'translate-x-1'}`}
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-500 uppercase">Brief Description</label>
                                         <div className="border border-gray-300 rounded-md overflow-hidden">
@@ -614,6 +633,42 @@ export default function ProductForm({ initialData, onSave, saving, title }: Prod
                                             ))}
                                             <div className="aspect-square rounded-md border border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
                                                 <ImageUploader label="" folder="products" value={''} onChange={(v) => setProduct({ ...product, images: [...(product.images || []), v] })} buttonText="Upload" ratio="4:3" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-6 border-t border-gray-100">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="material-symbols-outlined text-primary">picture_as_pdf</span>
+                                            <h3 className="text-xs font-black text-gray-900 uppercase">Product Brochure / Catalogue</h3>
+                                        </div>
+                                        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                            <div className="flex flex-col md:flex-row gap-6 items-start">
+                                                <div className="w-full md:w-1/2">
+                                                    <ImageUploader
+                                                        label="Upload PDF Brochure"
+                                                        folder="products/catalogues"
+                                                        value={product.brochure_url || ''}
+                                                        onChange={(v) => setProduct({ ...product, brochure_url: v })}
+                                                        accept="application/pdf"
+                                                        buttonText="Select PDF File"
+                                                    />
+                                                </div>
+                                                <div className="w-full md:w-1/2 space-y-3">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-black uppercase text-gray-400">Direct URL</label>
+                                                        <input
+                                                            type="text"
+                                                            value={product.brochure_url || ''}
+                                                            onChange={(e) => setProduct({ ...product, brochure_url: e.target.value })}
+                                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-mono focus:ring-1 focus:ring-primary outline-none"
+                                                            placeholder="https://..."
+                                                        />
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-500 italic">
+                                                        Uploading a PDF allows customers to download the technical catalogue directly from the product page.
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

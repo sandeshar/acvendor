@@ -94,6 +94,7 @@ const SideBar = () => {
                     <SectionHeader title="Catalog & Sales" />
                     <div className="flex flex-col gap-1">
                         <NavItem href="/admin/products" icon="inventory_2" label="Products" active={isActive('/admin/products')} />
+                        <NavItem href="/admin/products/featured" icon="star" label="Featured Products" active={isActive('/admin/products/featured')} />
                         <NavItem href="/admin/categories" icon="category" label="Product Categories" active={isActive('/admin/categories')} />
                         {/* <NavItem href="/admin/brands" icon="branding_watermark" label="Brands" active={isActive('/admin/brands')} /> */}
                         <NavItem href="/admin/quotation/drafts" icon="receipt_long" label="Quotations" active={isActive('/admin/quotation/drafts')} />

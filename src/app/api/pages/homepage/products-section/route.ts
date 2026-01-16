@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, is_active = 1 } = body;
+        const { title, description, product_ids, is_active = 1 } = body;
 
         if (!title || !description) {
             return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
         }
 
-        const result = await HomepageProductsSection.create({ title, description, is_active });
+        const result = await HomepageProductsSection.create({ title, description, product_ids, is_active });
         revalidateTag('homepage-products-section', 'max');
         return NextResponse.json(
             { success: true, message: 'Products section created successfully', id: result._id },
@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, title, description, is_active } = body;
+        const { id, title, description, product_ids, is_active } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -71,6 +71,7 @@ export async function PUT(request: NextRequest) {
         const updateData: any = {};
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
+        if (product_ids !== undefined) updateData.product_ids = product_ids;
         if (is_active !== undefined) updateData.is_active = is_active;
 
         await HomepageProductsSection.findByIdAndUpdate(id, updateData, { new: true });

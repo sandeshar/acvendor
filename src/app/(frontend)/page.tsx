@@ -15,16 +15,23 @@ async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
     try {
-        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, productsSectionRes, testimonialsSectionRes, projectsRes, projectsSectionRes, heroFeaturesRes, aboutSectionRes, aboutItemsRes, blogSectionRes, blogPostsRes] = await Promise.all([
+        // Fetch sections first to see if we have explicit product selections
+        const productsSectionRes = await fetch(`${baseUrl}/api/pages/homepage/products-section`, { next: { tags: ['homepage-products-section'] } });
+        const productsSection = productsSectionRes.ok ? (await productsSectionRes.json() || {}) : {};
+
+        let productsUrl = `${baseUrl}/api/products?featured=1&limit=24`;
+        if (productsSection.product_ids && Array.isArray(productsSection.product_ids) && productsSection.product_ids.length > 0) {
+            productsUrl = `${baseUrl}/api/products?ids=${productsSection.product_ids.join(',')}`;
+        }
+
+        const [heroRes, trustSectionRes, trustLogosRes, expertiseSectionRes, expertiseItemsRes, contactSectionRes, featuredRes, testimonialsSectionRes, projectsRes, projectsSectionRes, heroFeaturesRes, aboutSectionRes, aboutItemsRes, blogSectionRes, blogPostsRes] = await Promise.all([
             fetch(`${baseUrl}/api/pages/homepage/hero`, { next: { tags: ['homepage-hero'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-section`, { next: { tags: ['homepage-trust-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/trust-logos`, { next: { tags: ['homepage-trust-logos'] } }),
             fetch(`${baseUrl}/api/pages/homepage/expertise-section`, { next: { tags: ['homepage-expertise-section'] } }),
             fetch(`${baseUrl}/api/pages/homepage/expertise-items`, { next: { tags: ['homepage-expertise-items'] } }),
             fetch(`${baseUrl}/api/pages/homepage/contact-section`, { next: { tags: ['homepage-contact-section'] } }),
-            // Request featured products for the Midea category
-            fetch(`${baseUrl}/api/products?featured=1&limit=4&category=midea`, { next: { tags: ['products'] } }),
-            fetch(`${baseUrl}/api/pages/homepage/products-section`, { next: { tags: ['homepage-products-section'] } }),
+            fetch(productsUrl, { next: { tags: ['products'] } }),
             fetch(`${baseUrl}/api/pages/homepage/testimonials-section`, { next: { tags: ['homepage-testimonials-section'] } }),
             fetch(`${baseUrl}/api/projects?limit=3`, { next: { tags: ['projects'] } }),
             fetch(`${baseUrl}/api/pages/projects/section`, { next: { tags: ['projects-section'] } }),
@@ -41,8 +48,21 @@ async function getHomepageData() {
         const expertiseSection = expertiseSectionRes.ok ? (await expertiseSectionRes.json() || {}) : {};
         const expertiseItems = expertiseItemsRes.ok ? (await expertiseItemsRes.json() || []) : [];
         const contactSection = contactSectionRes.ok ? (await contactSectionRes.json() || {}) : {};
-        const featuredProducts = featuredRes.ok ? (await featuredRes.json() || []) : [];
-        const productsSection = productsSectionRes.ok ? (await productsSectionRes.json() || {}) : {};
+        let featuredProducts = featuredRes.ok ? (await featuredRes.json()) : [];
+
+        // If returned as object with products array (from API response structure), extract it
+        if (featuredProducts && !Array.isArray(featuredProducts) && featuredProducts.products) {
+            featuredProducts = featuredProducts.products;
+        }
+
+        // If we have explicit IDs, we MUST preserve the order since MongoDB $in does not guarantee it
+        if (productsSection.product_ids && Array.isArray(productsSection.product_ids) && productsSection.product_ids.length > 0) {
+            const idMap = new Map(featuredProducts.map((p: any) => [String(p._id || p.id), p]));
+            featuredProducts = productsSection.product_ids
+                .map((id: string) => idMap.get(String(id)))
+                .filter(Boolean);
+        }
+
         const testimonialsSection = testimonialsSectionRes.ok ? (await testimonialsSectionRes.json() || {}) : {};
         const projects = projectsRes.ok ? (await projectsRes.json() || []) : [];
         const projectsSection = projectsSectionRes.ok ? (await projectsSectionRes.json() || {}) : {};
@@ -114,7 +134,34 @@ export default async function Home() {
                 <Contact data={data.contactSection} />
 
                 <Expertise section={data.expertiseSection} items={data.expertiseItems} />
-                {/* <ProductShowcase products={data.products || []} brand="midea" section={data.productsSection || undefined} /> */}
+
+                {/* Product showcase (featured products) grouped by category */}
+                {(() => {
+                    const products = data.products || [];
+                    if (products.length === 0) return null;
+
+                    // Group by category name
+                    const grouped: Record<string, any[]> = products.reduce((acc: any, p: any) => {
+                        const catName = p.category?.name || 'Other Products';
+                        if (!acc[catName]) acc[catName] = [];
+                        acc[catName].push(p);
+                        return acc;
+                    }, {});
+
+                    return Object.entries(grouped).map(([categoryName, items]) => (
+                        <ProductShowcase
+                            key={categoryName}
+                            products={items}
+                            brand={items[0]?.category?.slug}
+                            section={{
+                                ...data.productsSection,
+                                title: categoryName,
+                                description: `Explore our featured ${categoryName.toLowerCase()} selection.`
+                            }}
+                        />
+                    ));
+                })()}
+
                 <ProjectGallery projects={data.projects || []} section={data.projectsSection} />
                 {(!data.testimonialsSection || (data.testimonialsSection?.is_active ?? 1) === 1) && (
                     <TestimonialSlider filter="homepage" title={data.testimonialsSection?.title} subtitle={data.testimonialsSection?.subtitle} />

@@ -311,13 +311,17 @@ export async function GET(request: NextRequest) {
         const offsetNum = offset && !isNaN(parseInt(offset)) ? parseInt(offset) : 0;
 
         const sortParam = searchParams.get('sort');
-        let sort: any = { createdAt: -1 };
+        let sort: any = { priority: -1, featured: -1, createdAt: -1, _id: -1 };
 
-        if (sortParam === 'price_asc') sort = { price: 1 };
-        else if (sortParam === 'price_desc') sort = { price: -1 };
-        else if (sortParam === 'capacity_asc') sort = { capacity: 1 };
-        else if (sortParam === 'capacity_desc') sort = { capacity: -1 };
-        else if (sortParam === 'featured') sort = { featured: -1, createdAt: -1 };
+        if (sortParam === 'price_asc') sort = { price: 1, _id: 1 };
+        else if (sortParam === 'price_desc') sort = { price: -1, _id: -1 };
+        else if (sortParam === 'capacity_asc') sort = { capacity: 1, _id: 1 };
+        else if (sortParam === 'capacity_desc') sort = { capacity: -1, _id: -1 };
+        else if (sortParam === 'featured') sort = { featured: -1, createdAt: -1, _id: -1 };
+        else if (sortParam === 'name_asc') sort = { title: 1, _id: 1 };
+        else if (sortParam === 'name_desc') sort = { title: -1, _id: -1 };
+        else if (sortParam === 'newest') sort = { createdAt: -1, _id: -1 };
+        else if (sortParam === 'oldest') sort = { createdAt: 1, _id: 1 };
 
         let productQuery = Product.find(query).sort(sort).skip(offsetNum);
         if (limit && !isNaN(parseInt(limit))) {
@@ -444,6 +448,8 @@ export async function POST(request: NextRequest) {
             metaTitle,
             metaDescription,
             images,
+            featured,
+            priority,
             // new/extended fields
             energy_saving,
             smart,
@@ -482,6 +488,8 @@ export async function POST(request: NextRequest) {
             compare_at_price: (typeof compare_at_price !== 'undefined' && compare_at_price !== null && compare_at_price !== '') ? compare_at_price : null,
             currency: currency || 'NPR',
             statusId,
+            featured: featured ? 1 : 0,
+            priority: (typeof priority !== 'undefined' && priority !== null) ? Number(priority) : 0,
             category_id: category_id || null,
             subcategory_id: subcategory_id || null,
             model: model || null,
@@ -592,6 +600,8 @@ export async function PUT(request: NextRequest) {
             metaTitle,
             metaDescription,
             images,
+            featured,
+            priority,
             // new fields
             energy_saving,
             smart,
@@ -642,6 +652,8 @@ export async function PUT(request: NextRequest) {
         }
         if (currency !== undefined) updateData.currency = currency;
         if (statusId !== undefined) updateData.statusId = statusId;
+        if (featured !== undefined) updateData.featured = featured ? 1 : 0;
+        if (priority !== undefined) updateData.priority = (priority === '' || priority === null) ? 0 : Number(priority);
         if (category_id !== undefined) updateData.category_id = category_id;
         if (subcategory_id !== undefined) updateData.subcategory_id = subcategory_id;
         if (model !== undefined) updateData.model = model;

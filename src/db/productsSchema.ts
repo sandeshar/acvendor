@@ -15,6 +15,7 @@ const productSchema = new Schema({
     currency: { type: String, default: 'NPR', maxlength: 10 },
     statusId: { type: Number, default: 1, required: true },
     featured: { type: Number, default: 0, required: true },
+    priority: { type: Number, default: 0 },
     category_id: { type: Schema.Types.ObjectId, ref: 'ServiceCategories' },
     subcategory_id: { type: Schema.Types.ObjectId, ref: 'ServiceSubcategories' },
     model: { type: String, maxlength: 256, default: '' },

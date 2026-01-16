@@ -7,7 +7,7 @@ import { showToast } from '@/components/Toast';
 import { formatPrice, parsePriceNumber } from '@/utils/formatPrice';
 
 type ProductPost = {
-    id: number;
+    id: string;
     slug: string;
     title: string;
     model?: string | null;
@@ -16,6 +16,10 @@ type ProductPost = {
     inventory_status?: string | null;
     price?: string | null;
     statusId?: number;
+    featured?: number;
+    priority?: number;
+    category?: { id: string; name: string; slug: string } | null;
+    subcategory?: { id: string; name: string; slug: string } | null;
     updatedAt?: string;
 };
 
@@ -33,7 +37,7 @@ export default function AdminProductsPage() {
             if (q) setSearchQuery(q);
         } catch (e) { /* ignore */ }
     }, []);
-    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
     const [page, setPage] = useState<number>(1);
     const [perPage, setPerPage] = useState<number>(12);
@@ -43,15 +47,17 @@ export default function AdminProductsPage() {
     // Category filter state
     const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
     const [categoryFilter, setCategoryFilter] = useState<string>('');
+    const [featuredFilter, setFeaturedFilter] = useState<string>('');
+    const [sort, setSort] = useState<string>('newest');
 
     // Debounce refs to avoid frequent API calls while typing
     const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastManualSearchRef = useRef<string | null>(null);
 
-    // Trigger fetch when page/perPage or category changes
+    // Trigger fetch when page/perPage, category or sort changes
     useEffect(() => {
         fetchProducts(page);
-    }, [page, perPage, categoryFilter]);
+    }, [page, perPage, categoryFilter, featuredFilter, sort]);
 
     // Debounced search: wait for typing to stop before firing API call
     useEffect(() => {
@@ -104,9 +110,11 @@ export default function AdminProductsPage() {
             const offset = (p - 1) * perPage;
             // include category filter when set and server-side q param when present
             const categoryQuery = categoryFilter ? `&category=${encodeURIComponent(categoryFilter)}` : '';
+            const featuredQuery = featuredFilter ? `&featured=${featuredFilter}` : '';
+            const sortQuery = sort ? `&sort=${sort}` : '';
             const qToUse = typeof qOverride === 'string' ? qOverride : searchQuery;
             const qQuery = qToUse ? `&q=${encodeURIComponent(qToUse)}` : '';
-            const res = await fetch(`/api/products?limit=${perPage}&offset=${offset}${categoryQuery}${qQuery}&meta=true`);
+            const res = await fetch(`/api/products?limit=${perPage}&offset=${offset}${categoryQuery}${qQuery}${sortQuery}${featuredQuery}&meta=true`);
             const data = res.ok ? await res.json() : [];
 
             if (res.ok && data && data.products) {
@@ -130,7 +138,7 @@ export default function AdminProductsPage() {
         }
     };
 
-    const toggleSelect = (id: number) => {
+    const toggleSelect = (id: string) => {
         setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
 
@@ -251,6 +259,35 @@ export default function AdminProductsPage() {
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Featured filter */}
+                            <div className="hidden md:block">
+                                <select
+                                    value={featuredFilter}
+                                    onChange={(e) => { setFeaturedFilter(e.target.value); setPage(1); }}
+                                    className="px-3 py-2 bg-gray-100 border border-transparent rounded-md text-sm focus:bg-white focus:border-gray-200 outline-none transition-all"
+                                >
+                                    <option value="">All Products</option>
+                                    <option value="1">Featured Only</option>
+                                </select>
+                            </div>
+
+                            {/* Sort Filter */}
+                            <div className="hidden md:block">
+                                <select
+                                    value={sort}
+                                    onChange={(e) => { setSort(e.target.value); setPage(1); }}
+                                    className="px-3 py-2 bg-gray-100 border border-transparent rounded-md text-sm focus:bg-white focus:border-gray-200 outline-none transition-all"
+                                >
+                                    <option value="">Sort: Recommended</option>
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="price_asc">Price: Low to High</option>
+                                    <option value="price_desc">Price: High to Low</option>
+                                    <option value="name_asc">Name: A to Z</option>
+                                    <option value="name_desc">Name: Z to A</option>
+                                </select>
+                            </div>
                         </div>
 
                         <NextLink
@@ -350,7 +387,11 @@ export default function AdminProductsPage() {
                                                     </div>
                                                     <div>
                                                         <div className="font-bold text-gray-900">{p.title}</div>
-                                                        <div className="text-[11px] text-gray-500 font-mono">{p.model ? `${p.model} • ${p.slug}` : p.slug}</div>
+                                                        <div className="text-[11px] text-gray-500 font-medium">
+                                                            {p.model && <span className="font-mono text-gray-400">{p.model} • </span>}
+                                                            <span className="text-primary/70">{p.category?.name || 'No Category'}</span>
+                                                            {p.subcategory?.name && <span className="text-gray-400"> • {p.subcategory.name}</span>}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -362,6 +403,12 @@ export default function AdminProductsPage() {
                                                     {p.statusId === 1 && (
                                                         <span className="px-2 py-0.5 rounded bg-primary-100 text-blue-700 text-[10px] font-bold uppercase">
                                                             Public
+                                                        </span>
+                                                    )}
+                                                    {p.featured === 1 && (
+                                                        <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[10px] font-bold uppercase flex items-center gap-0.5">
+                                                            <span className="material-symbols-outlined text-[10px]">grade</span>
+                                                            Featured
                                                         </span>
                                                     )}
                                                 </div>

@@ -26,8 +26,11 @@ export default function SortDropdown({ currentSort }: { currentSort: string }) {
             className="h-9 rounded-lg border-gray-200 text-sm bg-white text-[#111418] focus:ring-primary focus:border-primary"
         >
             <option value="">Sort by: Recommended</option>
+            <option value="newest">Newest First</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
+            <option value="name_asc">Name: A to Z</option>
+            <option value="name_desc">Name: Z to A</option>
             <option value="capacity_asc">Capacity: Low to High</option>
             <option value="capacity_desc">Capacity: High to Low</option>
         </select>

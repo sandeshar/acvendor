@@ -29,6 +29,7 @@ export default function HomePageUI() {
     const [blogSection, setBlogSection] = useState<any>({});
     const [testimonialsSection, setTestimonialsSection] = useState<any>({});
     const [heroFeatures, setHeroFeatures] = useState<any[]>([]);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
 
     // Track deleted items
     const [deletedTrustLogos, setDeletedTrustLogos] = useState<number[]>([]);
@@ -39,7 +40,7 @@ export default function HomePageUI() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes, heroFeaturesRes, blogSectionRes, aboutSectionRes, aboutItemsRes] = await Promise.all([
+            const [heroRes, trustSecRes, trustLogosRes, expSecRes, expItemsRes, contactRes, productsSecRes, projectsSecRes, testimonialsSecRes, heroFeaturesRes, blogSectionRes, aboutSectionRes, aboutItemsRes, allProductsRes] = await Promise.all([
                 fetch('/api/pages/homepage/hero'),
                 fetch('/api/pages/homepage/trust-section'),
                 fetch('/api/pages/homepage/trust-logos'),
@@ -53,6 +54,7 @@ export default function HomePageUI() {
                 fetch('/api/pages/homepage/blog-section'),
                 fetch('/api/pages/homepage/about-section'),
                 fetch('/api/pages/homepage/about-items?admin=1'),
+                fetch('/api/products?limit=1000'),
             ]);
 
             if (heroRes.ok) setHeroData(await heroRes.json());
@@ -62,6 +64,10 @@ export default function HomePageUI() {
             if (expItemsRes.ok) setExpertiseItems(await expItemsRes.json());
             if (contactRes.ok) setContactData(await contactRes.json());
             if (productsSecRes.ok) setProductsSection(await productsSecRes.json() || {});
+            if (allProductsRes.ok) {
+                const pd = await allProductsRes.json();
+                setAllProducts(Array.isArray(pd) ? pd : (pd.products || []));
+            }
             if (projectsSecRes.ok) {
                 const ps = await projectsSecRes.json();
                 setProjectsSection(ps || {});
@@ -628,6 +634,99 @@ export default function HomePageUI() {
                                     <div className="pt-4 flex items-center justify-between border-t border-gray-50 mt-6">
                                         <span className="text-sm font-medium text-gray-700">Enable Section</span>
                                         <Toggle checked={productsSection.is_active === 1} onChange={(c) => setProductsSection({ ...productsSection, is_active: c ? 1 : 0 })} />
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-100 pt-6">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-2 uppercase tracking-wider">Featured Products Selection</h3>
+                                    <p className="text-xs text-gray-500 mb-4">
+                                        <span className="font-semibold text-amber-600">Tip:</span> If you don't select any products specifically, the system will automatically display products marked as "Featured" in your product listings, ordered by their "Display Order".
+                                    </p>
+
+                                    <div className="space-y-2 mb-6 max-h-[400px] overflow-y-auto pr-2">
+                                        {(productsSection.product_ids || []).map((pId: string, idx: number) => {
+                                            const product = allProducts.find(p => (p._id || p.id) === pId);
+                                            return (
+                                                <div key={idx} className="flex items-center gap-3 bg-gray-50 p-2.5 rounded-lg border border-gray-200 group">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-gray-900 truncate">{product ? product.name : 'Unknown Product'}</p>
+                                                        <p className="text-[11px] text-gray-500 truncate">{product ? `${product.category} / ${product.model}` : pId}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-0.5">
+                                                        <button
+                                                            disabled={idx === 0}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const newIds = [...(productsSection.product_ids || [])];
+                                                                [newIds[idx], newIds[idx - 1]] = [newIds[idx - 1], newIds[idx]];
+                                                                setProductsSection({ ...productsSection, product_ids: newIds });
+                                                            }}
+                                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30 text-gray-500"
+                                                            title="Move Up"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[20px]">arrow_upward</span>
+                                                        </button>
+                                                        <button
+                                                            disabled={idx === (productsSection.product_ids?.length || 0) - 1}
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const newIds = [...(productsSection.product_ids || [])];
+                                                                [newIds[idx], newIds[idx + 1]] = [newIds[idx + 1], newIds[idx]];
+                                                                setProductsSection({ ...productsSection, product_ids: newIds });
+                                                            }}
+                                                            className="p-1 hover:bg-gray-200 rounded disabled:opacity-30 text-gray-500"
+                                                            title="Move Down"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[20px]">arrow_downward</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const newIds = productsSection.product_ids.filter((_: any, i: number) => i !== idx);
+                                                                setProductsSection({ ...productsSection, product_ids: newIds });
+                                                            }}
+                                                            className="p-1 hover:bg-red-50 text-red-500 rounded ml-1"
+                                                            title="Remove"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[20px]">close</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                        {(!productsSection.product_ids || productsSection.product_ids.length === 0) && (
+                                            <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                                <p className="text-xs text-gray-400">No specific products selected.</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="relative">
+                                        <select
+                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-hidden focus:ring-2 focus:ring-primary bg-white appearance-none cursor-pointer"
+                                            value=""
+                                            onChange={(e) => {
+                                                if (e.target.value) {
+                                                    const alreadySelected = (productsSection.product_ids || []).includes(e.target.value);
+                                                    if (!alreadySelected) {
+                                                        const newIds = [...(productsSection.product_ids || []), e.target.value];
+                                                        setProductsSection({ ...productsSection, product_ids: newIds });
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            <option value="">+ Add Product to Section</option>
+                                            {allProducts
+                                                .filter(p => !(productsSection.product_ids || []).includes(p._id || p.id))
+                                                .map(p => (
+                                                    <option key={p._id || p.id} value={p._id || p.id}>
+                                                        {p.name} ({p.category})
+                                                    </option>
+                                                ))}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <span className="material-symbols-outlined">expand_more</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

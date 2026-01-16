@@ -15,6 +15,7 @@ const ALLOWED_TYPES = new Set([
     'image/svg+xml',
     'image/x-icon',
     'image/vnd.microsoft.icon',
+    'application/pdf',
 ])
 
 function getEnvUploadDir() {
@@ -31,7 +32,7 @@ function getBaseUrl() {
 
 function getSafeExtension(filename: string): string {
     const ext = path.extname(filename || '').toLowerCase()
-    if (['.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico'].includes(ext)) return ext
+    if (['.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.pdf'].includes(ext)) return ext
     return '.bin'
 }
 
