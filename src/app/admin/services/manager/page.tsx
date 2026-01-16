@@ -31,7 +31,7 @@ type ServicePost = {
 };
 
 export default function ServicesManagerPage() {
-    const [activeTab, setActiveTab] = useState("hero");
+    const [activeTab, setActiveTab] = useState("services");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -346,7 +346,6 @@ export default function ServicesManagerPage() {
 
     const tabs = [
         { id: "services", label: "Services", icon: "design_services" },
-
         { id: "hero", label: "Hero", icon: "web_asset" },
         { id: "features", label: "Features", icon: "star" },
         { id: "process", label: "Process", icon: "settings_suggest" },

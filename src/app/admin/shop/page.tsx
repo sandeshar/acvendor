@@ -57,6 +57,7 @@ interface CategoryCTAData {
 }
 
 export default function AdminShopPage() {
+    const [activeTab, setActiveTab] = useState<'global' | 'midea' | 'category'>('global');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [categories, setCategories] = useState<any[]>([]);
@@ -174,7 +175,7 @@ export default function AdminShopPage() {
     };
 
     const linesToBullets = (lines: string) => {
-        const array = lines.split('\n').map(l => l.trim()).filter(l => l !== '');
+        const array = lines.split('\n');
         return JSON.stringify(array);
     };
 
@@ -335,15 +336,21 @@ export default function AdminShopPage() {
             });
 
             // Save CTA - bullets are already a JSON string in state due to onChange handler
+            const cleanedBullets = JSON.stringify(
+                JSON.parse(shopCTA.bullets || '[]')
+                    .map((b: string) => b.trim())
+                    .filter((b: string) => b !== '')
+            );
             const ctaRes = await fetch('/api/pages/shop/cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(shopCTA)
+                body: JSON.stringify({ ...shopCTA, bullets: cleanedBullets })
             });
 
             if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setGlobalHero({ ...globalHero, id: data.id });
+                setShopCTA(prev => ({ ...prev, bullets: cleanedBullets }));
                 showToast('Global shop content updated', { type: 'success' });
             } else {
                 throw new Error('Save failed');
@@ -370,15 +377,21 @@ export default function AdminShopPage() {
             });
 
             // Bullets are already a JSON string in state
+            const cleanedBullets = JSON.stringify(
+                JSON.parse(categoryCTA.bullets || '[]')
+                    .map((b: string) => b.trim())
+                    .filter((b: string) => b !== '')
+            );
             const ctaRes = await fetch('/api/pages/shop/category-cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...categoryCTA, category_slug: selectedCategory })
+                body: JSON.stringify({ ...categoryCTA, category_slug: selectedCategory, bullets: cleanedBullets })
             });
 
             if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setBrandHero({ ...brandHero, id: data.id });
+                setCategoryCTA(prev => ({ ...prev, bullets: cleanedBullets }));
                 showToast(`Content for ${selectedCategory} updated`, { type: 'success' });
             } else {
                 throw new Error('Save failed');
@@ -402,15 +415,21 @@ export default function AdminShopPage() {
             });
 
             // Bullets are already a JSON string in state
+            const cleanedBullets = JSON.stringify(
+                JSON.parse(mideaCTA.bullets || '[]')
+                    .map((b: string) => b.trim())
+                    .filter((b: string) => b !== '')
+            );
             const ctaRes = await fetch('/api/pages/shop/category-cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...mideaCTA, category_slug: 'midea' })
+                body: JSON.stringify({ ...mideaCTA, category_slug: 'midea', bullets: cleanedBullets })
             });
 
             if (res.ok && ctaRes.ok) {
                 const data = await res.json();
                 if (method === 'POST') setMideaHero({ ...mideaHero, id: data.id });
+                setMideaCTA(prev => ({ ...prev, bullets: cleanedBullets }));
                 showToast('Midea content updated', { type: 'success' });
             } else {
                 throw new Error('Save failed');
