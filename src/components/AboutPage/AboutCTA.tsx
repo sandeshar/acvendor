@@ -27,15 +27,15 @@ const AboutCTA = ({ data }: AboutCTAProps) => {
                 <h2 className="text-white text-3xl md:text-4xl font-bold leading-tight max-w-2xl">
                     {data.title}
                 </h2>
-                <p className="text-primary-100 text-lg max-w-xl">
+                <p className="text-white/70 text-lg max-w-xl">
                     {data.description}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                    <a href={data.primary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-secondary text-white text-base font-bold leading-normal tracking-[0.015em] hover:opacity-90 transition-all shadow-lg shadow-secondary/20 active:scale-95">
+                    <a href={data.primary_button_link || '#'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg transition-all active:scale-95">
                         {data.primary_button_text}
                     </a>
                     {data.secondary_button_text && (
-                        <a href={data.secondary_button_link || '#'} className="flex min-w-40 cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-8 bg-white text-primary text-base font-bold leading-normal tracking-[0.015em] hover:bg-white/90 transition-all shadow-lg active:scale-95">
+                        <a href={data.secondary_button_link || '#'} className="inline-block bg-primary-600 text-white border border-white/20 hover:bg-primary-700 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg transition-all active:scale-95">
                             {data.secondary_button_text}
                         </a>
                     )}

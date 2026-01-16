@@ -98,10 +98,13 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     ]);
 
     const products = productsRes.ok ? await productsRes.json() : [];
-    const categories = catsRes.ok ? await catsRes.json() : [];
-    const subcategories = subsRes.ok ? await subsRes.json() : [];
+    const allCategories = catsRes.ok ? await catsRes.json() : [];
+    const allSubcategories = subsRes.ok ? await subsRes.json() : [];
     const categoryHero = heroRes.ok ? await heroRes.json() : null;
     const categoryCTA = ctaRes.ok ? await ctaRes.json() : null;
+
+    const categories = Array.isArray(allCategories) ? allCategories.filter((c: any) => c.is_active !== 0) : [];
+    const subcategories = Array.isArray(allSubcategories) ? allSubcategories.filter((s: any) => s.is_active !== 0) : [];
 
     const category = categories.find((c: any) => c.slug === categorySlug) || { name: categorySlug };
     const subcategory = subcategorySlug ? subcategories.find((s: any) => s.slug === subcategorySlug) : null;
@@ -229,7 +232,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
     return (
         <main className="flex-1 bg-gray-50/50 min-h-screen">
             {/* Category Hero Section (Optional) */}
-            {categoryHero && Object.keys(categoryHero).length > 0 && !subcategory && (
+            {categoryHero && categoryHero.is_active === 1 && !subcategory && (
                 <div className="bg-surface-light border-b border-gray-100">
                     <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-12 lg:py-16">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -304,7 +307,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
             )}
 
             {/* Breadcrumbs & Header (Always shown if no hero or if subcategory) */}
-            {(!categoryHero || Object.keys(categoryHero).length === 0 || subcategory) && (
+            {(!categoryHero || categoryHero.is_active !== 1 || subcategory) && (
                 <div className="bg-white border-b border-gray-100">
                     <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-8">
                         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
@@ -390,7 +393,10 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                             <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 mb-8 text-primary-50 font-medium">
                                                 {(() => {
                                                     try {
-                                                        const b = typeof categoryCTA.bullets === 'string' ? JSON.parse(categoryCTA.bullets) : categoryCTA.bullets;
+                                                        let b = typeof categoryCTA.bullets === 'string' ? JSON.parse(categoryCTA.bullets) : categoryCTA.bullets;
+                                                        if (typeof b === 'string' && b.startsWith('[')) {
+                                                            b = JSON.parse(b);
+                                                        }
                                                         return Array.isArray(b) ? b.map((bullet: string, i: number) => (
                                                             <li key={i} className="flex items-center gap-2">
                                                                 <span className="material-symbols-outlined text-sm">check_circle</span>

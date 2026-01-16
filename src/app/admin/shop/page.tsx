@@ -159,7 +159,24 @@ export default function AdminShopPage() {
     });
 
     // UI Tab state: controls which editor panel is visible
-    const [activeTab, setActiveTab] = useState<'global' | 'midea' | 'category'>('global');
+    const bulletsToLines = (bullets: string) => {
+        try {
+            let parsed = JSON.parse(bullets);
+            // Handle secondary stringification if it exists
+            if (typeof parsed === 'string' && parsed.startsWith('[')) {
+                parsed = JSON.parse(parsed);
+            }
+            if (Array.isArray(parsed)) return parsed.join('\n');
+            return bullets;
+        } catch (e) {
+            return bullets;
+        }
+    };
+
+    const linesToBullets = (lines: string) => {
+        const array = lines.split('\n').map(l => l.trim()).filter(l => l !== '');
+        return JSON.stringify(array);
+    };
 
     useEffect(() => {
         fetchInitialData();
@@ -317,7 +334,7 @@ export default function AdminShopPage() {
                 body: JSON.stringify(globalHero)
             });
 
-            // Save CTA
+            // Save CTA - bullets are already a JSON string in state due to onChange handler
             const ctaRes = await fetch('/api/pages/shop/cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -352,6 +369,7 @@ export default function AdminShopPage() {
                 body: JSON.stringify({ ...brandHero, brand_slug: selectedCategory })
             });
 
+            // Bullets are already a JSON string in state
             const ctaRes = await fetch('/api/pages/shop/category-cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -383,6 +401,7 @@ export default function AdminShopPage() {
                 body: JSON.stringify({ ...mideaHero, brand_slug: 'midea' })
             });
 
+            // Bullets are already a JSON string in state
             const ctaRes = await fetch('/api/pages/shop/category-cta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -466,6 +485,15 @@ export default function AdminShopPage() {
                                     />
                                 </div>
                                 <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
+                                    <input
+                                        type="text"
+                                        value={globalHero.subtitle}
+                                        onChange={e => setGlobalHero({ ...globalHero, subtitle: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
                                     <input
                                         type="text"
@@ -499,6 +527,27 @@ export default function AdminShopPage() {
                                             type="text"
                                             value={globalHero.cta_link}
                                             onChange={e => setGlobalHero({ ...globalHero, cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            value={globalHero.cta2_text}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            value={globalHero.cta2_link}
+                                            onChange={e => setGlobalHero({ ...globalHero, cta2_link: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
@@ -567,15 +616,14 @@ export default function AdminShopPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
-                                    <input
-                                        type="text"
-                                        value={shopCTA.bullets}
-                                        onChange={e => setShopCTA({ ...shopCTA, bullets: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        placeholder='["Expert Installation", "24/7 Support", "Genuine Parts"]'
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (one per line)</label>
+                                    <textarea
+                                        value={bulletsToLines(shopCTA.bullets)}
+                                        onChange={e => setShopCTA({ ...shopCTA, bullets: linesToBullets(e.target.value) })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm h-32"
+                                        placeholder={"Expert Installation\n24/7 Support\nGenuine Parts"}
                                     />
-                                    <p className="text-[10px] text-slate-400 mt-1">Format as a valid JSON array: <code>["Item 1", "Item 2"]</code></p>
+                                    <p className="text-[10px] text-slate-400 mt-1">Enter each point on a new line.</p>
                                 </div>
                             </div>
 
@@ -681,6 +729,15 @@ export default function AdminShopPage() {
                                     />
                                 </div>
                                 <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
+                                    <input
+                                        type="text"
+                                        value={mideaHero.subtitle}
+                                        onChange={e => setMideaHero({ ...mideaHero, subtitle: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                    />
+                                </div>
+                                <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
                                     <input
                                         type="text"
@@ -714,6 +771,27 @@ export default function AdminShopPage() {
                                             type="text"
                                             value={mideaHero.cta_link}
                                             onChange={e => setMideaHero({ ...mideaHero, cta_link: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                        <input
+                                            type="text"
+                                            value={mideaHero.cta2_text}
+                                            onChange={e => setMideaHero({ ...mideaHero, cta2_text: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                        <input
+                                            type="text"
+                                            value={mideaHero.cta2_link}
+                                            onChange={e => setMideaHero({ ...mideaHero, cta2_link: e.target.value })}
                                             className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                         />
                                     </div>
@@ -782,14 +860,14 @@ export default function AdminShopPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
-                                    <input
-                                        type="text"
-                                        value={mideaCTA.bullets}
-                                        onChange={e => setMideaCTA({ ...mideaCTA, bullets: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                        placeholder='["Energy Efficient", "Smart Control", "Quiet Operation"]'
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (one per line)</label>
+                                    <textarea
+                                        value={bulletsToLines(mideaCTA.bullets)}
+                                        onChange={e => setMideaCTA({ ...mideaCTA, bullets: linesToBullets(e.target.value) })}
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm h-32"
+                                        placeholder={"Energy Efficient\nSmart Control\nQuiet Operation"}
                                     />
+                                    <p className="text-[10px] text-slate-400 mt-1">Enter each point on a new line.</p>
                                 </div>
                             </div>
 
@@ -915,6 +993,15 @@ export default function AdminShopPage() {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Subtitle</label>
+                                        <input
+                                            type="text"
+                                            value={brandHero.subtitle}
+                                            onChange={e => setBrandHero({ ...brandHero, subtitle: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-bold"
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Highlight Text</label>
                                         <input
                                             type="text"
@@ -948,6 +1035,27 @@ export default function AdminShopPage() {
                                                 type="text"
                                                 value={brandHero.cta_link}
                                                 onChange={e => setBrandHero({ ...brandHero, cta_link: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-3">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Text</label>
+                                            <input
+                                                type="text"
+                                                value={brandHero.cta2_text || ''}
+                                                onChange={e => setBrandHero({ ...brandHero, cta2_text: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1 tracking-wide">Secondary CTA Link</label>
+                                            <input
+                                                type="text"
+                                                value={brandHero.cta2_link || ''}
+                                                onChange={e => setBrandHero({ ...brandHero, cta2_link: e.target.value })}
                                                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                                             />
                                         </div>
@@ -1018,14 +1126,14 @@ export default function AdminShopPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (JSON array)</label>
-                                        <input
-                                            type="text"
-                                            value={categoryCTA.bullets}
-                                            onChange={e => setCategoryCTA({ ...categoryCTA, bullets: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
-                                            placeholder='["Expert Installation", "Genuine Parts", "Warranty Support"]'
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wide">Bullet Points (one per line)</label>
+                                        <textarea
+                                            value={bulletsToLines(categoryCTA.bullets)}
+                                            onChange={e => setCategoryCTA({ ...categoryCTA, bullets: linesToBullets(e.target.value) })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm h-32"
+                                            placeholder={"Expert Installation\nGenuine Parts\nWarranty Support"}
                                         />
+                                        <p className="text-[10px] text-slate-400 mt-1">Enter each point on a new line.</p>
                                     </div>
                                 </div>
 

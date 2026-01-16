@@ -100,9 +100,9 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
 
     return (
         <main className="flex flex-col items-center page-bg">
-            <div className="flex flex-col w-full max-w-7xl py-5">
+            <div className="flex flex-col w-full max-w-7xl">
                 {/* Hero Section */}
-                <section className="relative py-10 sm:py-16">
+                <section className="relative py-10 sm:py-20">
                     <div className="absolute inset-0 -z-10 bg-linear-to-br from-slate-50 to-slate-100" />
                     <div className="mx-auto w-full max-w-6xl">
                         <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
@@ -116,7 +116,7 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                                 <h1 className="text-4xl md:text-5xl font-bold text-[#0f172a] mb-4 leading-tight">
                                     {post.title}
                                 </h1>
-                                <p className="text-lg text-[#4b5563] leading-relaxed mb-8">
+                                <p className="text-lg text-[#4b5563] leading-relaxed mb-6">
                                     {post.excerpt}
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4">
@@ -153,9 +153,9 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                 </section>
 
                 {/* Details Section */}
-                <section id="details" className="py-20 sm:py-32">
+                <section id="details" className="pt-12 pb-10 sm:pt-16 sm:pb-14">
                     <div className="mx-auto w-full max-w-6xl">
-                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10">
                             {/* Main Content */}
                             <div className="space-y-12">
                                 {/* About Section */}
@@ -256,7 +256,7 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
 
                 {/* Testimonials */}
                 {post.id && (
-                    <section className="py-20 sm:py-32">
+                    <section className="py-10 sm:py-14">
                         <TestimonialSlider
                             filter={String(post.id)}
                             title={`Success Stories for ${post.title}`}
@@ -266,7 +266,7 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                 )}
 
                 {/* CTA Section */}
-                <section className="py-16 sm:py-24 bg-linear-to-r from-primary/5 to-indigo-500/5 border-y border-slate-200">
+                <section className="py-10 sm:py-14 bg-linear-to-r from-primary/5 to-indigo-500/5 border-y border-slate-200">
                     <div className="mx-auto w-full max-w-3xl text-center">
                         <h4 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">
                             Let's Bring Your Vision to Life

@@ -325,7 +325,7 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                 {/* Client-driven pagination component ensures category/subcategory are preserved during navigation */}
                 <ProductsPagination currentPage={page} hasMore={hasMore} />
 
-                {mideaCTA?.is_active ? (
+                {mideaCTA?.is_active === 1 && (
                     <div className="bg-primary rounded-xl p-8 md:p-12 mt-4 overflow-hidden relative shadow-2xl shadow-primary/20">
                         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                             <div className="max-w-xl text-white text-center md:text-left">
@@ -335,7 +335,10 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                                     <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 mb-8 text-primary-50 font-medium justify-center md:justify-start">
                                         {(() => {
                                             try {
-                                                const b = typeof mideaCTA.bullets === 'string' ? JSON.parse(mideaCTA.bullets) : mideaCTA.bullets;
+                                                let b = typeof mideaCTA.bullets === 'string' ? JSON.parse(mideaCTA.bullets) : mideaCTA.bullets;
+                                                if (typeof b === 'string' && b.startsWith('[')) {
+                                                    b = JSON.parse(b);
+                                                }
                                                 return Array.isArray(b) ? b.map((bullet: string, i: number) => (
                                                     <li key={i} className="flex items-center gap-2">
                                                         <span className="material-symbols-outlined text-sm">check_circle</span>
@@ -346,9 +349,16 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                                         })()}
                                     </ul>
                                 )}
-                                <Link href={mideaCTA.button1_link || mideaCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
-                                    {mideaCTA.button1_text || mideaCTA.button_text || 'Contact Sales'}
-                                </Link>
+                                <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                                    <Link href={mideaCTA.button1_link || mideaCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                        {mideaCTA.button1_text || mideaCTA.button_text || 'Contact Sales'}
+                                    </Link>
+                                    {(mideaCTA.button2_text || mideaCTA.button2_link) && (
+                                        <Link href={mideaCTA.button2_link || '#'} className="inline-block bg-primary-600 text-white border border-white/20 hover:bg-primary-700 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                            {mideaCTA.button2_text}
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                             <div className="hidden lg:block relative z-10">
                                 <div className="w-48 h-48 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
@@ -357,17 +367,6 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                             </div>
                         </div>
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                    </div>
-                ) : (
-                    <div className="bg-primary/5 rounded-xl p-8 mt-4 flex flex-col md:flex-row items-center justify-between gap-6 border border-primary/20">
-                        <div className="flex flex-col gap-2">
-                            <h3 className="text-2xl font-bold text-[#111418]">Need a custom cooling solution?</h3>
-                            <p className="text-[#617589] text-base">Contact us for bulk orders, project installations, or specific requirement consultations.</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <Link href={mideaCTA.button2_link || "/contact"} className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-white border border-gray-200 text-[#111418] text-base font-bold shadow-sm hover:shadow transition-shadow">{mideaCTA.button2_text || "Contact Sales"}</Link>
-                            {/* If there was a third button or something else, it would go here */}
-                        </div>
                     </div>
                 )}
             </main>

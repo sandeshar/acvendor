@@ -60,71 +60,86 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
 
     return (
         <main className="flex-1">
-            <section className="relative bg-surface-light py-8 lg:py-16 overflow-hidden">
-                <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
-                    <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
-                        <div className="flex-1 flex flex-col gap-6 text-left z-10">
-                            {hero?.badge_text && (
-                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
-                                    <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
-                                    <span className="text-primary text-[11px] font-extrabold uppercase tracking-widest leading-none">{hero.badge_text}</span>
-                                </div>
-                            )}
-                            <h1 data-hero-title={hero?.title} data-hero-highlight={hero?.highlight_text} className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
-                                {renderTitle(hero?.title || '', hero?.highlight_text || '')}
-                            </h1>
-                            {hero?.subtitle && (
-                                <p className="text-xl md:text-2xl font-bold text-gray-700/80 tracking-tight -mt-4">
-                                    {hero.subtitle}
-                                </p>
-                            )}
-
-                            <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">
-                                {hero?.description}
-                            </p>
-
-                            {/* CTAs */}
-                            <div className="flex flex-wrap gap-4 pt-4">
-                                {hero?.cta_text && (
-                                    <a href={hero.cta_link || '#'} className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-600 text-white font-bold text-base transition-all shadow-lg flex items-center gap-2">
-                                        <span>{hero.cta_text}</span>
-                                        <span className="material-symbols-outlined">arrow_forward</span>
-                                    </a>
-                                )}
-                                {hero?.cta2_text && (
-                                    <a href={hero.cta2_link || '#'} className="h-12 px-6 rounded-lg bg-background-light hover:bg-gray-200 text-text-main-light font-bold text-base transition-all flex items-center gap-2">
-                                        <span className="material-symbols-outlined">grid_view</span>
-                                        <span>{hero.cta2_text}</span>
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex-1 w-full relative group perspective-1000">
-                            <div className="relative z-10 w-full aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gray-100 border border-gray-200/50">
-                                <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-1000 group-hover:scale-110" data-alt={hero?.hero_image_alt || ''} style={{ backgroundImage: `url('${hero?.background_image || ''}')` }} />
-                                <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
-                                <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex justify-between items-center shadow-2xl transition-all duration-300 group-hover:bottom-5">
-                                    <div className="max-w-[70%]">
-                                        <p className="font-black text-xl tracking-tight leading-tight">{hero?.tagline}</p>
-                                        <p className="text-xs md:text-sm font-medium opacity-80 mt-1.5 line-clamp-2 leading-relaxed">
-                                            {hero?.card_overlay_text || hero?.subtitle || hero?.description}
-                                        </p>
+            {hero?.is_active === 1 ? (
+                <section className="relative bg-surface-light py-8 lg:py-16 overflow-hidden">
+                    <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto">
+                        <div className="flex flex-col-reverse lg:flex-row items-center gap-12">
+                            <div className="flex-1 flex flex-col gap-6 text-left z-10">
+                                {hero?.badge_text && (
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 w-fit backdrop-blur-sm shadow-sm transition-all hover:bg-primary/15">
+                                        <span className="material-symbols-outlined text-primary text-sm font-semibold">verified</span>
+                                        <span className="text-primary text-[11px] font-extrabold uppercase tracking-widest leading-none">{hero.badge_text}</span>
                                     </div>
-                                    {(hero?.card_cta_text || hero?.cta_text) ? (
-                                        <Link
-                                            href={hero?.card_cta_link || hero?.cta_link || '/shop'}
-                                            className="shrink-0 ml-4 h-11 px-6 inline-flex items-center justify-center bg-white text-black hover:bg-primary rounded-xl font-bold text-sm transition-all duration-300 shadow-lg active:scale-95"
-                                        >
-                                            {hero.card_cta_text || hero.cta_text}
-                                        </Link>
-                                    ) : null}
+                                )}
+                                <h1 data-hero-title={hero?.title} data-hero-highlight={hero?.highlight_text} className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight text-text-main-light">
+                                    {renderTitle(hero?.title || '', hero?.highlight_text || '')}
+                                </h1>
+                                {hero?.subtitle && (
+                                    <p className="text-xl md:text-2xl font-bold text-gray-700/80 tracking-tight -mt-4">
+                                        {hero.subtitle}
+                                    </p>
+                                )}
+
+                                <p className="text-lg text-text-sub-light max-w-xl leading-relaxed">
+                                    {hero?.description}
+                                </p>
+
+                                {/* CTAs */}
+                                <div className="flex flex-wrap gap-4 pt-4">
+                                    {hero?.cta_text && (
+                                        <a href={hero.cta_link || '#'} className="h-12 px-6 rounded-lg bg-primary hover:bg-primary-600 text-white font-bold text-base transition-all shadow-lg flex items-center gap-2">
+                                            <span>{hero.cta_text}</span>
+                                            <span className="material-symbols-outlined">arrow_forward</span>
+                                        </a>
+                                    )}
+                                    {hero?.cta2_text && (
+                                        <a href={hero.cta2_link || '#'} className="h-12 px-6 rounded-lg bg-background-light hover:bg-gray-200 text-text-main-light font-bold text-base transition-all flex items-center gap-2">
+                                            <span className="material-symbols-outlined">grid_view</span>
+                                            <span>{hero.cta2_text}</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 w-full relative group perspective-1000">
+                                <div className="relative z-10 w-full aspect-4/3 rounded-2xl overflow-hidden shadow-2xl shadow-black/10 bg-gray-100 border border-gray-200/50">
+                                    <div className="absolute inset-0 bg-cover bg-center transform transition-transform duration-1000 group-hover:scale-110" data-alt={hero?.hero_image_alt || ''} style={{ backgroundImage: `url('${hero?.background_image || ''}')` }} />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
+                                    <div className="absolute bottom-4 left-4 right-4 p-5 md:p-6 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/20 text-white flex justify-between items-center shadow-2xl transition-all duration-300 group-hover:bottom-5">
+                                        <div className="max-w-[70%]">
+                                            <p className="font-black text-xl tracking-tight leading-tight">{hero?.tagline}</p>
+                                            <p className="text-xs md:text-sm font-medium opacity-80 mt-1.5 line-clamp-2 leading-relaxed">
+                                                {hero?.card_overlay_text || hero?.subtitle || hero?.description}
+                                            </p>
+                                        </div>
+                                        {(hero?.card_cta_text || hero?.cta_text) ? (
+                                            <Link
+                                                href={hero?.card_cta_link || hero?.cta_link || '/shop'}
+                                                className="shrink-0 ml-4 h-11 px-6 inline-flex items-center justify-center bg-white text-black hover:bg-primary rounded-xl font-bold text-sm transition-all duration-300 shadow-lg active:scale-95"
+                                            >
+                                                {hero.card_cta_text || hero.cta_text}
+                                            </Link>
+                                        ) : null}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </section>
+            ) : (
+                <div className="bg-white border-b border-gray-100">
+                    <div className="layout-container px-4 md:px-10 max-w-[1440px] mx-auto py-8">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
+                            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                            <span className="text-primary">Shop</span>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+                            Shop
+                        </h1>
+                    </div>
                 </div>
-            </section>
+            )}
 
             {/* Category Filter Bar */}
             <div className="sticky top-[65px] z-40 bg-background-light/95 backdrop-blur-sm border-b border-[#e5e7eb] py-2.5 md:py-4 overflow-x-auto hide-scrollbar">
@@ -191,10 +206,8 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
             })}
 
             {/* Consultation Banner / Dynamic CTA */}
-            <section className="py-16 px-4 md:px-10">
-                {/* Compare tray (client) */}
-                <CompareTrayWrapper />
-                {shopCTA?.is_active ? (
+            {shopCTA?.is_active === 1 && (
+                <section className="py-16 px-4 md:px-10">
                     <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
                         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
                             <div className="max-w-xl text-white">
@@ -204,7 +217,10 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                     <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
                                         {(() => {
                                             try {
-                                                const b = typeof shopCTA.bullets === 'string' ? JSON.parse(shopCTA.bullets) : shopCTA.bullets;
+                                                let b = typeof shopCTA.bullets === 'string' ? JSON.parse(shopCTA.bullets) : shopCTA.bullets;
+                                                if (typeof b === 'string' && b.startsWith('[')) {
+                                                    b = JSON.parse(b);
+                                                }
                                                 return Array.isArray(b) ? b.map((bullet: string, i: number) => (
                                                     <li key={i} className="flex items-center gap-2">
                                                         <span className="material-symbols-outlined">check_circle</span>
@@ -234,28 +250,8 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                         </div>
                         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
                     </div>
-                ) : (
-                    <div className="max-w-[1440px] mx-auto bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
-                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-                            <div className="max-w-xl text-white">
-                                <h2 className="text-3xl font-black mb-4">Unsure which brand fits your room?</h2>
-                                <p className="text-primary-100 text-lg mb-8">Get a free professional site survey. Our experts will inspect your space and recommend the perfect cooling solution.</p>
-                                <ul className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
-                                    <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Free Consultation</span></li>
-                                    <li className="flex items-center gap-2"><span className="material-symbols-outlined">check_circle</span> <span>Accurate BTU Sizing</span></li>
-                                </ul>
-                                <button className="bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">Book Site Survey</button>
-                            </div>
-                            <div className="hidden md:block">
-                                <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                                    <span className="material-symbols-outlined text-white text-8xl">support_agent</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                    </div>
-                )}
-            </section>
+                </section>
+            )}
         </main>
     );
 }
