@@ -218,8 +218,8 @@ const NavBar = ({ storeName, storeLogo, store }: NavBarProps) => {
 
                                         {hasDropdown && String(openDropdown) === String(link.id) && (
                                             <div
-                                                className="absolute top-full left-0 bg-white z-60 pointer-events-auto border border-slate-100 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 flex"
-                                                style={{ minWidth: '480px' }}
+                                                className="absolute top-full right-0 bg-white z-60 pointer-events-auto border border-slate-100 shadow-2xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 flex"
+                                                style={{ minWidth: '600px' }}
                                                 onMouseEnter={() => {
                                                     clearAllCloseTimers();
                                                     if (link.id !== undefined) setOpenDropdown(link.id);
