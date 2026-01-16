@@ -76,20 +76,20 @@ export default function ServicesManagerPage() {
             const loadedBrands = brandsRes.ok ? await brandsRes.json() : [];
             const loadedTrust = trustRes.ok ? await trustRes.json() : null;
             const loadedFeatures = featuresRes.ok ? await featuresRes.json() : [];
-            
-            const normalizedBrands = Array.isArray(loadedBrands) ? loadedBrands.map((b: any) => ({ 
-                ...b, 
-                id: b.id ?? (b._id ? String(b._id) : undefined), 
-                is_active: typeof b.is_active === "number" ? b.is_active : (b.is_active ? 1 : 0) 
+
+            const normalizedBrands = Array.isArray(loadedBrands) ? loadedBrands.map((b: any) => ({
+                ...b,
+                id: b.id ?? (b._id ? String(b._id) : undefined),
+                is_active: typeof b.is_active === "number" ? b.is_active : (b.is_active ? 1 : 0)
             })) : [];
             setBrands(normalizedBrands);
-            
+
             if (loadedTrust) setTrustData(loadedTrust);
-            
-            const normalizedFeatures = Array.isArray(loadedFeatures) ? loadedFeatures.map((f: any) => ({ 
-                ...f, 
-                id: f.id ?? (f._id ? String(f._id) : undefined), 
-                is_active: typeof f.is_active === "number" ? f.is_active : (f.is_active ? 1 : 0) 
+
+            const normalizedFeatures = Array.isArray(loadedFeatures) ? loadedFeatures.map((f: any) => ({
+                ...f,
+                id: f.id ?? (f._id ? String(f._id) : undefined),
+                is_active: typeof f.is_active === "number" ? f.is_active : (f.is_active ? 1 : 0)
             })) : [];
             setFeaturesList(normalizedFeatures);
 
@@ -154,10 +154,10 @@ export default function ServicesManagerPage() {
                 return bDate - aDate;
             });
             setServicesList(servicesArray);
-            
+
             setHeroData(heroRes.ok ? await heroRes.json() : {});
             setProcessSection(procSecRes.ok ? await procSecRes.json() : {});
-            
+
             const loadedSteps = procStepsRes.ok ? await procStepsRes.json() : [];
             const normalizedSteps = Array.isArray(loadedSteps) ? loadedSteps.map((s: any, i: number) => ({
                 ...s,
@@ -305,7 +305,7 @@ export default function ServicesManagerPage() {
         const newSteps = [...processSteps];
         const targetIndex = direction === "up" ? index - 1 : index + 1;
         [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]];
-        newSteps.forEach((step, i) => { 
+        newSteps.forEach((step, i) => {
             step.step_number = i + 1;
             step.display_order = i + 1;
         });
@@ -345,9 +345,10 @@ export default function ServicesManagerPage() {
     });
 
     const tabs = [
+        { id: "services", label: "Services", icon: "design_services" },
+
         { id: "hero", label: "Hero", icon: "web_asset" },
         { id: "features", label: "Features", icon: "star" },
-        { id: "services", label: "Services", icon: "design_services" },
         { id: "process", label: "Process", icon: "settings_suggest" },
         { id: "brands", label: "Brands", icon: "support_agent" },
         { id: "trust", label: "Trust", icon: "thumb_up" },
@@ -572,7 +573,7 @@ export default function ServicesManagerPage() {
                                 <h3 className="text-base font-bold text-slate-800 border-b pb-4">Social Proof & Trust</h3>
                                 <InputGroup label="Section Title" value={trustData.title || ""} onChange={(v) => setTrustData({ ...trustData, title: v })} />
                                 <TextAreaGroup label="Intro Text" value={trustData.description || ""} onChange={(v) => setTrustData({ ...trustData, description: v })} />
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-xl border border-slate-100">
                                     <div className="space-y-4">
                                         <h4 className="text-xs font-bold text-slate-500 uppercase">Featured Testimonial</h4>

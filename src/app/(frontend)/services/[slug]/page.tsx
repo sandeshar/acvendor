@@ -91,9 +91,10 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
         };
         return symbols[currency || 'NPR'] || 'Rs.';
     };
-    const [post, serviceDetail] = await Promise.all([
+    const [post, serviceDetail, servicesCTA] = await Promise.all([
         getServicePost(slug),
-        getServiceDetailBySlug(slug)
+        getServiceDetailBySlug(slug),
+        fetch(`${API_BASE}/api/pages/services/cta`, { next: { tags: ['services-cta'] } }).then(res => res.ok ? res.json() : null)
     ]);
 
     if (!post) notFound();
@@ -265,25 +266,28 @@ export default async function ServicePostPage({ params }: ServicePostPageProps) 
                     </section>
                 )}
 
-                {/* CTA Section */}
-                <section className="py-10 sm:py-14 bg-linear-to-r from-primary/5 to-indigo-500/5 border-y border-slate-200">
+
+            </div>
+            {/* CTA Section */}
+            {servicesCTA?.is_active === 1 && (
+                <section className="py-12 sm:py-20 bg-primary border-y border-slate-200 w-full">
                     <div className="mx-auto w-full max-w-3xl text-center">
-                        <h4 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">
-                            Let's Bring Your Vision to Life
+                        <h4 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                            {servicesCTA.title}
                         </h4>
-                        <p className="text-lg text-[#4b5563] mb-8">
-                            Schedule a free consultation to explore how {post.title} can benefit your business.
+                        <p className="text-lg text-primary-100 mb-8 text-white/80">
+                            {servicesCTA.description}
                         </p>
                         <a
-                            href="/contact"
-                            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition shadow-lg"
+                            href={servicesCTA.button_link || '/contact'}
+                            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary font-bold rounded-lg hover:bg-primary-50 transition shadow-lg active:scale-95"
                         >
-                            <span className="material-symbols-outlined">calendar_month</span>
-                            Schedule Consultation
+                            {/* <span className="material-symbols-outlined">call</span> */}
+                            {servicesCTA.button_text}
                         </a>
                     </div>
                 </section>
-            </div>
+            )}
         </main>
     );
 }

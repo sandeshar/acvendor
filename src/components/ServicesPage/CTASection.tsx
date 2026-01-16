@@ -20,15 +20,18 @@ const CTASection = ({ data }: CTASectionProps) => {
     }
 
     return (
-        <section className="px-4 md:px-10 py-20 sm:py-32">
+        <section className="px-4 md:px-10 py-16 sm:py-24 bg-primary">
             <div className="mx-auto max-w-5xl">
-                <div className="relative overflow-hidden rounded-xl bg-slate-800 p-8 text-center md:p-12">
-                    <div className="absolute -top-12 -right-12 size-48 rounded-full bg-primary/20" />
-                    <div className="absolute -bottom-24 -left-12 size-64 rounded-full bg-primary/10" />
-                    <div className="relative flex flex-col items-center gap-4">
-                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">{data.title}</h2>
-                        <p className="max-w-2xl text-base text-slate-300 sm:text-lg">{data.description}</p>
-                        <CTAButton text={data.button_text} href={data.button_link} variant="primary" className="mt-4 shadow-sm" />
+                <div className="relative overflow-hidden text-center">
+                    <div className="relative flex flex-col items-center gap-6">
+                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl">{data.title}</h2>
+                        <p className="max-w-2xl text-lg text-primary-100 sm:text-xl">{data.description}</p>
+                        <a
+                            href={data.button_link || '#'}
+                            className="mt-4 inline-flex items-center justify-center px-8 py-4 bg-white text-primary font-bold rounded-lg hover:bg-primary-50 transition shadow-xl active:scale-95"
+                        >
+                            {data.button_text}
+                        </a>
                     </div>
                 </div>
             </div>
