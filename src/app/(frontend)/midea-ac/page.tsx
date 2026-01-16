@@ -333,16 +333,21 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                                 <p className="text-primary-100 text-lg mb-8">{mideaCTA.description}</p>
                                 {mideaCTA.bullets && (
                                     <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 mb-8 text-primary-50 font-medium justify-center md:justify-start">
-                                        {(typeof mideaCTA.bullets === 'string' ? JSON.parse(mideaCTA.bullets) : mideaCTA.bullets).map((bullet: string, i: number) => (
-                                            <li key={i} className="flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                <span>{bullet}</span>
-                                            </li>
-                                        ))}
+                                        {(() => {
+                                            try {
+                                                const b = typeof mideaCTA.bullets === 'string' ? JSON.parse(mideaCTA.bullets) : mideaCTA.bullets;
+                                                return Array.isArray(b) ? b.map((bullet: string, i: number) => (
+                                                    <li key={i} className="flex items-center gap-2">
+                                                        <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                        <span>{bullet}</span>
+                                                    </li>
+                                                )) : null;
+                                            } catch (e) { return null; }
+                                        })()}
                                     </ul>
                                 )}
-                                <Link href={mideaCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
-                                    {mideaCTA.button_text || 'Contact Sales'}
+                                <Link href={mideaCTA.button1_link || mideaCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                    {mideaCTA.button1_text || mideaCTA.button_text || 'Contact Sales'}
                                 </Link>
                             </div>
                             <div className="hidden lg:block relative z-10">
@@ -360,8 +365,8 @@ export default async function MideaPage({ searchParams }: { searchParams?: { sub
                             <p className="text-[#617589] text-base">Contact us for bulk orders, project installations, or specific requirement consultations.</p>
                         </div>
                         <div className="flex gap-4">
-                            <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-white border border-gray-200 text-[#111418] text-base font-bold shadow-sm hover:shadow transition-shadow">Contact Sales</button>
-                            <button className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-base font-bold hover:bg-blue-600 transition-colors">Request Quote</button>
+                            <Link href={mideaCTA.button2_link || "/contact"} className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-white border border-gray-200 text-[#111418] text-base font-bold shadow-sm hover:shadow transition-shadow">{mideaCTA.button2_text || "Contact Sales"}</Link>
+                            {/* If there was a third button or something else, it would go here */}
                         </div>
                     </div>
                 )}

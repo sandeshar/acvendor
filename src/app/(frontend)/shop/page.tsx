@@ -20,7 +20,9 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
         fetch(`${API_BASE}/api/pages/shop/cta`, { cache: 'no-store', next: { tags: ['shop-cta'] } }),
     ]);
     const hero = heroRes.ok ? await heroRes.json() : null;
-    const categories = categoriesRes.ok ? await categoriesRes.json() : [];
+    const allCategories = categoriesRes.ok ? await categoriesRes.json() : [];
+    // Filter out inactive categories and 'midea' since it has its own dedicated page and is handled separately in admin
+    const categories = allCategories.filter((c: any) => c.is_active !== 0 && String(c.slug).toLowerCase() !== 'midea');
     const shopCTA = ctaRes.ok ? await ctaRes.json() : null;
 
     // Simple category listing - no more brand-specific overrides here
@@ -200,17 +202,29 @@ export default async function ShopPage({ searchParams }: { searchParams?: { bran
                                 <p className="text-primary-100 text-lg mb-8">{shopCTA.description}</p>
                                 {shopCTA.bullets && (
                                     <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 mb-8 text-primary-50 font-medium">
-                                        {(typeof shopCTA.bullets === 'string' ? JSON.parse(shopCTA.bullets) : shopCTA.bullets).map((bullet: string, i: number) => (
-                                            <li key={i} className="flex items-center gap-2">
-                                                <span className="material-symbols-outlined">check_circle</span>
-                                                <span>{bullet}</span>
-                                            </li>
-                                        ))}
+                                        {(() => {
+                                            try {
+                                                const b = typeof shopCTA.bullets === 'string' ? JSON.parse(shopCTA.bullets) : shopCTA.bullets;
+                                                return Array.isArray(b) ? b.map((bullet: string, i: number) => (
+                                                    <li key={i} className="flex items-center gap-2">
+                                                        <span className="material-symbols-outlined">check_circle</span>
+                                                        <span>{bullet}</span>
+                                                    </li>
+                                                )) : null;
+                                            } catch (e) { return null; }
+                                        })()}
                                     </ul>
                                 )}
-                                <Link href={shopCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
-                                    {shopCTA.button_text || 'Learn More'}
-                                </Link>
+                                <div className="flex flex-wrap gap-4">
+                                    <Link href={shopCTA.button1_link || shopCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                        {shopCTA.button1_text || shopCTA.button_text || 'Learn More'}
+                                    </Link>
+                                    {(shopCTA.button2_text || shopCTA.button2_link) && (
+                                        <Link href={shopCTA.button2_link || '#'} className="inline-block bg-primary-600 text-white border border-white/20 hover:bg-primary-700 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                            {shopCTA.button2_text}
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                             <div className="hidden md:block">
                                 <div className="w-64 h-64 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">

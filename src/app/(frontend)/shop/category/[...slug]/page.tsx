@@ -380,7 +380,7 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                         </div>
 
                         {/* Category CTA */}
-                        {categoryCTA?.is_active && (
+                        {categoryCTA?.is_active === 1 && (
                             <div className="mt-16 bg-primary rounded-2xl p-8 md:p-12 overflow-hidden relative shadow-2xl shadow-primary/20">
                                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
                                     <div className="max-w-xl text-white">
@@ -388,17 +388,29 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
                                         <p className="text-primary-100 text-lg mb-8">{categoryCTA.description}</p>
                                         {categoryCTA.bullets && (
                                             <ul className="flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-6 mb-8 text-primary-50 font-medium">
-                                                {(typeof categoryCTA.bullets === 'string' ? JSON.parse(categoryCTA.bullets) : categoryCTA.bullets).map((bullet: string, i: number) => (
-                                                    <li key={i} className="flex items-center gap-2">
-                                                        <span className="material-symbols-outlined text-sm">check_circle</span>
-                                                        <span>{bullet}</span>
-                                                    </li>
-                                                ))}
+                                                {(() => {
+                                                    try {
+                                                        const b = typeof categoryCTA.bullets === 'string' ? JSON.parse(categoryCTA.bullets) : categoryCTA.bullets;
+                                                        return Array.isArray(b) ? b.map((bullet: string, i: number) => (
+                                                            <li key={i} className="flex items-center gap-2">
+                                                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                                                <span>{bullet}</span>
+                                                            </li>
+                                                        )) : null;
+                                                    } catch (e) { return null; }
+                                                })()}
                                             </ul>
                                         )}
-                                        <Link href={categoryCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
-                                            {categoryCTA.button_text || 'Contact Now'}
-                                        </Link>
+                                        <div className="flex flex-wrap gap-4">
+                                            <Link href={categoryCTA.button1_link || categoryCTA.button_link || '/contact'} className="inline-block bg-white text-primary hover:bg-primary-50 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                                {categoryCTA.button1_text || categoryCTA.button_text || 'Contact Now'}
+                                            </Link>
+                                            {(categoryCTA.button2_text || categoryCTA.button2_link) && (
+                                                <Link href={categoryCTA.button2_link || '#'} className="inline-block bg-primary-600 text-white border border-white/20 hover:bg-primary-700 px-8 py-3 rounded-lg font-bold transition-colors shadow-lg">
+                                                    {categoryCTA.button2_text}
+                                                </Link>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="hidden lg:block relative z-10">
                                         <div className="w-48 h-48 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">

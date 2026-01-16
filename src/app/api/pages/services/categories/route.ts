@@ -7,13 +7,20 @@ export async function GET(request: NextRequest) {
         await connectDB();
         // If `slug` is passed, return a single category by slug (useful for metadata lookup on frontend)
         const slug = request.nextUrl.searchParams.get('slug');
+        const isAdmin = request.nextUrl.searchParams.get('admin') === '1';
+
         if (slug) {
-            const cat = await ServiceCategories.findOne({ slug }).lean();
+            const query: any = { slug };
+            if (!isAdmin) query.is_active = 1;
+            const cat = await ServiceCategories.findOne(query).lean();
             if (!cat) return NextResponse.json(null);
             return NextResponse.json({ ...cat, id: cat._id.toString() });
         }
 
-        const categories = await ServiceCategories.find().sort({ display_order: 1, name: 1 }).lean();
+        const query: any = {};
+        if (!isAdmin) query.is_active = 1;
+
+        const categories = await ServiceCategories.find(query).sort({ display_order: 1, name: 1 }).lean();
         const formatted = categories.map((c: any) => ({ ...c, id: c._id.toString() }));
         return NextResponse.json(formatted);
     } catch (error) {
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { name, slug, description, icon, meta_title, meta_description, thumbnail, display_order } = body;
+        const { name, slug, description, icon, meta_title, meta_description, thumbnail, display_order, is_active, brand } = body;
 
         if (!name || !slug) {
             return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
@@ -35,13 +42,14 @@ export async function POST(request: NextRequest) {
         const result = await ServiceCategories.create({
             name,
             slug,
-            brand: '',
+            brand: brand || '',
             description: description || null,
             icon: icon || null,
             thumbnail: thumbnail || null,
             meta_title: meta_title || null,
             meta_description: meta_description || null,
             display_order: Number(display_order) || 0,
+            is_active: is_active !== undefined ? Number(is_active) : 1,
         });
 
         return NextResponse.json({ id: result._id, message: "Category created successfully" });
@@ -55,7 +63,7 @@ export async function PUT(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { id, name, slug, description, icon, meta_title, meta_description, thumbnail, display_order } = body;
+        const { id, name, slug, description, icon, meta_title, meta_description, thumbnail, display_order, is_active, brand } = body;
 
         if (!id) {
             return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -64,13 +72,14 @@ export async function PUT(request: NextRequest) {
         await ServiceCategories.findByIdAndUpdate(id, {
             name,
             slug,
-            brand: '',
+            brand: brand || '',
             description: description || null,
             icon: icon || null,
             thumbnail: thumbnail || null,
             meta_title: meta_title || null,
             meta_description: meta_description || null,
             display_order: Number(display_order) || 0,
+            is_active: is_active !== undefined ? Number(is_active) : 1,
             updatedAt: new Date(),
         }, { new: true });
 

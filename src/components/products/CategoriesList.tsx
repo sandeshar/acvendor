@@ -69,7 +69,7 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
                             <span className={`material-symbols-outlined text-sm transition-transform ${isActive ? 'rotate-90' : ''}`}>chevron_right</span>
                         </Link>
 
-                        {(isActive && filteredSubs.length > 0) && (
+                        {isActive && filteredSubs.length > 0 ? (
                             <div className="pl-4 mt-2 space-y-1 border-l-2 border-gray-100 ml-4 animate-in slide-in-from-top-2 duration-300">
                                 <Link
                                     href={`/midea-ac?category=${encodeURIComponent(c.slug)}`}
@@ -88,7 +88,7 @@ export default function CategoriesList({ brand, selectedCategory = '', selectedS
                                     </Link>
                                 ))}
                             </div>
-                        )}
+                        ) : null}
                     </div>
                 );
             })}

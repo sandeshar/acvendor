@@ -17,11 +17,11 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
         const body = await request.json();
-        const { title, description, bullets, button_text, button_link, is_active = 1 } = body;
+        const { title, description, bullets, button_text, button_link, button1_text, button1_link, button2_text, button2_link, is_active = 1 } = body;
 
         const cta = await ShopPageCTA.findOneAndUpdate(
             {},
-            { title, description, bullets, button_text, button_link, is_active },
+            { title, description, bullets, button_text, button_link, button1_text, button1_link, button2_text, button2_link, is_active },
             { upsert: true, new: true }
         );
 

@@ -9,9 +9,11 @@ type Category = {
     id?: string | number;
     name: string;
     slug: string;
+    brand?: string;
     description?: string | null;
     icon?: string | null;
     display_order?: number;
+    is_active?: number;
     // Optional SEO fields
     meta_title?: string | null;
     meta_description?: string | null;
@@ -27,6 +29,7 @@ type Subcategory = {
     slug: string;
     description?: string | null;
     display_order?: number;
+    is_active?: number;
     meta_title?: string | null;
     meta_description?: string | null;
     isNew?: boolean;
@@ -57,8 +60,8 @@ export default function CategoriesManagerPage() {
         setLoading(true);
         try {
             const [categoriesRes, subcategoriesRes] = await Promise.all([
-                fetch('/api/pages/services/categories'),
-                fetch('/api/pages/services/subcategories'),
+                fetch('/api/pages/services/categories?admin=1'),
+                fetch('/api/pages/services/subcategories?admin=1'),
             ]);
 
             if (categoriesRes.ok) {
@@ -168,9 +171,11 @@ export default function CategoriesManagerPage() {
         setSelectedCategory({
             name: "",
             slug: "",
+            brand: "",
             description: "",
             icon: "",
             display_order: 0,
+            is_active: 1,
             meta_title: "",
             meta_description: "",
             isNew: true,
@@ -187,6 +192,7 @@ export default function CategoriesManagerPage() {
             slug: "",
             description: "",
             display_order: 0,
+            is_active: 1,
             meta_title: "",
             meta_description: "",
             isNew: true,
@@ -447,8 +453,12 @@ export default function CategoriesManagerPage() {
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#{index + 1}</span>
-                                                                <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>
-                                                            </div>
+                                                                <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>                                                            {category.is_active === 0 && (
+                                                                <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Inactive</span>
+                                                            )}
+                                                            {category.brand && (
+                                                                <span className="text-[10px] font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase">{category.brand}</span>
+                                                            )}                                                            </div>
                                                             <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
                                                             {category.description && (
                                                                 <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
@@ -563,6 +573,9 @@ export default function CategoriesManagerPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#{index + 1}</span>
                                                                 <h3 className="text-base font-semibold text-slate-900 truncate">{subcategory.name}</h3>
+                                                                {subcategory.is_active === 0 && (
+                                                                    <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Inactive</span>
+                                                                )}
                                                             </div>
                                                             <div className="mt-1 flex flex-wrap gap-2">
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
@@ -645,6 +658,30 @@ export default function CategoriesManagerPage() {
                                 {selectedCategory.slug && !isValidSlug(selectedCategory.slug) && (
                                     <p className="text-[10px] text-red-500 mt-1">Invalid slug. Use only letters, numbers, hyphens and underscores.</p>
                                 )}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Brand (Internal slug)</label>
+                                    <input
+                                        type="text"
+                                        value={selectedCategory.brand || ''}
+                                        onChange={(e) => setSelectedCategory({ ...selectedCategory, brand: e.target.value })}
+                                        placeholder="e.g. midea"
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                    />
+                                    <p className="text-[10px] text-slate-500 mt-1">Leave empty for global. Use "midea" for Midea AC page.</p>
+                                </div>
+                                <div className="flex items-center gap-2 pt-6">
+                                    <input
+                                        type="checkbox"
+                                        id="cat-active"
+                                        checked={selectedCategory.is_active === 1}
+                                        onChange={(e) => setSelectedCategory({ ...selectedCategory, is_active: e.target.checked ? 1 : 0 })}
+                                        className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                                    />
+                                    <label htmlFor="cat-active" className="text-sm font-medium text-slate-700 cursor-pointer">Active (Show on site)</label>
+                                </div>
                             </div>
 
                             <div>
@@ -782,6 +819,16 @@ export default function CategoriesManagerPage() {
                                     rows={3}
                                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
+                            </div>
+                            <div className="flex items-center gap-2 py-2">
+                                <input
+                                    type="checkbox"
+                                    id="sub-active"
+                                    checked={selectedSubcategory.is_active === 1}
+                                    onChange={(e) => setSelectedSubcategory({ ...selectedSubcategory, is_active: e.target.checked ? 1 : 0 })}
+                                    className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+                                />
+                                <label htmlFor="sub-active" className="text-sm font-medium text-slate-700 cursor-pointer">Active (Show on site)</label>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>

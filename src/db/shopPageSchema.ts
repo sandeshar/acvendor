@@ -59,6 +59,10 @@ const shopPageCTASchema = new Schema({
     bullets: { type: String, default: '[]' }, // JSON string of bullets
     button_text: { type: String, default: '', maxlength: 100 },
     button_link: { type: String, default: '', maxlength: 512 },
+    button1_text: { type: String, default: '', maxlength: 100 },
+    button1_link: { type: String, default: '', maxlength: 512 },
+    button2_text: { type: String, default: '', maxlength: 100 },
+    button2_link: { type: String, default: '', maxlength: 512 },
     is_active: { type: Number, default: 1, required: true },
 }, {
     timestamps: true,
