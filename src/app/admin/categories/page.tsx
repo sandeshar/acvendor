@@ -454,11 +454,11 @@ export default function CategoriesManagerPage() {
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">#{index + 1}</span>
                                                                 <h3 className="text-base font-semibold text-slate-900 truncate">{category.name}</h3>                                                            {category.is_active === 0 && (
-                                                                <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Inactive</span>
-                                                            )}
-                                                            {category.brand && (
-                                                                <span className="text-[10px] font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase">{category.brand}</span>
-                                                            )}                                                            </div>
+                                                                    <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Inactive</span>
+                                                                )}
+                                                                {category.brand && (
+                                                                    <span className="text-[10px] font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase">{category.brand}</span>
+                                                                )}                                                            </div>
                                                             <p className="text-xs text-slate-500 mt-1">{category.slug}</p>
                                                             {category.description && (
                                                                 <p className="text-sm text-slate-600 line-clamp-2 mt-2">{category.description}</p>
